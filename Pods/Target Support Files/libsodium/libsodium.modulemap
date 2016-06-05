@@ -1,0 +1,6 @@
+framework module libsodium {
+  umbrella header "libsodium-umbrella.h"
+
+  export *
+  module * { export * }
+}

@@ -1,0 +1,11 @@
+CODE_SIGN_IDENTITY =
+FRAMEWORK_SEARCH_PATHS = $(inherited) "$PODS_CONFIGURATION_BUILD_DIR/libsodium"
+GCC_PREPROCESSOR_DEFINITIONS = $(inherited) COCOAPODS=1
+HEADER_SEARCH_PATHS = $(PODS_ROOT)/libev/include/ $(inherited) "${PODS_ROOT}/Headers/Public" "${PODS_ROOT}/Headers/Public/OpenSSL-Universal" "${PODS_ROOT}/Headers/Public/libev"
+LD_RUNPATH_SEARCH_PATHS = $(inherited) '@executable_path/../Frameworks' '@loader_path/Frameworks'
+LIBRARY_SEARCH_PATHS = $(inherited) $(PODS_ROOT)/libev/lib $(inherited) "${PODS_ROOT}/OpenSSL-Universal/lib-osx"
+OTHER_CFLAGS = $(inherited) -iquote "$PODS_CONFIGURATION_BUILD_DIR/libsodium/libsodium.framework/Headers" -isystem "${PODS_ROOT}/Headers/Public" -isystem "${PODS_ROOT}/Headers/Public/OpenSSL-Universal" -isystem "${PODS_ROOT}/Headers/Public/libev"
+OTHER_LDFLAGS = $(inherited) -ObjC -l"crypto" -l"ev-osx" -l"ssl" -framework "libsodium"
+PODS_BUILD_DIR = $BUILD_DIR
+PODS_CONFIGURATION_BUILD_DIR = $PODS_BUILD_DIR/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)
+PODS_ROOT = ${SRCROOT}/Pods

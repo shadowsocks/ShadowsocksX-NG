@@ -1,0 +1,10 @@
+
+#include "crypto_stream_salsa2012.h"
+
+#define crypto_stream crypto_stream_salsa2012
+#define crypto_stream_xor crypto_stream_salsa2012_xor
+#define crypto_stream_KEYBYTES crypto_stream_salsa2012_KEYBYTES
+#define crypto_stream_NONCEBYTES crypto_stream_salsa2012_NONCEBYTES
+#define crypto_stream_IMPLEMENTATION crypto_stream_salsa2012_IMPLEMENTATION
+#define crypto_stream_VERSION crypto_stream_salsa2012_VERSION
+
