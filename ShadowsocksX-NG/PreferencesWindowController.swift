@@ -55,7 +55,7 @@ class PreferencesWindowController: NSWindowController
     }
     
     @IBAction func addProfile(sender: NSButton) {
-        if editingProfile != nil && !editingProfile.is_valid(){
+        if editingProfile != nil && !editingProfile.isValid(){
             return
         }
         profilesTableView.beginUpdates()
@@ -85,7 +85,7 @@ class PreferencesWindowController: NSWindowController
     
     @IBAction func ok(sender: NSButton) {
         if editingProfile != nil {
-            if !editingProfile.is_valid() {
+            if !editingProfile.isValid() {
                 // TODO Shake window?
                 return
             }
@@ -190,7 +190,7 @@ class PreferencesWindowController: NSWindowController
             return true
         }
         if editingProfile != nil {
-            if !editingProfile.is_valid() {
+            if !editingProfile.isValid() {
                 return false
             }
         }

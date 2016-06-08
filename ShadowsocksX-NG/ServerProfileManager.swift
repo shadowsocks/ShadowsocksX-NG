@@ -36,7 +36,7 @@ class ServerProfileManager: NSObject {
         let defaults = NSUserDefaults.standardUserDefaults()
         var _profiles = [AnyObject]()
         for profile in profiles {
-            if profile.is_valid() {
+            if profile.isValid() {
                 let _profile = profile.toDictionary()
                 _profiles.append(_profile)
             }

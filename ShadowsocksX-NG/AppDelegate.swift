@@ -145,6 +145,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         
     }
     
+    @IBAction func selectPACMode(sender: NSMenuItem) {
+        
+    }
+    
+    @IBAction func selectGlobalMode(sender: NSMenuItem) {
+        
+    }
+    
     @IBAction func editServerPreferences(sender: NSMenuItem) {
         if preferencesWinCtrl != nil {
             preferencesWinCtrl.close()
@@ -212,7 +220,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             if mgr.activeProfileId == p.uuid {
                 item.state = 1
             }
-            if !p.is_valid() {
+            if !p.isValid() {
                 item.enabled = false
             }
             item.action = #selector(AppDelegate.selectServer)

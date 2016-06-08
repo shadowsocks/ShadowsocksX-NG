@@ -76,7 +76,7 @@ class ServerProfile: NSObject {
         return conf
     }
     
-    func is_valid() -> Bool {
+    func isValid() -> Bool {
         func validateIpAddress(ipToValidate: String) -> Bool {
             
             var sin = sockaddr_in()
