@@ -65,7 +65,7 @@
                     </connections>
                 </menuItem>
                 <menuItem isSeparatorItem="YES" id="V92-VH-Agn"/>
-                <menuItem title="Update GFW List" id="TFc-Ec-duM">
+                <menuItem title="Update PAC from GFW List" id="TFc-Ec-duM">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
                         <action selector="updateGFWList:" target="Voe-Tx-rLC" id="Ztt-PS-F3T"/>

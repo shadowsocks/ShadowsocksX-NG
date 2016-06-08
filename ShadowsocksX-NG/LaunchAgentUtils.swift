@@ -162,4 +162,5 @@ func SyncSSLocal() {
         removeSSLocalConfFile()
         StopSSLocal()
     }
+    SyncPac()
 }

@@ -130,7 +130,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     }
 
     @IBAction func updateGFWList(sender: NSMenuItem) {
-        
+        UpdatePACFromGFWList()
     }
     
     @IBAction func showQRCodeForCurrentServer(sender: NSMenuItem) {
