@@ -1,7 +1,0 @@
-
-#include "crypto_shorthash_siphash24.h"
-
-#define crypto_shorthash crypto_shorthash_siphash24
-#define crypto_shorthash_BYTES crypto_shorthash_siphash24_BYTES
-#define crypto_shorthash_IMPLEMENTATION crypto_shorthash_siphash24_IMPLEMENTATION
-#define crypto_shorthash_VERSION crypto_shorthash_siphash24_VERSION

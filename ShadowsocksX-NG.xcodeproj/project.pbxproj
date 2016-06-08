@@ -7,14 +7,32 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		76121C11F520387BD6BF2C97 /* Pods_ShadowsocksX_NG.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 95E4CE076694F83C2393B7BB /* Pods_ShadowsocksX_NG.framework */; };
+		9B07EFA71D048BBB0052D9DF /* ss-local in Resources */ = {isa = PBXBuildFile; fileRef = 9B07EFA61D048BBB0052D9DF /* ss-local */; };
+		9B07EFAC1D048E880052D9DF /* menu_icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B07EFA81D048E880052D9DF /* menu_icon@2x.png */; };
+		9B07EFAD1D048E880052D9DF /* menu_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B07EFA91D048E880052D9DF /* menu_icon.png */; };
+		9B07EFAE1D048E880052D9DF /* menu_icon_disabled.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B07EFAA1D048E880052D9DF /* menu_icon_disabled.png */; };
+		9B07EFAF1D048E880052D9DF /* menu_icon_disabled@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B07EFAB1D048E880052D9DF /* menu_icon_disabled@2x.png */; };
 		9B0B00041D0460A70040E62B /* ShadowsocksX_NGUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B0B00031D0460A70040E62B /* ShadowsocksX_NGUITests.swift */; };
 		9B0BFFE91D0460A70040E62B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B0BFFE81D0460A70040E62B /* AppDelegate.swift */; };
 		9B0BFFEB1D0460A70040E62B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9B0BFFEA1D0460A70040E62B /* Assets.xcassets */; };
 		9B0BFFEE1D0460A70040E62B /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9B0BFFEC1D0460A70040E62B /* MainMenu.xib */; };
 		9B0BFFF91D0460A70040E62B /* ShadowsocksX_NGTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B0BFFF81D0460A70040E62B /* ShadowsocksX_NGTests.swift */; };
-		AAFD5F62F3949BC81A97B44E /* Pods_ShadowsocksX_NGTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D02083DA9F3BEE482F04AEC7 /* Pods_ShadowsocksX_NGTests.framework */; };
-		DE140E8B585E15C4D2F5248C /* Pods_ShadowsocksX_NGUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 65F1C2CBF4BCDA500FBC8809 /* Pods_ShadowsocksX_NGUITests.framework */; };
+		9B3FFF0D1D05FEB30019A709 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B3FFF0C1D05FEB30019A709 /* Utils.swift */; };
+		9B3FFF141D0705810019A709 /* Notifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B3FFF131D0705810019A709 /* Notifications.swift */; };
+		9B3FFF171D072FDE0019A709 /* LaunchAtLoginController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9B3FFF161D072FDE0019A709 /* LaunchAtLoginController.m */; };
+		9B3FFF1E1D0732660019A709 /* Utils.m in Sources */ = {isa = PBXBuildFile; fileRef = 9B3FFF1D1D0732660019A709 /* Utils.m */; };
+		9BEEF0641D04C3E400FC52B3 /* com.qiuyuzhou.shadowsocksX-NE.local.plist in Resources */ = {isa = PBXBuildFile; fileRef = 9BEEF0631D04C3E400FC52B3 /* com.qiuyuzhou.shadowsocksX-NE.local.plist */; };
+		9BEEF0691D04D4D500FC52B3 /* install_ss_local.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9BEEF0651D04CB8500FC52B3 /* install_ss_local.sh */; };
+		9BEEF06A1D04D4D500FC52B3 /* start_ss_local.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9BEEF0661D04CE8D00FC52B3 /* start_ss_local.sh */; };
+		9BEEF06B1D04D4D500FC52B3 /* stop_ss_local.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9BEEF0671D04CE9A00FC52B3 /* stop_ss_local.sh */; };
+		9BEEF06C1D04D4D500FC52B3 /* reload_conf_ss_local.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9BEEF0681D04CFE500FC52B3 /* reload_conf_ss_local.sh */; };
+		9BEEF06E1D04DCE400FC52B3 /* ServerProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BEEF06D1D04DCE400FC52B3 /* ServerProfile.swift */; };
+		9BEEF0701D04DDB100FC52B3 /* ServerProfileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BEEF06F1D04DDB100FC52B3 /* ServerProfileManager.swift */; };
+		9BEEF0751D04EF3E00FC52B3 /* PreferencesWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BEEF0731D04EF3E00FC52B3 /* PreferencesWindowController.swift */; };
+		9BEEF0761D04EF3E00FC52B3 /* PreferencesWindowController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9BEEF0741D04EF3E00FC52B3 /* PreferencesWindowController.xib */; };
+		9BEEF0781D04FE8A00FC52B3 /* LaunchAgentUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BEEF0771D04FE8A00FC52B3 /* LaunchAgentUtils.swift */; };
+		9BEEF07B1D05631500FC52B3 /* AdvPreferencesWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BEEF0791D05631500FC52B3 /* AdvPreferencesWindowController.swift */; };
+		9BEEF07C1D05631500FC52B3 /* AdvPreferencesWindowController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9BEEF07A1D05631500FC52B3 /* AdvPreferencesWindowController.xib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -35,12 +53,11 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		49F0921F7C43C63C42269DE5 /* Pods-ShadowsocksX-NGUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ShadowsocksX-NGUITests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-ShadowsocksX-NGUITests/Pods-ShadowsocksX-NGUITests.debug.xcconfig"; sourceTree = "<group>"; };
-		4F6E39487290937F86D0D9E7 /* Pods-ShadowsocksX-NGTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ShadowsocksX-NGTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-ShadowsocksX-NGTests/Pods-ShadowsocksX-NGTests.debug.xcconfig"; sourceTree = "<group>"; };
-		65F1C2CBF4BCDA500FBC8809 /* Pods_ShadowsocksX_NGUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ShadowsocksX_NGUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		7B55216AFB1360F8A3350851 /* Pods-ShadowsocksX-NGTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ShadowsocksX-NGTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-ShadowsocksX-NGTests/Pods-ShadowsocksX-NGTests.release.xcconfig"; sourceTree = "<group>"; };
-		8D7030FC9F7CF176483A4948 /* Pods-ShadowsocksX-NG.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ShadowsocksX-NG.debug.xcconfig"; path = "Pods/Target Support Files/Pods-ShadowsocksX-NG/Pods-ShadowsocksX-NG.debug.xcconfig"; sourceTree = "<group>"; };
-		95E4CE076694F83C2393B7BB /* Pods_ShadowsocksX_NG.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ShadowsocksX_NG.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		9B07EFA61D048BBB0052D9DF /* ss-local */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = "ss-local"; sourceTree = "<group>"; };
+		9B07EFA81D048E880052D9DF /* menu_icon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "menu_icon@2x.png"; sourceTree = "<group>"; };
+		9B07EFA91D048E880052D9DF /* menu_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = menu_icon.png; sourceTree = "<group>"; };
+		9B07EFAA1D048E880052D9DF /* menu_icon_disabled.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = menu_icon_disabled.png; sourceTree = "<group>"; };
+		9B07EFAB1D048E880052D9DF /* menu_icon_disabled@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "menu_icon_disabled@2x.png"; sourceTree = "<group>"; };
 		9B0B00031D0460A70040E62B /* ShadowsocksX_NGUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShadowsocksX_NGUITests.swift; sourceTree = "<group>"; };
 		9B0B00051D0460A70040E62B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9B0BFFE51D0460A70040E62B /* ShadowsocksX-NG.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "ShadowsocksX-NG.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -52,9 +69,25 @@
 		9B0BFFF81D0460A70040E62B /* ShadowsocksX_NGTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShadowsocksX_NGTests.swift; sourceTree = "<group>"; };
 		9B0BFFFA1D0460A70040E62B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9B0BFFFF1D0460A70040E62B /* ShadowsocksX-NGUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "ShadowsocksX-NGUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		D02083DA9F3BEE482F04AEC7 /* Pods_ShadowsocksX_NGTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ShadowsocksX_NGTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		D6F9D25AB11B3CD45B042C27 /* Pods-ShadowsocksX-NG.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ShadowsocksX-NG.release.xcconfig"; path = "Pods/Target Support Files/Pods-ShadowsocksX-NG/Pods-ShadowsocksX-NG.release.xcconfig"; sourceTree = "<group>"; };
-		F3CE0E3A139CAFC84CD294DB /* Pods-ShadowsocksX-NGUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ShadowsocksX-NGUITests.release.xcconfig"; path = "Pods/Target Support Files/Pods-ShadowsocksX-NGUITests/Pods-ShadowsocksX-NGUITests.release.xcconfig"; sourceTree = "<group>"; };
+		9B3FFF0C1D05FEB30019A709 /* Utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
+		9B3FFF101D05FFAC0019A709 /* ShadowsocksX-NG-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ShadowsocksX-NG-Bridging-Header.h"; sourceTree = SOURCE_ROOT; };
+		9B3FFF131D0705810019A709 /* Notifications.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Notifications.swift; sourceTree = "<group>"; };
+		9B3FFF151D072FDE0019A709 /* LaunchAtLoginController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LaunchAtLoginController.h; sourceTree = "<group>"; };
+		9B3FFF161D072FDE0019A709 /* LaunchAtLoginController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LaunchAtLoginController.m; sourceTree = "<group>"; };
+		9B3FFF1D1D0732660019A709 /* Utils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Utils.m; sourceTree = "<group>"; };
+		9B3FFF1F1D0734060019A709 /* Utils.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Utils.h; sourceTree = "<group>"; };
+		9BEEF0631D04C3E400FC52B3 /* com.qiuyuzhou.shadowsocksX-NE.local.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "com.qiuyuzhou.shadowsocksX-NE.local.plist"; sourceTree = "<group>"; };
+		9BEEF0651D04CB8500FC52B3 /* install_ss_local.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = install_ss_local.sh; sourceTree = "<group>"; };
+		9BEEF0661D04CE8D00FC52B3 /* start_ss_local.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = start_ss_local.sh; sourceTree = "<group>"; };
+		9BEEF0671D04CE9A00FC52B3 /* stop_ss_local.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = stop_ss_local.sh; sourceTree = "<group>"; };
+		9BEEF0681D04CFE500FC52B3 /* reload_conf_ss_local.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = reload_conf_ss_local.sh; sourceTree = "<group>"; };
+		9BEEF06D1D04DCE400FC52B3 /* ServerProfile.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ServerProfile.swift; sourceTree = "<group>"; };
+		9BEEF06F1D04DDB100FC52B3 /* ServerProfileManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ServerProfileManager.swift; sourceTree = "<group>"; };
+		9BEEF0731D04EF3E00FC52B3 /* PreferencesWindowController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreferencesWindowController.swift; sourceTree = "<group>"; };
+		9BEEF0741D04EF3E00FC52B3 /* PreferencesWindowController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = PreferencesWindowController.xib; sourceTree = "<group>"; };
+		9BEEF0771D04FE8A00FC52B3 /* LaunchAgentUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LaunchAgentUtils.swift; sourceTree = "<group>"; };
+		9BEEF0791D05631500FC52B3 /* AdvPreferencesWindowController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AdvPreferencesWindowController.swift; sourceTree = "<group>"; };
+		9BEEF07A1D05631500FC52B3 /* AdvPreferencesWindowController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = AdvPreferencesWindowController.xib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -62,7 +95,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				76121C11F520387BD6BF2C97 /* Pods_ShadowsocksX_NG.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -70,7 +102,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AAFD5F62F3949BC81A97B44E /* Pods_ShadowsocksX_NGTests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -78,34 +109,27 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DE140E8B585E15C4D2F5248C /* Pods_ShadowsocksX_NGUITests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		586F4AE55BFA3A18ADE9A2D1 /* Frameworks */ = {
+		9B07EFB01D048E900052D9DF /* Support Files */ = {
 			isa = PBXGroup;
 			children = (
-				95E4CE076694F83C2393B7BB /* Pods_ShadowsocksX_NG.framework */,
-				D02083DA9F3BEE482F04AEC7 /* Pods_ShadowsocksX_NGTests.framework */,
-				65F1C2CBF4BCDA500FBC8809 /* Pods_ShadowsocksX_NGUITests.framework */,
+				9B07EFA61D048BBB0052D9DF /* ss-local */,
+				9B07EFA81D048E880052D9DF /* menu_icon@2x.png */,
+				9B07EFA91D048E880052D9DF /* menu_icon.png */,
+				9B07EFAA1D048E880052D9DF /* menu_icon_disabled.png */,
+				9B07EFAB1D048E880052D9DF /* menu_icon_disabled@2x.png */,
+				9BEEF0631D04C3E400FC52B3 /* com.qiuyuzhou.shadowsocksX-NE.local.plist */,
+				9BEEF0651D04CB8500FC52B3 /* install_ss_local.sh */,
+				9BEEF0661D04CE8D00FC52B3 /* start_ss_local.sh */,
+				9BEEF0671D04CE9A00FC52B3 /* stop_ss_local.sh */,
+				9BEEF0681D04CFE500FC52B3 /* reload_conf_ss_local.sh */,
 			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
-		876CB67CA5FAB75694DBB9AA /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				8D7030FC9F7CF176483A4948 /* Pods-ShadowsocksX-NG.debug.xcconfig */,
-				D6F9D25AB11B3CD45B042C27 /* Pods-ShadowsocksX-NG.release.xcconfig */,
-				4F6E39487290937F86D0D9E7 /* Pods-ShadowsocksX-NGTests.debug.xcconfig */,
-				7B55216AFB1360F8A3350851 /* Pods-ShadowsocksX-NGTests.release.xcconfig */,
-				49F0921F7C43C63C42269DE5 /* Pods-ShadowsocksX-NGUITests.debug.xcconfig */,
-				F3CE0E3A139CAFC84CD294DB /* Pods-ShadowsocksX-NGUITests.release.xcconfig */,
-			);
-			name = Pods;
+			name = "Support Files";
 			sourceTree = "<group>";
 		};
 		9B0B00021D0460A70040E62B /* ShadowsocksX-NGUITests */ = {
@@ -124,8 +148,6 @@
 				9B0BFFF71D0460A70040E62B /* ShadowsocksX-NGTests */,
 				9B0B00021D0460A70040E62B /* ShadowsocksX-NGUITests */,
 				9B0BFFE61D0460A70040E62B /* Products */,
-				876CB67CA5FAB75694DBB9AA /* Pods */,
-				586F4AE55BFA3A18ADE9A2D1 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -142,10 +164,22 @@
 		9B0BFFE71D0460A70040E62B /* ShadowsocksX-NG */ = {
 			isa = PBXGroup;
 			children = (
+				9B3FFF151D072FDE0019A709 /* LaunchAtLoginController.h */,
+				9B3FFF161D072FDE0019A709 /* LaunchAtLoginController.m */,
+				9B3FFF101D05FFAC0019A709 /* ShadowsocksX-NG-Bridging-Header.h */,
+				9B3FFF0B1D05D8B80019A709 /* UI */,
+				9B07EFB01D048E900052D9DF /* Support Files */,
 				9B0BFFE81D0460A70040E62B /* AppDelegate.swift */,
 				9B0BFFEA1D0460A70040E62B /* Assets.xcassets */,
 				9B0BFFEC1D0460A70040E62B /* MainMenu.xib */,
 				9B0BFFEF1D0460A70040E62B /* Info.plist */,
+				9BEEF06D1D04DCE400FC52B3 /* ServerProfile.swift */,
+				9BEEF06F1D04DDB100FC52B3 /* ServerProfileManager.swift */,
+				9BEEF0771D04FE8A00FC52B3 /* LaunchAgentUtils.swift */,
+				9B3FFF0C1D05FEB30019A709 /* Utils.swift */,
+				9B3FFF131D0705810019A709 /* Notifications.swift */,
+				9B3FFF1D1D0732660019A709 /* Utils.m */,
+				9B3FFF1F1D0734060019A709 /* Utils.h */,
 			);
 			path = "ShadowsocksX-NG";
 			sourceTree = "<group>";
@@ -159,6 +193,17 @@
 			path = "ShadowsocksX-NGTests";
 			sourceTree = "<group>";
 		};
+		9B3FFF0B1D05D8B80019A709 /* UI */ = {
+			isa = PBXGroup;
+			children = (
+				9BEEF0731D04EF3E00FC52B3 /* PreferencesWindowController.swift */,
+				9BEEF0741D04EF3E00FC52B3 /* PreferencesWindowController.xib */,
+				9BEEF0791D05631500FC52B3 /* AdvPreferencesWindowController.swift */,
+				9BEEF07A1D05631500FC52B3 /* AdvPreferencesWindowController.xib */,
+			);
+			name = UI;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -166,12 +211,9 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 9B0B00081D0460A70040E62B /* Build configuration list for PBXNativeTarget "ShadowsocksX-NG" */;
 			buildPhases = (
-				D7E37B2F5C9A66B9C4DF253D /* 📦 Check Pods Manifest.lock */,
 				9B0BFFE11D0460A70040E62B /* Sources */,
 				9B0BFFE21D0460A70040E62B /* Frameworks */,
 				9B0BFFE31D0460A70040E62B /* Resources */,
-				7FF4F2DF8F8F824631D7167F /* 📦 Embed Pods Frameworks */,
-				A18AD12DD79B7211A43DCE2B /* 📦 Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -186,12 +228,9 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 9B0B000B1D0460A70040E62B /* Build configuration list for PBXNativeTarget "ShadowsocksX-NGTests" */;
 			buildPhases = (
-				137D62266340C8851C4A2D14 /* 📦 Check Pods Manifest.lock */,
 				9B0BFFF01D0460A70040E62B /* Sources */,
 				9B0BFFF11D0460A70040E62B /* Frameworks */,
 				9B0BFFF21D0460A70040E62B /* Resources */,
-				3F447C40281F7091F03306F5 /* 📦 Embed Pods Frameworks */,
-				28EF4B983817531185324389 /* 📦 Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -207,11 +246,9 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 9B0B000E1D0460A70040E62B /* Build configuration list for PBXNativeTarget "ShadowsocksX-NGUITests" */;
 			buildPhases = (
-				472AAADF26782765A34D8BB9 /* 📦 Check Pods Manifest.lock */,
 				9B0BFFFB1D0460A70040E62B /* Sources */,
 				9B0BFFFC1D0460A70040E62B /* Frameworks */,
 				9B0BFFFD1D0460A70040E62B /* Resources */,
-				9D7107D6D9CED119F37AB1B4 /* 📦 Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -271,8 +308,20 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9BEEF0691D04D4D500FC52B3 /* install_ss_local.sh in Resources */,
+				9BEEF0761D04EF3E00FC52B3 /* PreferencesWindowController.xib in Resources */,
+				9BEEF06A1D04D4D500FC52B3 /* start_ss_local.sh in Resources */,
+				9BEEF06B1D04D4D500FC52B3 /* stop_ss_local.sh in Resources */,
+				9BEEF06C1D04D4D500FC52B3 /* reload_conf_ss_local.sh in Resources */,
+				9B07EFAD1D048E880052D9DF /* menu_icon.png in Resources */,
 				9B0BFFEB1D0460A70040E62B /* Assets.xcassets in Resources */,
+				9BEEF07C1D05631500FC52B3 /* AdvPreferencesWindowController.xib in Resources */,
 				9B0BFFEE1D0460A70040E62B /* MainMenu.xib in Resources */,
+				9BEEF0641D04C3E400FC52B3 /* com.qiuyuzhou.shadowsocksX-NE.local.plist in Resources */,
+				9B07EFAC1D048E880052D9DF /* menu_icon@2x.png in Resources */,
+				9B07EFA71D048BBB0052D9DF /* ss-local in Resources */,
+				9B07EFAF1D048E880052D9DF /* menu_icon_disabled@2x.png in Resources */,
+				9B07EFAE1D048E880052D9DF /* menu_icon_disabled.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -292,135 +341,21 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
-/* Begin PBXShellScriptBuildPhase section */
-		137D62266340C8851C4A2D14 /* 📦 Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "📦 Check Pods Manifest.lock";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
-			showEnvVarsInLog = 0;
-		};
-		28EF4B983817531185324389 /* 📦 Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "📦 Copy Pods Resources";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-ShadowsocksX-NGTests/Pods-ShadowsocksX-NGTests-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		3F447C40281F7091F03306F5 /* 📦 Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "📦 Embed Pods Frameworks";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-ShadowsocksX-NGTests/Pods-ShadowsocksX-NGTests-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		472AAADF26782765A34D8BB9 /* 📦 Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "📦 Check Pods Manifest.lock";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
-			showEnvVarsInLog = 0;
-		};
-		7FF4F2DF8F8F824631D7167F /* 📦 Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "📦 Embed Pods Frameworks";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-ShadowsocksX-NG/Pods-ShadowsocksX-NG-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		9D7107D6D9CED119F37AB1B4 /* 📦 Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "📦 Copy Pods Resources";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-ShadowsocksX-NGUITests/Pods-ShadowsocksX-NGUITests-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		A18AD12DD79B7211A43DCE2B /* 📦 Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "📦 Copy Pods Resources";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-ShadowsocksX-NG/Pods-ShadowsocksX-NG-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		D7E37B2F5C9A66B9C4DF253D /* 📦 Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "📦 Check Pods Manifest.lock";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
-			showEnvVarsInLog = 0;
-		};
-/* End PBXShellScriptBuildPhase section */
-
 /* Begin PBXSourcesBuildPhase section */
 		9B0BFFE11D0460A70040E62B /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9B3FFF171D072FDE0019A709 /* LaunchAtLoginController.m in Sources */,
+				9B3FFF1E1D0732660019A709 /* Utils.m in Sources */,
+				9B3FFF141D0705810019A709 /* Notifications.swift in Sources */,
+				9BEEF0701D04DDB100FC52B3 /* ServerProfileManager.swift in Sources */,
+				9BEEF07B1D05631500FC52B3 /* AdvPreferencesWindowController.swift in Sources */,
+				9BEEF06E1D04DCE400FC52B3 /* ServerProfile.swift in Sources */,
+				9B3FFF0D1D05FEB30019A709 /* Utils.swift in Sources */,
+				9BEEF0751D04EF3E00FC52B3 /* PreferencesWindowController.swift in Sources */,
 				9B0BFFE91D0460A70040E62B /* AppDelegate.swift in Sources */,
+				9BEEF0781D04FE8A00FC52B3 /* LaunchAgentUtils.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -551,33 +486,53 @@
 		};
 		9B0B00091D0460A70040E62B /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 8D7030FC9F7CF176483A4948 /* Pods-ShadowsocksX-NG.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				COMBINE_HIDPI_IMAGES = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)/libcork/include/",
+					"$(SRCROOT)/libipset/include/",
+				);
 				INFOPLIST_FILE = "ShadowsocksX-NG/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SDKROOT)/usr/lib/system",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.qiuyuzhou.ShadowsocksX-NG";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "ShadowsocksX-NG-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
 		};
 		9B0B000A1D0460A70040E62B /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = D6F9D25AB11B3CD45B042C27 /* Pods-ShadowsocksX-NG.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				COMBINE_HIDPI_IMAGES = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)/libcork/include/",
+					"$(SRCROOT)/libipset/include/",
+				);
 				INFOPLIST_FILE = "ShadowsocksX-NG/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SDKROOT)/usr/lib/system",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.qiuyuzhou.ShadowsocksX-NG";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "ShadowsocksX-NG-Bridging-Header.h";
 			};
 			name = Release;
 		};
 		9B0B000C1D0460A70040E62B /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 4F6E39487290937F86D0D9E7 /* Pods-ShadowsocksX-NGTests.debug.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				COMBINE_HIDPI_IMAGES = YES;
@@ -591,7 +546,6 @@
 		};
 		9B0B000D1D0460A70040E62B /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 7B55216AFB1360F8A3350851 /* Pods-ShadowsocksX-NGTests.release.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				COMBINE_HIDPI_IMAGES = YES;
@@ -605,7 +559,6 @@
 		};
 		9B0B000F1D0460A70040E62B /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 49F0921F7C43C63C42269DE5 /* Pods-ShadowsocksX-NGUITests.debug.xcconfig */;
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = "ShadowsocksX-NGUITests/Info.plist";
@@ -618,7 +571,6 @@
 		};
 		9B0B00101D0460A70040E62B /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = F3CE0E3A139CAFC84CD294DB /* Pods-ShadowsocksX-NGUITests.release.xcconfig */;
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = "ShadowsocksX-NGUITests/Info.plist";
