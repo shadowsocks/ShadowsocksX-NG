@@ -5,4 +5,5 @@
 #import <CommonCrypto/CommonCrypto.h>
 
 #import "LaunchAtLoginController.h"
+#import "SWBQRCodeWindowController.h"
 #import "Utils.h"

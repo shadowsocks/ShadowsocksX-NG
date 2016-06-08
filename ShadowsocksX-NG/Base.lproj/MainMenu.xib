@@ -39,9 +39,15 @@
                 <menuItem isSeparatorItem="YES" id="LXP-yK-yQu"/>
                 <menuItem title="Auto Mode By PAC" id="hOa-5N-3ik">
                     <modifierMask key="keyEquivalentModifierMask"/>
+                    <connections>
+                        <action selector="selectPACMode:" target="Voe-Tx-rLC" id="OwN-Md-pIC"/>
+                    </connections>
                 </menuItem>
                 <menuItem title="Global Mode" id="3Sa-e9-VXX">
                     <modifierMask key="keyEquivalentModifierMask"/>
+                    <connections>
+                        <action selector="selectGlobalMode:" target="Voe-Tx-rLC" id="l4X-GP-hlH"/>
+                    </connections>
                 </menuItem>
                 <menuItem isSeparatorItem="YES" id="kkf-gh-O8t"/>
                 <menuItem title="Servers" id="u5M-hQ-VSc">

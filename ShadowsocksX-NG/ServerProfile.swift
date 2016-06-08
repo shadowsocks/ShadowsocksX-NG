@@ -93,6 +93,7 @@ class ServerProfile: NSObject {
             
             return false;
         }
+        
         func validateDomainName(value: String) -> Bool {
             let validHostnameRegex = "^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])$"
             
@@ -112,5 +113,16 @@ class ServerProfile: NSObject {
         }
         
         return true
+    }
+    
+    func URL() -> NSURL? {
+        let parts = "\(method):\(password)@\(serverHost):\(serverPort)"
+        let base64String = parts.dataUsingEncoding(NSUTF8StringEncoding)?
+            .base64EncodedStringWithOptions(NSDataBase64EncodingOptions())
+        if var s = base64String {
+            s = s.stringByTrimmingCharactersInSet(NSCharacterSet(charactersInString: "="))
+            return NSURL(string: "ss://\(s)")
+        }
+        return nil
     }
 }

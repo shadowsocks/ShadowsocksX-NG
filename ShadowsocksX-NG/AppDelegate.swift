@@ -12,6 +12,7 @@ import Cocoa
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDelegate {
     
+    var qrcodeWinCtrl: SWBQRCodeWindowController!
     var preferencesWinCtrl: PreferencesWindowController!
     var advPreferencesWinCtrl: AdvPreferencesWindowController!
     
@@ -134,7 +135,33 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     }
     
     @IBAction func showQRCodeForCurrentServer(sender: NSMenuItem) {
+        var errMsg: String?
+        let mgr = ServerProfileManager()
+        if let profile = mgr.getActiveProfile() {
+            if profile.isValid() {
+                // Show window
+                if qrcodeWinCtrl != nil{
+                    qrcodeWinCtrl.close()
+                }
+                qrcodeWinCtrl = SWBQRCodeWindowController(windowNibName: "SWBQRCodeWindowController")
+                qrcodeWinCtrl.qrCode = profile.URL()!.absoluteString
+                qrcodeWinCtrl.showWindow(self)
+                NSApp.activateIgnoringOtherApps(true)
+                qrcodeWinCtrl.window?.makeKeyAndOrderFront(nil)
+                
+                return
+            } else {
+                errMsg = "Current server profile is not valid.".localized
+            }
+        } else {
+            errMsg = "No current server profile.".localized
+        }
+        let userNote = NSUserNotification()
+        userNote.title = errMsg
+        userNote.soundName = NSUserNotificationDefaultSoundName
         
+        NSUserNotificationCenter.defaultUserNotificationCenter()
+            .deliverNotification(userNote);
     }
     
     @IBAction func scanQRCodeFromScreen(sender: NSMenuItem) {
