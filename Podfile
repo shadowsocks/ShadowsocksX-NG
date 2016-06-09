@@ -7,7 +7,7 @@ target 'ShadowsocksX-NG' do
 
   # Pods for ShadowsocksX-NG
   pod 'Alamofire', '~> 3.4'
-
+  
   target 'ShadowsocksX-NGTests' do
     inherit! :search_paths
     # Pods for testing
@@ -18,4 +18,8 @@ target 'ShadowsocksX-NG' do
     # Pods for testing
   end
 
+end
+
+target 'proxy_conf_helper' do
+  pod 'BRLOptionParser', '~> 0.3.1'
 end

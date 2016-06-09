@@ -1,12 +1,15 @@
 PODS:
   - Alamofire (3.4.0)
+  - BRLOptionParser (0.3.1)
 
 DEPENDENCIES:
   - Alamofire (~> 3.4)
+  - BRLOptionParser (~> 0.3.1)
 
 SPEC CHECKSUMS:
   Alamofire: c19a627cefd6a95f840401c49ab1f124e07f54ee
+  BRLOptionParser: a03256a8ff003ca1f5376c55f55f210e085a3958
 
-PODFILE CHECKSUM: 6339f517006b559ed2b7cc50379d2e3619b9a3b6
+PODFILE CHECKSUM: f532fd25b5e9173775d8deaa63ba5cf93104b844
 
 COCOAPODS: 1.0.1

@@ -43,6 +43,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         let defaults = NSUserDefaults.standardUserDefaults()
         defaults.registerDefaults([
             "ShadowsocksOn": true,
+            "ShadowsocksRunningMode": "auto",
             "LocalSocks5.ListenPort": NSNumber(unsignedShort: 1086),
             "LocalSocks5.ListenAddress": "localhost",
             "LocalSocks5.Timeout": NSNumber(unsignedInteger: 60),
@@ -108,11 +109,35 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         }
         
         updateMainMenu()
-        SyncSSLocal()
+        updateRunningModeMenu()
+        ProxyConfHelper.install()
+        applyConfig()
     }
 
     func applicationWillTerminate(aNotification: NSNotification) {
         // Insert code here to tear down your application
+    }
+    
+    func applyConfig() {
+        let defaults = NSUserDefaults.standardUserDefaults()
+        let isOn = defaults.boolForKey("ShadowsocksOn")
+        let mode = defaults.stringForKey("ShadowsocksRunningMode")
+        
+        if isOn {
+            StartSSLocal()
+            if mode == "auto" {
+                autoModeMenuItem.state = 1
+                globalModeMenuItem.state = 0
+                ProxyConfHelper.enablePACProxy()
+            } else if mode == "global" {
+                autoModeMenuItem.state = 0
+                globalModeMenuItem.state = 1
+                ProxyConfHelper.enableGlobalProxy()
+            }
+        } else {
+            StopSSLocal()
+            ProxyConfHelper.disableProxy()
+        }
     }
     
     @IBAction func toggleRunning(sender: NSMenuItem) {
@@ -123,11 +148,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         
         updateMainMenu()
         
-        if isOn {
-            StartSSLocal()
-        } else {
-            StopSSLocal()
-        }
+        applyConfig()
     }
 
     @IBAction func updateGFWList(sender: NSMenuItem) {
@@ -173,11 +194,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     }
     
     @IBAction func selectPACMode(sender: NSMenuItem) {
-        
+        let defaults = NSUserDefaults.standardUserDefaults()
+        defaults.setValue("auto", forKey: "ShadowsocksRunningMode")
+        updateRunningModeMenu()
+        applyConfig()
     }
     
     @IBAction func selectGlobalMode(sender: NSMenuItem) {
-        
+        let defaults = NSUserDefaults.standardUserDefaults()
+        defaults.setValue("global", forKey: "ShadowsocksRunningMode")
+        updateRunningModeMenu()
+        applyConfig()
     }
     
     @IBAction func editServerPreferences(sender: NSMenuItem) {
@@ -212,6 +239,18 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             spMgr.setActiveProfiledId(newProfile.uuid)
             updateServersMenu()
             SyncSSLocal()
+        }
+    }
+    
+    func updateRunningModeMenu() {
+        let defaults = NSUserDefaults.standardUserDefaults()
+        let mode = defaults.stringForKey("ShadowsocksRunningMode")
+        if mode == "auto" {
+            autoModeMenuItem.state = 1
+            globalModeMenuItem.state = 0
+        } else if mode == "global" {
+            autoModeMenuItem.state = 0
+            globalModeMenuItem.state = 1
         }
     }
     

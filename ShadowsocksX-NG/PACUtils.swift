@@ -66,13 +66,13 @@ func GeneratePACFile() -> Bool {
             // Filter empty and comment lines
             lines = lines.filter({ (s: String) -> Bool in
                 if s.isEmpty {
-                    return true
+                    return false
                 }
                 let c = s[s.startIndex]
                 if c == "!" || c == "[" {
-                    return true
+                    return false
                 }
-                return false
+                return true
             })
             
             do {

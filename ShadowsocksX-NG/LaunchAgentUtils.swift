@@ -31,7 +31,7 @@ func generateSSLocalLauchAgentPlist() -> Bool {
     
     let enableUdpRelay = NSUserDefaults.standardUserDefaults().boolForKey("LocalSocks5.EnableUDPRelay")
     
-    var arguments = [sslocalPath, "-c", "ss-local-config.json", "--fast-open"]
+    var arguments = [sslocalPath, "-c", "ss-local-config.json"]
     if enableUdpRelay {
         arguments.append("-u")
     }
