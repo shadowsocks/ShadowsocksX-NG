@@ -101,6 +101,26 @@ class PreferencesWindowController: NSWindowController
         window?.performClose(self)
     }
     
+    @IBAction func copyCurrentProfileURL2Pasteboard(sender: NSButton) {
+        let index = profilesTableView.selectedRow
+        if  index >= 0 {
+            let profile = profileMgr.profiles[index]
+            let ssURL = profile.URL()
+            if let url = ssURL {
+                // Then copy url to pasteboard
+                // TODO Why it not working?? It's ok in objective-c
+                let pboard = NSPasteboard.generalPasteboard()
+                pboard.clearContents()
+                let rs = pboard.writeObjects([url])
+                if rs {
+                    NSLog("copy to pasteboard success")
+                } else {
+                    NSLog("copy to pasteboard failed")
+                }
+            }
+        }
+    }
+    
     func updateProfileBoxVisible() {
         if profileMgr.profiles.isEmpty {
             profileBox.hidden = true
