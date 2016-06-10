@@ -14,6 +14,5 @@ Then I rewrite the gui code by swift.
 
 ## TODO List
 
-- Launch At Login
 - GUI for OTA config
 - Copy a ss url to pasteboard in the server profile UI.
