@@ -16,6 +16,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     var preferencesWinCtrl: PreferencesWindowController!
     var advPreferencesWinCtrl: AdvPreferencesWindowController!
     
+    var launchAtLoginController: LaunchAtLoginController = LaunchAtLoginController()
+    
     @IBOutlet weak var window: NSWindow!
     @IBOutlet weak var statusMenu: NSMenu!
     
@@ -110,6 +112,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         
         updateMainMenu()
         updateRunningModeMenu()
+        updateLaunchAtLoginMenu()
+        
         ProxyConfHelper.install()
         applyConfig()
     }
@@ -190,7 +194,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     }
 
     @IBAction func toggleLaunghAtLogin(sender: NSMenuItem) {
-        
+        launchAtLoginController.launchAtLogin = !launchAtLoginController.launchAtLogin;
+        updateLaunchAtLoginMenu()
     }
     
     @IBAction func selectPACMode(sender: NSMenuItem) {
@@ -239,6 +244,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             spMgr.setActiveProfiledId(newProfile.uuid)
             updateServersMenu()
             SyncSSLocal()
+        }
+    }
+    
+    func updateLaunchAtLoginMenu() {
+        if launchAtLoginController.launchAtLogin {
+            lanchAtLoginMenuItem.state = 1
+        } else {
+            lanchAtLoginMenuItem.state = 0
         }
     }
     
