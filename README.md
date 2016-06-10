@@ -25,10 +25,7 @@ Then I rewrite the gui code by swift.
 
 ## TODO List
 
-- GUI for OTA config
 - Copy a ss url to pasteboard in the server profile UI.
 
-## Known Inssues
 
-- ss-local depand on libcrypto.1.0.0.dylib need installed by home brew.
 
