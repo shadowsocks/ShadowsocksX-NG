@@ -110,7 +110,7 @@ func GeneratePACFile() -> Bool {
 }
 
 func UpdatePACFromGFWList() {
-    // Maker the dir if rulesDirPath is not exesited.
+    // Make the dir if rulesDirPath is not exesited.
     if !NSFileManager.defaultManager().fileExistsAtPath(PACRulesDirPath) {
         do {
             try NSFileManager.defaultManager().createDirectoryAtPath(PACRulesDirPath

@@ -169,6 +169,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         UpdatePACFromGFWList()
     }
     
+    @IBAction func editUserRulesForPAC(sender: NSMenuItem) {
+        let url = NSURL(fileURLWithPath: PACUserRuleFilePath)
+        NSWorkspace.sharedWorkspace().openURL(url)
+    }
+    
     @IBAction func showQRCodeForCurrentServer(sender: NSMenuItem) {
         var errMsg: String?
         let mgr = ServerProfileManager()

@@ -77,6 +77,12 @@
                         <action selector="updateGFWList:" target="Voe-Tx-rLC" id="Ztt-PS-F3T"/>
                     </connections>
                 </menuItem>
+                <menuItem title="Edit User Rules For PAC..." id="rms-p0-CvB">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <connections>
+                        <action selector="editUserRulesForPAC:" target="Voe-Tx-rLC" id="ZtK-2d-Pcl"/>
+                    </connections>
+                </menuItem>
                 <menuItem isSeparatorItem="YES" id="6sL-A4-S7N"/>
                 <menuItem title="Show QR Code For Current Server..." id="R6A-96-Zcb">
                     <modifierMask key="keyEquivalentModifierMask"/>
