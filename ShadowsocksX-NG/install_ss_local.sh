@@ -12,6 +12,7 @@ mkdir -p "$HOME/Library/Application Support/ShadowsocksX-NE/ss-local-2.4.6"
 cp -f ss-local "$HOME/Library/Application Support/ShadowsocksX-NE/ss-local-2.4.6/"
 rm -f "$HOME/Library/Application Support/ShadowsocksX-NE/ss-local"
 ln -s "$HOME/Library/Application Support/ShadowsocksX-NE/ss-local-2.4.6/ss-local" "$HOME/Library/Application Support/ShadowsocksX-NE/ss-local"
-#cp -f "com.qiuyuzhou.shadowsocksX-NE.local.plist" "$HOME/Library/LaunchAgents/"
+
+cp -f libcrypto.1.0.0.dylib "$HOME/Library/Application Support/ShadowsocksX-NE/"
 
 echo done

@@ -125,6 +125,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         
         ProxyConfHelper.install()
         applyConfig()
+        SyncSSLocal()
     }
 
     func applicationWillTerminate(aNotification: NSNotification) {

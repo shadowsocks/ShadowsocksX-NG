@@ -40,6 +40,7 @@
 		9B3FFF4C1D09D8F70019A709 /* install_helper.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9B3FFF4B1D09D8F70019A709 /* install_helper.sh */; };
 		9B3FFF4F1D09D9D50019A709 /* ProxyConfHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 9B3FFF4E1D09D9D50019A709 /* ProxyConfHelper.m */; };
 		9B3FFF541D09E2D10019A709 /* proxy_conf_helper in Resources */ = {isa = PBXBuildFile; fileRef = 9B3FFF441D09CD3B0019A709 /* proxy_conf_helper */; };
+		9BE8FBBF1D0B211600CAFD01 /* libcrypto.1.0.0.dylib in Resources */ = {isa = PBXBuildFile; fileRef = 9BE8FBBD1D0B1FB900CAFD01 /* libcrypto.1.0.0.dylib */; };
 		9BEEF0691D04D4D500FC52B3 /* install_ss_local.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9BEEF0651D04CB8500FC52B3 /* install_ss_local.sh */; };
 		9BEEF06A1D04D4D500FC52B3 /* start_ss_local.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9BEEF0661D04CE8D00FC52B3 /* start_ss_local.sh */; };
 		9BEEF06B1D04D4D500FC52B3 /* stop_ss_local.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9BEEF0671D04CE9A00FC52B3 /* stop_ss_local.sh */; };
@@ -148,6 +149,7 @@
 		9B3FFF4E1D09D9D50019A709 /* ProxyConfHelper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ProxyConfHelper.m; sourceTree = "<group>"; };
 		9B3FFF501D09DAEA0019A709 /* proxy_conf_helper_version.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = proxy_conf_helper_version.h; sourceTree = "<group>"; };
 		9B3FFF511D09DBA20019A709 /* ShadowsocksX-NG-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ShadowsocksX-NG-Bridging-Header.h"; sourceTree = "<group>"; };
+		9BE8FBBD1D0B1FB900CAFD01 /* libcrypto.1.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libcrypto.1.0.0.dylib; sourceTree = "<group>"; };
 		9BEEF0651D04CB8500FC52B3 /* install_ss_local.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = install_ss_local.sh; sourceTree = "<group>"; };
 		9BEEF0661D04CE8D00FC52B3 /* start_ss_local.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = start_ss_local.sh; sourceTree = "<group>"; };
 		9BEEF0671D04CE9A00FC52B3 /* stop_ss_local.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = stop_ss_local.sh; sourceTree = "<group>"; };
@@ -217,6 +219,7 @@
 		9B07EFB01D048E900052D9DF /* Support Files */ = {
 			isa = PBXGroup;
 			children = (
+				9BE8FBBD1D0B1FB900CAFD01 /* libcrypto.1.0.0.dylib */,
 				9B172A6C1D0ADDDD00B87B9A /* Localizable.strings */,
 				9B3FFF4B1D09D8F70019A709 /* install_helper.sh */,
 				9B3FFF351D08CF110019A709 /* jquery.min.js */,
@@ -480,6 +483,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9BE8FBBF1D0B211600CAFD01 /* libcrypto.1.0.0.dylib in Resources */,
 				9B3FFF541D09E2D10019A709 /* proxy_conf_helper in Resources */,
 				9BEEF0691D04D4D500FC52B3 /* install_ss_local.sh in Resources */,
 				9B172A6A1D0ADDDD00B87B9A /* Localizable.strings in Resources */,
@@ -878,6 +882,7 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SDKROOT)/usr/lib/system",
+					"$(PROJECT_DIR)/ShadowsocksX-NG",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.qiuyuzhou.ShadowsocksX-NG";
@@ -903,6 +908,7 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SDKROOT)/usr/lib/system",
+					"$(PROJECT_DIR)/ShadowsocksX-NG",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.qiuyuzhou.ShadowsocksX-NG";

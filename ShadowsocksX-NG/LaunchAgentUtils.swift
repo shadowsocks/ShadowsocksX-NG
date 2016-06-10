@@ -21,7 +21,8 @@ func getFileSHA1Sum(filepath: String) -> String {
     return ""
 }
 
-
+// Ref: https://developer.apple.com/library/mac/documentation/MacOSX/Conceptual/BPSystemStartup/Chapters/CreatingLaunchdJobs.html
+// Genarate the mac launch agent service plist
 func generateSSLocalLauchAgentPlist() -> Bool {
     let sslocalPath = NSHomeDirectory() + APP_SUPPORT_DIR + "ss-local"
     let logFilePath = NSHomeDirectory() + "/Library/Logs/ss-local.log"
@@ -42,13 +43,15 @@ func generateSSLocalLauchAgentPlist() -> Bool {
         }
     }
     
+    // For a complete listing of the keys, see the launchd.plist manual page.
     let dict: NSMutableDictionary = [
         "Label": "com.qiuyuzhou.shadowsocksX-NE.local",
         "WorkingDirectory": NSHomeDirectory() + APP_SUPPORT_DIR,
         "KeepAlive": true,
         "StandardOutPath": logFilePath,
         "StandardErrorPath": logFilePath,
-        "ProgramArguments": arguments
+        "ProgramArguments": arguments,
+        "EnvironmentVariables": ["DYLD_LIBRARY_PATH": NSHomeDirectory() + APP_SUPPORT_DIR]
     ]
     dict.writeToFile(plistFilepath, atomically: true)
     let Sha1Sum = getFileSHA1Sum(plistFilepath)
@@ -98,7 +101,9 @@ func StopSSLocal() {
 func InstallSSLocal() {
     let fileMgr = NSFileManager.defaultManager()
     let homeDir = NSHomeDirectory()
-    if !fileMgr.fileExistsAtPath(homeDir+APP_SUPPORT_DIR+SS_LOCAL_VERSION+"/ss-local") {
+    let appSupportDir = homeDir+APP_SUPPORT_DIR
+    if !fileMgr.fileExistsAtPath(appSupportDir + SS_LOCAL_VERSION + "/ss-local")
+    || !fileMgr.fileExistsAtPath(appSupportDir + "libcrypto.1.0.0.dylib") {
         let bundle = NSBundle.mainBundle()
         let installerPath = bundle.pathForResource("install_ss_local.sh", ofType: nil)
         let task = NSTask.launchedTaskWithLaunchPath(installerPath!, arguments: [""])
