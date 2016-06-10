@@ -59,7 +59,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         statusItem.image = image
         statusItem.menu = statusMenu
         
-        updateServersMenu()
         
         let notifyCenter = NSNotificationCenter.defaultCenter()
         notifyCenter.addObserverForName(NOTIFY_SERVER_PROFILES_CHANGED, object: nil, queue: nil
@@ -92,7 +91,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                         
                         let userNote = NSUserNotification()
                         userNote.title = "Add Shadowsocks Server Profile".localized
-                        userNote.subtitle = "By scan QR Code".localized
+                        if userInfo["source"] as! String == "qrcode" {
+                            userNote.subtitle = "By scan QR Code".localized
+                        } else if userInfo["source"] as! String == "url" {
+                            userNote.subtitle = "By Handle SS URL".localized
+                        }
                         userNote.informativeText = "Host: \(profile.serverHost)"
                         " Port: \(profile.serverPort)"
                         " Encription Method: \(profile.method)".localized
@@ -110,7 +113,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             }
         }
         
+        // Handle ss url scheme
+        NSAppleEventManager.sharedAppleEventManager().setEventHandler(self
+            , andSelector: #selector(self.handleURLEvent)
+            , forEventClass: AEEventClass(kInternetEventClass), andEventID: AEEventID(kAEGetURL))
+        
         updateMainMenu()
+        updateServersMenu()
         updateRunningModeMenu()
         updateLaunchAtLoginMenu()
         
@@ -312,6 +321,19 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             serversMenuItem.submenu?.addItem(NSMenuItem.separatorItem())
         }
         serversMenuItem.submenu?.addItem(preferencesItem)
+    }
+    
+    func handleURLEvent(event: NSAppleEventDescriptor, withReplyEvent replyEvent: NSAppleEventDescriptor) {
+        if let urlString = event.paramDescriptorForKeyword(AEKeyword(keyDirectObject))?.stringValue {
+            if let url = NSURL(string: urlString) {
+                NSNotificationCenter.defaultCenter().postNotificationName(
+                    "NOTIFY_FOUND_SS_URL", object: nil
+                    , userInfo: [
+                        "ruls": [url],
+                        "source": "url",
+                    ])
+            }
+        }
     }
     
     //------------------------------------------------------------
