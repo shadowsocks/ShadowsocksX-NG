@@ -47,7 +47,11 @@
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                         <connections>
-                            <binding destination="pR1-Bo-AWz" name="value" keyPath="values.LocalSocks5.ListenAddress" id="PDM-3w-iv1"/>
+                            <binding destination="pR1-Bo-AWz" name="value" keyPath="values.LocalSocks5.ListenAddress" id="lWm-tS-Zgn">
+                                <dictionary key="options">
+                                    <bool key="NSContinuouslyUpdatesValue" value="YES"/>
+                                </dictionary>
+                            </binding>
                         </connections>
                     </textField>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="e3S-m6-k5Y">
@@ -66,7 +70,11 @@
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                         <connections>
-                            <binding destination="pR1-Bo-AWz" name="value" keyPath="values.LocalSocks5.Timeout" id="qvc-X3-WqH"/>
+                            <binding destination="pR1-Bo-AWz" name="value" keyPath="values.LocalSocks5.Timeout" id="h0q-50-04x">
+                                <dictionary key="options">
+                                    <bool key="NSContinuouslyUpdatesValue" value="YES"/>
+                                </dictionary>
+                            </binding>
                             <outlet property="formatter" destination="YkP-l0-oah" id="BzU-cu-104"/>
                         </connections>
                     </textField>
@@ -108,7 +116,11 @@
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                         <connections>
-                            <binding destination="pR1-Bo-AWz" name="value" keyPath="values.GFWListURL" id="giz-cF-TKs"/>
+                            <binding destination="pR1-Bo-AWz" name="value" keyPath="values.GFWListURL" id="49j-JU-amO">
+                                <dictionary key="options">
+                                    <bool key="NSContinuouslyUpdatesValue" value="YES"/>
+                                </dictionary>
+                            </binding>
                         </connections>
                     </textField>
                     <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="XQ5-fw-o8t">
@@ -122,7 +134,11 @@
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                         <connections>
-                            <binding destination="pR1-Bo-AWz" name="value" keyPath="values.LocalSocks5.ListenPort" id="STA-sM-C7B"/>
+                            <binding destination="pR1-Bo-AWz" name="value" keyPath="values.LocalSocks5.ListenPort" id="7vW-S9-ejr">
+                                <dictionary key="options">
+                                    <bool key="NSContinuouslyUpdatesValue" value="YES"/>
+                                </dictionary>
+                            </binding>
                             <outlet property="formatter" destination="uE9-0u-CJW" id="QsO-5H-MYE"/>
                         </connections>
                     </textField>
