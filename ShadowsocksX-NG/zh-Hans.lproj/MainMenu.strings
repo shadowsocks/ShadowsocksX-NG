@@ -1,0 +1,42 @@
+
+/* Class = "NSMenuItem"; title = "Global Mode"; ObjectID = "3Sa-e9-VXX"; */
+"3Sa-e9-VXX.title" = "全局模式";
+
+/* Class = "NSMenu"; title = "Servers"; ObjectID = "9Y1-db-3HK"; */
+"9Y1-db-3HK.title" = "服务器";
+
+/* Class = "NSMenuItem"; title = "Open ShadowsocksX"; ObjectID = "GSu-Tf-StS"; */
+"GSu-Tf-StS.title" = "打开 ShadowsocksX";
+
+/* Class = "NSMenu"; title = "ShadowsocksX-NE"; ObjectID = "Hob-KD-bx9"; */
+"Hob-KD-bx9.title" = "ShadowsocksX-NE";
+
+/* Class = "NSMenuItem"; title = "Server Preferences..."; ObjectID = "M5r-E7-44f"; */
+"M5r-E7-44f.title" = "服务器设置...";
+
+/* Class = "NSMenuItem"; title = "Scan QR Code From Screen ..."; ObjectID = "Qe6-bF-paT"; */
+"Qe6-bF-paT.title" = "扫描屏幕上的二维码...";
+
+/* Class = "NSMenuItem"; title = "Show QR Code For Current Server..."; ObjectID = "R6A-96-Zcb"; */
+"R6A-96-Zcb.title" = "显示当前服务器的二维码...";
+
+/* Class = "NSMenuItem"; title = "Update PAC from GFW List"; ObjectID = "TFc-Ec-duM"; */
+"TFc-Ec-duM.title" = "从 GFW List 更新PAC";
+
+/* Class = "NSMenuItem"; title = "Advance Preference ..."; ObjectID = "bZ3-fy-34d"; */
+"bZ3-fy-34d.title" = "高级设置...";
+
+/* Class = "NSMenuItem"; title = "Launch At Login"; ObjectID = "eUq-p7-ICK"; */
+"eUq-p7-ICK.title" = "登录时自动启动";
+
+/* Class = "NSMenuItem"; title = "Showsocks: On"; ObjectID = "fzk-mE-CEV"; */
+"fzk-mE-CEV.title" = "Showsocks: On";
+
+/* Class = "NSMenuItem"; title = "Auto Mode By PAC"; ObjectID = "hOa-5N-3ik"; */
+"hOa-5N-3ik.title" = "PAC自动模式";
+
+/* Class = "NSMenuItem"; title = "Servers"; ObjectID = "u5M-hQ-VSc"; */
+"u5M-hQ-VSc.title" = "服务器";
+
+/* Class = "NSMenuItem"; title = "Quit"; ObjectID = "vJS-JW-byz"; */
+"vJS-JW-byz.title" = "退出";

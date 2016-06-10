@@ -126,6 +126,14 @@
                             <outlet property="formatter" destination="uE9-0u-CJW" id="QsO-5H-MYE"/>
                         </connections>
                     </textField>
+                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="eoD-7r-Q85">
+                        <rect key="frame" x="311" y="174" width="96" height="17"/>
+                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Seconds" id="Gd3-Fm-sWh">
+                            <font key="font" metaFont="system"/>
+                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
                 </subviews>
                 <constraints>
                     <constraint firstAttribute="trailing" secondItem="DiD-K0-Y43" secondAttribute="trailing" constant="20" symbolic="YES" id="0z7-Ju-oVR"/>

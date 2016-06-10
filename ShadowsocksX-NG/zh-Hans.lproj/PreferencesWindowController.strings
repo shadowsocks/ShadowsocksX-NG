@@ -1,0 +1,33 @@
+
+/* Class = "NSTextFieldCell"; title = "Text"; ObjectID = "COZ-Qr-bmU"; */
+"COZ-Qr-bmU.title" = "Text";
+
+/* Class = "NSWindow"; title = "Server Preferences"; ObjectID = "F0z-JX-Cv5"; */
+"F0z-JX-Cv5.title" = "服务器设置";
+
+/* Class = "NSBox"; title = "Box"; ObjectID = "Gqv-5O-Wwf"; */
+"Gqv-5O-Wwf.title" = "Box";
+
+/* Class = "NSTextFieldCell"; title = ":"; ObjectID = "Ibr-Gs-5Js"; */
+"Ibr-Gs-5Js.title" = ":";
+
+/* Class = "NSTextFieldCell"; title = "Remarks:"; ObjectID = "MiN-VE-FtC"; */
+"MiN-VE-FtC.title" = "备注:";
+
+/* Class = "NSButtonCell"; title = "Cacnel"; ObjectID = "j03-9E-uHW"; */
+"j03-9E-uHW.title" = "取消";
+
+/* Class = "NSTextFieldCell"; title = "Password:"; ObjectID = "kil-xC-HPD"; */
+"kil-xC-HPD.title" = "密码:";
+
+/* Class = "NSTextFieldCell"; title = "Encryption:"; ObjectID = "mOh-nD-7EX"; */
+"mOh-nD-7EX.title" = "加密方法:";
+
+/* Class = "NSButtonCell"; title = "Copy URL to Clipboard"; ObjectID = "t3T-Kd-5La"; */
+"t3T-Kd-5La.title" = "复制服务器URL到剪贴板";
+
+/* Class = "NSTextFieldCell"; title = "Address:"; ObjectID = "yHs-XE-XEB"; */
+"yHs-XE-XEB.title" = "地址:";
+
+/* Class = "NSButtonCell"; title = "OK"; ObjectID = "zPE-oD-PwK"; */
+"zPE-oD-PwK.title" = "确定";
