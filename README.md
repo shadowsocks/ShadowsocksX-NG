@@ -2,7 +2,7 @@
 
 Next Generation of ShadowsocksX in https://github.com/shadowsocks/shadowsocks-iOS
 
-## Why another version
+## Why Another Implement
 
 It's hard to maintaine the original implement. There are too many unused code in it. 
 It also embed ss-local source. It's crazy to maitaine depandences of ss-local. 
