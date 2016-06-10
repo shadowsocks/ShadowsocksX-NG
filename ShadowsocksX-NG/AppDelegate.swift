@@ -273,13 +273,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         if isOn {
             runningStatusMenuItem.title = "Shadowsocks: On".localized
             toggleRunningMenuItem.title = "Close Shadowsocks".localized
+            let image = NSImage(named: "menu_icon")
+            statusItem.image = image
         } else {
             runningStatusMenuItem.title = "Shadowsocks: Off".localized
             toggleRunningMenuItem.title = "Open Shadowsocks".localized
+            let image = NSImage(named: "menu_icon_disabled")
+            statusItem.image = image
         }
-        
-        
-        
     }
     
     func updateServersMenu() {
