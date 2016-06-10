@@ -22,6 +22,8 @@ class PreferencesWindowController: NSWindowController
     @IBOutlet weak var passwordTextField: NSTextField!
     @IBOutlet weak var remarkTextField: NSTextField!
     
+    @IBOutlet weak var otaCheckBoxBtn: NSButton!
+    
     @IBOutlet weak var copyURLBtn: NSButton!
     
     var defaults: NSUserDefaults!
@@ -146,6 +148,9 @@ class PreferencesWindowController: NSWindowController
             
             remarkTextField.bind("value", toObject: editingProfile, withKeyPath: "remark"
                 , options: [NSContinuouslyUpdatesValueBindingOption: true])
+            
+            otaCheckBoxBtn.bind("value", toObject: editingProfile, withKeyPath: "ota"
+                , options: [NSContinuouslyUpdatesValueBindingOption: true])
         } else {
             editingProfile = nil
             hostTextField.unbind("value")
@@ -155,6 +160,8 @@ class PreferencesWindowController: NSWindowController
             passwordTextField.unbind("value")
             
             remarkTextField.unbind("value")
+            
+            otaCheckBoxBtn.unbind("value")
         }
     }
     

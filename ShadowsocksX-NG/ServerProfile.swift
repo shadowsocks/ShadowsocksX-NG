@@ -38,6 +38,9 @@ class ServerProfile: NSObject {
             if let remark = data["Remark"] {
                 profile.remark = remark as! String
             }
+            if let ota = data["OTA"] {
+                profile.ota = ota as! Bool
+            }
         }
         
         if let id = data["Id"] as? String {
@@ -59,6 +62,7 @@ class ServerProfile: NSObject {
         d["Method"] = method
         d["Password"] = password
         d["Remark"] = remark
+        d["OTA"] = ota
         return d
     }
     
@@ -72,6 +76,7 @@ class ServerProfile: NSObject {
         conf["local_port"] = NSNumber(unsignedShort: UInt16(defaults.integerForKey("LocalSocks5.ListenPort")))
         conf["local_address"] = defaults.stringForKey("LocalSocks5.ListenAddress")
         conf["timeout"] = NSNumber(unsignedInt: UInt32(defaults.integerForKey("LocalSocks5.Timeout")))
+        conf["auth"] = NSNumber(bool: ota)
         
         return conf
     }
