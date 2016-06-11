@@ -303,12 +303,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         let isOn = defaults.boolForKey("ShadowsocksOn")
         if isOn {
             runningStatusMenuItem.title = "Shadowsocks: On".localized
-            toggleRunningMenuItem.title = "Close Shadowsocks".localized
+            toggleRunningMenuItem.title = "Turn Shadowsocks Off".localized
             let image = NSImage(named: "menu_icon")
             statusItem.image = image
         } else {
             runningStatusMenuItem.title = "Shadowsocks: Off".localized
-            toggleRunningMenuItem.title = "Open Shadowsocks".localized
+            toggleRunningMenuItem.title = "Turn Shadowsocks On".localized
             let image = NSImage(named: "menu_icon_disabled")
             statusItem.image = image
         }

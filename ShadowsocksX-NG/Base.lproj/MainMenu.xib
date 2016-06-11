@@ -31,7 +31,7 @@
                 <menuItem title="Showsocks: On" enabled="NO" id="fzk-mE-CEV">
                     <modifierMask key="keyEquivalentModifierMask"/>
                 </menuItem>
-                <menuItem title="Open ShadowsocksX" id="GSu-Tf-StS">
+                <menuItem title="Turn ShadowsocksX On" id="GSu-Tf-StS">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
                         <action selector="toggleRunning:" target="Voe-Tx-rLC" id="EvE-23-Wiv"/>

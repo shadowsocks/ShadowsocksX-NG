@@ -5,7 +5,7 @@
 /* Class = "NSMenu"; title = "Servers"; ObjectID = "9Y1-db-3HK"; */
 "9Y1-db-3HK.title" = "服务器";
 
-/* Class = "NSMenuItem"; title = "Open ShadowsocksX"; ObjectID = "GSu-Tf-StS"; */
+/* Class = "NSMenuItem"; title = "Turn ShadowsocksX On"; ObjectID = "GSu-Tf-StS"; */
 "GSu-Tf-StS.title" = "打开 ShadowsocksX";
 
 /* Class = "NSMenu"; title = "ShadowsocksX-NE"; ObjectID = "Hob-KD-bx9"; */

@@ -1,9 +1,3 @@
-
-
-
-
-
-
 /*
  * SHARED STRINGS
  */
@@ -30,6 +24,8 @@
 
 "By scan QR Code" = "By scan QR Code";
 
+"By Handle SS URL" = "By Handle SS URL";
+
 " Encription Method: \(profile.method)" = " Encription Method: \(profile.method)";
 
 "Current server profile is not valid." = "Current server profile is not valid.";
@@ -38,9 +34,8 @@
 
 "Shadowsocks: On" = "Shadowsocks: On";
 
-"Close Shadowsocks" = "Close Shadowsocks";
+"Turn Shadowsocks Off" = "Turn Shadowsocks Off";
 
 "Shadowsocks: Off" = "Shadowsocks: Off";
 
-"Open Shadowsocks" = "Open Shadowsocks";
-
+"Turn Shadowsocks On" = "Turn Shadowsocks On";
