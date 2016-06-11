@@ -37,12 +37,6 @@ func generateSSLocalLauchAgentPlist() -> Bool {
         arguments.append("-u")
     }
     
-    if let profile = ServerProfileManager().getActiveProfile() {
-        if profile.ota {
-            arguments.append("-A")
-        }
-    }
-    
     // For a complete listing of the keys, see the launchd.plist manual page.
     let dict: NSMutableDictionary = [
         "Label": "com.qiuyuzhou.shadowsocksX-NE.local",
