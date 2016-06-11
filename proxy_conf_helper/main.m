@@ -101,6 +101,7 @@ int main(int argc, const char * argv[])
         [proxies setObject:[NSNumber numberWithInt:0] forKey:(NSString *)kCFNetworkProxiesHTTPSEnable];
         [proxies setObject:[NSNumber numberWithInt:0] forKey:(NSString *)kCFNetworkProxiesProxyAutoConfigEnable];
         [proxies setObject:[NSNumber numberWithInt:0] forKey:(NSString *)kCFNetworkProxiesSOCKSEnable];
+        [proxies setObject:@[] forKey:(NSString *)kCFNetworkProxiesExceptionsList];
         
         // 遍历系统中的网络设备列表，设置 AirPort 和 Ethernet 的代理
         for (NSString *key in [sets allKeys]) {
@@ -123,6 +124,7 @@ int main(int argc, const char * argv[])
                      kCFNetworkProxiesSOCKSPort];
                     [proxies setObject:[NSNumber numberWithInt:1] forKey:(NSString*)
                      kCFNetworkProxiesSOCKSEnable];
+                    [proxies setObject:@[@"127.0.0.1", @"localhost"] forKey:(NSString *)kCFNetworkProxiesExceptionsList];
                     
                 }
                 
