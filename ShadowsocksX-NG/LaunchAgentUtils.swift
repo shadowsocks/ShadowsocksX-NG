@@ -115,19 +115,13 @@ func writeSSLocalConfFile(conf:[String:AnyObject]) -> Bool {
         let filepath = NSHomeDirectory() + APP_SUPPORT_DIR + "ss-local-config.json"
         let data: NSData = try NSJSONSerialization.dataWithJSONObject(conf, options: .PrettyPrinted)
         
-        // Check if it has been changed
-        let defaults = NSUserDefaults.standardUserDefaults()
-        let KEY = "SSLocalConfigFileSHA1"
-        let newSha1Value = data.sha1()
-        if let sha1Value = defaults.stringForKey(KEY) {
-            if newSha1Value == sha1Value {
-                // No changed
-                return false
-            }
-        }
-        defaults.setObject(newSha1Value, forKey: KEY)
-        
+        let oldSum = getFileSHA1Sum(filepath)
         try data.writeToFile(filepath, options: .DataWritingAtomic)
+        let newSum = getFileSHA1Sum(filepath)
+        
+        if oldSum == newSum {
+            return false
+        }
         
         return true
     } catch {
