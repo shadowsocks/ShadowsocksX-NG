@@ -23,6 +23,9 @@
 /* Class = "NSMenuItem"; title = "Update PAC from GFW List"; ObjectID = "TFc-Ec-duM"; */
 "TFc-Ec-duM.title" = "从 GFW List 更新PAC";
 
+/* Class = "NSMenuItem"; title = "Feedback"; ObjectID = "W7u-7g-Gv4"; */
+"W7u-7g-Gv4.title" = "反馈";
+
 /* Class = "NSMenuItem"; title = "Advance Preference ..."; ObjectID = "bZ3-fy-34d"; */
 "bZ3-fy-34d.title" = "高级设置...";
 
@@ -34,6 +37,9 @@
 
 /* Class = "NSMenuItem"; title = "Auto Mode By PAC"; ObjectID = "hOa-5N-3ik"; */
 "hOa-5N-3ik.title" = "PAC自动模式";
+
+/* Class = "NSMenuItem"; title = "Edit User Rules For PAC..."; ObjectID = "rms-p0-CvB"; */
+"rms-p0-CvB.title" = "编辑PAC用户自定规则...";
 
 /* Class = "NSMenuItem"; title = "Servers"; ObjectID = "u5M-hQ-VSc"; */
 "u5M-hQ-VSc.title" = "服务器";

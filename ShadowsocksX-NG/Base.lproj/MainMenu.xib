@@ -111,6 +111,13 @@
                     </connections>
                 </menuItem>
                 <menuItem isSeparatorItem="YES" id="DTJ-NF-Wxr"/>
+                <menuItem title="Feedback" id="W7u-7g-Gv4">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <connections>
+                        <action selector="feedback:" target="Voe-Tx-rLC" id="ogn-lf-bqE"/>
+                    </connections>
+                </menuItem>
+                <menuItem isSeparatorItem="YES" id="lSf-ni-kjo"/>
                 <menuItem title="Quit" keyEquivalent="q" id="vJS-JW-byz">
                     <connections>
                         <action selector="terminate:" target="-2" id="Mrp-4z-omR"/>
