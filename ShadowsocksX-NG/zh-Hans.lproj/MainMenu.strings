@@ -40,3 +40,6 @@
 
 /* Class = "NSMenuItem"; title = "Quit"; ObjectID = "vJS-JW-byz"; */
 "vJS-JW-byz.title" = "退出";
+
+/* Class = "NSMenuItem"; title = "Manual Mode"; ObjectID = "vRc-N6-z1e"; */
+"vRc-N6-z1e.title" = "手动模式";

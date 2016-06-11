@@ -25,6 +25,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     @IBOutlet weak var toggleRunningMenuItem: NSMenuItem!
     @IBOutlet weak var autoModeMenuItem: NSMenuItem!
     @IBOutlet weak var globalModeMenuItem: NSMenuItem!
+    @IBOutlet weak var manualModeMenuItem: NSMenuItem!
     
     @IBOutlet weak var serversMenuItem: NSMenuItem!
     @IBOutlet var serversPreferencesMenuItem: NSMenuItem!
@@ -140,13 +141,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         if isOn {
             StartSSLocal()
             if mode == "auto" {
-                autoModeMenuItem.state = 1
-                globalModeMenuItem.state = 0
                 ProxyConfHelper.enablePACProxy()
             } else if mode == "global" {
-                autoModeMenuItem.state = 0
-                globalModeMenuItem.state = 1
                 ProxyConfHelper.enableGlobalProxy()
+            } else if mode == "manual" {
+                ProxyConfHelper.disableProxy()
             }
         } else {
             StopSSLocal()
@@ -227,6 +226,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         applyConfig()
     }
     
+    @IBAction func selectManualMode(sender: NSMenuItem) {
+        let defaults = NSUserDefaults.standardUserDefaults()
+        defaults.setValue("manual", forKey: "ShadowsocksRunningMode")
+        updateRunningModeMenu()
+        applyConfig()
+    }
+    
     @IBAction func editServerPreferences(sender: NSMenuItem) {
         if preferencesWinCtrl != nil {
             preferencesWinCtrl.close()
@@ -276,9 +282,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         if mode == "auto" {
             autoModeMenuItem.state = 1
             globalModeMenuItem.state = 0
+            manualModeMenuItem.state = 0
         } else if mode == "global" {
             autoModeMenuItem.state = 0
             globalModeMenuItem.state = 1
+            manualModeMenuItem.state = 0
+        } else if mode == "manual" {
+            autoModeMenuItem.state = 0
+            globalModeMenuItem.state = 0
+            manualModeMenuItem.state = 1
         }
     }
     

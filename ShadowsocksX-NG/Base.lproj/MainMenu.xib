@@ -17,6 +17,7 @@
                 <outlet property="autoModeMenuItem" destination="hOa-5N-3ik" id="en3-ni-jqC"/>
                 <outlet property="globalModeMenuItem" destination="3Sa-e9-VXX" id="UKI-yu-DEK"/>
                 <outlet property="lanchAtLoginMenuItem" destination="eUq-p7-ICK" id="w4p-0c-DZn"/>
+                <outlet property="manualModeMenuItem" destination="vRc-N6-z1e" id="jp0-vj-pTX"/>
                 <outlet property="runningStatusMenuItem" destination="fzk-mE-CEV" id="Vwm-Rg-Ykn"/>
                 <outlet property="serversMenuItem" destination="u5M-hQ-VSc" id="8gp-SY-Y4U"/>
                 <outlet property="serversPreferencesMenuItem" destination="M5r-E7-44f" id="voe-SX-k6a"/>
@@ -47,6 +48,12 @@
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
                         <action selector="selectGlobalMode:" target="Voe-Tx-rLC" id="l4X-GP-hlH"/>
+                    </connections>
+                </menuItem>
+                <menuItem title="Manual Mode" id="vRc-N6-z1e">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <connections>
+                        <action selector="selectManualMode:" target="Voe-Tx-rLC" id="vNk-P9-UQj"/>
                     </connections>
                 </menuItem>
                 <menuItem isSeparatorItem="YES" id="kkf-gh-O8t"/>
