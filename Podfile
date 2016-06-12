@@ -13,11 +13,6 @@ target 'ShadowsocksX-NG' do
     # Pods for testing
   end
 
-  target 'ShadowsocksX-NGUITests' do
-    inherit! :search_paths
-    # Pods for testing
-  end
-
 end
 
 target 'proxy_conf_helper' do
