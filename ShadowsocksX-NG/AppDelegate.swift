@@ -173,6 +173,21 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         NSWorkspace.sharedWorkspace().openURL(url)
     }
     
+    @IBAction func applyUserRulesForPAC(sender: NSMenuItem) {
+        if GeneratePACFile() {
+            // Popup a user notification
+            let notification = NSUserNotification()
+            notification.title = "PAC has been updated by User Rules.".localized
+            NSUserNotificationCenter.defaultUserNotificationCenter()
+                .deliverNotification(notification)
+        } else {
+            let notification = NSUserNotification()
+            notification.title = "It's failed to update PAC by User Rules.".localized
+            NSUserNotificationCenter.defaultUserNotificationCenter()
+                .deliverNotification(notification)
+        }
+    }
+    
     @IBAction func showQRCodeForCurrentServer(sender: NSMenuItem) {
         var errMsg: String?
         let mgr = ServerProfileManager()

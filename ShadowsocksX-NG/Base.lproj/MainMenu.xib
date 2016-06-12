@@ -90,6 +90,12 @@
                         <action selector="editUserRulesForPAC:" target="Voe-Tx-rLC" id="ZtK-2d-Pcl"/>
                     </connections>
                 </menuItem>
+                <menuItem title="Apply User Rules For PAC" id="6qf-cg-HXc">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <connections>
+                        <action selector="applyUserRulesForPAC:" target="Voe-Tx-rLC" id="iAp-Ae-0zV"/>
+                    </connections>
+                </menuItem>
                 <menuItem isSeparatorItem="YES" id="6sL-A4-S7N"/>
                 <menuItem title="Show QR Code For Current Server..." id="R6A-96-Zcb">
                     <modifierMask key="keyEquivalentModifierMask"/>
