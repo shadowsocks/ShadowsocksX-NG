@@ -30,5 +30,5 @@ Then I rewrite the gui code by swift.
 
 ## License
 
-GPLv3
+The project is released under the terms of GPLv3.
 
