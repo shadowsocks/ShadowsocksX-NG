@@ -38,16 +38,6 @@
                ReferencedContainer = "container:ShadowsocksX-NG.xcodeproj">
             </BuildableReference>
          </TestableReference>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "9B0BFFFE1D0460A70040E62B"
-               BuildableName = "ShadowsocksX-NGUITests.xctest"
-               BlueprintName = "ShadowsocksX-NGUITests"
-               ReferencedContainer = "container:ShadowsocksX-NG.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
       </Testables>
       <MacroExpansion>
          <BuildableReference
