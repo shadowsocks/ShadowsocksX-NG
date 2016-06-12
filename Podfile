@@ -7,7 +7,7 @@ target 'ShadowsocksX-NG' do
 
   # Pods for ShadowsocksX-NG
   pod 'Alamofire', '~> 3.4'
-  
+  pod 'OpenSSL', '~> 1.0.0'
   target 'ShadowsocksX-NGTests' do
     inherit! :search_paths
     # Pods for testing
