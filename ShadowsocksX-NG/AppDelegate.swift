@@ -287,6 +287,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         NSWorkspace.sharedWorkspace().openURL(NSURL(string: "https://github.com/qiuyuzhou/ShadowsocksX-NG/issues")!)
     }
     
+    @IBAction func showAbout(sender: NSMenuItem) {
+        NSApp.orderFrontStandardAboutPanel(sender);
+        NSApp.activateIgnoringOtherApps(true)
+    }
+    
     func updateLaunchAtLoginMenu() {
         if launchAtLoginController.launchAtLogin {
             lanchAtLoginMenuItem.state = 1

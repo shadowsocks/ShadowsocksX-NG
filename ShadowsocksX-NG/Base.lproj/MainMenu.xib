@@ -123,6 +123,12 @@
                         <action selector="feedback:" target="Voe-Tx-rLC" id="ogn-lf-bqE"/>
                     </connections>
                 </menuItem>
+                <menuItem title="About" id="LgB-6g-Gba">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <connections>
+                        <action selector="showAbout:" target="Voe-Tx-rLC" id="ToP-D0-suY"/>
+                    </connections>
+                </menuItem>
                 <menuItem isSeparatorItem="YES" id="lSf-ni-kjo"/>
                 <menuItem title="Quit" keyEquivalent="q" id="vJS-JW-byz">
                     <connections>
