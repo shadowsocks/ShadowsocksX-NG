@@ -1,6 +1,6 @@
 # ShadowsocksX-NG
 
-Next Generation of ShadowsocksX in https://github.com/shadowsocks/shadowsocks-iOS
+Next Generation of [ShadowsocksX](https://github.com/shadowsocks/shadowsocks-iOS)
 
 ## Why Another Implement
 
@@ -21,11 +21,14 @@ Then I rewrite the gui code by swift.
 ### Building
 
 - XCode 7.3+
-- cocoapod 1.0+
+- cocoapod 1.0.1+
 
 ## TODO List
 
 - Copy a ss url to pasteboard in the server profile UI.
+- Embed the http proxy server [privoxy](http://www.privoxy.org/).
 
+## License
 
+GPLv3
 
