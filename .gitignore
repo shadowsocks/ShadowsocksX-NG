@@ -67,6 +67,7 @@ profile
 ####
 # CocoaPods
 Pods/
+!Podfile.lock
 
 ####
 # Carthage
