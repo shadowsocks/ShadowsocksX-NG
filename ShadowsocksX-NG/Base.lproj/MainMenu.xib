@@ -117,6 +117,12 @@
                     </connections>
                 </menuItem>
                 <menuItem isSeparatorItem="YES" id="DTJ-NF-Wxr"/>
+                <menuItem title="Show Logs..." id="Jfy-sf-Fhl">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <connections>
+                        <action selector="showLogs:" target="Voe-Tx-rLC" id="5FZ-Xo-DGb"/>
+                    </connections>
+                </menuItem>
                 <menuItem title="Feedback" id="W7u-7g-Gv4">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>

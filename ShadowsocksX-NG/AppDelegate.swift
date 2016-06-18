@@ -284,6 +284,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         }
     }
     
+    @IBAction func showLogs(sender: NSMenuItem) {
+        let ws = NSWorkspace.sharedWorkspace()
+        if let appUrl = ws.URLForApplicationWithBundleIdentifier("com.apple.Console") {
+            try! ws.launchApplicationAtURL(appUrl
+                ,options: .Default
+                ,configuration: [NSWorkspaceLaunchConfigurationArguments: "~/Library/Logs/ss-local.log"])
+        }
+    }
+    
     @IBAction func feedback(sender: NSMenuItem) {
         NSWorkspace.sharedWorkspace().openURL(NSURL(string: "https://github.com/qiuyuzhou/ShadowsocksX-NG/issues")!)
     }
