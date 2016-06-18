@@ -2,6 +2,9 @@
 /* Class = "NSButtonCell"; title = "启用 Udp Replay"; ObjectID = "1C3-4s-Apd"; */
 "1C3-4s-Apd.title" = "启用 Udp Replay";
 
+/* Class = "NSTextFieldCell"; title = "Don't change these preferences if you have no idea what are they."; ObjectID = "8wL-qv-5nD"; */
+"8wL-qv-5nD.title" = "如果你不明白这些选项是什么，请不要修改";
+
 /* Class = "NSWindow"; title = "高级设置"; ObjectID = "F0z-JX-Cv5"; */
 "F0z-JX-Cv5.title" = "高级设置";
 
