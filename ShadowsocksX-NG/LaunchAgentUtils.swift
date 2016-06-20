@@ -30,11 +30,16 @@ func generateSSLocalLauchAgentPlist() -> Bool {
     
     let oldSha1Sum = getFileSHA1Sum(plistFilepath)
     
-    let enableUdpRelay = NSUserDefaults.standardUserDefaults().boolForKey("LocalSocks5.EnableUDPRelay")
+    let defaults = NSUserDefaults.standardUserDefaults()
+    let enableUdpRelay = defaults.boolForKey("LocalSocks5.EnableUDPRelay")
+    let enableVerboseMode = defaults.boolForKey("LocalSocks5.EnableVerboseMode")
     
     var arguments = [sslocalPath, "-c", "ss-local-config.json"]
     if enableUdpRelay {
         arguments.append("-u")
+    }
+    if enableVerboseMode {
+        arguments.append("-v")
     }
     
     // For a complete listing of the keys, see the launchd.plist manual page.

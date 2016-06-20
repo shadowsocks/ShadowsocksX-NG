@@ -1,5 +1,9 @@
 # ShadowsocksX-NG
 
+Current version is 1.0 Beta
+
+[![Build Status](https://travis-ci.org/qiuyuzhou/ShadowsocksX-NG.svg?branch=develop)](https://travis-ci.org/qiuyuzhou/ShadowsocksX-NG)
+
 Next Generation of [ShadowsocksX](https://github.com/shadowsocks/shadowsocks-iOS)
 
 ## Why Another Implement
@@ -23,9 +27,32 @@ Then I rewrite the gui code by swift.
 - XCode 7.3+
 - cocoapod 1.0.1+
 
+## Fetures
+
+- Use ss-local from shadowsocks-libev 2.4.6
+- Update PAC by download GFW List from github.
+- Show QRCode for current server profile.
+- Scan QRCode from screen.
+- Auto launch at login.
+- User rules for PAC.
+- Support OTA
+- An advance preferences panel to configure:
+	- Local socks5 listen address.
+	- Local socks5 listen port.
+	- Local socks5 timeout.
+	- If enable UDP relay.
+	- GFW List url.
+
+## Diferences with orignal ShadowsocksX
+
+Run ss-local as backgroud service through launchd, not in app process.
+So after you quit the app, the ss-local maybe is still running. 
+
+Add a manual mode which won't configure the system proxy settings. 
+Then you could configure your apps to use socks5 proxy manual.
+
 ## TODO List
 
-- Copy a ss url to pasteboard in the server profile UI.
 - Embed the http proxy server [privoxy](http://www.privoxy.org/).
 
 ## License

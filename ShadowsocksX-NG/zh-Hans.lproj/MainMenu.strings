@@ -2,6 +2,9 @@
 /* Class = "NSMenuItem"; title = "Global Mode"; ObjectID = "3Sa-e9-VXX"; */
 "3Sa-e9-VXX.title" = "全局模式";
 
+/* Class = "NSMenuItem"; title = "Apply User Rules For PAC"; ObjectID = "6qf-cg-HXc"; */
+"6qf-cg-HXc.title" = "应用用户自定规则到 PAC";
+
 /* Class = "NSMenu"; title = "Servers"; ObjectID = "9Y1-db-3HK"; */
 "9Y1-db-3HK.title" = "服务器";
 
@@ -10,6 +13,12 @@
 
 /* Class = "NSMenu"; title = "ShadowsocksX-NE"; ObjectID = "Hob-KD-bx9"; */
 "Hob-KD-bx9.title" = "ShadowsocksX-NE";
+
+/* Class = "NSMenuItem"; title = "Show Logs..."; ObjectID = "Jfy-sf-Fhl"; */
+"Jfy-sf-Fhl.title" = "显示日志...";
+
+/* Class = "NSMenuItem"; title = "About"; ObjectID = "LgB-6g-Gba"; */
+"LgB-6g-Gba.title" = "关于";
 
 /* Class = "NSMenuItem"; title = "Server Preferences..."; ObjectID = "M5r-E7-44f"; */
 "M5r-E7-44f.title" = "服务器设置...";

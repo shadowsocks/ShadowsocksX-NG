@@ -14,6 +14,76 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
+               BlueprintIdentifier = "79C040AFDDCE1BCBF6D8B5EB0B85887F"
+               BuildableName = "Alamofire.framework"
+               BlueprintName = "Alamofire"
+               ReferencedContainer = "container:Pods/Pods.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "7AD154F318B10A340D705FD3003EAAC6"
+               BuildableName = "libBRLOptionParser.a"
+               BlueprintName = "BRLOptionParser"
+               ReferencedContainer = "container:Pods/Pods.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "5FCD6487BC23CDDDB21857856F7E93F4"
+               BuildableName = "Pods_ShadowsocksX_NG.framework"
+               BlueprintName = "Pods-ShadowsocksX-NG"
+               ReferencedContainer = "container:Pods/Pods.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "9D7253CF594B2D7CB8127F7CCAFF916F"
+               BuildableName = "Pods_ShadowsocksX_NGTests.framework"
+               BlueprintName = "Pods-ShadowsocksX-NGTests"
+               ReferencedContainer = "container:Pods/Pods.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "3F0FDAFB5467946C22EE9F2EC643E2B0"
+               BuildableName = "libPods-proxy_conf_helper.a"
+               BlueprintName = "Pods-proxy_conf_helper"
+               ReferencedContainer = "container:Pods/Pods.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
                BlueprintIdentifier = "9B0BFFE41D0460A70040E62B"
                BuildableName = "ShadowsocksX-NG.app"
                BlueprintName = "ShadowsocksX-NG"
@@ -35,16 +105,6 @@
                BlueprintIdentifier = "9B0BFFF31D0460A70040E62B"
                BuildableName = "ShadowsocksX-NGTests.xctest"
                BlueprintName = "ShadowsocksX-NGTests"
-               ReferencedContainer = "container:ShadowsocksX-NG.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "9B0BFFFE1D0460A70040E62B"
-               BuildableName = "ShadowsocksX-NGUITests.xctest"
-               BlueprintName = "ShadowsocksX-NGUITests"
                ReferencedContainer = "container:ShadowsocksX-NG.xcodeproj">
             </BuildableReference>
          </TestableReference>
