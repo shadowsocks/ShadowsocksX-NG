@@ -48,9 +48,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             "ShadowsocksOn": true,
             "ShadowsocksRunningMode": "auto",
             "LocalSocks5.ListenPort": NSNumber(unsignedShort: 1086),
-            "LocalSocks5.ListenAddress": "localhost",
+            "LocalSocks5.ListenAddress": "127.0.0.1",
             "LocalSocks5.Timeout": NSNumber(unsignedInteger: 60),
             "LocalSocks5.EnableUDPRelay": NSNumber(bool: false),
+            "LocalSocks5.EnableVerboseMode": NSNumber(bool: false),
             "GFWListURL": "https://raw.githubusercontent.com/gfwlist/gfwlist/master/gfwlist.txt"
         ])
         
@@ -280,6 +281,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             spMgr.setActiveProfiledId(newProfile.uuid)
             updateServersMenu()
             SyncSSLocal()
+        }
+    }
+    
+    @IBAction func showLogs(sender: NSMenuItem) {
+        let ws = NSWorkspace.sharedWorkspace()
+        if let appUrl = ws.URLForApplicationWithBundleIdentifier("com.apple.Console") {
+            try! ws.launchApplicationAtURL(appUrl
+                ,options: .Default
+                ,configuration: [NSWorkspaceLaunchConfigurationArguments: "~/Library/Logs/ss-local.log"])
         }
     }
     
