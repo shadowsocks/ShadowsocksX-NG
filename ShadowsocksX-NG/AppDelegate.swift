@@ -81,7 +81,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             if let userInfo = note.userInfo {
                 let urls: [NSURL] = userInfo["urls"] as! [NSURL]
                 
-                let mgr = ServerProfileManager()
+                let mgr = ServerProfileManager.instance
                 var isChanged = false
                 
                 for url in urls {
@@ -191,8 +191,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     
     @IBAction func showQRCodeForCurrentServer(sender: NSMenuItem) {
         var errMsg: String?
-        let mgr = ServerProfileManager()
-        if let profile = mgr.getActiveProfile() {
+        if let profile = ServerProfileManager.instance.getActiveProfile() {
             if profile.isValid() {
                 // Show window
                 if qrcodeWinCtrl != nil{
@@ -275,7 +274,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     
     @IBAction func selectServer(sender: NSMenuItem) {
         let index = sender.tag
-        let spMgr = ServerProfileManager()
+        let spMgr = ServerProfileManager.instance
         let newProfile = spMgr.profiles[index]
         if newProfile.uuid != spMgr.activeProfileId {
             spMgr.setActiveProfiledId(newProfile.uuid)
@@ -345,7 +344,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     }
     
     func updateServersMenu() {
-        let mgr = ServerProfileManager()
+        let mgr = ServerProfileManager.instance
         serversMenuItem.submenu?.removeAllItems()
         let preferencesItem = serversPreferencesMenuItem
         
