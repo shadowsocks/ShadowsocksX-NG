@@ -147,7 +147,7 @@ func removeSSLocalConfFile() {
 func SyncSSLocal() {
     var changed: Bool = false
     changed = changed || generateSSLocalLauchAgentPlist()
-    let mgr = ServerProfileManager()
+    let mgr = ServerProfileManager.instance
     if mgr.activeProfileId != nil {
         changed = changed || writeSSLocalConfFile((mgr.getActiveProfile()?.toJsonConfig())!)
         

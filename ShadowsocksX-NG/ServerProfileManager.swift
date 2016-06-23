@@ -10,10 +10,12 @@ import Cocoa
 
 class ServerProfileManager: NSObject {
     
+    static let instance:ServerProfileManager = ServerProfileManager()
+    
     var profiles:[ServerProfile]
     var activeProfileId: String?
     
-    override init() {
+    private override init() {
         profiles = [ServerProfile]()
         
         let defaults = NSUserDefaults.standardUserDefaults()
