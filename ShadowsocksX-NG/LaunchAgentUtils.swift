@@ -9,9 +9,9 @@
 import Foundation
 
 let SS_LOCAL_VERSION = "2.4.6"
-let APP_SUPPORT_DIR = "/Library/Application Support/ShadowsocksX-NE/"
+let APP_SUPPORT_DIR = "/Library/Application Support/ShadowsocksX-NG/"
 let LAUNCH_AGENT_DIR = "/Library/LaunchAgents/"
-let LAUNCH_AGENT_CONF_NAME = "com.qiuyuzhou.shadowsocksX-NE.local.plist"
+let LAUNCH_AGENT_CONF_NAME = "com.qiuyuzhou.shadowsocksX-NG.local.plist"
 
 
 func getFileSHA1Sum(filepath: String) -> String {
