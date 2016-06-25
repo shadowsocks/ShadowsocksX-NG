@@ -11,9 +11,6 @@
 /* Class = "NSMenuItem"; title = "Turn ShadowsocksX On"; ObjectID = "GSu-Tf-StS"; */
 "GSu-Tf-StS.title" = "打开 ShadowsocksX";
 
-/* Class = "NSMenu"; title = "ShadowsocksX-NE"; ObjectID = "Hob-KD-bx9"; */
-"Hob-KD-bx9.title" = "ShadowsocksX-NE";
-
 /* Class = "NSMenuItem"; title = "Show Logs..."; ObjectID = "Jfy-sf-Fhl"; */
 "Jfy-sf-Fhl.title" = "显示日志...";
 

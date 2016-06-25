@@ -100,7 +100,7 @@
 }
 
 + (void)enablePACProxy {
-    NSString* urlString = [NSString stringWithFormat:@"%@/.ShadowsocksX-NE/gfwlist.js", NSHomeDirectory()];
+    NSString* urlString = [NSString stringWithFormat:@"%@/.ShadowsocksX-NG/gfwlist.js", NSHomeDirectory()];
     NSURL* url = [NSURL fileURLWithPath:urlString];
     [self callHelper:@[@"--mode", @"auto", @"--pac-url", [url absoluteString]]];
 }

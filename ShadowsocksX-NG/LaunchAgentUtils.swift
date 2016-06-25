@@ -44,7 +44,7 @@ func generateSSLocalLauchAgentPlist() -> Bool {
     
     // For a complete listing of the keys, see the launchd.plist manual page.
     let dict: NSMutableDictionary = [
-        "Label": "com.qiuyuzhou.shadowsocksX-NE.local",
+        "Label": "com.qiuyuzhou.shadowsocksX-NG.local",
         "WorkingDirectory": NSHomeDirectory() + APP_SUPPORT_DIR,
         "KeepAlive": true,
         "StandardOutPath": logFilePath,
