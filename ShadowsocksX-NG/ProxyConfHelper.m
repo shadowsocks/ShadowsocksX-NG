@@ -99,19 +99,46 @@
     }
 }
 
++ (void)addArguments4ManualSpecifyNetworkServices:(NSMutableArray*) args {
+    NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+    
+    if (![defaults boolForKey:@"AutoConfigureNetworkServices"]) {
+        NSArray* serviceKeys = [defaults arrayForKey:@"Proxy4NetworkServices"];
+        if (serviceKeys) {
+            for (NSString* key in serviceKeys) {
+                [args addObject:@"--network-service"];
+                [args addObject:key];
+            }
+        }
+    }
+}
+
 + (void)enablePACProxy {
     NSString* urlString = [NSString stringWithFormat:@"%@/.ShadowsocksX-NG/gfwlist.js", NSHomeDirectory()];
     NSURL* url = [NSURL fileURLWithPath:urlString];
-    [self callHelper:@[@"--mode", @"auto", @"--pac-url", [url absoluteString]]];
+    
+    NSMutableArray* args = [@[@"--mode", @"auto", @"--pac-url", [url absoluteString]]mutableCopy];
+    
+    [self addArguments4ManualSpecifyNetworkServices:args];
+    
+    [self callHelper:args];
 }
 
 + (void)enableGlobalProxy {
     NSUInteger port = [[NSUserDefaults standardUserDefaults]integerForKey:@"LocalSocks5.ListenPort"];
-    [self callHelper:@[@"--mode", @"global", @"--port", [NSString stringWithFormat:@"%lu", (unsigned long)port] ]];
+    
+    NSMutableArray* args = [@[@"--mode", @"global", @"--port"
+                              , [NSString stringWithFormat:@"%lu", (unsigned long)port]]mutableCopy];
+    
+    [self addArguments4ManualSpecifyNetworkServices:args];
+    
+    [self callHelper:args];
 }
 
 + (void)disableProxy {
-    [self callHelper:@[@"--mode", @"off"]];
+    NSMutableArray* args = [@[@"--mode", @"off"]mutableCopy];
+    [self addArguments4ManualSpecifyNetworkServices:args];
+    [self callHelper:args];
 }
 
 @end
