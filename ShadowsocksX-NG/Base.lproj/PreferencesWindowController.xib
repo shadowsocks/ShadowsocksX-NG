@@ -339,7 +339,7 @@ DQ
             <point key="canvasLocation" x="391" y="222"/>
         </window>
         <numberFormatter formatterBehavior="default10_4" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="0" maximumIntegerDigits="42" id="QZc-kt-D7Z" userLabel="Port Number Formatter">
-            <real key="minimum" value="128"/>
+            <real key="minimum" value="1"/>
             <real key="maximum" value="65535"/>
         </numberFormatter>
     </objects>
