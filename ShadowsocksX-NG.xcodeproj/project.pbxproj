@@ -108,13 +108,13 @@
 		9B0BFFF41D0460A70040E62B /* ShadowsocksX-NGTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "ShadowsocksX-NGTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		9B0BFFF81D0460A70040E62B /* ShadowsocksX_NGTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShadowsocksX_NGTests.swift; sourceTree = "<group>"; };
 		9B0BFFFA1D0460A70040E62B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		9B0D55451D2CC1B800A4A8E2 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/MainMenu.strings"; sourceTree = "<group>"; };
 		9B172A5D1D0ACEA100B87B9A /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/AdvPreferencesWindowController.strings"; sourceTree = "<group>"; };
 		9B172A601D0ADA5B00B87B9A /* genstrings.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = genstrings.py; sourceTree = "<group>"; };
 		9B172A6B1D0ADDDD00B87B9A /* Base */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Base; path = Base.lproj/Localizable.strings; sourceTree = "<group>"; };
 		9B172A6D1D0ADDE800B87B9A /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		9B2491B51D0ACC3A003BBECC /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/PreferencesWindowController.xib; sourceTree = "<group>"; };
 		9B2491B81D0ACC3E003BBECC /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/AdvPreferencesWindowController.xib; sourceTree = "<group>"; };
-		9B2491BC1D0ACC49003BBECC /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/MainMenu.strings"; sourceTree = "<group>"; };
 		9B3FFF0C1D05FEB30019A709 /* Utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		9B3FFF131D0705810019A709 /* Notifications.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Notifications.swift; sourceTree = "<group>"; };
 		9B3FFF151D072FDE0019A709 /* LaunchAtLoginController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LaunchAtLoginController.h; sourceTree = "<group>"; };
@@ -663,7 +663,7 @@
 			isa = PBXVariantGroup;
 			children = (
 				9B0BFFED1D0460A70040E62B /* Base */,
-				9B2491BC1D0ACC49003BBECC /* zh-Hans */,
+				9B0D55451D2CC1B800A4A8E2 /* zh-Hans */,
 			);
 			name = MainMenu.xib;
 			sourceTree = "<group>";

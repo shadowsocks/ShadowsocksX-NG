@@ -1,57 +1,69 @@
 
-/* Class = "NSMenuItem"; title = "Global Mode"; ObjectID = "3Sa-e9-VXX"; */
-"3Sa-e9-VXX.title" = "全局模式";
-
-/* Class = "NSMenuItem"; title = "Apply User Rules For PAC"; ObjectID = "6qf-cg-HXc"; */
+/* Class = "NSMenuItem"; title = "应用用户自定规则到 PAC"; ObjectID = "6qf-cg-HXc"; */
 "6qf-cg-HXc.title" = "应用用户自定规则到 PAC";
 
-/* Class = "NSMenu"; title = "Servers"; ObjectID = "9Y1-db-3HK"; */
+/* Class = "NSMenuItem"; title = "手动模式"; ObjectID = "8PR-gs-c5N"; */
+"8PR-gs-c5N.title" = "手动模式";
+
+/* Class = "NSMenu"; title = "服务器"; ObjectID = "9Y1-db-3HK"; */
 "9Y1-db-3HK.title" = "服务器";
 
-/* Class = "NSMenuItem"; title = "Turn ShadowsocksX On"; ObjectID = "GSu-Tf-StS"; */
+/* Class = "NSMenuItem"; title = "打开 ShadowsocksX"; ObjectID = "GSu-Tf-StS"; */
 "GSu-Tf-StS.title" = "打开 ShadowsocksX";
 
-/* Class = "NSMenuItem"; title = "Show Logs..."; ObjectID = "Jfy-sf-Fhl"; */
+/* Class = "NSMenu"; title = "ShadowsocksX-NG"; ObjectID = "Hob-KD-bx9"; */
+"Hob-KD-bx9.title" = "ShadowsocksX-NG";
+
+/* Class = "NSMenuItem"; title = "显示日志..."; ObjectID = "Jfy-sf-Fhl"; */
 "Jfy-sf-Fhl.title" = "显示日志...";
 
-/* Class = "NSMenuItem"; title = "About"; ObjectID = "LgB-6g-Gba"; */
+/* Class = "NSMenuItem"; title = "关于"; ObjectID = "LgB-6g-Gba"; */
 "LgB-6g-Gba.title" = "关于";
 
-/* Class = "NSMenuItem"; title = "Server Preferences..."; ObjectID = "M5r-E7-44f"; */
+/* Class = "NSMenuItem"; title = "服务器设置..."; ObjectID = "M5r-E7-44f"; */
 "M5r-E7-44f.title" = "服务器设置...";
 
-/* Class = "NSMenuItem"; title = "Scan QR Code From Screen ..."; ObjectID = "Qe6-bF-paT"; */
+/* Class = "NSMenuItem"; title = "全局模式"; ObjectID = "Mw3-Jm-eXA"; */
+"Mw3-Jm-eXA.title" = "全局模式";
+
+/* Class = "NSMenuItem"; title = "扫描屏幕上的二维码..."; ObjectID = "Qe6-bF-paT"; */
 "Qe6-bF-paT.title" = "扫描屏幕上的二维码...";
 
-/* Class = "NSMenuItem"; title = "Show QR Code For Current Server..."; ObjectID = "R6A-96-Zcb"; */
+/* Class = "NSMenuItem"; title = "显示当前服务器的二维码..."; ObjectID = "R6A-96-Zcb"; */
 "R6A-96-Zcb.title" = "显示当前服务器的二维码...";
 
-/* Class = "NSMenuItem"; title = "Update PAC from GFW List"; ObjectID = "TFc-Ec-duM"; */
+/* Class = "NSMenuItem"; title = "从 GFW List 更新PAC"; ObjectID = "TFc-Ec-duM"; */
 "TFc-Ec-duM.title" = "从 GFW List 更新PAC";
 
-/* Class = "NSMenuItem"; title = "Feedback"; ObjectID = "W7u-7g-Gv4"; */
+/* Class = "NSMenuItem"; title = "反馈"; ObjectID = "W7u-7g-Gv4"; */
 "W7u-7g-Gv4.title" = "反馈";
 
-/* Class = "NSMenuItem"; title = "Advance Preference ..."; ObjectID = "bZ3-fy-34d"; */
+/* Class = "NSMenu"; title = "代理"; ObjectID = "YZp-bf-L40"; */
+"YZp-bf-L40.title" = "代理";
+
+/* Class = "NSMenuItem"; title = "高级设置..."; ObjectID = "bZ3-fy-34d"; */
 "bZ3-fy-34d.title" = "高级设置...";
 
-/* Class = "NSMenuItem"; title = "Launch At Login"; ObjectID = "eUq-p7-ICK"; */
+/* Class = "NSMenuItem"; title = "代理"; ObjectID = "diI-fB-Rss"; */
+"diI-fB-Rss.title" = "代理";
+
+/* Class = "NSMenuItem"; title = "登录时自动启动"; ObjectID = "eUq-p7-ICK"; */
 "eUq-p7-ICK.title" = "登录时自动启动";
 
 /* Class = "NSMenuItem"; title = "Showsocks: On"; ObjectID = "fzk-mE-CEV"; */
 "fzk-mE-CEV.title" = "Showsocks: On";
 
-/* Class = "NSMenuItem"; title = "Auto Mode By PAC"; ObjectID = "hOa-5N-3ik"; */
-"hOa-5N-3ik.title" = "PAC自动模式";
+/* Class = "NSMenuItem"; title = "PAC自动模式"; ObjectID = "r07-Gu-aEz"; */
+"r07-Gu-aEz.title" = "PAC自动模式";
 
-/* Class = "NSMenuItem"; title = "Edit User Rules For PAC..."; ObjectID = "rms-p0-CvB"; */
+/* Class = "NSMenuItem"; title = "编辑PAC用户自定规则..."; ObjectID = "rms-p0-CvB"; */
 "rms-p0-CvB.title" = "编辑PAC用户自定规则...";
 
-/* Class = "NSMenuItem"; title = "Servers"; ObjectID = "u5M-hQ-VSc"; */
+/* Class = "NSMenuItem"; title = "高级设置..."; ObjectID = "sbx-yz-3lO"; */
+"sbx-yz-3lO.title" = "高级设置...";
+
+/* Class = "NSMenuItem"; title = "服务器"; ObjectID = "u5M-hQ-VSc"; */
 "u5M-hQ-VSc.title" = "服务器";
 
-/* Class = "NSMenuItem"; title = "Quit"; ObjectID = "vJS-JW-byz"; */
+/* Class = "NSMenuItem"; title = "退出"; ObjectID = "vJS-JW-byz"; */
 "vJS-JW-byz.title" = "退出";
-
-/* Class = "NSMenuItem"; title = "Manual Mode"; ObjectID = "vRc-N6-z1e"; */
-"vRc-N6-z1e.title" = "手动模式";
