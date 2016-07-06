@@ -14,10 +14,10 @@
         <customObject id="Voe-Tx-rLC" customClass="AppDelegate" customModule="ShadowsocksX_NG" customModuleProvider="target">
             <connections>
                 <outlet property="RunningStatusMenuItem" destination="fzk-mE-CEV" id="R4x-gK-Qcw"/>
-                <outlet property="autoModeMenuItem" destination="hOa-5N-3ik" id="en3-ni-jqC"/>
-                <outlet property="globalModeMenuItem" destination="3Sa-e9-VXX" id="UKI-yu-DEK"/>
+                <outlet property="autoModeMenuItem" destination="r07-Gu-aEz" id="9aH-pQ-Rgi"/>
+                <outlet property="globalModeMenuItem" destination="Mw3-Jm-eXA" id="ar5-Yx-3ze"/>
                 <outlet property="lanchAtLoginMenuItem" destination="eUq-p7-ICK" id="w4p-0c-DZn"/>
-                <outlet property="manualModeMenuItem" destination="vRc-N6-z1e" id="jp0-vj-pTX"/>
+                <outlet property="manualModeMenuItem" destination="8PR-gs-c5N" id="9qz-mU-5kt"/>
                 <outlet property="runningStatusMenuItem" destination="fzk-mE-CEV" id="Vwm-Rg-Ykn"/>
                 <outlet property="serversMenuItem" destination="u5M-hQ-VSc" id="8gp-SY-Y4U"/>
                 <outlet property="serversPreferencesMenuItem" destination="M5r-E7-44f" id="voe-SX-k6a"/>
@@ -26,7 +26,7 @@
             </connections>
         </customObject>
         <customObject id="YLy-65-1bz" customClass="NSFontManager"/>
-        <menu title="ShadowsocksX-NE" id="Hob-KD-bx9">
+        <menu title="ShadowsocksX-NG" id="Hob-KD-bx9">
             <items>
                 <menuItem title="Showsocks: On" enabled="NO" id="fzk-mE-CEV">
                     <modifierMask key="keyEquivalentModifierMask"/>
@@ -38,23 +38,37 @@
                     </connections>
                 </menuItem>
                 <menuItem isSeparatorItem="YES" id="LXP-yK-yQu"/>
-                <menuItem title="Auto Mode By PAC" id="hOa-5N-3ik">
+                <menuItem title="Proxy" id="diI-fB-Rss">
                     <modifierMask key="keyEquivalentModifierMask"/>
-                    <connections>
-                        <action selector="selectPACMode:" target="Voe-Tx-rLC" id="OwN-Md-pIC"/>
-                    </connections>
-                </menuItem>
-                <menuItem title="Global Mode" id="3Sa-e9-VXX">
-                    <modifierMask key="keyEquivalentModifierMask"/>
-                    <connections>
-                        <action selector="selectGlobalMode:" target="Voe-Tx-rLC" id="l4X-GP-hlH"/>
-                    </connections>
-                </menuItem>
-                <menuItem title="Manual Mode" id="vRc-N6-z1e">
-                    <modifierMask key="keyEquivalentModifierMask"/>
-                    <connections>
-                        <action selector="selectManualMode:" target="Voe-Tx-rLC" id="vNk-P9-UQj"/>
-                    </connections>
+                    <menu key="submenu" title="Proxy" id="YZp-bf-L40">
+                        <items>
+                            <menuItem title="Auto Mode By PAC" id="r07-Gu-aEz">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="selectPACMode:" target="Voe-Tx-rLC" id="l36-cd-xl7"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Global Mode" id="Mw3-Jm-eXA">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="selectGlobalMode:" target="Voe-Tx-rLC" id="7QH-HB-B2e"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Manual Mode" id="8PR-gs-c5N">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="selectManualMode:" target="Voe-Tx-rLC" id="Xxb-28-6fi"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" id="bMX-qn-Qwi"/>
+                            <menuItem title="Advance Proxy Preference..." id="sbx-yz-3lO">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="editProxyPreferences:" target="Voe-Tx-rLC" id="Jji-Ea-Sy8"/>
+                                </connections>
+                            </menuItem>
+                        </items>
+                    </menu>
                 </menuItem>
                 <menuItem isSeparatorItem="YES" id="kkf-gh-O8t"/>
                 <menuItem title="Servers" id="u5M-hQ-VSc">

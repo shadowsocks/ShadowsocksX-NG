@@ -9,7 +9,9 @@
 import Foundation
 import Alamofire
 
-let PACRulesDirPath = NSHomeDirectory() + "/.ShadowsocksX-NE/"
+let OldErrorPACRulesDirPath = NSHomeDirectory() + "/.ShadowsocksX-NE/"
+
+let PACRulesDirPath = NSHomeDirectory() + "/.ShadowsocksX-NG/"
 let PACUserRuleFilePath = PACRulesDirPath + "user-rule.txt"
 let PACFilePath = PACRulesDirPath + "gfwlist.js"
 let GFWListFilePath = PACRulesDirPath + "gfwlist.txt"
@@ -17,11 +19,22 @@ let GFWListFilePath = PACRulesDirPath + "gfwlist.txt"
 
 // Because of LocalSocks5.ListenPort may be changed
 func SyncPac() {
+    var needGenerate = false
+    
     let nowSocks5Port = NSUserDefaults.standardUserDefaults().integerForKey("LocalSocks5.ListenPort")
     let oldSocks5Port = NSUserDefaults.standardUserDefaults().integerForKey("LocalSocks5.ListenPort.Old")
     if nowSocks5Port != oldSocks5Port {
-        GeneratePACFile()
+        needGenerate = true
         NSUserDefaults.standardUserDefaults().setInteger(nowSocks5Port, forKey: "LocalSocks5.ListenPort.Old")
+    }
+    
+    let fileMgr = NSFileManager.defaultManager()
+    if !fileMgr.fileExistsAtPath(PACRulesDirPath) {
+        needGenerate = true
+    }
+    
+    if needGenerate {
+        GeneratePACFile()
     }
 }
 
@@ -30,8 +43,12 @@ func GeneratePACFile() -> Bool {
     let fileMgr = NSFileManager.defaultManager()
     // Maker the dir if rulesDirPath is not exesited.
     if !fileMgr.fileExistsAtPath(PACRulesDirPath) {
-        try! fileMgr.createDirectoryAtPath(PACRulesDirPath
-            , withIntermediateDirectories: true, attributes: nil)
+        if fileMgr.fileExistsAtPath(OldErrorPACRulesDirPath) {
+            try! fileMgr.moveItemAtPath(OldErrorPACRulesDirPath, toPath: PACRulesDirPath)
+        } else {
+            try! fileMgr.createDirectoryAtPath(PACRulesDirPath
+                , withIntermediateDirectories: true, attributes: nil)
+        }
     }
     
     // If gfwlist.txt is not exsited, copy from bundle
@@ -40,7 +57,7 @@ func GeneratePACFile() -> Bool {
         try! fileMgr.copyItemAtPath(src!, toPath: GFWListFilePath)
     }
     
-    // If gfwlist.txt is not exsited, copy from bundle
+    // If user-rule.txt is not exsited, copy from bundle
     if !fileMgr.fileExistsAtPath(PACUserRuleFilePath) {
         let src = NSBundle.mainBundle().pathForResource("user-rule", ofType: "txt")
         try! fileMgr.copyItemAtPath(src!, toPath: PACUserRuleFilePath)

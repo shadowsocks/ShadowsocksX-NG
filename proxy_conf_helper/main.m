@@ -45,6 +45,11 @@ int main(int argc, const char * argv[])
     [options addOption:"pac-url" flag:'u' description:@"PAC file url for auto mode." argument:&pacURL];
     [options addOption:"port" flag:'p' description:@"Listen port for global mode." argument:&portString];
     
+    NSMutableSet* networkServiceKeys = [NSMutableSet set];
+    [options addOption:"network-service" flag:'n' description:@"Manual specify the network profile need to set proxy." blockWithArgument:^(NSString* value){
+        [networkServiceKeys addObject:value];
+    }];
+    
     NSError *error = nil;
     if (![options parseArgc:argc argv:argv error:&error]) {
         const char * message = error.localizedDescription.UTF8String;
@@ -108,7 +113,18 @@ int main(int argc, const char * argv[])
             NSMutableDictionary *dict = [sets objectForKey:key];
             NSString *hardware = [dict valueForKeyPath:@"Interface.Hardware"];
             //        NSLog(@"%@", hardware);
-            if ([hardware isEqualToString:@"AirPort"] || [hardware isEqualToString:@"Wi-Fi"] || [hardware isEqualToString:@"Ethernet"]) {
+            BOOL modify = NO;
+            if ([networkServiceKeys count] > 0) {
+                if ([networkServiceKeys containsObject:key]) {
+                    modify = YES;
+                }
+            } else if ([hardware isEqualToString:@"AirPort"]
+                       || [hardware isEqualToString:@"Wi-Fi"]
+                       || [hardware isEqualToString:@"Ethernet"]) {
+                modify = YES;
+            }
+            
+            if (modify) {
                 
                 if ([mode isEqualToString:@"auto"]) {
                     

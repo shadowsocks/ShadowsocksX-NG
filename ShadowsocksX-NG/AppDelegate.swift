@@ -15,6 +15,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     var qrcodeWinCtrl: SWBQRCodeWindowController!
     var preferencesWinCtrl: PreferencesWindowController!
     var advPreferencesWinCtrl: AdvPreferencesWindowController!
+    var proxyPreferencesWinCtrl: ProxyPreferencesController!
     
     var launchAtLoginController: LaunchAtLoginController = LaunchAtLoginController()
     
@@ -52,7 +53,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             "LocalSocks5.Timeout": NSNumber(unsignedInteger: 60),
             "LocalSocks5.EnableUDPRelay": NSNumber(bool: false),
             "LocalSocks5.EnableVerboseMode": NSNumber(bool: false),
-            "GFWListURL": "https://raw.githubusercontent.com/gfwlist/gfwlist/master/gfwlist.txt"
+            "GFWListURL": "https://raw.githubusercontent.com/gfwlist/gfwlist/master/gfwlist.txt",
+            "AutoConfigureNetworkServices": NSNumber(bool: true)
         ])
         
         statusItem = NSStatusBar.systemStatusBar().statusItemWithLength(20)
@@ -63,6 +65,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         
         
         let notifyCenter = NSNotificationCenter.defaultCenter()
+        notifyCenter.addObserverForName(NOTIFY_ADV_PROXY_CONF_CHANGED, object: nil, queue: nil
+            , usingBlock: {
+            (note) in
+                self.applyConfig()
+            }
+        )
         notifyCenter.addObserverForName(NOTIFY_SERVER_PROFILES_CHANGED, object: nil, queue: nil
             , usingBlock: {
             (note) in
@@ -81,7 +89,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             if let userInfo = note.userInfo {
                 let urls: [NSURL] = userInfo["urls"] as! [NSURL]
                 
-                let mgr = ServerProfileManager()
+                let mgr = ServerProfileManager.instance
                 var isChanged = false
                 
                 for url in urls {
@@ -191,8 +199,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     
     @IBAction func showQRCodeForCurrentServer(sender: NSMenuItem) {
         var errMsg: String?
-        let mgr = ServerProfileManager()
-        if let profile = mgr.getActiveProfile() {
+        if let profile = ServerProfileManager.instance.getActiveProfile() {
             if profile.isValid() {
                 // Show window
                 if qrcodeWinCtrl != nil{
@@ -273,9 +280,19 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         ctrl.window?.makeKeyAndOrderFront(self)
     }
     
+    @IBAction func editProxyPreferences(sender: NSObject) {
+        if proxyPreferencesWinCtrl != nil {
+            proxyPreferencesWinCtrl.close()
+        }
+        proxyPreferencesWinCtrl = ProxyPreferencesController(windowNibName: "ProxyPreferencesController")
+        proxyPreferencesWinCtrl.showWindow(self)
+        NSApp.activateIgnoringOtherApps(true)
+        proxyPreferencesWinCtrl.window?.makeKeyAndOrderFront(self)
+    }
+    
     @IBAction func selectServer(sender: NSMenuItem) {
         let index = sender.tag
-        let spMgr = ServerProfileManager()
+        let spMgr = ServerProfileManager.instance
         let newProfile = spMgr.profiles[index]
         if newProfile.uuid != spMgr.activeProfileId {
             spMgr.setActiveProfiledId(newProfile.uuid)
@@ -345,7 +362,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     }
     
     func updateServersMenu() {
-        let mgr = ServerProfileManager()
+        let mgr = ServerProfileManager.instance
         serversMenuItem.submenu?.removeAllItems()
         let preferencesItem = serversPreferencesMenuItem
         
