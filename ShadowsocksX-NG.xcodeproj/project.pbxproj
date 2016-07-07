@@ -18,7 +18,6 @@
 		9B0BFFEE1D0460A70040E62B /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9B0BFFEC1D0460A70040E62B /* MainMenu.xib */; };
 		9B0BFFF91D0460A70040E62B /* ShadowsocksX_NGTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B0BFFF81D0460A70040E62B /* ShadowsocksX_NGTests.swift */; };
 		9B0D55461D2CC85400A4A8E2 /* ProxyPreferencesController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9B0D55481D2CC85400A4A8E2 /* ProxyPreferencesController.xib */; };
-		9B172A6A1D0ADDDD00B87B9A /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 9B172A6C1D0ADDDD00B87B9A /* Localizable.strings */; };
 		9B2491B41D0ACC3A003BBECC /* PreferencesWindowController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9B2491B61D0ACC3A003BBECC /* PreferencesWindowController.xib */; };
 		9B2491B71D0ACC3E003BBECC /* AdvPreferencesWindowController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9B2491B91D0ACC3E003BBECC /* AdvPreferencesWindowController.xib */; };
 		9B3FFF0D1D05FEB30019A709 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B3FFF0C1D05FEB30019A709 /* Utils.swift */; };
@@ -42,6 +41,7 @@
 		9BA04B231D23D5A5005AAD7F /* ProxyConfTool.m in Sources */ = {isa = PBXBuildFile; fileRef = 9BA04B221D23D5A5005AAD7F /* ProxyConfTool.m */; };
 		9BA04B261D24044D005AAD7F /* ProxyPreferencesController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BA04B241D24044D005AAD7F /* ProxyPreferencesController.swift */; };
 		9BB706A71D1B982300551F0E /* SWBApplication.m in Sources */ = {isa = PBXBuildFile; fileRef = 9BB706A51D1B982300551F0E /* SWBApplication.m */; };
+		9BC70EDC1D2E3E3100EDA4CA /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 9B172A6C1D0ADDDD00B87B9A /* Localizable.strings */; };
 		9BE8FBBF1D0B211600CAFD01 /* libcrypto.1.0.0.dylib in Resources */ = {isa = PBXBuildFile; fileRef = 9BE8FBBD1D0B1FB900CAFD01 /* libcrypto.1.0.0.dylib */; };
 		9BEEF0691D04D4D500FC52B3 /* install_ss_local.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9BEEF0651D04CB8500FC52B3 /* install_ss_local.sh */; };
 		9BEEF06A1D04D4D500FC52B3 /* start_ss_local.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9BEEF0661D04CE8D00FC52B3 /* start_ss_local.sh */; };
@@ -447,7 +447,6 @@
 				9BE8FBBF1D0B211600CAFD01 /* libcrypto.1.0.0.dylib in Resources */,
 				9B3FFF541D09E2D10019A709 /* proxy_conf_helper in Resources */,
 				9BEEF0691D04D4D500FC52B3 /* install_ss_local.sh in Resources */,
-				9B172A6A1D0ADDDD00B87B9A /* Localizable.strings in Resources */,
 				9B0D55461D2CC85400A4A8E2 /* ProxyPreferencesController.xib in Resources */,
 				9B2491B41D0ACC3A003BBECC /* PreferencesWindowController.xib in Resources */,
 				9B3FFF291D08A1DF0019A709 /* user-rule.txt in Resources */,
@@ -463,6 +462,7 @@
 				9B2491B71D0ACC3E003BBECC /* AdvPreferencesWindowController.xib in Resources */,
 				9B3FFF381D08CF110019A709 /* jquery.min.js in Resources */,
 				9B3FFF271D0898EB0019A709 /* gfwlist.txt in Resources */,
+				9BC70EDC1D2E3E3100EDA4CA /* Localizable.strings in Resources */,
 				9B0BFFEE1D0460A70040E62B /* MainMenu.xib in Resources */,
 				9B3FFF4C1D09D8F70019A709 /* install_helper.sh in Resources */,
 				9B07EFAC1D048E880052D9DF /* menu_icon@2x.png in Resources */,

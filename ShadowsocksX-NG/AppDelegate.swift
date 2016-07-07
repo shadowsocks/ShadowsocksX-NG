@@ -24,6 +24,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     
     @IBOutlet weak var runningStatusMenuItem: NSMenuItem!
     @IBOutlet weak var toggleRunningMenuItem: NSMenuItem!
+    @IBOutlet weak var proxyMenuItem: NSMenuItem!
     @IBOutlet weak var autoModeMenuItem: NSMenuItem!
     @IBOutlet weak var globalModeMenuItem: NSMenuItem!
     @IBOutlet weak var manualModeMenuItem: NSMenuItem!
@@ -331,14 +332,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         let defaults = NSUserDefaults.standardUserDefaults()
         let mode = defaults.stringForKey("ShadowsocksRunningMode")
         if mode == "auto" {
+            proxyMenuItem.title = "Proxy - Auto By PAC".localized
             autoModeMenuItem.state = 1
             globalModeMenuItem.state = 0
             manualModeMenuItem.state = 0
         } else if mode == "global" {
+            proxyMenuItem.title = "Proxy - Global".localized
             autoModeMenuItem.state = 0
             globalModeMenuItem.state = 1
             manualModeMenuItem.state = 0
         } else if mode == "manual" {
+            proxyMenuItem.title = "Proxy - Manual".localized
             autoModeMenuItem.state = 0
             globalModeMenuItem.state = 0
             manualModeMenuItem.state = 1
