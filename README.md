@@ -1,12 +1,12 @@
 # ShadowsocksX-NG
 
-Current version is 1.1
+Current version is 1.2
 
 [![Build Status](https://travis-ci.org/qiuyuzhou/ShadowsocksX-NG.svg?branch=develop)](https://travis-ci.org/qiuyuzhou/ShadowsocksX-NG)
 
 Next Generation of [ShadowsocksX](https://github.com/shadowsocks/shadowsocks-iOS)
 
-## Why Another Implement
+## Why?
 
 It's hard to maintaine the original implement. There are too many unused code in it. 
 It also embed ss-local source. It's crazy to maitaine depandences of ss-local. 
@@ -42,8 +42,10 @@ Then I rewrite the gui code by swift.
 	- Local socks5 timeout.
 	- If enable UDP relay.
 	- GFW List url.
+- Manual spesify network service profiles which would be configure the proxy.
+- Could reorder shadowsocks profiles by drag & drop in servers preferences panel.
 
-## Diferences with orignal ShadowsocksX
+## Different from orignal ShadowsocksX
 
 Run ss-local as backgroud service through launchd, not in app process.
 So after you quit the app, the ss-local maybe is still running. 
@@ -51,9 +53,15 @@ So after you quit the app, the ss-local maybe is still running.
 Add a manual mode which won't configure the system proxy settings. 
 Then you could configure your apps to use socks5 proxy manual.
 
+## Contributing
+
+Contributions must be available on a separately named branch based on the latest version of the main branch develop.
+
+ref: [GitFlow](http://nvie.com/posts/a-successful-git-branching-model/)
+
 ## TODO List
 
-- Embed the http proxy server [privoxy](http://www.privoxy.org/).
+- [ ] Embed the http proxy server [privoxy](http://www.privoxy.org/).
 
 ## License
 
