@@ -30,6 +30,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     @IBOutlet weak var manualModeMenuItem: NSMenuItem!
     
     @IBOutlet weak var serversMenuItem: NSMenuItem!
+    @IBOutlet var showQRCodeMenuItem: NSMenuItem!
+    @IBOutlet var scanQRCodeMenuItem: NSMenuItem!
     @IBOutlet var serversPreferencesMenuItem: NSMenuItem!
     
     @IBOutlet weak var lanchAtLoginMenuItem: NSMenuItem!
@@ -368,6 +370,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     func updateServersMenu() {
         let mgr = ServerProfileManager.instance
         serversMenuItem.submenu?.removeAllItems()
+        let showQRItem = showQRCodeMenuItem
+        let scanQRItem = scanQRCodeMenuItem
         let preferencesItem = serversPreferencesMenuItem
         
         var i = 0
@@ -393,6 +397,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         if !mgr.profiles.isEmpty {
             serversMenuItem.submenu?.addItem(NSMenuItem.separatorItem())
         }
+        serversMenuItem.submenu?.addItem(showQRItem)
+        serversMenuItem.submenu?.addItem(scanQRItem)
+        serversMenuItem.submenu?.addItem(NSMenuItem.separatorItem())
         serversMenuItem.submenu?.addItem(preferencesItem)
     }
     
