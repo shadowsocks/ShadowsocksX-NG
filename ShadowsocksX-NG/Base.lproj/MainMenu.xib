@@ -60,6 +60,25 @@
                                     <action selector="selectManualMode:" target="Voe-Tx-rLC" id="Xxb-28-6fi"/>
                                 </connections>
                             </menuItem>
+                            <menuItem isSeparatorItem="YES" id="V92-VH-Agn"/>
+                            <menuItem title="Update PAC from GFW List" id="TFc-Ec-duM">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="updateGFWList:" target="Voe-Tx-rLC" id="Ztt-PS-F3T"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Edit User Rules For PAC..." id="rms-p0-CvB">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="editUserRulesForPAC:" target="Voe-Tx-rLC" id="ZtK-2d-Pcl"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Apply User Rules For PAC" id="6qf-cg-HXc">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="applyUserRulesForPAC:" target="Voe-Tx-rLC" id="iAp-Ae-0zV"/>
+                                </connections>
+                            </menuItem>
                             <menuItem isSeparatorItem="YES" id="bMX-qn-Qwi"/>
                             <menuItem title="Advance Proxy Preference..." id="sbx-yz-3lO">
                                 <modifierMask key="keyEquivalentModifierMask"/>
@@ -70,7 +89,6 @@
                         </items>
                     </menu>
                 </menuItem>
-                <menuItem isSeparatorItem="YES" id="kkf-gh-O8t"/>
                 <menuItem title="Servers" id="u5M-hQ-VSc">
                     <modifierMask key="keyEquivalentModifierMask" shift="YES"/>
                     <menu key="submenu" title="Servers" id="9Y1-db-3HK">
@@ -81,49 +99,28 @@
                                     <action selector="editServerPreferences:" target="Voe-Tx-rLC" id="6Lv-6i-Neb"/>
                                 </connections>
                             </menuItem>
+                            <menuItem isSeparatorItem="YES" id="6sL-A4-S7N"/>
+                            <menuItem title="Show QR Code For Current Server..." id="R6A-96-Zcb">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="showQRCodeForCurrentServer:" target="Voe-Tx-rLC" id="t45-Zk-cai"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Scan QR Code From Screen ..." id="Qe6-bF-paT">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="scanQRCodeFromScreen:" target="Voe-Tx-rLC" id="zQZ-IT-H4a"/>
+                                </connections>
+                            </menuItem>
                         </items>
                     </menu>
                 </menuItem>
-                <menuItem isSeparatorItem="YES" id="eLu-uz-b4H"/>
                 <menuItem title="Advance Preference ..." id="bZ3-fy-34d">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
                         <action selector="editAdvPreferences:" target="Voe-Tx-rLC" id="mEF-XS-HJE"/>
                     </connections>
                 </menuItem>
-                <menuItem isSeparatorItem="YES" id="V92-VH-Agn"/>
-                <menuItem title="Update PAC from GFW List" id="TFc-Ec-duM">
-                    <modifierMask key="keyEquivalentModifierMask"/>
-                    <connections>
-                        <action selector="updateGFWList:" target="Voe-Tx-rLC" id="Ztt-PS-F3T"/>
-                    </connections>
-                </menuItem>
-                <menuItem title="Edit User Rules For PAC..." id="rms-p0-CvB">
-                    <modifierMask key="keyEquivalentModifierMask"/>
-                    <connections>
-                        <action selector="editUserRulesForPAC:" target="Voe-Tx-rLC" id="ZtK-2d-Pcl"/>
-                    </connections>
-                </menuItem>
-                <menuItem title="Apply User Rules For PAC" id="6qf-cg-HXc">
-                    <modifierMask key="keyEquivalentModifierMask"/>
-                    <connections>
-                        <action selector="applyUserRulesForPAC:" target="Voe-Tx-rLC" id="iAp-Ae-0zV"/>
-                    </connections>
-                </menuItem>
-                <menuItem isSeparatorItem="YES" id="6sL-A4-S7N"/>
-                <menuItem title="Show QR Code For Current Server..." id="R6A-96-Zcb">
-                    <modifierMask key="keyEquivalentModifierMask"/>
-                    <connections>
-                        <action selector="showQRCodeForCurrentServer:" target="Voe-Tx-rLC" id="t45-Zk-cai"/>
-                    </connections>
-                </menuItem>
-                <menuItem title="Scan QR Code From Screen ..." id="Qe6-bF-paT">
-                    <modifierMask key="keyEquivalentModifierMask"/>
-                    <connections>
-                        <action selector="scanQRCodeFromScreen:" target="Voe-Tx-rLC" id="zQZ-IT-H4a"/>
-                    </connections>
-                </menuItem>
-                <menuItem isSeparatorItem="YES" id="wcA-9q-cxa"/>
                 <menuItem title="Launch At Login" id="eUq-p7-ICK">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
