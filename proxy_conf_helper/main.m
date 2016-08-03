@@ -67,10 +67,6 @@ int main(int argc, const char * argv[])
             if (!portString) {
                 return 1;
             }
-            port = [portString integerValue];
-            if (0 == port) {
-                return 1;
-            }
         } else if (![@"off" isEqualToString:mode]) {
             return 1;
         }
@@ -79,6 +75,12 @@ int main(int argc, const char * argv[])
         return 0;
     }
     
+    if (portString) {
+        port = [portString integerValue];
+        if (0 == port) {
+            return 1;
+        }
+    }
     
     static AuthorizationRef authRef;
     static AuthorizationFlags authFlags;
@@ -126,11 +128,16 @@ int main(int argc, const char * argv[])
             
             if (modify) {
                 
+                NSString* prefPath = [NSString stringWithFormat:@"/%@/%@/%@", kSCPrefNetworkServices
+                                      , key, kSCEntNetProxies];
+                
                 if ([mode isEqualToString:@"auto"]) {
                     
                     [proxies setObject:pacURL forKey:(NSString *)kCFNetworkProxiesProxyAutoConfigURLString];
                     [proxies setObject:[NSNumber numberWithInt:1] forKey:(NSString *)kCFNetworkProxiesProxyAutoConfigEnable];
                     
+                    SCPreferencesPathSetValue(prefRef, (__bridge CFStringRef)prefPath
+                                              , (__bridge CFDictionaryRef)proxies);
                 } else if ([mode isEqualToString:@"global"]) {
                     
                     
@@ -142,9 +149,29 @@ int main(int argc, const char * argv[])
                      kCFNetworkProxiesSOCKSEnable];
                     [proxies setObject:@[@"127.0.0.1", @"localhost"] forKey:(NSString *)kCFNetworkProxiesExceptionsList];
                     
+                    SCPreferencesPathSetValue(prefRef, (__bridge CFStringRef)prefPath
+                                              , (__bridge CFDictionaryRef)proxies);
+                } else if ([mode isEqualToString:@"off"]) {
+                    if (pacURL != nil && portString != nil) {
+                        // 取原来的配置，判断是否为shadowsocksX-NG设置的
+                        NSDictionary* oldProxies
+                            = (__bridge NSDictionary*)SCPreferencesPathGetValue(prefRef
+                                                                                , (__bridge CFStringRef)prefPath);
+                        
+                        if (([oldProxies[(NSString *)kCFNetworkProxiesProxyAutoConfigURLString] isEqualToString:pacURL]
+                             &&[oldProxies[(NSString *)kCFNetworkProxiesProxyAutoConfigEnable] isEqual:[NSNumber numberWithInt:1]])
+                            ||([oldProxies[(NSString*)kCFNetworkProxiesSOCKSProxy] isEqualToString:@"127.0.0.1"]
+                               &&[oldProxies[(NSString*)kCFNetworkProxiesSOCKSPort] isEqualTo:[NSNumber numberWithInteger:port]]
+                               &&[oldProxies[(NSString*)kCFNetworkProxiesSOCKSEnable] isEqual:[NSNumber numberWithInt:1]])
+                            ) {
+                            SCPreferencesPathSetValue(prefRef, (__bridge CFStringRef)prefPath
+                                                      , (__bridge CFDictionaryRef)proxies);
+                        }
+                    } else {
+                        SCPreferencesPathSetValue(prefRef, (__bridge CFStringRef)prefPath
+                                                  , (__bridge CFDictionaryRef)proxies);
+                    }
                 }
-                
-                SCPreferencesPathSetValue(prefRef, (__bridge CFStringRef)[NSString stringWithFormat:@"/%@/%@/%@", kSCPrefNetworkServices, key, kSCEntNetProxies], (__bridge CFDictionaryRef)proxies);
             }
         }
         
