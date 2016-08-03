@@ -16,7 +16,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     var preferencesWinCtrl: PreferencesWindowController!
     var advPreferencesWinCtrl: AdvPreferencesWindowController!
     var proxyPreferencesWinCtrl: ProxyPreferencesController!
-    
+    var editUserRulesWinCtrl: UserRulesController!
+
     var launchAtLoginController: LaunchAtLoginController = LaunchAtLoginController()
     
     @IBOutlet weak var window: NSWindow!
@@ -181,23 +182,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     }
     
     @IBAction func editUserRulesForPAC(sender: NSMenuItem) {
-        let url = NSURL(fileURLWithPath: PACUserRuleFilePath)
-        NSWorkspace.sharedWorkspace().openURL(url)
-    }
-    
-    @IBAction func applyUserRulesForPAC(sender: NSMenuItem) {
-        if GeneratePACFile() {
-            // Popup a user notification
-            let notification = NSUserNotification()
-            notification.title = "PAC has been updated by User Rules.".localized
-            NSUserNotificationCenter.defaultUserNotificationCenter()
-                .deliverNotification(notification)
-        } else {
-            let notification = NSUserNotification()
-            notification.title = "It's failed to update PAC by User Rules.".localized
-            NSUserNotificationCenter.defaultUserNotificationCenter()
-                .deliverNotification(notification)
+        if editUserRulesWinCtrl != nil {
+            editUserRulesWinCtrl.close()
         }
+        let ctrl = UserRulesController(windowNibName: "UserRulesController")
+        editUserRulesWinCtrl = ctrl
+
+        ctrl.showWindow(self)
+        NSApp.activateIgnoringOtherApps(true)
+        ctrl.window?.makeKeyAndOrderFront(self)
     }
     
     @IBAction func showQRCodeForCurrentServer(sender: NSMenuItem) {
