@@ -26,7 +26,14 @@ func getFileSHA1Sum(filepath: String) -> String {
 func generateSSLocalLauchAgentPlist() -> Bool {
     let sslocalPath = NSHomeDirectory() + APP_SUPPORT_DIR + "ss-local"
     let logFilePath = NSHomeDirectory() + "/Library/Logs/ss-local.log"
-    let plistFilepath = NSHomeDirectory() + LAUNCH_AGENT_DIR + LAUNCH_AGENT_CONF_NAME
+    let launchAgentDirPath = NSHomeDirectory() + LAUNCH_AGENT_DIR
+    let plistFilepath = launchAgentDirPath + LAUNCH_AGENT_CONF_NAME
+    
+    // Ensure launch agent directory is existed.
+    let fileMgr = NSFileManager.defaultManager()
+    if !fileMgr.fileExistsAtPath(launchAgentDirPath) {
+        try! fileMgr.createDirectoryAtPath(launchAgentDirPath, withIntermediateDirectories: true, attributes: nil)
+    }
     
     let oldSha1Sum = getFileSHA1Sum(plistFilepath)
     
