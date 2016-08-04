@@ -16,7 +16,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     var preferencesWinCtrl: PreferencesWindowController!
     var advPreferencesWinCtrl: AdvPreferencesWindowController!
     var proxyPreferencesWinCtrl: ProxyPreferencesController!
-    
+    var editUserRulesWinCtrl: UserRulesController!
+
     var launchAtLoginController: LaunchAtLoginController = LaunchAtLoginController()
     
     @IBOutlet weak var window: NSWindow!
@@ -24,11 +25,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     
     @IBOutlet weak var runningStatusMenuItem: NSMenuItem!
     @IBOutlet weak var toggleRunningMenuItem: NSMenuItem!
+    @IBOutlet weak var proxyMenuItem: NSMenuItem!
     @IBOutlet weak var autoModeMenuItem: NSMenuItem!
     @IBOutlet weak var globalModeMenuItem: NSMenuItem!
     @IBOutlet weak var manualModeMenuItem: NSMenuItem!
     
     @IBOutlet weak var serversMenuItem: NSMenuItem!
+    @IBOutlet var showQRCodeMenuItem: NSMenuItem!
+    @IBOutlet var scanQRCodeMenuItem: NSMenuItem!
     @IBOutlet var serversPreferencesMenuItem: NSMenuItem!
     
     @IBOutlet weak var lanchAtLoginMenuItem: NSMenuItem!
@@ -178,23 +182,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     }
     
     @IBAction func editUserRulesForPAC(sender: NSMenuItem) {
-        let url = NSURL(fileURLWithPath: PACUserRuleFilePath)
-        NSWorkspace.sharedWorkspace().openURL(url)
-    }
-    
-    @IBAction func applyUserRulesForPAC(sender: NSMenuItem) {
-        if GeneratePACFile() {
-            // Popup a user notification
-            let notification = NSUserNotification()
-            notification.title = "PAC has been updated by User Rules.".localized
-            NSUserNotificationCenter.defaultUserNotificationCenter()
-                .deliverNotification(notification)
-        } else {
-            let notification = NSUserNotification()
-            notification.title = "It's failed to update PAC by User Rules.".localized
-            NSUserNotificationCenter.defaultUserNotificationCenter()
-                .deliverNotification(notification)
+        if editUserRulesWinCtrl != nil {
+            editUserRulesWinCtrl.close()
         }
+        let ctrl = UserRulesController(windowNibName: "UserRulesController")
+        editUserRulesWinCtrl = ctrl
+
+        ctrl.showWindow(self)
+        NSApp.activateIgnoringOtherApps(true)
+        ctrl.window?.makeKeyAndOrderFront(self)
     }
     
     @IBAction func showQRCodeForCurrentServer(sender: NSMenuItem) {
@@ -331,14 +327,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         let defaults = NSUserDefaults.standardUserDefaults()
         let mode = defaults.stringForKey("ShadowsocksRunningMode")
         if mode == "auto" {
+            proxyMenuItem.title = "Proxy - Auto By PAC".localized
             autoModeMenuItem.state = 1
             globalModeMenuItem.state = 0
             manualModeMenuItem.state = 0
         } else if mode == "global" {
+            proxyMenuItem.title = "Proxy - Global".localized
             autoModeMenuItem.state = 0
             globalModeMenuItem.state = 1
             manualModeMenuItem.state = 0
         } else if mode == "manual" {
+            proxyMenuItem.title = "Proxy - Manual".localized
             autoModeMenuItem.state = 0
             globalModeMenuItem.state = 0
             manualModeMenuItem.state = 1
@@ -364,6 +363,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     func updateServersMenu() {
         let mgr = ServerProfileManager.instance
         serversMenuItem.submenu?.removeAllItems()
+        let showQRItem = showQRCodeMenuItem
+        let scanQRItem = scanQRCodeMenuItem
         let preferencesItem = serversPreferencesMenuItem
         
         var i = 0
@@ -389,6 +390,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         if !mgr.profiles.isEmpty {
             serversMenuItem.submenu?.addItem(NSMenuItem.separatorItem())
         }
+        serversMenuItem.submenu?.addItem(showQRItem)
+        serversMenuItem.submenu?.addItem(scanQRItem)
+        serversMenuItem.submenu?.addItem(NSMenuItem.separatorItem())
         serversMenuItem.submenu?.addItem(preferencesItem)
     }
     

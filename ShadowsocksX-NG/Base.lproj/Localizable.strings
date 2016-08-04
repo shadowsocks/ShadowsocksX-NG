@@ -39,3 +39,9 @@
 "Shadowsocks: Off" = "Shadowsocks: Off";
 
 "Turn Shadowsocks On" = "Turn Shadowsocks On";
+
+"Proxy - Auto By PAC" = "Proxy - Auto By PAC";
+
+"Proxy - Global" = "Proxy - Global";
+
+"Proxy - Manual" = "Proxy - Manual";

@@ -26,6 +26,8 @@ class PreferencesWindowController: NSWindowController
     
     @IBOutlet weak var copyURLBtn: NSButton!
     
+    let tableViewDragType: String = "ss.server.profile.data"
+    
     var defaults: NSUserDefaults!
     var profileMgr: ServerProfileManager!
     
@@ -54,6 +56,10 @@ class PreferencesWindowController: NSWindowController
         
         profilesTableView.reloadData()
         updateProfileBoxVisible()
+    }
+    
+    override func awakeFromNib() {
+        profilesTableView.registerForDraggedTypes([tableViewDragType])
     }
     
     @IBAction func addProfile(sender: NSButton) {
@@ -201,6 +207,58 @@ class PreferencesWindowController: NSWindowController
             }
         }
         return ""
+    }
+    
+    // Drag & Drop reorder rows
+    
+    func tableView(tableView: NSTableView, pasteboardWriterForRow row: Int) -> NSPasteboardWriting? {
+        let item = NSPasteboardItem()
+        item.setString(String(row), forType: tableViewDragType)
+        return item
+    }
+    
+    func tableView(tableView: NSTableView, validateDrop info: NSDraggingInfo, proposedRow row: Int
+        , proposedDropOperation dropOperation: NSTableViewDropOperation) -> NSDragOperation {
+        if dropOperation == .Above {
+            return .Move
+        }
+        return .None
+    }
+    
+    func tableView(tableView: NSTableView, acceptDrop info: NSDraggingInfo
+        , row: Int, dropOperation: NSTableViewDropOperation) -> Bool {
+        if let mgr = profileMgr {
+            var oldIndexes = [Int]()
+            info.enumerateDraggingItemsWithOptions([], forView: tableView, classes: [NSPasteboardItem.self], searchOptions: [:]) {
+                if let str = ($0.0.item as! NSPasteboardItem).stringForType(self.tableViewDragType), index = Int(str) {
+                    oldIndexes.append(index)
+                }
+            }
+            
+            var oldIndexOffset = 0
+            var newIndexOffset = 0
+            
+            // For simplicity, the code below uses `tableView.moveRowAtIndex` to move rows around directly.
+            // You may want to move rows in your content array and then call `tableView.reloadData()` instead.
+            tableView.beginUpdates()
+            for oldIndex in oldIndexes {
+                if oldIndex < row {
+                    let o = mgr.profiles.removeAtIndex(oldIndex + oldIndexOffset)
+                    mgr.profiles.insert(o, atIndex:row - 1)
+                    tableView.moveRowAtIndex(oldIndex + oldIndexOffset, toIndex: row - 1)
+                    oldIndexOffset -= 1
+                } else {
+                    let o = mgr.profiles.removeAtIndex(oldIndex)
+                    mgr.profiles.insert(o, atIndex:row + newIndexOffset)
+                    tableView.moveRowAtIndex(oldIndex, toIndex: row + newIndexOffset)
+                    newIndexOffset += 1
+                }
+            }
+            tableView.endUpdates()
+        
+            return true
+        }
+        return false
     }
     
     //--------------------------------------------------
