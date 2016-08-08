@@ -76,12 +76,6 @@
                                     <action selector="editUserRulesForPAC:" target="Voe-Tx-rLC" id="ZtK-2d-Pcl"/>
                                 </connections>
                             </menuItem>
-                            <menuItem title="Apply User Rules For PAC" id="6qf-cg-HXc">
-                                <modifierMask key="keyEquivalentModifierMask"/>
-                                <connections>
-                                    <action selector="applyUserRulesForPAC:" target="Voe-Tx-rLC" id="iAp-Ae-0zV"/>
-                                </connections>
-                            </menuItem>
                             <menuItem isSeparatorItem="YES" id="bMX-qn-Qwi"/>
                             <menuItem title="Advance Proxy Preference..." id="sbx-yz-3lO">
                                 <modifierMask key="keyEquivalentModifierMask"/>
