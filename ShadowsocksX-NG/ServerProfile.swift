@@ -19,9 +19,9 @@ class ServerProfile: NSObject {
     var password:String = ""
     var remark:String = ""
     var ota: Bool = false // onetime authentication
-    var ssrProtocol:String = ""
+    var ssrProtocol:String = "origin"
     var ssrProtocolParam:String = ""
-    var ssrObfs:String = ""
+    var ssrObfs:String = "plain"
     var ssrObfsParam:String = ""
     
     override init() {

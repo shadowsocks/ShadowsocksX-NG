@@ -173,6 +173,14 @@ class PreferencesWindowController: NSWindowController
             remarkTextField.bind("value", toObject: editingProfile, withKeyPath: "remark"
                 , options: [NSContinuouslyUpdatesValueBindingOption: true])
             
+            ProtocolTextField.bind("value", toObject: editingProfile, withKeyPath: "ssrProtocol", options: [NSContinuouslyUpdatesValueBindingOption: true])
+            
+            ProtocolParamTextField.bind("value", toObject: editingProfile, withKeyPath: "ssrProtocolParam", options: [NSContinuouslyUpdatesValueBindingOption: true])
+            
+            ObfsTextField.bind("value", toObject: editingProfile, withKeyPath: "ssrObfs", options: [NSContinuouslyUpdatesValueBindingOption: true])
+            
+            ObfsParamTextField.bind("value", toObject: editingProfile, withKeyPath: "ssrObfsParam", options: [NSContinuouslyUpdatesValueBindingOption: true])
+            
             otaCheckBoxBtn.bind("value", toObject: editingProfile, withKeyPath: "ota"
                 , options: [NSContinuouslyUpdatesValueBindingOption: true])
         } else {
@@ -182,6 +190,11 @@ class PreferencesWindowController: NSWindowController
             
             methodTextField.unbind("value")
             passwordTextField.unbind("value")
+            
+            ProtocolTextField.unbind("value")
+            ProtocolParamTextField.unbind("value")
+            ObfsTextField.unbind("value")
+            ObfsParamTextField.unbind("value")
             
             remarkTextField.unbind("value")
             

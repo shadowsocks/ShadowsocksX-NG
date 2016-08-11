@@ -57,6 +57,8 @@ void ScanQRCodeOnScreen() {
             if ( [feature.messageString hasPrefix:@"ss://"] )
             {
                 [foundSSUrls addObject:[NSURL URLWithString:feature.messageString]];
+            }else if ( [feature.messageString hasPrefix:@"ssr://"] ){
+                [foundSSUrls addObject:[NSURL URLWithString:feature.messageString]];
             }
         }
     }
@@ -135,7 +137,7 @@ NSDictionary<NSString *, id>* ParseSSURL(NSURL* url) {
         }
 
     }else if ([[NSString stringWithContentsOfURL:url encoding:NSUTF8StringEncoding error:NULL ] hasPrefix:@"ssr://"]){
-        
+        NSLog(@"Have One ssr QR coming");
     }
        return nil;
 }
