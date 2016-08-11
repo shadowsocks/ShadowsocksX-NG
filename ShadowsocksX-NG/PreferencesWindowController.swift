@@ -19,6 +19,11 @@ class PreferencesWindowController: NSWindowController
     @IBOutlet weak var portTextField: NSTextField!
     @IBOutlet weak var methodTextField: NSComboBox!
     
+    @IBOutlet weak var ProtocolTextField: NSComboBox!
+    @IBOutlet weak var ProtocolParamTextField: NSTextField!
+    @IBOutlet weak var ObfsTextField: NSComboBox!
+    @IBOutlet weak var ObfsParamTextField: NSTextField!
+    
     @IBOutlet weak var passwordTextField: NSTextField!
     @IBOutlet weak var remarkTextField: NSTextField!
     
@@ -53,7 +58,20 @@ class PreferencesWindowController: NSWindowController
             "rc4",
             "table",
             ])
-        
+        ProtocolTextField.addItemsWithObjectValues([
+            "origin",
+            "verify_simple",
+            "verify_sha1",
+            "auth_simple",
+            "auth_sha1",
+            "auth_sha1_v2",
+            ])
+        ObfsTextField.addItemsWithObjectValues([
+            "palin",
+            "http_simple",
+            "tls1.0_session_auth",
+            "tls1.2_ticket_auth",
+            ])
         profilesTableView.reloadData()
         updateProfileBoxVisible()
     }
