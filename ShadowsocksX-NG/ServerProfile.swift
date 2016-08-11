@@ -98,10 +98,10 @@ class ServerProfile: NSObject {
         conf["timeout"] = NSNumber(unsignedInt: UInt32(defaults.integerForKey("LocalSocks5.Timeout")))
         conf["auth"] = NSNumber(bool: ota)
         if(!ssrObfs.isEmpty){
-            conf["ssrProtocol"] = ssrProtocol
-            conf["ssrProtocolParam"] = ssrProtocolParam
-            conf["ssrObfs"] = ssrObfs
-            conf["ssrObfsParam"] = ssrObfsParam
+            conf["protocol"] = ssrProtocol
+            conf["protocol_param"] = ssrProtocolParam
+            conf["obfs"] = ssrObfs
+            conf["obfs_param"] = ssrObfsParam
         }
         
         return conf
