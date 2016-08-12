@@ -39,23 +39,19 @@ class ServerProfile: NSObject {
             profile.serverPort = (data["ServerPort"] as! NSNumber).unsignedShortValue
             profile.method = data["Method"] as! String
             profile.password = data["Password"] as! String
+            profile.ssrObfs = data["ssrObfs"] as! String
+            profile.ssrObfsParam = data["ssrObfsParam"] as! String
+            profile.ssrProtocol = data["ssrProtocol"] as! String
+            profile.ssrProtocolParam = data["ssrProtocolParam"] as! String
+            
             if let remark = data["Remark"] {
                 profile.remark = remark as! String
             }
             if let ota = data["OTA"] {
                 profile.ota = ota as! Bool
             }
-            if let ssrProtocol = data["ssrProtocol"]{
-                profile.ssrProtocol = ssrProtocol as! String
-            }
             if let ssrProtocolParam = data["ssrProtocolParam"]{
                 profile.ssrProtocolParam = ssrProtocolParam as! String
-            }
-            if let ssrObfs = data["ssrObfs"]{
-                profile.ssrObfs = ssrObfs as! String
-            }
-            if let ssrObfsParam = data["ssrObfsParam"]{
-                profile.ssrObfsParam = ssrObfsParam as! String
             }
         }
         
@@ -151,7 +147,7 @@ class ServerProfile: NSObject {
     }
     
     func URL() -> NSURL? {
-        if(ssrObfs==""){
+        if(ssrObfs=="plain"){
             let parts = "\(method):\(password)@\(serverHost):\(serverPort)"
             let base64String = parts.dataUsingEncoding(NSUTF8StringEncoding)?
                 .base64EncodedStringWithOptions(NSDataBase64EncodingOptions())
