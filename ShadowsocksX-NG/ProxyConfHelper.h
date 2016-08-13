@@ -18,6 +18,8 @@
 
 + (void)disableProxy;
 
-+ (void)enableWhiteListProxy;
++ (void)enableWhiteDomainListProxy;
+
++ (void)enableWhiteIPListProxy;
 
 @end
