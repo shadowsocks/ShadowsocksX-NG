@@ -45,3 +45,15 @@
 "Proxy - Global" = "Proxy - Global";
 
 "Proxy - Manual" = "Proxy - Manual";
+
+"Proxy - WhiteList" = "Proxy - WhiteList";
+
+"Proxy - WhiteList Domain" = "Proxy - WhiteList Domain";
+
+"Proxy - WhiteList IP" = "Proxy - WhiteList IP";
+
+"White List Mode" = "White List Mode";
+
+"White List Domain" = "White List Domain";
+
+"White List IP" = "White List IP";

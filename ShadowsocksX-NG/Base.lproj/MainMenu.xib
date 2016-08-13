@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="10117" systemVersion="15F34" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="10117" systemVersion="15G31" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="10117"/>
     </dependencies>
@@ -26,6 +26,9 @@
                 <outlet property="showQRCodeMenuItem" destination="R6A-96-Zcb" id="XHz-pz-nCz"/>
                 <outlet property="statusMenu" destination="Hob-KD-bx9" id="clA-ZW-0pT"/>
                 <outlet property="toggleRunningMenuItem" destination="GSu-Tf-StS" id="XHw-pU-nCa"/>
+                <outlet property="whiteListDomainMenuItem" destination="L27-aH-Wwl" id="h4b-aF-lyt"/>
+                <outlet property="whiteListIPMenuItem" destination="Xbu-Kq-BSR" id="D9i-Xg-6Gc"/>
+                <outlet property="whiteListModeMenuItem" destination="RvZ-Zn-29U" id="2v5-Bd-EDj"/>
             </connections>
         </customObject>
         <customObject id="YLy-65-1bz" customClass="NSFontManager"/>
@@ -63,11 +66,36 @@
                                     <action selector="selectManualMode:" target="Voe-Tx-rLC" id="Xxb-28-6fi"/>
                                 </connections>
                             </menuItem>
+                            <menuItem title="White List Mode" id="RvZ-Zn-29U">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <menu key="submenu" title="White List Mode" id="nAe-c2-Q79">
+                                    <items>
+                                        <menuItem title="White List Domain" id="L27-aH-Wwl">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="selectWhiteDomainListMode:" target="Voe-Tx-rLC" id="Oge-mM-TtL"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="White List IP" id="Xbu-Kq-BSR">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="selectWhiteIPListMode:" target="Voe-Tx-rLC" id="Ahq-h9-jJP"/>
+                                            </connections>
+                                        </menuItem>
+                                    </items>
+                                </menu>
+                            </menuItem>
                             <menuItem isSeparatorItem="YES" id="V92-VH-Agn"/>
                             <menuItem title="Update PAC from GFW List" id="TFc-Ec-duM">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
                                     <action selector="updateGFWList:" target="Voe-Tx-rLC" id="Ztt-PS-F3T"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Update All Wihte List" id="gde-ZE-086">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="updateWhiteList:" target="Voe-Tx-rLC" id="2Iv-M4-k9C"/>
                                 </connections>
                             </menuItem>
                             <menuItem title="Edit User Rules For PAC..." id="rms-p0-CvB">
