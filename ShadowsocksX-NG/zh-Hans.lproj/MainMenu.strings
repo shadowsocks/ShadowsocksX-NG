@@ -67,3 +67,18 @@
 
 /* Class = "NSMenuItem"; title = "退出"; ObjectID = "vJS-JW-byz"; */
 "vJS-JW-byz.title" = "退出";
+
+/* Class = "NSMenuItem"; title = "域名白名单"; ObjectID = "L27-aH-Wwl"; */
+"L27-aH-Wwl.title" = "域名白名单";
+
+/* Class = "NSMenuItem"; title = "IP白名单"; ObjectID = "Xbu-Kq-BSR"; */
+"Xbu-Kq-BSR.title" = "IP白名单";
+
+/* Class = "NSMenuItem"; title = "白名单模式"; ObjectID = "nAe-c2-Q79"; */
+"nAe-c2-Q79.title" = "白名单模式";
+
+/* Class = "NSMenuItem"; title = "白名单模式"; ObjectID = "RvZ-Zn-29U"; */
+"RvZ-Zn-29U.title" = "白名单模式";
+
+/* Class = "NSMenuItem"; title = "更新全部白名单"; ObjectID = "gde-ZE-086"; */
+"gde-ZE-086.title" = "更新全部白名单";

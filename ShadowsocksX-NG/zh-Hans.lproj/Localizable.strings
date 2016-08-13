@@ -50,3 +50,14 @@
 
 "Proxy - Manual" = "代理 - 手动";
 
+"Proxy - WhiteList" = "代理 - 白名单";
+
+"Proxy - WhiteList Domain" = "代理 - 域名白名单";
+
+"Proxy - WhiteList IP" = "代理 - IP白名单";
+
+"White List Mode" = "白名单模式";
+
+"White List Domain" = "域名白名单";
+
+"White List IP" = "IP白名单";

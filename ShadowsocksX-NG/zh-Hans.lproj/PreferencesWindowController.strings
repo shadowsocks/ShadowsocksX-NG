@@ -34,3 +34,18 @@
 
 /* Class = "NSButtonCell"; title = "OK"; ObjectID = "zPE-oD-PwK"; */
 "zPE-oD-PwK.title" = "确定";
+
+/* Class = "NSTextFieldCell"; title = "SSR Settings (Left empty if not sure what it is"; ObjectID = "Vtp-4J-er7.title";*/
+"Vtp-4J-er7.title" = "SSR设置，不清楚请留空";
+
+/* Class = "NSTextFieldCell"; title = "Obfs"; ObjectID = "Vtp-4J-er7.title";*/
+"aQj-D7-XWZ.title" = "混淆"
+
+/* Class = "NSTextFieldCell"; title = "Obfs Param"; ObjectID = "Vtp-4J-er7.title";*/
+"g7c-fW-7J4.title" = "混淆参数"
+
+/* Class = "NSTextFieldCell"; title = "Protocol"; ObjectID = "nmk-Ue-wYb,title";*/
+"nmk-Ue-wYb,title" = "协议"
+
+/* Class = "NSTextFieldCell"; title = "Protocol Param"; ObjectID = "Vtp-4J-er7.title";*/
+"dCk-qx-L1X.title" = "协议参数"

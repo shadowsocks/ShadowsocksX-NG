@@ -19,6 +19,11 @@ class PreferencesWindowController: NSWindowController
     @IBOutlet weak var portTextField: NSTextField!
     @IBOutlet weak var methodTextField: NSComboBox!
     
+    @IBOutlet weak var ProtocolTextField: NSComboBox!
+    @IBOutlet weak var ProtocolParamTextField: NSTextField!
+    @IBOutlet weak var ObfsTextField: NSComboBox!
+    @IBOutlet weak var ObfsParamTextField: NSTextField!
+    
     @IBOutlet weak var passwordTextField: NSTextField!
     @IBOutlet weak var remarkTextField: NSTextField!
     
@@ -53,7 +58,20 @@ class PreferencesWindowController: NSWindowController
             "rc4",
             "table",
             ])
-        
+        ProtocolTextField.addItemsWithObjectValues([
+            "origin",
+            "verify_simple",
+            "verify_sha1",
+            "auth_simple",
+            "auth_sha1",
+            "auth_sha1_v2",
+            ])
+        ObfsTextField.addItemsWithObjectValues([
+            "palin",
+            "http_simple",
+            "tls1.0_session_auth",
+            "tls1.2_ticket_auth",
+            ])
         profilesTableView.reloadData()
         updateProfileBoxVisible()
     }
@@ -155,6 +173,14 @@ class PreferencesWindowController: NSWindowController
             remarkTextField.bind("value", toObject: editingProfile, withKeyPath: "remark"
                 , options: [NSContinuouslyUpdatesValueBindingOption: true])
             
+            ProtocolTextField.bind("value", toObject: editingProfile, withKeyPath: "ssrProtocol", options: [NSContinuouslyUpdatesValueBindingOption: true])
+            
+            ProtocolParamTextField.bind("value", toObject: editingProfile, withKeyPath: "ssrProtocolParam", options: [NSContinuouslyUpdatesValueBindingOption: true])
+            
+            ObfsTextField.bind("value", toObject: editingProfile, withKeyPath: "ssrObfs", options: [NSContinuouslyUpdatesValueBindingOption: true])
+            
+            ObfsParamTextField.bind("value", toObject: editingProfile, withKeyPath: "ssrObfsParam", options: [NSContinuouslyUpdatesValueBindingOption: true])
+            
             otaCheckBoxBtn.bind("value", toObject: editingProfile, withKeyPath: "ota"
                 , options: [NSContinuouslyUpdatesValueBindingOption: true])
         } else {
@@ -164,6 +190,11 @@ class PreferencesWindowController: NSWindowController
             
             methodTextField.unbind("value")
             passwordTextField.unbind("value")
+            
+            ProtocolTextField.unbind("value")
+            ProtocolParamTextField.unbind("value")
+            ObfsTextField.unbind("value")
+            ObfsParamTextField.unbind("value")
             
             remarkTextField.unbind("value")
             
