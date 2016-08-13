@@ -149,4 +149,8 @@
     [self callHelper:args];
 }
 
++ (void)enableWhiteListProxy {
+    
+}
+
 @end

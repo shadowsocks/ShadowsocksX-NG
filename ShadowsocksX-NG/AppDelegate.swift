@@ -29,6 +29,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     @IBOutlet weak var autoModeMenuItem: NSMenuItem!
     @IBOutlet weak var globalModeMenuItem: NSMenuItem!
     @IBOutlet weak var manualModeMenuItem: NSMenuItem!
+    @IBOutlet weak var whiteListModeMenuItem: NSMenuItem!
     
     @IBOutlet weak var serversMenuItem: NSMenuItem!
     @IBOutlet var showQRCodeMenuItem: NSMenuItem!
@@ -159,6 +160,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                 ProxyConfHelper.enableGlobalProxy()
             } else if mode == "manual" {
                 ProxyConfHelper.disableProxy()
+            } else if mode == "whiteList"{
+                //ProxyConfHelper.enableWhiteListProxy()
             }
         } else {
             StopSSLocal()
@@ -179,6 +182,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
 
     @IBAction func updateGFWList(sender: NSMenuItem) {
         UpdatePACFromGFWList()
+    }
+    
+    @IBAction func updateWhiteList(sender: NSMenuItem) {
     }
     
     @IBAction func editUserRulesForPAC(sender: NSMenuItem) {
@@ -248,6 +254,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     @IBAction func selectManualMode(sender: NSMenuItem) {
         let defaults = NSUserDefaults.standardUserDefaults()
         defaults.setValue("manual", forKey: "ShadowsocksRunningMode")
+        updateRunningModeMenu()
+        applyConfig()
+    }
+    
+    @IBAction func selectWhiteListMode(sender: NSMenuItem) {
+        let defaults = NSUserDefaults.standardUserDefaults()
+        defaults.setValue("whiteList", forKey: "ShadowsocksRunningMode")
         updateRunningModeMenu()
         applyConfig()
     }
