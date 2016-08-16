@@ -46,17 +46,25 @@ class PreferencesWindowController: NSWindowController
         profileMgr = ServerProfileManager.instance
         
         methodTextField.addItemsWithObjectValues([
+            "table",
+            "rc4",
+            "rc4-md5-6",
+            "rc4-md5",
             "aes-128-cfb",
             "aes-192-cfb",
             "aes-256-cfb",
-            "des-cfb",
             "bf-cfb",
+            "camellia-128-cfb",
+            "camellia-192-cfb",
+            "camellia-256-cfb",
             "cast5-cfb",
-            "rc4-md5",
-            "chacha20",
+            "des-cfb",
+            "idea-cfb",
+            "rc2-cfb",
+            "seed-cfb",
             "salsa20",
-            "rc4",
-            "table",
+            "chacha20",
+            "chacha20-ietf"
             ])
         ProtocolTextField.addItemsWithObjectValues([
             "origin",
@@ -69,7 +77,8 @@ class PreferencesWindowController: NSWindowController
         ObfsTextField.addItemsWithObjectValues([
             "palin",
             "http_simple",
-            "tls1.0_session_auth",
+            "tls_simple",
+            "random_head",
             "tls1.2_ticket_auth",
             ])
         profilesTableView.reloadData()
