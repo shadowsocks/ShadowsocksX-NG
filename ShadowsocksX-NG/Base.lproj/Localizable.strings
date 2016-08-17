@@ -10,6 +10,10 @@
 
 "Failed to download latest GFW List." = "Failed to download latest GFW List.";
 
+"White List updated succeed." = "White List updated succeed.";
+
+"Failed to download latest White List update succeed." = "Failed to download latest White List update succeed.";
+
 /*
  * ./PreferencesWindowController.swift
  */

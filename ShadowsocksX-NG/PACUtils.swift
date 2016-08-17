@@ -223,7 +223,7 @@ func UpdatePACFromWhiteList(){
                         if GeneratePACFile() {
                             // Popup a user notification
                             let notification = NSUserNotification()
-                            notification.title = "Wihte List update succeed.".localized
+                            notification.title = "White List update succeed.".localized
                             NSUserNotificationCenter.defaultUserNotificationCenter()
                                 .deliverNotification(notification)
                         }
@@ -234,7 +234,7 @@ func UpdatePACFromWhiteList(){
             } else {
                 // Popup a user notification
                 let notification = NSUserNotification()
-                notification.title = "Failed to download latest Wihte List update succeed.".localized
+                notification.title = "Failed to download latest White List update succeed.".localized
                 NSUserNotificationCenter.defaultUserNotificationCenter()
                     .deliverNotification(notification)
             }
@@ -251,7 +251,7 @@ func UpdatePACFromWhiteList(){
                         if GeneratePACFile() {
                             // Popup a user notification
                             let notification = NSUserNotification()
-                            notification.title = "Wihte List update succeed.".localized
+                            notification.title = "White List update succeed.".localized
                             NSUserNotificationCenter.defaultUserNotificationCenter()
                                 .deliverNotification(notification)
                         }
@@ -262,7 +262,7 @@ func UpdatePACFromWhiteList(){
             } else {
                 // Popup a user notification
                 let notification = NSUserNotification()
-                notification.title = "Failed to download latest Wihte List update succeed.".localized
+                notification.title = "Failed to download latest White List update succeed.".localized
                 NSUserNotificationCenter.defaultUserNotificationCenter()
                     .deliverNotification(notification)
             }

@@ -16,6 +16,10 @@
 
 "Failed to download latest GFW List." = "下载 GFW List 失败";
 
+"White List update succeed." = "白名单更新成功";
+
+"Failed to download latest White List update succeed." = "下载白名单失败";
+
 /*
  * ./PreferencesWindowController.swift
  */
