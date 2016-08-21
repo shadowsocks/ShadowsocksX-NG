@@ -70,7 +70,6 @@ class PreferencesWindowController: NSWindowController
             "origin",
             "verify_simple",
             "verify_sha1",
-            "auth_simple",
             "auth_sha1",
             "auth_sha1_v2",
             ])

@@ -1,8 +1,8 @@
-# ShadowsocksX-NG
+# ShadowsocksX-NG-R
 
-Current version is 1.2
+Current version is 1.3.2-R2
 
-[![Build Status](https://travis-ci.org/qiuyuzhou/ShadowsocksX-NG.svg?branch=develop)](https://travis-ci.org/qiuyuzhou/ShadowsocksX-NG)
+[![Build Status](https://travis-ci.org/qinyuhang/ShadowsocksX-NG.svg?branch=develop)](https://travis-ci.org/qiuyuzhou/ShadowsocksX-NG)
 
 Next Generation of [ShadowsocksX](https://github.com/shadowsocks/shadowsocks-iOS)
 
@@ -42,6 +42,8 @@ Then I rewrite the GUI code by swift.
 	- Local socks5 timeout.
 	- If enable UDP relay.
 	- GFW List url.
+	- White List url.(will be added after solve PAC not work on macOS 10.12)
+	- Auto update PAC list & white list.
 - Manual spesify network service profiles which would be configure the proxy.
 - Could reorder shadowsocks profiles by drag & drop in servers preferences panel.
 
@@ -62,6 +64,9 @@ ref: [GitFlow](http://nvie.com/posts/a-successful-git-branching-model/)
 ## TODO List
 
 - [ ] Embed the http proxy server [privoxy](http://www.privoxy.org/).
+
+## Know Issue
+[Issue 1.]() Auto PAC & White list is not working on macOS 10.12 Serria because system proxy not allow [file:///](file:///) protocol.
 
 ## License
 

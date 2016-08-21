@@ -341,7 +341,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     }
     
     @IBAction func feedback(sender: NSMenuItem) {
-        NSWorkspace.sharedWorkspace().openURL(NSURL(string: "https://github.com/qiuyuzhou/ShadowsocksX-NG/issues")!)
+        NSWorkspace.sharedWorkspace().openURL(NSURL(string: "https://github.com/qinyuhang/ShadowsocksX-NG/issues")!)
     }
     
     @IBAction func showAbout(sender: NSMenuItem) {
