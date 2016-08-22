@@ -16,6 +16,7 @@
                 <outlet property="profileBox" destination="oZ5-85-pwY" id="D19-PQ-X7E"/>
                 <outlet property="profilesTableView" destination="r91-ho-Lum" id="TNk-f6-Vgo"/>
                 <outlet property="remarkTextField" destination="q3C-S0-iNn" id="DSv-lV-PX7"/>
+                <outlet property="removeButton" destination="3ei-2f-kHB" id="DdP-dA-coT"/>
                 <outlet property="window" destination="F0z-JX-Cv5" id="gIp-Ho-8D9"/>
             </connections>
         </customObject>

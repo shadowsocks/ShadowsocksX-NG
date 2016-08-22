@@ -26,12 +26,14 @@ class PreferencesWindowController: NSWindowController
     
     @IBOutlet weak var copyURLBtn: NSButton!
     
+    @IBOutlet weak var removeButton: NSButton!
     let tableViewDragType: String = "ss.server.profile.data"
     
     var defaults: NSUserDefaults!
     var profileMgr: ServerProfileManager!
     
     var editingProfile: ServerProfile!
+
 
     override func windowDidLoad() {
         super.windowDidLoad()
@@ -64,6 +66,7 @@ class PreferencesWindowController: NSWindowController
     
     @IBAction func addProfile(sender: NSButton) {
         if editingProfile != nil && !editingProfile.isValid(){
+            shakeWindows()
             return
         }
         profilesTableView.beginUpdates()
@@ -131,6 +134,12 @@ class PreferencesWindowController: NSWindowController
     }
     
     func updateProfileBoxVisible() {
+        if profileMgr.profiles.count == 1 {
+            removeButton.enabled = false
+        }else{
+            removeButton.enabled = true
+        }
+
         if profileMgr.profiles.isEmpty {
             profileBox.hidden = true
         } else {
