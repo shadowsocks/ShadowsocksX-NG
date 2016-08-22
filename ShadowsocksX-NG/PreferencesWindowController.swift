@@ -104,6 +104,7 @@ class PreferencesWindowController: NSWindowController
         }
         profileMgr.save()
         window?.performClose(nil)
+
         
         NSNotificationCenter.defaultCenter()
             .postNotificationName(NOTIFY_SERVER_PROFILES_CHANGED, object: nil)
@@ -134,7 +135,7 @@ class PreferencesWindowController: NSWindowController
     }
     
     func updateProfileBoxVisible() {
-        if profileMgr.profiles.count == 1 {
+        if profileMgr.profiles.count <= 1 {
             removeButton.enabled = false
         }else{
             removeButton.enabled = true
