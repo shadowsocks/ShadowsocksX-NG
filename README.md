@@ -1,8 +1,8 @@
 # ShadowsocksX-NG-R
 
-Current version is 1.3.2-R2
+Current version is 1.3.2-R3
 
-[![Build Status](https://travis-ci.org/qinyuhang/ShadowsocksX-NG.svg?branch=develop)](https://travis-ci.org/qiuyuzhou/ShadowsocksX-NG)
+[![Build Status](https://travis-ci.org/qinyuhang/ShadowsocksX-NG.svg?branches=develop)](https://travis-ci.org/qinyuhang/ShadowsocksX-NG)
 
 Next Generation of [ShadowsocksX](https://github.com/shadowsocks/shadowsocks-iOS)
 
