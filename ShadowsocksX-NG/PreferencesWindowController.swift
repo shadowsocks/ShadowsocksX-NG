@@ -24,6 +24,7 @@ class PreferencesWindowController: NSWindowController
     @IBOutlet weak var ObfsTextField: NSComboBox!
     @IBOutlet weak var ObfsParamTextField: NSTextField!
     
+    @IBOutlet weak var duplicateProfileButton: NSButton!
     @IBOutlet weak var passwordTextField: NSTextField!
     @IBOutlet weak var remarkTextField: NSTextField!
     
@@ -120,7 +121,26 @@ class PreferencesWindowController: NSWindowController
     @IBAction func ok(sender: NSButton) {
         if editingProfile != nil {
             if !editingProfile.isValid() {
-                // TODO Shake window?
+                let numberOfShakes:Int = 8
+                let durationOfShake:Float = 0.5
+                let vigourOfShake:Float = 0.05
+                
+                let frame:CGRect = (self.window?.frame)!
+                let shakeAnimation = CAKeyframeAnimation()
+                
+                let shakePath = CGPathCreateMutable()
+                CGPathMoveToPoint(shakePath, nil, NSMinX(frame), NSMinY(frame))
+                
+                for _ in 1...numberOfShakes{
+                    CGPathAddLineToPoint(shakePath, nil, NSMinX(frame) - frame.size.width * CGFloat(vigourOfShake), NSMinY(frame))
+                    CGPathAddLineToPoint(shakePath, nil, NSMinX(frame) + frame.size.width * CGFloat(vigourOfShake), NSMinY(frame))
+                }
+                
+                CGPathCloseSubpath(shakePath)
+                shakeAnimation.path = shakePath
+                shakeAnimation.duration = CFTimeInterval(durationOfShake)
+                self.window?.animations = ["frameOrigin":shakeAnimation]
+                self.window?.animator().setFrameOrigin(self.window!.frame.origin)
                 return
             }
         }
@@ -133,6 +153,25 @@ class PreferencesWindowController: NSWindowController
     
     @IBAction func cancel(sender: NSButton) {
         window?.performClose(self)
+    }
+    
+    @IBAction func duplicateProfile(sender: NSButton) {
+        //读取当前profile，并且保存
+        if editingProfile != nil && !editingProfile.isValid(){
+            return
+        }
+        let index = profilesTableView.selectedRow
+        if  index >= 0 {
+            let profile = profileMgr.profiles[index]
+            profilesTableView.beginUpdates()
+            profileMgr.profiles.append(profile)
+            let index = NSIndexSet(index: profileMgr.profiles.count-1)
+            profilesTableView.insertRowsAtIndexes(index, withAnimation: .EffectFade)
+            self.profilesTableView.scrollRowToVisible(self.profileMgr.profiles.count-1)
+            self.profilesTableView.selectRowIndexes(index, byExtendingSelection: false)
+            profilesTableView.endUpdates()
+            updateProfileBoxVisible()
+        }
     }
     
     @IBAction func copyCurrentProfileURL2Pasteboard(sender: NSButton) {
