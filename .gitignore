@@ -68,3 +68,6 @@ profile
 # Carthage
 Carthage/Build
 
+####
+# Cocoapods
+Pods/
