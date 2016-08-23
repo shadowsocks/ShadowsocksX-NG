@@ -150,7 +150,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     func applicationWillTerminate(aNotification: NSNotification) {
         // Insert code here to tear down your application
         StopSSLocal()
-        ProxyConfHelper.disableProxy()
+        ProxyConfHelper.disableProxy("hi")
         let defaults = NSUserDefaults.standardUserDefaults()
         defaults.setBool(false, forKey: "ShadowsocksOn")
     }
@@ -163,24 +163,24 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         if isOn {
             StartSSLocal()
             if mode == "auto" {
-                ProxyConfHelper.disableProxy()
-                ProxyConfHelper.enablePACProxy()
+                ProxyConfHelper.disableProxy("hi")
+                ProxyConfHelper.enablePACProxy("hi")
             } else if mode == "global" {
-                ProxyConfHelper.disableProxy()
+                ProxyConfHelper.disableProxy("hi")
                 ProxyConfHelper.enableGlobalProxy()
             } else if mode == "manual" {
-                ProxyConfHelper.disableProxy()
-                ProxyConfHelper.disableProxy()
+                ProxyConfHelper.disableProxy("hi")
+                ProxyConfHelper.disableProxy("hi")
             } else if mode == "whiteListDomain" {
-                ProxyConfHelper.disableProxy()
+                ProxyConfHelper.disableProxy("hi")
                 ProxyConfHelper.enableWhiteDomainListProxy()
             } else if mode == "whiteListIP" {
-                ProxyConfHelper.disableProxy()
+                ProxyConfHelper.disableProxy("hi")
                 ProxyConfHelper.enableWhiteIPListProxy()
             }
         } else {
             StopSSLocal()
-            ProxyConfHelper.disableProxy()
+            ProxyConfHelper.disableProxy("hi")
         }
     }
     
