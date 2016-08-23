@@ -144,6 +144,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
 
     func applicationWillTerminate(aNotification: NSNotification) {
         // Insert code here to tear down your application
+        StopSSLocal()
+        ProxyConfHelper.disableProxy("hi")
+        let defaults = NSUserDefaults.standardUserDefaults()
+        defaults.setBool(false, forKey: "ShadowsocksOn")
     }
     
     func applyConfig() {
@@ -154,15 +158,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         if isOn {
             StartSSLocal()
             if mode == "auto" {
-                ProxyConfHelper.enablePACProxy()
+                ProxyConfHelper.enablePACProxy("hi")
             } else if mode == "global" {
                 ProxyConfHelper.enableGlobalProxy()
             } else if mode == "manual" {
-                ProxyConfHelper.disableProxy()
+                ProxyConfHelper.disableProxy("hi")
             }
         } else {
             StopSSLocal()
-            ProxyConfHelper.disableProxy()
+            ProxyConfHelper.disableProxy("hi")
         }
     }
     
