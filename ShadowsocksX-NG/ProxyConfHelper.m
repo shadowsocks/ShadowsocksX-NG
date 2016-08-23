@@ -158,7 +158,7 @@
 + (NSString*)startPACServer:(NSString*) PACFilePath {
     //接受参数为以后使用定制PAC文件
     NSData * originalPACData;
-    if (![PACFilePath isEqual: @"hi"]) {//用默认路径来代替
+    if ([PACFilePath isEqual: @"hi"]) {//用默认路径来代替
         PACFilePath = [NSString stringWithFormat:@"%@/%@", NSHomeDirectory(), @".ShadowsocksX-NG/gfwlist.js"];
         originalPACData = [NSData dataWithContentsOfFile: [NSString stringWithFormat:@"%@/%@", NSHomeDirectory(), @".ShadowsocksX-NG/gfwlist.js"]];
     }else{//用定制路径来代替
