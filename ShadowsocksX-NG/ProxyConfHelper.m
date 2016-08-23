@@ -139,14 +139,12 @@
     [self callHelper:args];
 }
 
-
 + (void)enableWhiteDomainListProxy {
     NSString* urlString = [NSString stringWithFormat:@"%@/.ShadowsocksX-NG/whitelist.pac", NSHomeDirectory()];
     NSURL* url = [NSURL fileURLWithPath:urlString];
     NSMutableArray* args = [@[@"--mode", @"auto", @"--pac-url", [url absoluteString]]mutableCopy];
     
     [self addArguments4ManualSpecifyNetworkServices:args];
-    
     [self callHelper:args];
 }
 
@@ -171,6 +169,7 @@
 //                              , @"--port", [NSString stringWithFormat:@"%lu", (unsigned long)port]
 //                              , @"--pac-url", [url absoluteString]
 //                              ]mutableCopy];
+
     NSMutableArray* args = [@[@"--mode", @"off"]mutableCopy];
     [self addArguments4ManualSpecifyNetworkServices:args];
     [self callHelper:args];
