@@ -78,6 +78,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         notifyCenter.addObserverForName(NOTIFY_SERVER_PROFILES_CHANGED, object: nil, queue: nil
             , usingBlock: {
             (note) in
+                let profileMgr = ServerProfileManager.instance
+                if profileMgr.activeProfileId == nil &&
+                    profileMgr.profiles.count > 0{
+                    if profileMgr.profiles[0].isValid(){
+                        profileMgr.setActiveProfiledId(profileMgr.profiles[0].uuid)
+                    }
+                }
                 self.updateServersMenu()
                 SyncSSLocal()
             }
