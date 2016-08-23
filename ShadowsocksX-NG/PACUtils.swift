@@ -141,12 +141,18 @@ func GeneratePACFile() -> Bool {
                 var IPPACStr = String(data: IPPACFile!,encoding: NSUTF8StringEncoding)!
                 if(DomainPACStr.rangeOfString("SOCKS ") == nil) {
                     DomainPACStr = DomainPACStr.stringByReplacingOccurrencesOfString("SOCKS5 127.0.0.1:1080;", withString: "SOCKS5 127.0.0.1:\(socks5Port);SOCKS 127.0.0.1:\(socks5Port);")
+                }else{
+                    DomainPACStr = DomainPACStr.stringByReplacingOccurrencesOfString("SOCKS 127.0.0.1:1080;", withString: "SOCKS 127.0.0.1:\(socks5Port);")
+                    DomainPACStr = DomainPACStr.stringByReplacingOccurrencesOfString("SOCKS5 127.0.0.1:1080;", withString: "SOCKS5 127.0.0.1:\(socks5Port);")
                 }
-                DomainPACStr = DomainPACStr.stringByReplacingOccurrencesOfString("SOCKS 127.0.0.1:1080;", withString: "SOCKS 127.0.0.1:\(socks5Port);")
+                
                 if(IPPACStr.rangeOfString("SOCKS ") == nil) {
                     IPPACStr = IPPACStr.stringByReplacingOccurrencesOfString("SOCKS5 127.0.0.1:1080;", withString: "SOCKS5 127.0.0.1:\(socks5Port);SOCKS 127.0.0.1:\(socks5Port);")
+                }else{
+                    IPPACStr = IPPACStr.stringByReplacingOccurrencesOfString("SOCKS 127.0.0.1:1080;", withString: "SOCKS 127.0.0.1:\(socks5Port);")
+                    IPPACStr = IPPACStr.stringByReplacingOccurrencesOfString("SOCKS5 127.0.0.1:1080;", withString: "SOCKS5 127.0.0.1:\(socks5Port);")
                 }
-                IPPACStr = IPPACStr.stringByReplacingOccurrencesOfString("SOCKS 127.0.0.1:1080;", withString: "SOCKS 127.0.0.1:\(socks5Port);")
+                
                 try
                     DomainPACStr.dataUsingEncoding(NSUTF8StringEncoding)?.writeToFile(WhiteListDomainPACFilePath, options: .DataWritingAtomic)
                 try
