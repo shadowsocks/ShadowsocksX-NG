@@ -181,7 +181,7 @@
                                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                     </textFieldCell>
                                 </textField>
-                                <button hidden="YES" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="6mK-sY-xoH">
+                                <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="6mK-sY-xoH">
                                     <rect key="frame" x="14" y="19" width="291" height="32"/>
                                     <buttonCell key="cell" type="push" title="Copy URL to Clipboard" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="t3T-Kd-5La">
                                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -367,6 +367,9 @@ DQ
                         <buttonCell key="cell" type="push" title="Cacnel" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="j03-9E-uHW">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                             <font key="font" metaFont="system"/>
+                            <string key="keyEquivalent" base64-UTF8="YES">
+Gw
+</string>
                         </buttonCell>
                         <connections>
                             <action selector="cancel:" target="-2" id="514-4D-a6S"/>
@@ -392,7 +395,7 @@ DQ
                                     </connections>
                                 </button>
                                 <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="3ei-2f-kHB">
-                                    <rect key="frame" x="20" y="-1" width="22" height="21"/>
+                                    <rect key="frame" x="40" y="-1" width="22" height="21"/>
                                     <constraints>
                                         <constraint firstAttribute="width" constant="22" id="8fD-Yn-ZEW"/>
                                     </constraints>
@@ -404,9 +407,9 @@ DQ
                                         <action selector="removeProfile:" target="-2" id="CJC-GL-qeS"/>
                                     </connections>
                                 </button>
-                                <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="ZgM-eW-IFM">
-                                    <rect key="frame" x="159" y="-1" width="64" height="21"/>
-                                    <buttonCell key="cell" type="smallSquare" title="Duplicate" bezelStyle="smallSquare" imagePosition="overlaps" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="s5r-hM-4Gh">
+                                <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="ZgM-eW-IFM">
+                                    <rect key="frame" x="20" y="-1" width="22" height="21"/>
+                                    <buttonCell key="cell" type="smallSquare" bezelStyle="smallSquare" image="copyV1" imagePosition="overlaps" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="s5r-hM-4Gh">
                                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                         <font key="font" metaFont="system"/>
                                     </buttonCell>
@@ -416,8 +419,14 @@ DQ
                                 </button>
                             </subviews>
                             <constraints>
-                                <constraint firstItem="3ei-2f-kHB" firstAttribute="leading" secondItem="MbP-FS-YEs" secondAttribute="leading" constant="20" symbolic="YES" id="2tu-rA-iFm"/>
+                                <constraint firstItem="3ei-2f-kHB" firstAttribute="height" secondItem="4ig-lF-m2R" secondAttribute="height" id="0uh-OE-iAW"/>
+                                <constraint firstItem="3ei-2f-kHB" firstAttribute="leading" secondItem="MbP-FS-YEs" secondAttribute="leading" constant="40" id="2tu-rA-iFm"/>
+                                <constraint firstItem="ZgM-eW-IFM" firstAttribute="leading" secondItem="MbP-FS-YEs" secondAttribute="leading" constant="20" symbolic="YES" id="Kg3-fv-mbA"/>
                                 <constraint firstItem="4ig-lF-m2R" firstAttribute="leading" secondItem="MbP-FS-YEs" secondAttribute="leading" id="V4f-n1-fqZ"/>
+                                <constraint firstItem="ZgM-eW-IFM" firstAttribute="height" secondItem="4ig-lF-m2R" secondAttribute="height" id="YgL-Jc-poy"/>
+                                <constraint firstItem="3ei-2f-kHB" firstAttribute="width" secondItem="4ig-lF-m2R" secondAttribute="width" id="ZnG-tp-3Y9"/>
+                                <constraint firstItem="ZgM-eW-IFM" firstAttribute="width" secondItem="4ig-lF-m2R" secondAttribute="width" id="dOv-fc-E7Y"/>
+                                <constraint firstItem="ZgM-eW-IFM" firstAttribute="top" secondItem="4ig-lF-m2R" secondAttribute="top" id="hgX-Ld-z72"/>
                                 <constraint firstItem="4ig-lF-m2R" firstAttribute="baseline" secondItem="3ei-2f-kHB" secondAttribute="baseline" id="m6Y-o8-dfj"/>
                                 <constraint firstItem="4ig-lF-m2R" firstAttribute="top" secondItem="MbP-FS-YEs" secondAttribute="top" id="xee-9x-wEB"/>
                             </constraints>
@@ -459,5 +468,6 @@ DQ
     <resources>
         <image name="NSAddTemplate" width="11" height="11"/>
         <image name="NSRemoveTemplate" width="11" height="11"/>
+        <image name="copyV1" width="36" height="36"/>
     </resources>
 </document>

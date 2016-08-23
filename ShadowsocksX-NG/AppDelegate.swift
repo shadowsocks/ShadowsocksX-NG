@@ -151,6 +151,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         // Insert code here to tear down your application
         StopSSLocal()
         ProxyConfHelper.disableProxy()
+        let defaults = NSUserDefaults.standardUserDefaults()
+        defaults.setBool(false, forKey: "ShadowsocksOn")
     }
     
     func applyConfig() {
