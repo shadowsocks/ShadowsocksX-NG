@@ -29,6 +29,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     @IBOutlet weak var autoModeMenuItem: NSMenuItem!
     @IBOutlet weak var globalModeMenuItem: NSMenuItem!
     @IBOutlet weak var manualModeMenuItem: NSMenuItem!
+    @IBOutlet weak var whiteListModeMenuItem: NSMenuItem!
+    @IBOutlet weak var whiteListDomainMenuItem: NSMenuItem!
+    @IBOutlet weak var whiteListIPMenuItem: NSMenuItem!
     
     @IBOutlet weak var serversMenuItem: NSMenuItem!
     @IBOutlet var showQRCodeMenuItem: NSMenuItem!
@@ -58,6 +61,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             "LocalSocks5.EnableUDPRelay": NSNumber(bool: false),
             "LocalSocks5.EnableVerboseMode": NSNumber(bool: false),
             "GFWListURL": "https://raw.githubusercontent.com/gfwlist/gfwlist/master/gfwlist.txt",
+            "WhiteListURL": "https://raw.githubusercontent.com/breakwa11/gfw_whitelist/master/whitelist.pac",
+            "WhiteListIPURL": "https://raw.githubusercontent.com/breakwa11/gfw_whitelist/master/whiteiplist.pac",
             "AutoConfigureNetworkServices": NSNumber(bool: true)
         ])
         
@@ -144,6 +149,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
 
     func applicationWillTerminate(aNotification: NSNotification) {
         // Insert code here to tear down your application
+        StopSSLocal()
+        ProxyConfHelper.disableProxy()
     }
     
     func applyConfig() {
@@ -154,11 +161,20 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         if isOn {
             StartSSLocal()
             if mode == "auto" {
+                ProxyConfHelper.disableProxy()
                 ProxyConfHelper.enablePACProxy()
             } else if mode == "global" {
+                ProxyConfHelper.disableProxy()
                 ProxyConfHelper.enableGlobalProxy()
             } else if mode == "manual" {
                 ProxyConfHelper.disableProxy()
+                ProxyConfHelper.disableProxy()
+            } else if mode == "whiteListDomain" {
+                ProxyConfHelper.disableProxy()
+                ProxyConfHelper.enableWhiteDomainListProxy()
+            } else if mode == "whiteListIP" {
+                ProxyConfHelper.disableProxy()
+                ProxyConfHelper.enableWhiteIPListProxy()
             }
         } else {
             StopSSLocal()
@@ -179,6 +195,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
 
     @IBAction func updateGFWList(sender: NSMenuItem) {
         UpdatePACFromGFWList()
+    }
+    
+    @IBAction func updateWhiteList(sender: NSMenuItem) {
+        UpdatePACFromWhiteList()
     }
     
     @IBAction func editUserRulesForPAC(sender: NSMenuItem) {
@@ -252,6 +272,20 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         applyConfig()
     }
     
+    @IBAction func selectWhiteDomainListMode(sender: NSMenuItem) {
+        let defaults = NSUserDefaults.standardUserDefaults()
+        defaults.setValue("whiteListDomain", forKey: "ShadowsocksRunningMode")
+        updateRunningModeMenu()
+        applyConfig()
+    }
+    
+    @IBAction func selectWhiteIPListMode(sender: NSMenuItem) {
+        let defaults = NSUserDefaults.standardUserDefaults()
+        defaults.setValue("whiteListIP", forKey: "ShadowsocksRunningMode")
+        updateRunningModeMenu()
+        applyConfig()
+    }
+    
     @IBAction func editServerPreferences(sender: NSMenuItem) {
         if preferencesWinCtrl != nil {
             preferencesWinCtrl.close()
@@ -307,7 +341,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     }
     
     @IBAction func feedback(sender: NSMenuItem) {
-        NSWorkspace.sharedWorkspace().openURL(NSURL(string: "https://github.com/qiuyuzhou/ShadowsocksX-NG/issues")!)
+        NSWorkspace.sharedWorkspace().openURL(NSURL(string: "https://github.com/qinyuhang/ShadowsocksX-NG/issues")!)
     }
     
     @IBAction func showAbout(sender: NSMenuItem) {
@@ -331,16 +365,41 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             autoModeMenuItem.state = 1
             globalModeMenuItem.state = 0
             manualModeMenuItem.state = 0
+            whiteListModeMenuItem.state = 0
+            whiteListDomainMenuItem.state = 0
+            whiteListIPMenuItem.state = 0
         } else if mode == "global" {
             proxyMenuItem.title = "Proxy - Global".localized
             autoModeMenuItem.state = 0
             globalModeMenuItem.state = 1
             manualModeMenuItem.state = 0
+            whiteListModeMenuItem.state = 0
+            whiteListDomainMenuItem.state = 0
+            whiteListIPMenuItem.state = 0
         } else if mode == "manual" {
             proxyMenuItem.title = "Proxy - Manual".localized
             autoModeMenuItem.state = 0
             globalModeMenuItem.state = 0
             manualModeMenuItem.state = 1
+            whiteListModeMenuItem.state = 0
+            whiteListDomainMenuItem.state = 0
+            whiteListIPMenuItem.state = 0
+        } else if mode == "whiteListDomain" {
+            proxyMenuItem.title = "Proxy - WhiteList Domain".localized
+            autoModeMenuItem.state = 0
+            globalModeMenuItem.state = 0
+            manualModeMenuItem.state = 0
+            whiteListModeMenuItem.state = 1
+            whiteListDomainMenuItem.state = 1
+            whiteListIPMenuItem.state = 0
+        } else if mode == "whiteListIP" {
+            proxyMenuItem.title = "Proxy - WhiteList IP".localized
+            autoModeMenuItem.state = 0
+            globalModeMenuItem.state = 0
+            manualModeMenuItem.state = 0
+            whiteListModeMenuItem.state = 1
+            whiteListDomainMenuItem.state = 0
+            whiteListIPMenuItem.state = 1
         }
     }
     

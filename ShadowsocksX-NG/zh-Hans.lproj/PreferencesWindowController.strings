@@ -14,6 +14,18 @@
 /* Class = "NSTextFieldCell"; title = "Remarks:"; ObjectID = "MiN-VE-FtC"; */
 "MiN-VE-FtC.title" = "备注:";
 
+/* Class = "NSTextFieldCell"; title = "SSR Settings (Left empty if not sure what it is)"; ObjectID = "Vtp-4J-er7"; */
+"Vtp-4J-er7.title" = "SSR设置，不清楚请留空";
+
+/* Class = "NSTextFieldCell"; title = "Obfs"; ObjectID = "aQj-D7-XWZ"; */
+"aQj-D7-XWZ.title" = "混淆:";
+
+/* Class = "NSTextFieldCell"; title = "Protocol Param"; ObjectID = "dCk-qx-L1X"; */
+"dCk-qx-L1X.title" = "协议参数:";
+
+/* Class = "NSTextFieldCell"; title = "Obfs Param"; ObjectID = "g7c-fW-7J4"; */
+"g7c-fW-7J4.title" = "混淆参数:";
+
 /* Class = "NSButtonCell"; title = "Enable OTA"; ObjectID = "hRZ-Rp-I5e"; */
 "hRZ-Rp-I5e.title" = "启用 OTA";
 
@@ -26,6 +38,12 @@
 /* Class = "NSTextFieldCell"; title = "Encryption:"; ObjectID = "mOh-nD-7EX"; */
 "mOh-nD-7EX.title" = "加密方法:";
 
+/* Class = "NSTextFieldCell"; title = "Protocol:"; ObjectID = "nmk-Ue-wYb"; */
+"nmk-Ue-wYb.title" = "协议";
+
+/* Class = "NSButtonCell"; title = "Duplicate"; ObjectID = "s5r-hM-4Gh"; */
+"s5r-hM-4Gh.title" = "复制";
+
 /* Class = "NSButtonCell"; title = "Copy URL to Clipboard"; ObjectID = "t3T-Kd-5La"; */
 "t3T-Kd-5La.title" = "复制服务器URL到剪贴板";
 
@@ -33,4 +51,4 @@
 "yHs-XE-XEB.title" = "地址:";
 
 /* Class = "NSButtonCell"; title = "OK"; ObjectID = "zPE-oD-PwK"; */
-"zPE-oD-PwK.title" = "确定";
+"zPE-oD-PwK.title" = "OK";

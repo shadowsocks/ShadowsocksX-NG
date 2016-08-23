@@ -10,6 +10,10 @@
 
 "Failed to download latest GFW List." = "Failed to download latest GFW List.";
 
+"White List updated succeed." = "White List updated succeed.";
+
+"Failed to download latest White List update succeed." = "Failed to download latest White List update succeed.";
+
 /*
  * ./PreferencesWindowController.swift
  */
@@ -45,3 +49,15 @@
 "Proxy - Global" = "Proxy - Global";
 
 "Proxy - Manual" = "Proxy - Manual";
+
+"Proxy - WhiteList" = "Proxy - WhiteList";
+
+"Proxy - WhiteList Domain" = "Proxy - WhiteList Domain";
+
+"Proxy - WhiteList IP" = "Proxy - WhiteList IP";
+
+"White List Mode" = "White List Mode";
+
+"White List Domain" = "White List Domain";
+
+"White List IP" = "White List IP";
