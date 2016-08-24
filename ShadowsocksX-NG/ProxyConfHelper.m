@@ -203,7 +203,9 @@ GCDWebServer *webServer = nil;
 }
 
 + (void)stopPACServer {
-    [webServer stop];
+    if ([webServer isRunning]) {
+        [webServer stop];
+    }
 }
 
 @end
