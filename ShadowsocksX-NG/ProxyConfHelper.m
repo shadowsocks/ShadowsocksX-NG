@@ -13,6 +13,7 @@
 
 @implementation ProxyConfHelper
 
+GCDWebServer *webServer =nil;
 
 + (BOOL)isVersionOk {
     NSTask *task;
@@ -124,7 +125,6 @@
     NSMutableArray* args = [@[@"--mode", @"auto", @"--pac-url", [url absoluteString]]mutableCopy];
     
     [self addArguments4ManualSpecifyNetworkServices:args];
-    
     [self callHelper:args];
 }
 
@@ -135,8 +135,8 @@
                               , [NSString stringWithFormat:@"%lu", (unsigned long)port]]mutableCopy];
     
     [self addArguments4ManualSpecifyNetworkServices:args];
-    
     [self callHelper:args];
+    [self stopPACServer];
 }
 
 + (void)disableProxy:(NSString*) PACFilePath {
@@ -153,29 +153,34 @@
                               ]mutableCopy];
     [self addArguments4ManualSpecifyNetworkServices:args];
     [self callHelper:args];
+    [self stopPACServer];
 }
 
 + (NSString*)startPACServer:(NSString*) PACFilePath {
     //接受参数为以后使用定制PAC文件
     NSData * originalPACData;
+    NSString * routerPath = @"/proxy.pac";
     if ([PACFilePath isEqual: @"hi"]) {//用默认路径来代替
         PACFilePath = [NSString stringWithFormat:@"%@/%@", NSHomeDirectory(), @".ShadowsocksX-NG/gfwlist.js"];
         originalPACData = [NSData dataWithContentsOfFile: [NSString stringWithFormat:@"%@/%@", NSHomeDirectory(), @".ShadowsocksX-NG/gfwlist.js"]];
     }else{//用定制路径来代替
         originalPACData = [NSData dataWithContentsOfFile: [NSString stringWithFormat:@"%@/%@/%@", NSHomeDirectory(), @".ShadowsocksX-NG", PACFilePath]];
+        routerPath = [NSString stringWithFormat:@"/%@",PACFilePath];
     }
-    GCDWebServer *webServer = [[GCDWebServer alloc] init];
-    [webServer addHandlerForMethod:@"GET" path:@"/proxy.pac" requestClass:[GCDWebServerRequest class] processBlock:^GCDWebServerResponse *(GCDWebServerRequest *request) {
+    [self stopPACServer];
+    webServer = [[GCDWebServer alloc] init];
+    [webServer addHandlerForMethod:@"GET" path:routerPath requestClass:[GCDWebServerRequest class] processBlock:^GCDWebServerResponse *(GCDWebServerRequest *request) {
         return [GCDWebServerDataResponse responseWithData: originalPACData contentType:@"application/x-ns-proxy-autoconfig"];
     }
      ];
     int port = 8090;
     [webServer startWithPort:port bonjourName:@"webserver"];
-    return @"http://127.0.0.1:8090/proxy.pac";//为以后的定制PAC文件做准备
+    return [NSString stringWithFormat:@"%@%d%@",@"http://127.0.0.1:",port,routerPath];
 }
 
 + (void)stopPACServer {
     //原版似乎没有处理这个，本来设计计划如果切换到全局模式或者手动模式就关掉webserver 似乎没有这个必要了？
+    [webServer stop];
 }
 
 @end
