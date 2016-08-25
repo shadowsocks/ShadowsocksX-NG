@@ -197,9 +197,11 @@ GCDWebServer *webServer = nil;
         return [GCDWebServerDataResponse responseWithData: originalPACData contentType:@"application/x-ns-proxy-autoconfig"];
     }
      ];
-    int port = 8090;
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    NSString * address = [defaults stringForKey:@"PacServer.ListenAddress"];
+    int port = (short)[defaults integerForKey:@"PacServer.ListenPort"];
     [webServer startWithPort:port bonjourName:@"webserver"];
-    return [NSString stringWithFormat:@"%@%d%@",@"http://127.0.0.1:",port,routerPath];
+    return [NSString stringWithFormat:@"%@%@:%d%@",@"http://",address,port,routerPath];
 }
 
 + (void)stopPACServer {
