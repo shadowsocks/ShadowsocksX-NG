@@ -124,6 +124,7 @@ class PreferencesWindowController: NSWindowController
     @IBAction func ok(sender: NSButton) {
         if editingProfile != nil {
             if !editingProfile.isValid() {
+                // Done Shake window
                 shakeWindows()
                 return
             }
