@@ -54,6 +54,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             "ShadowsocksRunningMode": "auto",
             "LocalSocks5.ListenPort": NSNumber(unsignedShort: 1086),
             "LocalSocks5.ListenAddress": "127.0.0.1",
+            "PacServer.ListenAddress": "127.0.0.1",
+            "PacServer.ListenPort":NSNumber(unsignedShort: 8090),
             "LocalSocks5.Timeout": NSNumber(unsignedInteger: 60),
             "LocalSocks5.EnableUDPRelay": NSNumber(bool: false),
             "LocalSocks5.EnableVerboseMode": NSNumber(bool: false),
@@ -86,6 +88,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             , usingBlock: {
             (note) in
                 SyncSSLocal()
+                self.applyConfig()
             }
         )
         notifyCenter.addObserverForName("NOTIFY_FOUND_SS_URL", object: nil, queue: nil) {
@@ -148,6 +151,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         ProxyConfHelper.disableProxy("hi")
         let defaults = NSUserDefaults.standardUserDefaults()
         defaults.setBool(false, forKey: "ShadowsocksOn")
+        ProxyConfHelper.stopPACServer()
     }
     
     func applyConfig() {
