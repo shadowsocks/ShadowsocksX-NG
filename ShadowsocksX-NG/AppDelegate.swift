@@ -36,6 +36,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     @IBOutlet weak var serversMenuItem: NSMenuItem!
     @IBOutlet var showQRCodeMenuItem: NSMenuItem!
     @IBOutlet var scanQRCodeMenuItem: NSMenuItem!
+    @IBOutlet var showBunchJsonExampleFile: NSMenuItem!
+    @IBOutlet var importBunchJsonFile: NSMenuItem!
+    @IBOutlet weak var exportAllServerProfile: NSMenuItem!
     @IBOutlet var serversPreferencesMenuItem: NSMenuItem!
     
     @IBOutlet weak var lanchAtLoginMenuItem: NSMenuItem!
@@ -256,6 +259,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     
     @IBAction func scanQRCodeFromScreen(sender: NSMenuItem) {
         ScanQRCodeOnScreen()
+    }
+    
+    @IBAction func showBunchJsonExampleFile(sender: NSMenuItem) {
+    }
+    
+    @IBAction func importBunchJsonFile(sender: NSMenuItem) {
+    }
+    
+    @IBAction func exportAllServerProfile(sender: NSMenuItem) {
     }
 
     @IBAction func toggleLaunghAtLogin(sender: NSMenuItem) {

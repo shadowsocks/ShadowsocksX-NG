@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		0880CE401D6FE6D900BD39E2 /* example-gui-config.json in Resources */ = {isa = PBXBuildFile; fileRef = 0880CE3F1D6FE6D900BD39E2 /* example-gui-config.json */; };
+		0880CE421D6FF7F600BD39E2 /* BunchImportUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0880CE411D6FF7F600BD39E2 /* BunchImportUtils.swift */; };
 		088EC3971D5F5B8600E40791 /* whitelist.pac in Resources */ = {isa = PBXBuildFile; fileRef = 088EC3961D5F5B8600E40791 /* whitelist.pac */; };
 		088EC3991D5F5BA300E40791 /* whiteiplist.pac in Resources */ = {isa = PBXBuildFile; fileRef = 088EC3981D5F5BA300E40791 /* whiteiplist.pac */; };
 		258E511BA910B0521B24DAB8 /* Pods_ShadowsocksX_NG.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 283ED1A8E9B711AC65670031 /* Pods_ShadowsocksX_NG.framework */; };
@@ -92,6 +93,7 @@
 
 /* Begin PBXFileReference section */
 		0880CE3F1D6FE6D900BD39E2 /* example-gui-config.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "example-gui-config.json"; sourceTree = "<group>"; };
+		0880CE411D6FF7F600BD39E2 /* BunchImportUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BunchImportUtils.swift; sourceTree = "<group>"; };
 		088EC3961D5F5B8600E40791 /* whitelist.pac */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = whitelist.pac; sourceTree = "<group>"; };
 		088EC3981D5F5BA300E40791 /* whiteiplist.pac */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = whiteiplist.pac; sourceTree = "<group>"; };
 		08AF56C01D6AFA7C00DC4F46 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/PreferencesWindowController.strings"; sourceTree = "<group>"; };
@@ -287,6 +289,7 @@
 				9BEEF06F1D04DDB100FC52B3 /* ServerProfileManager.swift */,
 				9BEEF0771D04FE8A00FC52B3 /* LaunchAgentUtils.swift */,
 				9B3FFF0C1D05FEB30019A709 /* Utils.swift */,
+				0880CE411D6FF7F600BD39E2 /* BunchImportUtils.swift */,
 				9B3FFF201D08826E0019A709 /* PACUtils.swift */,
 				9B3FFF131D0705810019A709 /* Notifications.swift */,
 				9B3FFF1D1D0732660019A709 /* Utils.m */,
@@ -642,6 +645,7 @@
 				9BEEF06E1D04DCE400FC52B3 /* ServerProfile.swift in Sources */,
 				9B3FFF0D1D05FEB30019A709 /* Utils.swift in Sources */,
 				9BEEF0751D04EF3E00FC52B3 /* PreferencesWindowController.swift in Sources */,
+				0880CE421D6FF7F600BD39E2 /* BunchImportUtils.swift in Sources */,
 				9B0BFFE91D0460A70040E62B /* AppDelegate.swift in Sources */,
 				9BA04B231D23D5A5005AAD7F /* ProxyConfTool.m in Sources */,
 				9BEEF0781D04FE8A00FC52B3 /* LaunchAgentUtils.swift in Sources */,
