@@ -1,6 +1,6 @@
 
-/* Class = "NSMenuItem"; title = "应用用户自定规则到 PAC"; ObjectID = "6qf-cg-HXc"; */
-"6qf-cg-HXc.title" = "应用用户自定规则到 PAC";
+/* Class = "NSMenuItem"; title = "Export All Server To Json..."; ObjectID = "6k0-gn-DQv"; */
+"6k0-gn-DQv.title" = "导出全部服务器配置";
 
 /* Class = "NSMenuItem"; title = "手动模式"; ObjectID = "8PR-gs-c5N"; */
 "8PR-gs-c5N.title" = "手动模式";
@@ -17,68 +17,74 @@
 /* Class = "NSMenuItem"; title = "显示日志..."; ObjectID = "Jfy-sf-Fhl"; */
 "Jfy-sf-Fhl.title" = "显示日志...";
 
+/* Class = "NSMenuItem"; title = "White List Domain"; ObjectID = "L27-aH-Wwl"; */
+"L27-aH-Wwl.title" = "域名白名单";
+
 /* Class = "NSMenuItem"; title = "关于"; ObjectID = "LgB-6g-Gba"; */
 "LgB-6g-Gba.title" = "关于";
 
-/* Class = "NSMenuItem"; title = "服务器设置..."; ObjectID = "M5r-E7-44f"; */
+/* Class = "NSMenuItem"; title = "Server Preferences..."; ObjectID = "M5r-E7-44f"; */
 "M5r-E7-44f.title" = "服务器设置...";
 
-/* Class = "NSMenuItem"; title = "全局模式"; ObjectID = "Mw3-Jm-eXA"; */
+/* Class = "NSMenuItem"; title = "Global Mode"; ObjectID = "Mw3-Jm-eXA"; */
 "Mw3-Jm-eXA.title" = "全局模式";
 
-/* Class = "NSMenuItem"; title = "扫描屏幕上的二维码..."; ObjectID = "Qe6-bF-paT"; */
+/* Class = "NSMenuItem"; title = "Scan QR Code From Screen..."; ObjectID = "Qe6-bF-paT"; */
 "Qe6-bF-paT.title" = "扫描屏幕上的二维码...";
 
-/* Class = "NSMenuItem"; title = "显示当前服务器的二维码..."; ObjectID = "R6A-96-Zcb"; */
+/* Class = "NSMenuItem"; title = "Show QR Code For Current Server..."; ObjectID = "R6A-96-Zcb"; */
 "R6A-96-Zcb.title" = "显示当前服务器的二维码...";
 
-/* Class = "NSMenuItem"; title = "从 GFW List 更新PAC"; ObjectID = "TFc-Ec-duM"; */
+/* Class = "NSMenuItem"; title = "White List Mode"; ObjectID = "RvZ-Zn-29U"; */
+"RvZ-Zn-29U.title" = "白名单模式";
+
+/* Class = "NSMenuItem"; title = "Import Bunch Json File..."; ObjectID = "T9g-gy-gvv"; */
+"T9g-gy-gvv.title" = "批量导入...";
+
+/* Class = "NSMenuItem"; title = "Update PAC from GFW List"; ObjectID = "TFc-Ec-duM"; */
 "TFc-Ec-duM.title" = "从 GFW List 更新PAC";
 
-/* Class = "NSMenuItem"; title = "反馈"; ObjectID = "W7u-7g-Gv4"; */
+/* Class = "NSMenuItem"; title = "Feedback"; ObjectID = "W7u-7g-Gv4"; */
 "W7u-7g-Gv4.title" = "反馈";
 
-/* Class = "NSMenu"; title = "代理"; ObjectID = "YZp-bf-L40"; */
+/* Class = "NSMenuItem"; title = "White List IP"; ObjectID = "Xbu-Kq-BSR"; */
+"Xbu-Kq-BSR.title" = "IP白名单";
+
+/* Class = "NSMenu"; title = "Proxy"; ObjectID = "YZp-bf-L40"; */
 "YZp-bf-L40.title" = "代理";
 
-/* Class = "NSMenuItem"; title = "高级设置..."; ObjectID = "bZ3-fy-34d"; */
+/* Class = "NSMenuItem"; title = "Advance Preference ..."; ObjectID = "bZ3-fy-34d"; */
 "bZ3-fy-34d.title" = "高级设置...";
 
-/* Class = "NSMenuItem"; title = "代理"; ObjectID = "diI-fB-Rss"; */
+/* Class = "NSMenuItem"; title = "Proxy"; ObjectID = "diI-fB-Rss"; */
 "diI-fB-Rss.title" = "代理";
 
-/* Class = "NSMenuItem"; title = "登录时自动启动"; ObjectID = "eUq-p7-ICK"; */
+/* Class = "NSMenuItem"; title = "Launch At Login"; ObjectID = "eUq-p7-ICK"; */
 "eUq-p7-ICK.title" = "登录时自动启动";
 
 /* Class = "NSMenuItem"; title = "Showsocks: On"; ObjectID = "fzk-mE-CEV"; */
 "fzk-mE-CEV.title" = "Showsocks: On";
 
-/* Class = "NSMenuItem"; title = "PAC自动模式"; ObjectID = "r07-Gu-aEz"; */
-"r07-Gu-aEz.title" = "PAC自动模式";
+/* Class = "NSMenuItem"; title = "Update All Wihte List"; ObjectID = "gde-ZE-086"; */
+"gde-ZE-086.title" = "更新全部白名单";
 
-/* Class = "NSMenuItem"; title = "编辑PAC用户自定规则..."; ObjectID = "rms-p0-CvB"; */
-"rms-p0-CvB.title" = "编辑PAC用户自定规则...";
-
-/* Class = "NSMenuItem"; title = "高级设置..."; ObjectID = "sbx-yz-3lO"; */
-"sbx-yz-3lO.title" = "高级设置...";
-
-/* Class = "NSMenuItem"; title = "服务器"; ObjectID = "u5M-hQ-VSc"; */
-"u5M-hQ-VSc.title" = "服务器";
-
-/* Class = "NSMenuItem"; title = "退出"; ObjectID = "vJS-JW-byz"; */
-"vJS-JW-byz.title" = "退出";
-
-/* Class = "NSMenuItem"; title = "域名白名单"; ObjectID = "L27-aH-Wwl"; */
-"L27-aH-Wwl.title" = "域名白名单";
-
-/* Class = "NSMenuItem"; title = "IP白名单"; ObjectID = "Xbu-Kq-BSR"; */
-"Xbu-Kq-BSR.title" = "IP白名单";
-
-/* Class = "NSMenuItem"; title = "白名单模式"; ObjectID = "nAe-c2-Q79"; */
+/* Class = "NSMenu"; title = "White List Mode"; ObjectID = "nAe-c2-Q79"; */
 "nAe-c2-Q79.title" = "白名单模式";
 
-/* Class = "NSMenuItem"; title = "白名单模式"; ObjectID = "RvZ-Zn-29U"; */
-"RvZ-Zn-29U.title" = "白名单模式";
+/* Class = "NSMenuItem"; title = "Show Bunch Json Example File..."; ObjectID = "pdy-JE-50Q"; */
+"pdy-JE-50Q.title" = "显示示范配置文件";
 
-/* Class = "NSMenuItem"; title = "更新全部白名单"; ObjectID = "gde-ZE-086"; */
-"gde-ZE-086.title" = "更新全部白名单";
+/* Class = "NSMenuItem"; title = "Auto Mode By PAC"; ObjectID = "r07-Gu-aEz"; */
+"r07-Gu-aEz.title" = "PAC自动模式";
+
+/* Class = "NSMenuItem"; title = "Edit User Rules For PAC..."; ObjectID = "rms-p0-CvB"; */
+"rms-p0-CvB.title" = "编辑PAC用户自定规则...";
+
+/* Class = "NSMenuItem"; title = "Advance Proxy Preference..."; ObjectID = "sbx-yz-3lO"; */
+"sbx-yz-3lO.title" = "高级设置...";
+
+/* Class = "NSMenuItem"; title = "Servers"; ObjectID = "u5M-hQ-VSc"; */
+"u5M-hQ-VSc.title" = "服务器";
+
+/* Class = "NSMenuItem"; title = "Quit"; ObjectID = "vJS-JW-byz"; */
+"vJS-JW-byz.title" = "退出";

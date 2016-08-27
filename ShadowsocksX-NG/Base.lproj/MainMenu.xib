@@ -15,9 +15,9 @@
             <connections>
                 <outlet property="RunningStatusMenuItem" destination="fzk-mE-CEV" id="R4x-gK-Qcw"/>
                 <outlet property="autoModeMenuItem" destination="r07-Gu-aEz" id="9aH-pQ-Rgi"/>
-                <outlet property="exportAllServerProfile" destination="6k0-gn-DQv" id="Wft-VL-ZV2"/>
+                <outlet property="exportAllServerProfileItem" destination="6k0-gn-DQv" id="1xA-cd-5Ia"/>
                 <outlet property="globalModeMenuItem" destination="Mw3-Jm-eXA" id="ar5-Yx-3ze"/>
-                <outlet property="importBunchJsonFile" destination="T9g-gy-gvv" id="0ua-U7-lUK"/>
+                <outlet property="importBunchJsonFileItem" destination="T9g-gy-gvv" id="GW7-ii-U1j"/>
                 <outlet property="lanchAtLoginMenuItem" destination="eUq-p7-ICK" id="w4p-0c-DZn"/>
                 <outlet property="manualModeMenuItem" destination="8PR-gs-c5N" id="9qz-mU-5kt"/>
                 <outlet property="proxyMenuItem" destination="diI-fB-Rss" id="Qjk-9U-3Qy"/>
@@ -25,7 +25,7 @@
                 <outlet property="scanQRCodeMenuItem" destination="Qe6-bF-paT" id="XHa-pa-nCa"/>
                 <outlet property="serversMenuItem" destination="u5M-hQ-VSc" id="8gp-SY-Y4U"/>
                 <outlet property="serversPreferencesMenuItem" destination="M5r-E7-44f" id="voe-SX-k6a"/>
-                <outlet property="showBunchJsonExampleFile" destination="pdy-JE-50Q" id="L2a-tN-4fq"/>
+                <outlet property="showBunchJsonExampleFileItem" destination="pdy-JE-50Q" id="aWi-DB-deq"/>
                 <outlet property="showQRCodeMenuItem" destination="R6A-96-Zcb" id="XHz-pz-nCz"/>
                 <outlet property="statusMenu" destination="Hob-KD-bx9" id="clA-ZW-0pT"/>
                 <outlet property="toggleRunningMenuItem" destination="GSu-Tf-StS" id="XHw-pU-nCa"/>
