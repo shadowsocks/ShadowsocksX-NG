@@ -65,3 +65,7 @@
 "White List Domain" = "域名白名单";
 
 "White List IP" = "IP白名单";
+
+"Import Server Profile succeed!" = "导入服务器配置文件成功!"
+
+"Import Server Profile failed!" = "导入服务器配置文件失败!"

@@ -11,10 +11,7 @@ import Foundation
 
 //Function 3 导出json配置文件
 func showExampleConfigFile() {
-    let savePanel = NSSavePanel()
-    savePanel.canCreateDirectories = true
-    savePanel.beginWithCompletionHandler { (result) -> Void in
-    }
+    
 }
 
 //importConfigFile, String->void
@@ -33,9 +30,7 @@ func importConfigFile() {
                 let data = fileManager.contentsAtPath(filePath)
                 let readString = NSString(data: data!, encoding: NSUTF8StringEncoding)!
                 let readStringData = readString.dataUsingEncoding(NSUTF8StringEncoding)
-                if (NSJSONSerialization.isValidJSONObject(readString)) {
-                    print("is not a valid json object")
-                }
+
                 let jsonArr1 = try! NSJSONSerialization.JSONObjectWithData(readStringData!, options: NSJSONReadingOptions.MutableContainers) as! NSDictionary
                 
                 for item in jsonArr1.objectForKey("configs") as! [[String: AnyObject]]{
@@ -57,14 +52,34 @@ func importConfigFile() {
                     profileMgr.save()
                     NSNotificationCenter.defaultCenter().postNotificationName(NOTIFY_SERVER_PROFILES_CHANGED, object: nil)
                 }
+                let notification = NSUserNotification()
+                notification.title = "Import Server Profile succeed!".localized
+                NSUserNotificationCenter.defaultUserNotificationCenter()
+                    .deliverNotification(notification)
             }else{
-                //todo not close view and shake or alert
+                let notification = NSUserNotification()
+                notification.title = "Import Server Profile failed!".localized
+                NSUserNotificationCenter.defaultUserNotificationCenter()
+                    .deliverNotification(notification)
                 return
             }
         }
     }
 }
 
-func exportConfigFile(FilePath:String) {
+func exportConfigFile() {
     //读取example文件，删掉configs里面的配置，再用NSDictionary填充到configs里面
+    let fileManager = NSFileManager.defaultManager()
+    let filePath:String = NSBundle.mainBundle().bundlePath + "/Contents/Resources/example-gui-config.json"
+    let data = fileManager.contentsAtPath(filePath)
+    let readString = NSString(data: data!, encoding: NSUTF8StringEncoding)!
+    let readStringData = readString.dataUsingEncoding(NSUTF8StringEncoding)
+    let jsonArr1 = try! NSJSONSerialization.JSONObjectWithData(readStringData!, options: NSJSONReadingOptions.MutableContainers) as! NSDictionary
+    jsonArr1.setValue(nil, forKey: "configs")
+    let savePanel = NSSavePanel()
+    savePanel.canCreateDirectories = true
+    savePanel.beginWithCompletionHandler { (result) -> Void in
+        if (result == NSFileHandlingPanelOKButton && (savePanel.URL) != nil) {
+        }
+    }
 }
