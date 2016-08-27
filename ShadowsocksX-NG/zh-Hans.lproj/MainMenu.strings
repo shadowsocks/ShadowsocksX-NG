@@ -1,26 +1,26 @@
 
 /* Class = "NSMenuItem"; title = "Export All Server To Json..."; ObjectID = "6k0-gn-DQv"; */
-"6k0-gn-DQv.title" = "导出全部服务器配置";
+"6k0-gn-DQv.title" = "导出全部服务器配置...";
 
-/* Class = "NSMenuItem"; title = "手动模式"; ObjectID = "8PR-gs-c5N"; */
+/* Class = "NSMenuItem"; title = "Manual Mode"; ObjectID = "8PR-gs-c5N"; */
 "8PR-gs-c5N.title" = "手动模式";
 
-/* Class = "NSMenu"; title = "服务器"; ObjectID = "9Y1-db-3HK"; */
+/* Class = "NSMenu"; title = "Servers"; ObjectID = "9Y1-db-3HK"; */
 "9Y1-db-3HK.title" = "服务器";
 
-/* Class = "NSMenuItem"; title = "打开 ShadowsocksX"; ObjectID = "GSu-Tf-StS"; */
-"GSu-Tf-StS.title" = "打开 ShadowsocksX";
+/* Class = "NSMenuItem"; title = "Turn ShadowsocksX On"; ObjectID = "GSu-Tf-StS"; */
+"GSu-Tf-StS.title" = "打开ShadowsocksX";
 
 /* Class = "NSMenu"; title = "ShadowsocksX-NG"; ObjectID = "Hob-KD-bx9"; */
 "Hob-KD-bx9.title" = "ShadowsocksX-NG";
 
-/* Class = "NSMenuItem"; title = "显示日志..."; ObjectID = "Jfy-sf-Fhl"; */
+/* Class = "NSMenuItem"; title = "Show Logs..."; ObjectID = "Jfy-sf-Fhl"; */
 "Jfy-sf-Fhl.title" = "显示日志...";
 
 /* Class = "NSMenuItem"; title = "White List Domain"; ObjectID = "L27-aH-Wwl"; */
 "L27-aH-Wwl.title" = "域名白名单";
 
-/* Class = "NSMenuItem"; title = "关于"; ObjectID = "LgB-6g-Gba"; */
+/* Class = "NSMenuItem"; title = "About"; ObjectID = "LgB-6g-Gba"; */
 "LgB-6g-Gba.title" = "关于";
 
 /* Class = "NSMenuItem"; title = "Server Preferences..."; ObjectID = "M5r-E7-44f"; */
@@ -39,10 +39,10 @@
 "RvZ-Zn-29U.title" = "白名单模式";
 
 /* Class = "NSMenuItem"; title = "Import Bunch Json File..."; ObjectID = "T9g-gy-gvv"; */
-"T9g-gy-gvv.title" = "批量导入...";
+"T9g-gy-gvv.title" = "导入服务器配置文件...";
 
 /* Class = "NSMenuItem"; title = "Update PAC from GFW List"; ObjectID = "TFc-Ec-duM"; */
-"TFc-Ec-duM.title" = "从 GFW List 更新PAC";
+"TFc-Ec-duM.title" = "从 GFW List 更新 PAC";
 
 /* Class = "NSMenuItem"; title = "Feedback"; ObjectID = "W7u-7g-Gv4"; */
 "W7u-7g-Gv4.title" = "反馈";
@@ -72,7 +72,7 @@
 "nAe-c2-Q79.title" = "白名单模式";
 
 /* Class = "NSMenuItem"; title = "Show Bunch Json Example File..."; ObjectID = "pdy-JE-50Q"; */
-"pdy-JE-50Q.title" = "显示示范配置文件";
+"pdy-JE-50Q.title" = "显示示例服务器配置文件...";
 
 /* Class = "NSMenuItem"; title = "Auto Mode By PAC"; ObjectID = "r07-Gu-aEz"; */
 "r07-Gu-aEz.title" = "PAC自动模式";

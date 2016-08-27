@@ -62,8 +62,16 @@
 
 "White List IP" = "White List IP";
 
-"Import Server Profile succeed!" = "Import Server Profile succeed!"
+"Import Server Profile succeed!" = "Import Server Profile succeed!";
 
-"Import Server Profile failed!" = "Import Server Profile failed!"
+"Import Server Profile failed!" = "Import Server Profile failed!";
+
+/*
+ * ./BunchImportUtils.swift
+ */
+
+"Import Server Profile succeed!" = "Import Server Profile succeed!";
+
+"Import Server Profile failed!" = "Import Server Profile failed!";
 
 

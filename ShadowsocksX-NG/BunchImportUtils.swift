@@ -9,12 +9,22 @@
 import Foundation
 //Todo: function 1 showExampleFile, 调用fileManager 拷贝 json 到Downloads文件夹，然后打开Downloads文件夹
 
-//Function 3 导出json配置文件
+//拷贝json配置文件到~/Downloads文件夹
 func showExampleConfigFile() {
-    
+    //copy file to ~/Downloads folder
+    let filePath:String = NSBundle.mainBundle().bundlePath + "/Contents/Resources/example-gui-config.json"
+    let fileMgr = NSFileManager.defaultManager()
+    let dataPath = NSHomeDirectory().stringByAppendingString("/Downloads")
+    let destPath = dataPath + "/example-gui-config.json"
+    //检测文件是否已经存在，如果存在直接用sharedWorkspace显示
+    if fileMgr.fileExistsAtPath(destPath) {
+        NSWorkspace.sharedWorkspace().selectFile(destPath, inFileViewerRootedAtPath: dataPath)
+    }else{
+        try! fileMgr.copyItemAtPath(filePath, toPath: destPath)
+        NSWorkspace.sharedWorkspace().selectFile(destPath, inFileViewerRootedAtPath: dataPath)
+    }
 }
 
-//importConfigFile, String->void
 //调用fileManager，读取json文件，对configs for循环调用 profileManager 生成 profile并保存
 func importConfigFile() {
     let openPanel = NSOpenPanel()
