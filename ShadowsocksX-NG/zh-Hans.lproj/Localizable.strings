@@ -9,7 +9,7 @@
  */
 
 /*
- * ./PACUtils.swift
+ * ./ShadowsocksX-NG/PACUtils.swift
  */
 
 "PAC has been updated by latest GFW List." = "已经使用最新的 GFW List 更新PAC";
@@ -21,24 +21,44 @@
 "Failed to download latest White List update succeed." = "下载白名单失败";
 
 /*
- * ./PreferencesWindowController.swift
+ * ./ShadowsocksX-NG/BunchImportUtils.swift
  */
 
-"New Server" = "新服务器";
+"Import Server Profile succeed!" = "导入服务器配置文件成功!";
+
+"Successful import \(configsCount) items" = "成功导入 \(configsCount) 个纪录";
+
+"Import Server Profile failed!" = "导入服务器配置文件失败!";
+
+"Invalid config file!" = "配置文件无效!";
 
 /*
- * ./AppDelegate.swift
+ * ./ShadowsocksX-NG/AppDelegate.swift
  */
 
 "Add Shadowsocks Server Profile" = "已添加新Shaodwsocks服务器配置";
 
 "By scan QR Code" = "通过扫描二维码";
 
+"By Handle SS URL" = "处理 SS URL";
+
 " Encription Method: \(profile.method)" = " 加密方法: \(profile.method)";
 
 "Current server profile is not valid." = "当前服务器配置无效";
 
 "No current server profile." = "未设置当前服务器配置";
+
+"Proxy - Auto By PAC" = "代理 - PAC自动";
+
+"Proxy - Global" = "代理 - 全局";
+
+"Proxy - Manual" = "代理 - 手动";
+
+"Proxy - White List" = "代理 - 白名单";
+
+"Proxy - White List Domain" = "代理 - 域名白名单";
+
+"Proxy - White List IP" = "代理 - IP白名单";
 
 "Shadowsocks: On" = "Shadowsocks: On";
 
@@ -48,20 +68,17 @@
 
 "Turn Shadowsocks On" = "打开 Shadowsocks";
 
-"Proxy - Auto By PAC" = "代理 - PAC自动";
+/*
+ * ./ShadowsocksX-NG/PreferencesWindowController.swift
+ */
 
-"Proxy - Global" = "代理 - 全局";
+"New Server" = "新服务器";
 
-"Proxy - Manual" = "代理 - 手动";
+/*
+ * ./ShadowsocksX-NG/UserRulesController.swift
+ */
 
-"Proxy - WhiteList" = "代理 - 白名单";
+"PAC has been updated by User Rules." = "PAC has been updated by User Rules.";
 
-"Proxy - WhiteList Domain" = "代理 - 域名白名单";
+"It's failed to update PAC by User Rules." = "It's failed to update PAC by User Rules.";
 
-"Proxy - WhiteList IP" = "代理 - IP白名单";
-
-"White List Mode" = "白名单模式";
-
-"White List Domain" = "域名白名单";
-
-"White List IP" = "IP白名单";

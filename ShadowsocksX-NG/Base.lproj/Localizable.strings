@@ -1,27 +1,39 @@
+
+
+
+
+
+
 /*
  * SHARED STRINGS
  */
 
 /*
- * ./PACUtils.swift
+ * ./ShadowsocksX-NG/PACUtils.swift
  */
 
 "PAC has been updated by latest GFW List." = "PAC has been updated by latest GFW List.";
 
 "Failed to download latest GFW List." = "Failed to download latest GFW List.";
 
-"White List updated succeed." = "White List updated succeed.";
+"White List update succeed." = "White List update succeed.";
 
 "Failed to download latest White List update succeed." = "Failed to download latest White List update succeed.";
 
 /*
- * ./PreferencesWindowController.swift
+ * ./ShadowsocksX-NG/BunchImportUtils.swift
  */
 
-"New Server" = "New Server";
+"Import Server Profile succeed!" = "Import Server Profile succeed!";
+
+"Successful import \(configsCount) items" = "Successful import \(configsCount) items";
+
+"Import Server Profile failed!" = "Import Server Profile failed!";
+
+"Invalid config file!" = "Invalid config file!";
 
 /*
- * ./AppDelegate.swift
+ * ./ShadowsocksX-NG/AppDelegate.swift
  */
 
 "Add Shadowsocks Server Profile" = "Add Shadowsocks Server Profile";
@@ -36,6 +48,16 @@
 
 "No current server profile." = "No current server profile.";
 
+"Proxy - Auto By PAC" = "Proxy - Auto By PAC";
+
+"Proxy - Global" = "Proxy - Global";
+
+"Proxy - Manual" = "Proxy - Manual";
+
+"Proxy - White List Domain" = "Proxy - White List Domain";
+
+"Proxy - White List IP" = "Proxy - White List IP";
+
 "Shadowsocks: On" = "Shadowsocks: On";
 
 "Turn Shadowsocks Off" = "Turn Shadowsocks Off";
@@ -44,20 +66,17 @@
 
 "Turn Shadowsocks On" = "Turn Shadowsocks On";
 
-"Proxy - Auto By PAC" = "Proxy - Auto By PAC";
+/*
+ * ./ShadowsocksX-NG/PreferencesWindowController.swift
+ */
 
-"Proxy - Global" = "Proxy - Global";
+"New Server" = "New Server";
 
-"Proxy - Manual" = "Proxy - Manual";
+/*
+ * ./ShadowsocksX-NG/UserRulesController.swift
+ */
 
-"Proxy - WhiteList" = "Proxy - WhiteList";
+"PAC has been updated by User Rules." = "PAC has been updated by User Rules.";
 
-"Proxy - WhiteList Domain" = "Proxy - WhiteList Domain";
+"It's failed to update PAC by User Rules." = "It's failed to update PAC by User Rules.";
 
-"Proxy - WhiteList IP" = "Proxy - WhiteList IP";
-
-"White List Mode" = "White List Mode";
-
-"White List Domain" = "White List Domain";
-
-"White List IP" = "White List IP";

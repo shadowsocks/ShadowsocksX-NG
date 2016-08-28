@@ -150,7 +150,10 @@ class PreferencesWindowController: NSWindowController
         if  oldProfileIndex >= 0 {
             let oldProfile = profileMgr.profiles[oldProfileIndex]
             profilesTableView.beginUpdates()
-            let newProfile = ServerProfile.fromDictionary(oldProfile.toDictionary())
+            var newProfile = ServerProfile()
+            let newUUID = newProfile.uuid
+            newProfile = ServerProfile.fromDictionary(oldProfile.toDictionary())//here 因为UUID重复了
+            newProfile.uuid = newUUID
             profileMgr.profiles.append(newProfile)
             let index = NSIndexSet(index: profileMgr.profiles.count-1)
             profilesTableView.insertRowsAtIndexes(index, withAnimation: .EffectFade)
@@ -158,6 +161,8 @@ class PreferencesWindowController: NSWindowController
             self.profilesTableView.selectRowIndexes(index, byExtendingSelection: false)
             profilesTableView.endUpdates()
             updateProfileBoxVisible()
+            NSNotificationCenter.defaultCenter()
+                .postNotificationName(NOTIFY_SERVER_PROFILES_CHANGED, object: nil)
         }
     }
     
