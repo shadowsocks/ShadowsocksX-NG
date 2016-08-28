@@ -413,7 +413,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             whiteListDomainMenuItem.state = 0
             whiteListIPMenuItem.state = 0
         } else if mode == "whiteListDomain" {
-            proxyMenuItem.title = "Proxy - WhiteList Domain".localized
+            proxyMenuItem.title = "Proxy - White List Domain".localized
             autoModeMenuItem.state = 0
             globalModeMenuItem.state = 0
             manualModeMenuItem.state = 0
@@ -421,7 +421,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             whiteListDomainMenuItem.state = 1
             whiteListIPMenuItem.state = 0
         } else if mode == "whiteListIP" {
-            proxyMenuItem.title = "Proxy - WhiteList IP".localized
+            proxyMenuItem.title = "Proxy - White List IP".localized
             autoModeMenuItem.state = 0
             globalModeMenuItem.state = 0
             manualModeMenuItem.state = 0
