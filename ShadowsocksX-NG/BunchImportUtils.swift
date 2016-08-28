@@ -99,12 +99,12 @@ func exportConfigFile() {
     let readStringData = readString.dataUsingEncoding(NSUTF8StringEncoding)
     let jsonArr1 = try! NSJSONSerialization.JSONObjectWithData(readStringData!, options: NSJSONReadingOptions.MutableContainers) as! NSDictionary
     
-    var configsArray:NSMutableArray = []
+    let configsArray:NSMutableArray = [] //not using var?
     
     for profile in profileMgr.profiles{
-        var configProfile:NSMutableDictionary = [:]
+        let configProfile:NSMutableDictionary = [:] //not using var?
         //standard ss profile
-        configProfile.setValue(1, forKey: "enable")
+        configProfile.setValue(true, forKey: "enable")
         configProfile.setValue(profile.serverHost, forKey: "server")
         configProfile.setValue(NSNumber(unsignedShort:profile.serverPort), forKey: "server_port")//not work
         configProfile.setValue(profile.password, forKey: "password")
@@ -136,6 +136,7 @@ func exportConfigFile() {
         if (result == NSFileHandlingPanelOKButton && (savePanel.URL) != nil) {
             //write jsonArr1 back to file
             try! jsonString.writeToFile((savePanel.URL?.path)!, atomically: true, encoding: NSUTF8StringEncoding)
+            NSWorkspace.sharedWorkspace().selectFile((savePanel.URL?.path)!, inFileViewerRootedAtPath: (savePanel.directoryURL?.path)!)
         }
     }
 }
