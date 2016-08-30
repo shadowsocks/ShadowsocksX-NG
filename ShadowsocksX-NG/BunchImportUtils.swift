@@ -17,7 +17,7 @@ func showExampleConfigFile() {
     //copy file to ~/Downloads folder
     let filePath:String = NSBundle.mainBundle().bundlePath + "/Contents/Resources/example-gui-config.json"
     let fileMgr = NSFileManager.defaultManager()
-    let dataPath = NSHomeDirectory().stringByAppendingString("/Downloads")
+    let dataPath = NSHomeDirectory() + "/Downloads"
     let destPath = dataPath + "/example-gui-config.json"
     //检测文件是否已经存在，如果存在直接用sharedWorkspace显示
     if fileMgr.fileExistsAtPath(destPath) {
@@ -36,6 +36,7 @@ func importConfigFile() {
     openPanel.canChooseDirectories = false
     openPanel.canCreateDirectories = false
     openPanel.canChooseFiles = true
+    openPanel.becomeKeyWindow()
     openPanel.beginWithCompletionHandler { (result) -> Void in
         if (result == NSFileHandlingPanelOKButton && (openPanel.URL) != nil) {
             let fileManager = NSFileManager.defaultManager()
@@ -112,13 +113,13 @@ func exportConfigFile() {
         configProfile.setValue(profile.remark, forKey: "remarks")
         configProfile.setValue(profile.remark.dataUsingEncoding(NSUTF8StringEncoding)?.base64EncodedStringWithOptions(NSDataBase64EncodingOptions(rawValue: 0)), forKey: "remarks_base64")
         //ssr
-        if  1 == 1 {
+        if  profile.ssrObfs != "" {
             configProfile.setValue(profile.ssrObfs, forKey: "obfs")
             configProfile.setValue(profile.ssrProtocol, forKey: "protocol")
-            if 2 == 2 {
+            if profile.ssrObfsParam != "" {
                 configProfile.setValue(profile.ssrObfsParam, forKey: "obfsparam")
             }
-            if 3 == 3 {
+            if profile.ssrProtocolParam != "" {
                 configProfile.setValue(profile.ssrProtocolParam, forKey: "protoclparam")
             }
         }
@@ -132,6 +133,7 @@ func exportConfigFile() {
     savePanel.canCreateDirectories = true
     savePanel.allowedFileTypes = ["json"]
     savePanel.nameFieldStringValue = "export.json"
+    savePanel.becomeKeyWindow()
     savePanel.beginWithCompletionHandler { (result) -> Void in
         if (result == NSFileHandlingPanelOKButton && (savePanel.URL) != nil) {
             //write jsonArr1 back to file
