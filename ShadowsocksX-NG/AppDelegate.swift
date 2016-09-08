@@ -333,6 +333,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     func updateRunningModeMenu() {
         let defaults = NSUserDefaults.standardUserDefaults()
         let mode = defaults.stringForKey("ShadowsocksRunningMode")
+        var serverMenuText = "Servers".localized
+        for i in defaults.arrayForKey("ServerProfiles")! {
+            if i["Id"] as! String == defaults.stringForKey("ActiveServerProfileId")! {
+                if i["Remark"] as! String != "" {
+                    serverMenuText = i["Remark"] as! String
+                } else {
+                    serverMenuText = i["ServerHost"] as! String
+                }
+            }
+        }
+        serversMenuItem.title = serverMenuText
         if mode == "auto" {
             proxyMenuItem.title = "Proxy - Auto By PAC".localized
             autoModeMenuItem.state = 1
