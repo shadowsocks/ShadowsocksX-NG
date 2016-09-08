@@ -29,10 +29,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     @IBOutlet weak var autoModeMenuItem: NSMenuItem!
     @IBOutlet weak var globalModeMenuItem: NSMenuItem!
     @IBOutlet weak var manualModeMenuItem: NSMenuItem!
+    @IBOutlet weak var whiteListModeMenuItem: NSMenuItem!
+    @IBOutlet weak var whiteListDomainMenuItem: NSMenuItem!
+    @IBOutlet weak var whiteListIPMenuItem: NSMenuItem!
     
     @IBOutlet weak var serversMenuItem: NSMenuItem!
     @IBOutlet var showQRCodeMenuItem: NSMenuItem!
     @IBOutlet var scanQRCodeMenuItem: NSMenuItem!
+    @IBOutlet var showBunchJsonExampleFileItem: NSMenuItem!
+    @IBOutlet var importBunchJsonFileItem: NSMenuItem!
+    @IBOutlet var exportAllServerProfileItem: NSMenuItem!
     @IBOutlet var serversPreferencesMenuItem: NSMenuItem!
     
     @IBOutlet weak var lanchAtLoginMenuItem: NSMenuItem!
@@ -54,10 +60,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             "ShadowsocksRunningMode": "auto",
             "LocalSocks5.ListenPort": NSNumber(unsignedShort: 1086),
             "LocalSocks5.ListenAddress": "127.0.0.1",
+            "PacServer.ListenAddress": "127.0.0.1",
+            "PacServer.ListenPort":NSNumber(unsignedShort: 8090),
             "LocalSocks5.Timeout": NSNumber(unsignedInteger: 60),
             "LocalSocks5.EnableUDPRelay": NSNumber(bool: false),
             "LocalSocks5.EnableVerboseMode": NSNumber(bool: false),
             "GFWListURL": "https://raw.githubusercontent.com/gfwlist/gfwlist/master/gfwlist.txt",
+            "WhiteListURL": "https://raw.githubusercontent.com/breakwa11/gfw_whitelist/master/whitelist.pac",
+            "WhiteListIPURL": "https://raw.githubusercontent.com/breakwa11/gfw_whitelist/master/whiteiplist.pac",
             "AutoConfigureNetworkServices": NSNumber(bool: true)
         ])
         
@@ -93,6 +103,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             , usingBlock: {
             (note) in
                 SyncSSLocal()
+                self.applyConfig()
             }
         )
         notifyCenter.addObserverForName("NOTIFY_FOUND_SS_URL", object: nil, queue: nil) {
@@ -151,6 +162,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
 
     func applicationWillTerminate(aNotification: NSNotification) {
         // Insert code here to tear down your application
+        StopSSLocal()
+        ProxyConfHelper.disableProxy("hi")
+        let defaults = NSUserDefaults.standardUserDefaults()
+        defaults.setBool(false, forKey: "ShadowsocksOn")
     }
     
     func applyConfig() {
@@ -161,15 +176,24 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         if isOn {
             StartSSLocal()
             if mode == "auto" {
-                ProxyConfHelper.enablePACProxy()
+                ProxyConfHelper.disableProxy("hi")
+                ProxyConfHelper.enablePACProxy("hi")
             } else if mode == "global" {
+                ProxyConfHelper.disableProxy("hi")
                 ProxyConfHelper.enableGlobalProxy()
             } else if mode == "manual" {
-                ProxyConfHelper.disableProxy()
+                ProxyConfHelper.disableProxy("hi")
+                ProxyConfHelper.disableProxy("hi")
+            } else if mode == "whiteListDomain" {
+                ProxyConfHelper.disableProxy("hi")
+                ProxyConfHelper.enableWhiteDomainListProxy()
+            } else if mode == "whiteListIP" {
+                ProxyConfHelper.disableProxy("hi")
+                ProxyConfHelper.enableWhiteIPListProxy()
             }
         } else {
             StopSSLocal()
-            ProxyConfHelper.disableProxy()
+            ProxyConfHelper.disableProxy("hi")
         }
     }
     
@@ -186,6 +210,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
 
     @IBAction func updateGFWList(sender: NSMenuItem) {
         UpdatePACFromGFWList()
+    }
+    
+    @IBAction func updateWhiteList(sender: NSMenuItem) {
+        UpdatePACFromWhiteList()
     }
     
     @IBAction func editUserRulesForPAC(sender: NSMenuItem) {
@@ -232,6 +260,19 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     @IBAction func scanQRCodeFromScreen(sender: NSMenuItem) {
         ScanQRCodeOnScreen()
     }
+    
+    @IBAction func showBunchJsonExampleFile(sender: NSMenuItem) {
+        showExampleConfigFile()
+    }
+    
+    @IBAction func importBunchJsonFile(sender: NSMenuItem) {
+        importConfigFile()
+        //updateServersMenu()//not working
+    }
+    
+    @IBAction func exportAllServerProfile(sender: NSMenuItem) {
+        exportConfigFile()
+    }
 
     @IBAction func toggleLaunghAtLogin(sender: NSMenuItem) {
         launchAtLoginController.launchAtLogin = !launchAtLoginController.launchAtLogin;
@@ -255,6 +296,20 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     @IBAction func selectManualMode(sender: NSMenuItem) {
         let defaults = NSUserDefaults.standardUserDefaults()
         defaults.setValue("manual", forKey: "ShadowsocksRunningMode")
+        updateRunningModeMenu()
+        applyConfig()
+    }
+    
+    @IBAction func selectWhiteDomainListMode(sender: NSMenuItem) {
+        let defaults = NSUserDefaults.standardUserDefaults()
+        defaults.setValue("whiteListDomain", forKey: "ShadowsocksRunningMode")
+        updateRunningModeMenu()
+        applyConfig()
+    }
+    
+    @IBAction func selectWhiteIPListMode(sender: NSMenuItem) {
+        let defaults = NSUserDefaults.standardUserDefaults()
+        defaults.setValue("whiteListIP", forKey: "ShadowsocksRunningMode")
         updateRunningModeMenu()
         applyConfig()
     }
@@ -314,7 +369,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     }
     
     @IBAction func feedback(sender: NSMenuItem) {
-        NSWorkspace.sharedWorkspace().openURL(NSURL(string: "https://github.com/qiuyuzhou/ShadowsocksX-NG/issues")!)
+        NSWorkspace.sharedWorkspace().openURL(NSURL(string: "https://github.com/qinyuhang/ShadowsocksX-NG/issues")!)
     }
     
     @IBAction func showAbout(sender: NSMenuItem) {
@@ -338,16 +393,41 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             autoModeMenuItem.state = 1
             globalModeMenuItem.state = 0
             manualModeMenuItem.state = 0
+            whiteListModeMenuItem.state = 0
+            whiteListDomainMenuItem.state = 0
+            whiteListIPMenuItem.state = 0
         } else if mode == "global" {
             proxyMenuItem.title = "Proxy - Global".localized
             autoModeMenuItem.state = 0
             globalModeMenuItem.state = 1
             manualModeMenuItem.state = 0
+            whiteListModeMenuItem.state = 0
+            whiteListDomainMenuItem.state = 0
+            whiteListIPMenuItem.state = 0
         } else if mode == "manual" {
             proxyMenuItem.title = "Proxy - Manual".localized
             autoModeMenuItem.state = 0
             globalModeMenuItem.state = 0
             manualModeMenuItem.state = 1
+            whiteListModeMenuItem.state = 0
+            whiteListDomainMenuItem.state = 0
+            whiteListIPMenuItem.state = 0
+        } else if mode == "whiteListDomain" {
+            proxyMenuItem.title = "Proxy - White List Domain".localized
+            autoModeMenuItem.state = 0
+            globalModeMenuItem.state = 0
+            manualModeMenuItem.state = 0
+            whiteListModeMenuItem.state = 1
+            whiteListDomainMenuItem.state = 1
+            whiteListIPMenuItem.state = 0
+        } else if mode == "whiteListIP" {
+            proxyMenuItem.title = "Proxy - White List IP".localized
+            autoModeMenuItem.state = 0
+            globalModeMenuItem.state = 0
+            manualModeMenuItem.state = 0
+            whiteListModeMenuItem.state = 1
+            whiteListDomainMenuItem.state = 0
+            whiteListIPMenuItem.state = 1
         }
     }
     
@@ -373,6 +453,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         let showQRItem = showQRCodeMenuItem
         let scanQRItem = scanQRCodeMenuItem
         let preferencesItem = serversPreferencesMenuItem
+        let showBunch = showBunchJsonExampleFileItem
+        let importBuntch = importBunchJsonFileItem
+        let exportAllServer = exportAllServerProfileItem
         
         var i = 0
         for p in mgr.profiles {
@@ -399,6 +482,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         }
         serversMenuItem.submenu?.addItem(showQRItem)
         serversMenuItem.submenu?.addItem(scanQRItem)
+        serversMenuItem.submenu?.addItem(showBunch)
+        serversMenuItem.submenu?.addItem(importBuntch)
+        serversMenuItem.submenu?.addItem(exportAllServer)
         serversMenuItem.submenu?.addItem(NSMenuItem.separatorItem())
         serversMenuItem.submenu?.addItem(preferencesItem)
     }

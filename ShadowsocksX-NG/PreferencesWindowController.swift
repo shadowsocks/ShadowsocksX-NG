@@ -19,6 +19,12 @@ class PreferencesWindowController: NSWindowController
     @IBOutlet weak var portTextField: NSTextField!
     @IBOutlet weak var methodTextField: NSComboBox!
     
+    @IBOutlet weak var ProtocolTextField: NSComboBox!
+    @IBOutlet weak var ProtocolParamTextField: NSTextField!
+    @IBOutlet weak var ObfsTextField: NSComboBox!
+    @IBOutlet weak var ObfsParamTextField: NSTextField!
+    
+    @IBOutlet weak var duplicateProfileButton: NSButton!
     @IBOutlet weak var passwordTextField: NSTextField!
     @IBOutlet weak var remarkTextField: NSTextField!
     
@@ -43,19 +49,40 @@ class PreferencesWindowController: NSWindowController
         profileMgr = ServerProfileManager.instance
         
         methodTextField.addItemsWithObjectValues([
+            "table",
+            "rc4",
+            "rc4-md5-6",
+            "rc4-md5",
             "aes-128-cfb",
             "aes-192-cfb",
             "aes-256-cfb",
-            "des-cfb",
             "bf-cfb",
+            "camellia-128-cfb",
+            "camellia-192-cfb",
+            "camellia-256-cfb",
             "cast5-cfb",
-            "rc4-md5",
-            "chacha20",
+            "des-cfb",
+            "idea-cfb",
+            "rc2-cfb",
+            "seed-cfb",
             "salsa20",
-            "rc4",
-            "table",
+            "chacha20",
+            "chacha20-ietf"
             ])
-        
+        ProtocolTextField.addItemsWithObjectValues([
+            "origin",
+            "verify_simple",
+            "verify_sha1",
+            "auth_sha1",
+            "auth_sha1_v2",
+            ])
+        ObfsTextField.addItemsWithObjectValues([
+            "palin",
+            "http_simple",
+            "tls_simple",
+            "random_head",
+            "tls1.2_ticket_auth",
+            ])
         profilesTableView.reloadData()
         updateProfileBoxVisible()
     }
@@ -97,7 +124,7 @@ class PreferencesWindowController: NSWindowController
     @IBAction func ok(sender: NSButton) {
         if editingProfile != nil {
             if !editingProfile.isValid() {
-                // TODO Shake window?
+                // Done Shake window
                 shakeWindows()
                 return
             }
@@ -112,6 +139,31 @@ class PreferencesWindowController: NSWindowController
     
     @IBAction func cancel(sender: NSButton) {
         window?.performClose(self)
+    }
+    
+    @IBAction func duplicateProfile(sender: NSButton) {
+        //读取当前profile，并且保存
+        if editingProfile != nil && !editingProfile.isValid(){
+            return
+        }
+        let oldProfileIndex = profilesTableView.selectedRow
+        if  oldProfileIndex >= 0 {
+            let oldProfile = profileMgr.profiles[oldProfileIndex]
+            profilesTableView.beginUpdates()
+            var newProfile = ServerProfile()
+            let newUUID = newProfile.uuid
+            newProfile = ServerProfile.fromDictionary(oldProfile.toDictionary())//here 因为UUID重复了
+            newProfile.uuid = newUUID
+            profileMgr.profiles.append(newProfile)
+            let index = NSIndexSet(index: profileMgr.profiles.count-1)
+            profilesTableView.insertRowsAtIndexes(index, withAnimation: .EffectFade)
+            self.profilesTableView.scrollRowToVisible(self.profileMgr.profiles.count-1)
+            self.profilesTableView.selectRowIndexes(index, byExtendingSelection: false)
+            profilesTableView.endUpdates()
+            updateProfileBoxVisible()
+            NSNotificationCenter.defaultCenter()
+                .postNotificationName(NOTIFY_SERVER_PROFILES_CHANGED, object: nil)
+        }
     }
     
     @IBAction func copyCurrentProfileURL2Pasteboard(sender: NSButton) {
@@ -166,6 +218,14 @@ class PreferencesWindowController: NSWindowController
             remarkTextField.bind("value", toObject: editingProfile, withKeyPath: "remark"
                 , options: [NSContinuouslyUpdatesValueBindingOption: true])
             
+            ProtocolTextField.bind("value", toObject: editingProfile, withKeyPath: "ssrProtocol", options: [NSContinuouslyUpdatesValueBindingOption: true])
+            
+            ProtocolParamTextField.bind("value", toObject: editingProfile, withKeyPath: "ssrProtocolParam", options: [NSContinuouslyUpdatesValueBindingOption: true])
+            
+            ObfsTextField.bind("value", toObject: editingProfile, withKeyPath: "ssrObfs", options: [NSContinuouslyUpdatesValueBindingOption: true])
+            
+            ObfsParamTextField.bind("value", toObject: editingProfile, withKeyPath: "ssrObfsParam", options: [NSContinuouslyUpdatesValueBindingOption: true])
+            
             otaCheckBoxBtn.bind("value", toObject: editingProfile, withKeyPath: "ota"
                 , options: [NSContinuouslyUpdatesValueBindingOption: true])
         } else {
@@ -175,6 +235,11 @@ class PreferencesWindowController: NSWindowController
             
             methodTextField.unbind("value")
             passwordTextField.unbind("value")
+            
+            ProtocolTextField.unbind("value")
+            ProtocolParamTextField.unbind("value")
+            ObfsTextField.unbind("value")
+            ObfsParamTextField.unbind("value")
             
             remarkTextField.unbind("value")
             

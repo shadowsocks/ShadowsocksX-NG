@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="10117" systemVersion="15F34" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="10117" systemVersion="15G31" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="10117"/>
     </dependencies>
@@ -15,7 +15,9 @@
             <connections>
                 <outlet property="RunningStatusMenuItem" destination="fzk-mE-CEV" id="R4x-gK-Qcw"/>
                 <outlet property="autoModeMenuItem" destination="r07-Gu-aEz" id="9aH-pQ-Rgi"/>
+                <outlet property="exportAllServerProfileItem" destination="6k0-gn-DQv" id="1xA-cd-5Ia"/>
                 <outlet property="globalModeMenuItem" destination="Mw3-Jm-eXA" id="ar5-Yx-3ze"/>
+                <outlet property="importBunchJsonFileItem" destination="T9g-gy-gvv" id="GW7-ii-U1j"/>
                 <outlet property="lanchAtLoginMenuItem" destination="eUq-p7-ICK" id="w4p-0c-DZn"/>
                 <outlet property="manualModeMenuItem" destination="8PR-gs-c5N" id="9qz-mU-5kt"/>
                 <outlet property="proxyMenuItem" destination="diI-fB-Rss" id="Qjk-9U-3Qy"/>
@@ -23,9 +25,13 @@
                 <outlet property="scanQRCodeMenuItem" destination="Qe6-bF-paT" id="XHa-pa-nCa"/>
                 <outlet property="serversMenuItem" destination="u5M-hQ-VSc" id="8gp-SY-Y4U"/>
                 <outlet property="serversPreferencesMenuItem" destination="M5r-E7-44f" id="voe-SX-k6a"/>
+                <outlet property="showBunchJsonExampleFileItem" destination="pdy-JE-50Q" id="aWi-DB-deq"/>
                 <outlet property="showQRCodeMenuItem" destination="R6A-96-Zcb" id="XHz-pz-nCz"/>
                 <outlet property="statusMenu" destination="Hob-KD-bx9" id="clA-ZW-0pT"/>
                 <outlet property="toggleRunningMenuItem" destination="GSu-Tf-StS" id="XHw-pU-nCa"/>
+                <outlet property="whiteListDomainMenuItem" destination="L27-aH-Wwl" id="h4b-aF-lyt"/>
+                <outlet property="whiteListIPMenuItem" destination="Xbu-Kq-BSR" id="D9i-Xg-6Gc"/>
+                <outlet property="whiteListModeMenuItem" destination="RvZ-Zn-29U" id="2v5-Bd-EDj"/>
             </connections>
         </customObject>
         <customObject id="YLy-65-1bz" customClass="NSFontManager"/>
@@ -63,11 +69,36 @@
                                     <action selector="selectManualMode:" target="Voe-Tx-rLC" id="Xxb-28-6fi"/>
                                 </connections>
                             </menuItem>
+                            <menuItem title="White List Mode" id="RvZ-Zn-29U">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <menu key="submenu" title="White List Mode" id="nAe-c2-Q79">
+                                    <items>
+                                        <menuItem title="White List Domain" id="L27-aH-Wwl">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="selectWhiteDomainListMode:" target="Voe-Tx-rLC" id="Oge-mM-TtL"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="White List IP" id="Xbu-Kq-BSR">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="selectWhiteIPListMode:" target="Voe-Tx-rLC" id="Ahq-h9-jJP"/>
+                                            </connections>
+                                        </menuItem>
+                                    </items>
+                                </menu>
+                            </menuItem>
                             <menuItem isSeparatorItem="YES" id="V92-VH-Agn"/>
                             <menuItem title="Update PAC from GFW List" id="TFc-Ec-duM">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
                                     <action selector="updateGFWList:" target="Voe-Tx-rLC" id="Ztt-PS-F3T"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Update All Wihte List" id="gde-ZE-086">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="updateWhiteList:" target="Voe-Tx-rLC" id="2Iv-M4-k9C"/>
                                 </connections>
                             </menuItem>
                             <menuItem title="Edit User Rules For PAC..." id="rms-p0-CvB">
@@ -96,10 +127,28 @@
                                     <action selector="showQRCodeForCurrentServer:" target="Voe-Tx-rLC" id="t45-Zk-cai"/>
                                 </connections>
                             </menuItem>
-                            <menuItem title="Scan QR Code From Screen ..." id="Qe6-bF-paT">
+                            <menuItem title="Scan QR Code From Screen..." id="Qe6-bF-paT">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
                                     <action selector="scanQRCodeFromScreen:" target="Voe-Tx-rLC" id="zQZ-IT-H4a"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Show Bunch Json Example File..." id="pdy-JE-50Q">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="showBunchJsonExampleFile:" target="Voe-Tx-rLC" id="2fR-af-bNb"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Import Bunch Json File..." id="T9g-gy-gvv">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="importBunchJsonFile:" target="Voe-Tx-rLC" id="ptm-YK-H93"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Export All Server To Json..." id="6k0-gn-DQv">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="exportAllServerProfile:" target="Voe-Tx-rLC" id="C5A-Pp-tYo"/>
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="6sL-A4-S7N"/>

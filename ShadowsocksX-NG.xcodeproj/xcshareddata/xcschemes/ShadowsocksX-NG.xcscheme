@@ -42,7 +42,7 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "5FCD6487BC23CDDDB21857856F7E93F4"
+               BlueprintIdentifier = "F69966EE760BB16DE7009DBE04D8B18D"
                BuildableName = "Pods_ShadowsocksX_NG.framework"
                BlueprintName = "Pods-ShadowsocksX-NG"
                ReferencedContainer = "container:Pods/Pods.xcodeproj">
