@@ -302,6 +302,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             updateServersMenu()
             SyncSSLocal()
         }
+        updateRunningModeMenu()
     }
     
     @IBAction func showLogs(sender: NSMenuItem) {
