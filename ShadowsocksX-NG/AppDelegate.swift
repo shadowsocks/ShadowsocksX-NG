@@ -512,13 +512,20 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         if isOn {
             runningStatusMenuItem.title = "Shadowsocks: On".localized
             toggleRunningMenuItem.title = "Turn Shadowsocks Off".localized
-            let image = NSImage(named: "menu_icon")
+            var image = NSImage(named: "menu_icon")
+            if SystemThemeChangeHelper.isCurrentDark() {
+                image = NSImage(named: "menu_icon_dark_mode")
+            }
+            
             statusItemView.setIcon(image!)
 //            statusItem!.image = image
         } else {
             runningStatusMenuItem.title = "Shadowsocks: Off".localized
             toggleRunningMenuItem.title = "Turn Shadowsocks On".localized
-            let image = NSImage(named: "menu_icon_disabled")
+            var image = NSImage(named: "menu_icon_disabled")
+            if SystemThemeChangeHelper.isCurrentDark() {
+                image = NSImage(named: "menu_icon_disabled_dark_mode")
+            }
 //            statusItem.image = image
             statusItemView.setIcon(image!)
         }
