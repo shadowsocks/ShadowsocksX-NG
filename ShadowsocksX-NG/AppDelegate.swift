@@ -197,6 +197,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         // Insert code here to tear down your application
         StopSSLocal()
         ProxyConfHelper.disableProxy("hi")
+        let defaults = NSUserDefaults.standardUserDefaults()
+        defaults.setBool(false, forKey: "ShadowsocksOn")
         ProxyConfHelper.stopPACServer()
 
 
@@ -445,15 +447,21 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         let defaults = NSUserDefaults.standardUserDefaults()
         let mode = defaults.stringForKey("ShadowsocksRunningMode")
         var serverMenuText = "Servers".localized
-        for i in defaults.arrayForKey("ServerProfiles")! {
-            if i["Id"] as! String == defaults.stringForKey("ActiveServerProfileId")! {
-                if i["Remark"] as! String != "" {
-                    serverMenuText = i["Remark"] as! String
+        
+        let mgr = ServerProfileManager.instance
+        for p in mgr.profiles {
+            if mgr.activeProfileId == p.uuid {
+                if !p.remark.isEmpty {
+                    serverMenuText = p.remark
                 } else {
-                    serverMenuText = i["ServerHost"] as! String
+                    serverMenuText = p.serverHost
+                }
+                if let latency = p.latency{
+                    serverMenuText += "  - \(latency)ms"
                 }
             }
         }
+
         serversMenuItem.title = serverMenuText
         if mode == "auto" {
             proxyMenuItem.title = "Proxy - Auto By PAC".localized
@@ -502,13 +510,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         let defaults = NSUserDefaults.standardUserDefaults()
         let isOn = defaults.boolForKey("ShadowsocksOn")
         if isOn {
-            runningStatusMenuItem.title = "ShadowsocksR: On".localized
+            runningStatusMenuItem.title = "Shadowsocks: On".localized
             toggleRunningMenuItem.title = "Turn Shadowsocks Off".localized
             let image = NSImage(named: "menu_icon")
             statusItemView.setIcon(image!)
-//            statusItem.image = image
+//            statusItem!.image = image
         } else {
-            runningStatusMenuItem.title = "ShadowsocksR: Off".localized
+            runningStatusMenuItem.title = "Shadowsocks: Off".localized
             toggleRunningMenuItem.title = "Turn Shadowsocks On".localized
             let image = NSImage(named: "menu_icon_disabled")
 //            statusItem.image = image
@@ -531,7 +539,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         let showBunch = showBunchJsonExampleFileItem
         let importBuntch = importBunchJsonFileItem
         let exportAllServer = exportAllServerProfileItem
-        let pingItem = pingserverMenuItem
+//        let pingItem = pingserverMenuItem
 
         var i = 0
         for p in mgr.profiles {
@@ -544,7 +552,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             }
 
             if let latency = p.latency{
-                item.title += "  -\(latency)ms"
+                item.title += "  - \(latency)ms"
             }
 
             if mgr.activeProfileId == p.uuid {
@@ -568,7 +576,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         serversMenuItem.submenu?.addItem(exportAllServer)
         serversMenuItem.submenu?.addItem(NSMenuItem.separatorItem())
         serversMenuItem.submenu?.addItem(preferencesItem)
-        serversMenuItem.submenu?.addItem(pingItem)
+//        serversMenuItem.submenu?.addItem(pingItem)
 
     }
     

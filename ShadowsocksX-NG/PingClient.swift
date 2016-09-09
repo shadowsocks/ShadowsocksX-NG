@@ -84,6 +84,7 @@ class PingServers:NSObject{
 
         if i >= SerMgr.profiles.count{
             (NSApplication.sharedApplication().delegate as! AppDelegate).updateServersMenu()
+            (NSApplication.sharedApplication().delegate as! AppDelegate).updateRunningModeMenu()
             let notice = NSUserNotification()
             notice.title = "Ping测试完成！"
             notice.subtitle = "最快的是\(SerMgr.profiles[fastest_id].remark) \(SerMgr.profiles[fastest_id].serverHost) \(SerMgr.profiles[fastest_id].latency!)ms"
