@@ -88,3 +88,11 @@
 
 /* Class = "NSMenuItem"; title = "Quit"; ObjectID = "vJS-JW-byz"; */
 "vJS-JW-byz.title" = "退出";
+
+/* Class = "NSMenuItem"; title = "Ping server"; ObjectID = "zfR-Jt-GmS"; */
+"zfR-Jt-GmS.title" = "服务器测速";
+
+/* Class = "NSMenuItem"; title = "Show network speed"; ObjectID = "a3h-uQ-DuO"; */
+"a3h-uQ-DuO.title" = "显示速度";
+
+
