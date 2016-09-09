@@ -158,7 +158,7 @@ int main(int argc, const char * argv[])
                             = (__bridge NSDictionary*)SCPreferencesPathGetValue(prefRef
                                                                                 , (__bridge CFStringRef)prefPath);
                         
-                        if (([oldProxies[(NSString *)kCFNetworkProxiesProxyAutoConfigURLString] isEqualToString:pacURL]
+                        if (([oldProxies[(NSString *)kCFNetworkProxiesProxyAutoConfigURLString] containsString:pacURL]
                              &&[oldProxies[(NSString *)kCFNetworkProxiesProxyAutoConfigEnable] isEqual:[NSNumber numberWithInt:1]])
                             ||([oldProxies[(NSString*)kCFNetworkProxiesSOCKSProxy] isEqualToString:@"127.0.0.1"]
                                &&[oldProxies[(NSString*)kCFNetworkProxiesSOCKSPort] isEqualTo:[NSNumber numberWithInteger:port]]
