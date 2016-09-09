@@ -11,7 +11,7 @@ import Cocoa
 
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDelegate {
-    
+
     var qrcodeWinCtrl: SWBQRCodeWindowController!
     var preferencesWinCtrl: PreferencesWindowController!
     var advPreferencesWinCtrl: AdvPreferencesWindowController!
@@ -34,6 +34,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     @IBOutlet weak var whiteListIPMenuItem: NSMenuItem!
     
     @IBOutlet weak var serversMenuItem: NSMenuItem!
+    @IBOutlet var pingserverMenuItem: NSMenuItem!
     @IBOutlet var showQRCodeMenuItem: NSMenuItem!
     @IBOutlet var scanQRCodeMenuItem: NSMenuItem!
     @IBOutlet var showBunchJsonExampleFileItem: NSMenuItem!
@@ -42,12 +43,39 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     @IBOutlet var serversPreferencesMenuItem: NSMenuItem!
     
     @IBOutlet weak var lanchAtLoginMenuItem: NSMenuItem!
+    @IBOutlet weak var ShowNetworkSpeedItem: NSMenuItem!
     
-    var statusItem: NSStatusItem!
+    var statusItemView:StatusItemView!
+    
+    var statusItem: NSStatusItem?
+    var speedMonitor:NetWorkMonitor?
+
+
+    func setUpMenu(showSpeed:Bool){
+        if statusItem == nil{
+            statusItem = NSStatusBar.systemStatusBar().statusItemWithLength(85)
+            let image = NSImage(named: "menu_icon")
+            image?.template = true
+            statusItem!.image = image
+            statusItemView = StatusItemView(statusItem: statusItem!, menu: statusMenu)
+            statusItem!.view = statusItemView
+        }
+        if showSpeed{
+            if speedMonitor == nil{
+                speedMonitor = NetWorkMonitor(statusItemView: statusItemView)
+            }
+            statusItem?.length = 85
+            speedMonitor?.start()
+        }else{
+            speedMonitor?.stop()
+            speedMonitor = nil
+            statusItem?.length = 20
+        }
+    }
     
     func applicationDidFinishLaunching(aNotification: NSNotification) {
         // Insert code here to initialize your application
-        
+//        PingServers.instance.ping()
         NSUserNotificationCenter.defaultUserNotificationCenter().delegate = self
         
         // Prepare ss-local
@@ -70,14 +98,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             "WhiteListIPURL": "https://raw.githubusercontent.com/breakwa11/gfw_whitelist/master/whiteiplist.pac",
             "AutoConfigureNetworkServices": NSNumber(bool: true)
         ])
-        
-        statusItem = NSStatusBar.systemStatusBar().statusItemWithLength(20)
-        let image = NSImage(named: "menu_icon")
-        image?.template = true
-        statusItem.image = image
-        statusItem.menu = statusMenu
-        
-        
+
+
+        setUpMenu(defaults.boolForKey("enable_showSpeed"))
+
+
         let notifyCenter = NSNotificationCenter.defaultCenter()
         notifyCenter.addObserverForName(NOTIFY_ADV_PROXY_CONF_CHANGED, object: nil, queue: nil
             , usingBlock: {
@@ -135,6 +160,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                         
                         NSUserNotificationCenter.defaultUserNotificationCenter()
                             .deliverNotification(userNote);
+                    }else{
+                        let userNote = NSUserNotification()
+                        userNote.title = "Failed to Add Server Profile".localized
+                        userNote.subtitle = "Address can't not be recognized".localized
+                        NSUserNotificationCenter.defaultUserNotificationCenter()
+                            .deliverNotification(userNote);
                     }
                 }
                 
@@ -160,15 +191,25 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         SyncSSLocal()
     }
 
+    
+    
     func applicationWillTerminate(aNotification: NSNotification) {
         // Insert code here to tear down your application
         StopSSLocal()
         ProxyConfHelper.disableProxy("hi")
-        let defaults = NSUserDefaults.standardUserDefaults()
-        defaults.setBool(false, forKey: "ShadowsocksOn")
+        ProxyConfHelper.stopPACServer()
+
+
     }
     
     func applyConfig() {
+        let profileMgr = ServerProfileManager.instance
+        if profileMgr.profiles.count == 0{
+            let notice = NSUserNotification()
+            notice.title = "还没有服务器设定！"
+            notice.subtitle = "去设置里面填一下吧，填完记得选择呦~"
+            NSUserNotificationCenter.defaultUserNotificationCenter().deliverNotification(notice)
+        }
         let defaults = NSUserDefaults.standardUserDefaults()
         let isOn = defaults.boolForKey("ShadowsocksOn")
         let mode = defaults.stringForKey("ShadowsocksRunningMode")
@@ -195,6 +236,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             StopSSLocal()
             ProxyConfHelper.disableProxy("hi")
         }
+
     }
     
     @IBAction func toggleRunning(sender: NSMenuItem) {
@@ -313,7 +355,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         updateRunningModeMenu()
         applyConfig()
     }
-    
+
     @IBAction func editServerPreferences(sender: NSMenuItem) {
         if preferencesWinCtrl != nil {
             preferencesWinCtrl.close()
@@ -359,7 +401,20 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         }
         updateRunningModeMenu()
     }
+
+    @IBAction func doPingTest(sender: AnyObject) {
+        PingServers.instance.ping()
+    }
     
+    @IBAction func showSpeedTap(sender: NSMenuItem) {
+        let defaults = NSUserDefaults.standardUserDefaults()
+        var enable = defaults.boolForKey("enable_showSpeed")
+        enable = !enable
+        setUpMenu(enable)
+        defaults.setBool(enable, forKey: "enable_showSpeed")
+        updateMainMenu()
+    }
+
     @IBAction func showLogs(sender: NSMenuItem) {
         let ws = NSWorkspace.sharedWorkspace()
         if let appUrl = ws.URLForApplicationWithBundleIdentifier("com.apple.Console") {
@@ -447,15 +502,23 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         let defaults = NSUserDefaults.standardUserDefaults()
         let isOn = defaults.boolForKey("ShadowsocksOn")
         if isOn {
-            runningStatusMenuItem.title = "Shadowsocks: On".localized
+            runningStatusMenuItem.title = "ShadowsocksR: On".localized
             toggleRunningMenuItem.title = "Turn Shadowsocks Off".localized
             let image = NSImage(named: "menu_icon")
-            statusItem.image = image
+            statusItemView.setIcon(image!)
+//            statusItem.image = image
         } else {
-            runningStatusMenuItem.title = "Shadowsocks: Off".localized
+            runningStatusMenuItem.title = "ShadowsocksR: Off".localized
             toggleRunningMenuItem.title = "Turn Shadowsocks On".localized
             let image = NSImage(named: "menu_icon_disabled")
-            statusItem.image = image
+//            statusItem.image = image
+            statusItemView.setIcon(image!)
+        }
+        let showSpeed = defaults.boolForKey("enable_showSpeed")
+        if showSpeed{
+            ShowNetworkSpeedItem.state = 1
+        }else{
+            ShowNetworkSpeedItem.state = 0
         }
     }
     
@@ -468,7 +531,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         let showBunch = showBunchJsonExampleFileItem
         let importBuntch = importBunchJsonFileItem
         let exportAllServer = exportAllServerProfileItem
-        
+        let pingItem = pingserverMenuItem
+
         var i = 0
         for p in mgr.profiles {
             let item = NSMenuItem()
@@ -478,6 +542,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             } else {
                 item.title = "\(p.remark) (\(p.serverHost):\(p.serverPort))"
             }
+
+            if let latency = p.latency{
+                item.title += "  -\(latency)ms"
+            }
+
             if mgr.activeProfileId == p.uuid {
                 item.state = 1
             }
@@ -499,6 +568,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         serversMenuItem.submenu?.addItem(exportAllServer)
         serversMenuItem.submenu?.addItem(NSMenuItem.separatorItem())
         serversMenuItem.submenu?.addItem(preferencesItem)
+        serversMenuItem.submenu?.addItem(pingItem)
+
     }
     
     func handleURLEvent(event: NSAppleEventDescriptor, withReplyEvent replyEvent: NSAppleEventDescriptor) {

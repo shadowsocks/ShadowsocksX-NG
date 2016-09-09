@@ -51,4 +51,14 @@
 "yHs-XE-XEB.title" = "地址:";
 
 /* Class = "NSButtonCell"; title = "OK"; ObjectID = "zPE-oD-PwK"; */
-"zPE-oD-PwK.title" = "OK";
+"zPE-oD-PwK.title" = "确定";
+
+/* Class = "NSTextFieldCell"; title = "obfs:"; ObjectID = "nXF-vK-BH8"; */
+"nXF-vK-BH8.title" = "协议:";
+
+/* Class = "NSTextFieldCell"; title = "protocol:"; ObjectID = "yJ4-7n-yhc"; */
+"yJ4-7n-yhc.title" = "混淆:";
+
+/* Class = "NSTextFieldCell"; title = "obfs-param:"; ObjectID = "aQv-HP-iKY"; */
+"aQv-HP-iKY.title" = "混淆参数:";
+

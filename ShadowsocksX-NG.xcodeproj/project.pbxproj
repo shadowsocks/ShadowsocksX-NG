@@ -7,6 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		083BF8331D82731900831C68 /* SimplePing.m in Sources */ = {isa = PBXBuildFile; fileRef = 083BF8321D82731900831C68 /* SimplePing.m */; };
+		083BF8361D82742200831C68 /* NetWorkMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 083BF8341D82742200831C68 /* NetWorkMonitor.swift */; };
+		083BF8371D82742200831C68 /* PingClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 083BF8351D82742200831C68 /* PingClient.swift */; };
+		083BF8391D82759600831C68 /* StatusItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 083BF8381D82759600831C68 /* StatusItemView.swift */; };
+		083BF83B1D8275A800831C68 /* SystemThemeChangeHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 083BF83A1D8275A800831C68 /* SystemThemeChangeHelper.swift */; };
 		0880CE401D6FE6D900BD39E2 /* example-gui-config.json in Resources */ = {isa = PBXBuildFile; fileRef = 0880CE3F1D6FE6D900BD39E2 /* example-gui-config.json */; };
 		0880CE421D6FF7F600BD39E2 /* BunchImportUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0880CE411D6FF7F600BD39E2 /* BunchImportUtils.swift */; };
 		088EC3971D5F5B8600E40791 /* whitelist.pac in Resources */ = {isa = PBXBuildFile; fileRef = 088EC3961D5F5B8600E40791 /* whitelist.pac */; };
@@ -92,6 +97,12 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		083BF8311D82731900831C68 /* SimplePing.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SimplePing.h; sourceTree = "<group>"; };
+		083BF8321D82731900831C68 /* SimplePing.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SimplePing.m; sourceTree = "<group>"; };
+		083BF8341D82742200831C68 /* NetWorkMonitor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NetWorkMonitor.swift; sourceTree = "<group>"; };
+		083BF8351D82742200831C68 /* PingClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PingClient.swift; sourceTree = "<group>"; };
+		083BF8381D82759600831C68 /* StatusItemView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StatusItemView.swift; sourceTree = "<group>"; };
+		083BF83A1D8275A800831C68 /* SystemThemeChangeHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SystemThemeChangeHelper.swift; sourceTree = "<group>"; };
 		085641E91D7188C400116B27 /* Base */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Base; path = Base.lproj/Localizable.strings; sourceTree = "<group>"; };
 		085641EB1D71A48700116B27 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/MainMenu.strings"; sourceTree = "<group>"; };
 		0880CE3F1D6FE6D900BD39E2 /* example-gui-config.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "example-gui-config.json"; sourceTree = "<group>"; };
@@ -205,6 +216,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		083BF8301D82731900831C68 /* SimplePing */ = {
+			isa = PBXGroup;
+			children = (
+				083BF8311D82731900831C68 /* SimplePing.h */,
+				083BF8321D82731900831C68 /* SimplePing.m */,
+			);
+			path = SimplePing;
+			sourceTree = "<group>";
+		};
 		33F4F299F89330966F4526E4 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
@@ -274,6 +294,7 @@
 		9B0BFFE71D0460A70040E62B /* ShadowsocksX-NG */ = {
 			isa = PBXGroup;
 			children = (
+				083BF8301D82731900831C68 /* SimplePing */,
 				9BB706A51D1B982300551F0E /* SWBApplication.m */,
 				9BB706A61D1B982300551F0E /* SWBApplication.h */,
 				9B3FFF511D09DBA20019A709 /* ShadowsocksX-NG-Bridging-Header.h */,
@@ -287,10 +308,14 @@
 				9B0BFFEF1D0460A70040E62B /* Info.plist */,
 				9BEEF06D1D04DCE400FC52B3 /* ServerProfile.swift */,
 				9BEEF06F1D04DDB100FC52B3 /* ServerProfileManager.swift */,
+				083BF8381D82759600831C68 /* StatusItemView.swift */,
+				083BF83A1D8275A800831C68 /* SystemThemeChangeHelper.swift */,
 				9BEEF0771D04FE8A00FC52B3 /* LaunchAgentUtils.swift */,
 				9B3FFF0C1D05FEB30019A709 /* Utils.swift */,
 				0880CE411D6FF7F600BD39E2 /* BunchImportUtils.swift */,
 				9B3FFF201D08826E0019A709 /* PACUtils.swift */,
+				083BF8341D82742200831C68 /* NetWorkMonitor.swift */,
+				083BF8351D82742200831C68 /* PingClient.swift */,
 				9B3FFF131D0705810019A709 /* Notifications.swift */,
 				9B3FFF1D1D0732660019A709 /* Utils.m */,
 				9B3FFF1F1D0734060019A709 /* Utils.h */,
@@ -637,12 +662,17 @@
 				9BB706A71D1B982300551F0E /* SWBApplication.m in Sources */,
 				9B3FFF1E1D0732660019A709 /* Utils.m in Sources */,
 				9B3FFF321D08CEE40019A709 /* SWBQRCodeWindowController.m in Sources */,
+				083BF8371D82742200831C68 /* PingClient.swift in Sources */,
+				083BF8361D82742200831C68 /* NetWorkMonitor.swift in Sources */,
+				083BF8331D82731900831C68 /* SimplePing.m in Sources */,
 				9B3FFF211D08826E0019A709 /* PACUtils.swift in Sources */,
 				9BA04B261D24044D005AAD7F /* ProxyPreferencesController.swift in Sources */,
 				9B3FFF141D0705810019A709 /* Notifications.swift in Sources */,
 				9BEEF0701D04DDB100FC52B3 /* ServerProfileManager.swift in Sources */,
 				9BEEF07B1D05631500FC52B3 /* AdvPreferencesWindowController.swift in Sources */,
+				083BF8391D82759600831C68 /* StatusItemView.swift in Sources */,
 				9BEEF06E1D04DCE400FC52B3 /* ServerProfile.swift in Sources */,
+				083BF83B1D8275A800831C68 /* SystemThemeChangeHelper.swift in Sources */,
 				9B3FFF0D1D05FEB30019A709 /* Utils.swift in Sources */,
 				9BEEF0751D04EF3E00FC52B3 /* PreferencesWindowController.swift in Sources */,
 				0880CE421D6FF7F600BD39E2 /* BunchImportUtils.swift in Sources */,

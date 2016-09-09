@@ -19,10 +19,13 @@ class ServerProfile: NSObject {
     var password:String = ""
     var remark:String = ""
     var ota: Bool = false // onetime authentication
+    
     var ssrProtocol:String = "origin"
     var ssrProtocolParam:String = ""
     var ssrObfs:String = "plain"
     var ssrObfsParam:String = ""
+    
+    var latency:String?
     
     override init() {
         uuid = NSUUID().UUIDString
