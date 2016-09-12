@@ -33,6 +33,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     @IBOutlet weak var serversMenuItem: NSMenuItem!
     @IBOutlet var showQRCodeMenuItem: NSMenuItem!
     @IBOutlet var scanQRCodeMenuItem: NSMenuItem!
+    @IBOutlet var showBunchJsonExampleFileItem: NSMenuItem!
+    @IBOutlet var importBunchJsonFileItem: NSMenuItem!
+    @IBOutlet var exportAllServerProfileItem: NSMenuItem!
     @IBOutlet var serversPreferencesMenuItem: NSMenuItem!
     
     @IBOutlet weak var lanchAtLoginMenuItem: NSMenuItem!
@@ -232,6 +235,19 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     @IBAction func scanQRCodeFromScreen(sender: NSMenuItem) {
         ScanQRCodeOnScreen()
     }
+    
+    @IBAction func showBunchJsonExampleFile(sender: NSMenuItem) {
+        ServerProfileManager.showExampleConfigFile()
+    }
+    
+    @IBAction func importBunchJsonFile(sender: NSMenuItem) {
+        ServerProfileManager.instance.importConfigFile()
+        //updateServersMenu()//not working
+    }
+    
+    @IBAction func exportAllServerProfile(sender: NSMenuItem) {
+        ServerProfileManager.instance.exportConfigFile()
+    }
 
     @IBAction func toggleLaunghAtLogin(sender: NSMenuItem) {
         launchAtLoginController.launchAtLogin = !launchAtLoginController.launchAtLogin;
@@ -373,6 +389,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         let showQRItem = showQRCodeMenuItem
         let scanQRItem = scanQRCodeMenuItem
         let preferencesItem = serversPreferencesMenuItem
+        let showBunch = showBunchJsonExampleFileItem
+        let importBuntch = importBunchJsonFileItem
+        let exportAllServer = exportAllServerProfileItem
         
         var i = 0
         for p in mgr.profiles {
@@ -399,6 +418,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         }
         serversMenuItem.submenu?.addItem(showQRItem)
         serversMenuItem.submenu?.addItem(scanQRItem)
+        serversMenuItem.submenu?.addItem(showBunch)
+        serversMenuItem.submenu?.addItem(importBuntch)
+        serversMenuItem.submenu?.addItem(exportAllServer)
         serversMenuItem.submenu?.addItem(NSMenuItem.separatorItem())
         serversMenuItem.submenu?.addItem(preferencesItem)
     }
