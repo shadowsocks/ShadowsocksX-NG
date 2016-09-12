@@ -66,7 +66,8 @@ ref: [GitFlow](http://nvie.com/posts/a-successful-git-branching-model/)
 - [ ] Embed the http proxy server [privoxy](http://www.privoxy.org/).
 
 ## Know Issue
-[Issue 1.]() Auto PAC & White list is not working on macOS 10.12 Serria because system proxy not allow [file:///](file:///) protocol.
+Solved [Issue 1.]() Auto PAC & White list is not working on macOS 10.12 Serria because system proxy not allow [file:///](file:///) protocol.
+[Issue 2.]() The net speed is how ever have some problem with macOS 10.12, welcome logs from all users.
 
 ## License
 

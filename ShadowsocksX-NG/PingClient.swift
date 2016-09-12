@@ -101,7 +101,7 @@ class PingServers:NSObject{
                     self.fastest = latency
                     self.fastest_id = i
                 }else{
-                    if latency < self.fastest{
+                    if Int(latency!) < Int(self.fastest!) {
                         self.fastest = latency
                         self.fastest_id = i
                     }
