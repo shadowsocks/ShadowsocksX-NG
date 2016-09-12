@@ -43,6 +43,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     @IBOutlet var serversPreferencesMenuItem: NSMenuItem!
     
     @IBOutlet weak var lanchAtLoginMenuItem: NSMenuItem!
+    @IBOutlet weak var connectAtLaunchMenuItem: NSMenuItem!
     @IBOutlet weak var ShowNetworkSpeedItem: NSMenuItem!
     
     var statusItemView:StatusItemView!
@@ -189,6 +190,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         ProxyConfHelper.install()
         applyConfig()
         SyncSSLocal()
+
+        if defaults.boolForKey("ConnectAtLaunch") {
+            toggleRunning(toggleRunningMenuItem)
+        }
     }
 
     
@@ -200,8 +205,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         let defaults = NSUserDefaults.standardUserDefaults()
         defaults.setBool(false, forKey: "ShadowsocksOn")
         ProxyConfHelper.stopPACServer()
-
-
     }
     
     func applyConfig() {
@@ -321,6 +324,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     @IBAction func toggleLaunghAtLogin(sender: NSMenuItem) {
         launchAtLoginController.launchAtLogin = !launchAtLoginController.launchAtLogin;
         updateLaunchAtLoginMenu()
+    }
+    
+    @IBAction func toggleConnectAtLaunch(sender: NSMenuItem) {
+        let defaults = NSUserDefaults.standardUserDefaults()
+        defaults.setBool(!defaults.boolForKey("ConnectAtLaunch"), forKey: "ConnectAtLaunch")
+        updateMainMenu()
     }
     
     @IBAction func selectPACMode(sender: NSMenuItem) {
@@ -529,11 +538,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
 //            statusItem.image = image
             statusItemView.setIcon(image!)
         }
-        let showSpeed = defaults.boolForKey("enable_showSpeed")
-        if showSpeed{
+        
+        if defaults.boolForKey("enable_showSpeed") {
             ShowNetworkSpeedItem.state = 1
         }else{
             ShowNetworkSpeedItem.state = 0
+        }
+        
+        if defaults.boolForKey("ConnectAtLaunch") {
+            connectAtLaunchMenuItem.state = 1
+        } else {
+            connectAtLaunchMenuItem.state = 0
         }
     }
     
