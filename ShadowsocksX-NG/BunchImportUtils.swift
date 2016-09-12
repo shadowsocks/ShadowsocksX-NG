@@ -8,8 +8,6 @@
 
 import Foundation
 
-var profileMgr: ServerProfileManager!
-
 //Todo: function 1 showExampleFile, 调用fileManager 拷贝 json 到Downloads文件夹，然后打开Downloads文件夹
 
 //拷贝json配置文件到~/Downloads文件夹
@@ -50,8 +48,7 @@ func importConfigFile() {
                 
                 for item in jsonArr1.objectForKey("configs") as! [[String: AnyObject]]{
                     let profile = ServerProfile()
-                    var profileMgr: ServerProfileManager!
-                    profileMgr = ServerProfileManager.instance
+                    let profileMgr = ServerProfileManager.instance
                     profile.serverHost = item["server"] as! String
                     profile.serverPort = UInt16((item["server_port"]?.integerValue)!)
                     profile.method = item["method"] as! String
@@ -91,7 +88,7 @@ func importConfigFile() {
 
 func exportConfigFile() {
     //读取example文件，删掉configs里面的配置，再用NSDictionary填充到configs里面
-    profileMgr = ServerProfileManager.instance
+    let profileMgr = ServerProfileManager.instance
     let fileManager = NSFileManager.defaultManager()
     
     let filePath:String = NSBundle.mainBundle().bundlePath + "/Contents/Resources/example-gui-config.json"
@@ -139,6 +136,11 @@ func exportConfigFile() {
             //write jsonArr1 back to file
             try! jsonString.writeToFile((savePanel.URL?.path)!, atomically: true, encoding: NSUTF8StringEncoding)
             NSWorkspace.sharedWorkspace().selectFile((savePanel.URL?.path)!, inFileViewerRootedAtPath: (savePanel.directoryURL?.path)!)
+            let notification = NSUserNotification()
+            notification.title = "Export Server Profile succeed!".localized
+            notification.informativeText = "Successful Export \(profileMgr.profiles.count) items".localized
+            NSUserNotificationCenter.defaultUserNotificationCenter()
+                .deliverNotification(notification)
         }
     }
 }

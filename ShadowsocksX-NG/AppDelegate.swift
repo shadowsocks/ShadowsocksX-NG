@@ -306,16 +306,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     }
     
     @IBAction func showBunchJsonExampleFile(sender: NSMenuItem) {
-        showExampleConfigFile()
+        ServerProfileManager.showExampleConfigFile()
     }
     
     @IBAction func importBunchJsonFile(sender: NSMenuItem) {
-        importConfigFile()
+        ServerProfileManager.instance.importConfigFile()
         //updateServersMenu()//not working
     }
     
     @IBAction func exportAllServerProfile(sender: NSMenuItem) {
-        exportConfigFile()
+        ServerProfileManager.instance.exportConfigFile()
     }
 
     @IBAction func toggleLaunghAtLogin(sender: NSMenuItem) {
