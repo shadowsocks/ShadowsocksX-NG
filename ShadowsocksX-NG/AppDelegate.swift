@@ -51,32 +51,24 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     var statusItem: NSStatusItem?
     var speedMonitor:NetWorkMonitor?
 
+    // MARK: Application function
 
-    func setUpMenu(showSpeed:Bool){
-        if statusItem == nil{
-            statusItem = NSStatusBar.systemStatusBar().statusItemWithLength(85)
-            let image = NSImage(named: "menu_icon")
-            image?.template = true
-            statusItem!.image = image
-            statusItemView = StatusItemView(statusItem: statusItem!, menu: statusMenu)
-            statusItem!.view = statusItemView
-        }
-        if showSpeed{
-            if speedMonitor == nil{
-                speedMonitor = NetWorkMonitor(statusItemView: statusItemView)
-            }
-            statusItem?.length = 85
-            speedMonitor?.start()
-        }else{
-            speedMonitor?.stop()
-            speedMonitor = nil
-            statusItem?.length = 20
-        }
-    }
-    
     func applicationDidFinishLaunching(aNotification: NSNotification) {
         // Insert code here to initialize your application
 //        PingServers.instance.ping()
+//        let newInstance = PingTest.init(hostName: "www.baidu.com")
+//        newInstance.start()
+        let SerMgr = ServerProfileManager.instance
+        let pingServerQueue : dispatch_queue_t = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0);
+        
+        for profile in SerMgr.profiles {
+            let host = profile.serverHost
+            
+            dispatch_async(pingServerQueue, {
+//                print(profile.serverHost)
+                let pingInstance = PingTest.init(hostName: host)
+                pingInstance.start()
+            })}
         NSUserNotificationCenter.defaultUserNotificationCenter().delegate = self
         
         // Prepare ss-local
@@ -243,6 +235,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         }
 
     }
+    
+    // MARK: interface functions
     
     @IBAction func toggleRunning(sender: NSMenuItem) {
         let defaults = NSUserDefaults.standardUserDefaults()
@@ -452,6 +446,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         }
     }
     
+    // MARK: this function is use to update menu bar
+
     func updateRunningModeMenu() {
         let defaults = NSUserDefaults.standardUserDefaults()
         let mode = defaults.stringForKey("ShadowsocksRunningMode")
@@ -601,6 +597,30 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
 //        serversMenuItem.submenu?.addItem(pingItem)
 
     }
+    
+    func setUpMenu(showSpeed:Bool){
+        if statusItem == nil{
+            statusItem = NSStatusBar.systemStatusBar().statusItemWithLength(85)
+            let image = NSImage(named: "menu_icon")
+            image?.template = true
+            statusItem!.image = image
+            statusItemView = StatusItemView(statusItem: statusItem!, menu: statusMenu)
+            statusItem!.view = statusItemView
+        }
+        if showSpeed{
+            if speedMonitor == nil{
+                speedMonitor = NetWorkMonitor(statusItemView: statusItemView)
+            }
+            statusItem?.length = 85
+            speedMonitor?.start()
+        }else{
+            speedMonitor?.stop()
+            speedMonitor = nil
+            statusItem?.length = 20
+        }
+    }
+    
+    // MARK: 
     
     func handleURLEvent(event: NSAppleEventDescriptor, withReplyEvent replyEvent: NSAppleEventDescriptor) {
         if let urlString = event.paramDescriptorForKeyword(AEKeyword(keyDirectObject))?.stringValue {

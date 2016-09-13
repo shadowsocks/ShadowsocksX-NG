@@ -2,7 +2,7 @@
 //  ServerProfileManager.swift
 //  ShadowsocksX-NG
 //
-//  Created by 邱宇舟 on 16/6/6.
+//  Created by 邱宇舟 on 16/6/6. Modified by 秦宇航 16/9/12 
 //  Copyright © 2016年 qiuyuzhou. All rights reserved.
 //
 
