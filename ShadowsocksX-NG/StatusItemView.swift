@@ -56,7 +56,7 @@ public class StatusItemView: NSControl {
             let downRateRect = downRateString.boundingRectWithSize(NSSize(width: 100, height: 100), options: .UsesLineFragmentOrigin)
             downRateString.drawAtPoint(NSMakePoint(bounds.width - downRateRect.width - 5, 0))
         }
-        image?.drawAtPoint(NSPoint(x: 0, y: 0), fromRect: NSRect(x: 0, y: 0, width: bounds.height, height: bounds.height), operation: .CompositeSourceOver, fraction: 1.0)
+        image?.drawAtPoint(NSPoint(x: 0, y: 0), fromRect: NSRect(x: 0, y: 0, width: bounds.height, height: bounds.height), operation: NSCompositeSourceOver, fraction: 1.0)
     }
     
     public func setRateData(up up:Float, down: Float) {

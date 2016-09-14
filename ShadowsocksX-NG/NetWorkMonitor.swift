@@ -33,9 +33,7 @@ public class NetWorkMonitor: NSObject {
             alertView.informativeText = "因为 macOS 10.12 Sierra ABI 不稳定，因此暂时移除网速功能"
             alertView.addButtonWithTitle("取消网速显示")
             alertView.runModal()
-            let defaults = NSUserDefaults.standardUserDefaults()
-            defaults.setBool(false, forKey: "enable_showSpeed")
-            
+            stop()
 //            NSRunLoop.currentRunLoop().run()
 //            CFRunLoopRun()
             
