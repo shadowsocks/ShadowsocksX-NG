@@ -160,10 +160,6 @@ class PingTest: NSObject, SimplePingDelegate {
     }
     class func pingArray(){//hostList : [String]) -> [[String : String]]{
 //        return [["apple.com":"20"],["baidu.com":"20"]]
-        
-        
-        
-        
     }
 }
 

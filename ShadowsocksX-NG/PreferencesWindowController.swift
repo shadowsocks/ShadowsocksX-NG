@@ -172,11 +172,10 @@ class PreferencesWindowController: NSWindowController
             let profile = profileMgr.profiles[index]
             let ssURL = profile.URL()
             if let url = ssURL {
-                // Then copy url to pasteboard
-                // TODO Why it not working?? It's ok in objective-c
+                
                 let pboard = NSPasteboard.generalPasteboard()
                 pboard.clearContents()
-                let rs = pboard.writeObjects([url])
+                let rs = pboard.setString(String(url), forType: NSStringPboardType)//writeObjects([url])
                 if rs {
                     NSLog("copy to pasteboard success")
                 } else {

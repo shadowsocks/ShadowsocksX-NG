@@ -452,7 +452,8 @@
 				TargetAttributes = {
 					9B0BFFE41D0460A70040E62B = {
 						CreatedOnToolsVersion = 7.3.1;
-						ProvisioningStyle = Manual;
+						DevelopmentTeam = 2E8Q4BTFR2;
+						ProvisioningStyle = Automatic;
 					};
 					9B0BFFF31D0460A70040E62B = {
 						CreatedOnToolsVersion = 7.3.1;
@@ -861,9 +862,9 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_IDENTITY = "Developer ID Application";
+				CODE_SIGN_IDENTITY = "Mac Developer";
 				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 2E8Q4BTFR2;
 				HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/libcork/include/",
 					"$(SRCROOT)/libipset/include/",
@@ -893,7 +894,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 2E8Q4BTFR2;
 				HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/libcork/include/",
 					"$(SRCROOT)/libipset/include/",

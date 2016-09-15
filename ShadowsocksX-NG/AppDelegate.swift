@@ -11,15 +11,17 @@ import Cocoa
 
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDelegate {
-
+    
+    // MARK: Controllers
     var qrcodeWinCtrl: SWBQRCodeWindowController!
     var preferencesWinCtrl: PreferencesWindowController!
     var advPreferencesWinCtrl: AdvPreferencesWindowController!
     var proxyPreferencesWinCtrl: ProxyPreferencesController!
     var editUserRulesWinCtrl: UserRulesController!
-
+    
     var launchAtLoginController: LaunchAtLoginController = LaunchAtLoginController()
     
+    // MARK: Outlets
     @IBOutlet weak var window: NSWindow!
     @IBOutlet weak var statusMenu: NSMenu!
     
@@ -46,6 +48,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     @IBOutlet weak var connectAtLaunchMenuItem: NSMenuItem!
     @IBOutlet weak var ShowNetworkSpeedItem: NSMenuItem!
     
+    // MARK: Variables
     var statusItemView:StatusItemView!
     
     var statusItem: NSStatusItem?
@@ -236,7 +239,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
 
     }
     
-    // MARK: interface functions
+    // MARK: Mainmenu functions
     
     @IBAction func toggleRunning(sender: NSMenuItem) {
         let defaults = NSUserDefaults.standardUserDefaults()
@@ -269,6 +272,18 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         ctrl.window?.makeKeyAndOrderFront(self)
     }
     
+    @IBAction func toggleLaunghAtLogin(sender: NSMenuItem) {
+        launchAtLoginController.launchAtLogin = !launchAtLoginController.launchAtLogin;
+        updateLaunchAtLoginMenu()
+    }
+    
+    @IBAction func toggleConnectAtLaunch(sender: NSMenuItem) {
+        let defaults = NSUserDefaults.standardUserDefaults()
+        defaults.setBool(!defaults.boolForKey("ConnectAtLaunch"), forKey: "ConnectAtLaunch")
+        updateMainMenu()
+    }
+    
+    // MARK: Server submenu function
     @IBAction func showQRCodeForCurrentServer(sender: NSMenuItem) {
         var errMsg: String?
         if let profile = ServerProfileManager.instance.getActiveProfile() {
@@ -313,17 +328,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     
     @IBAction func exportAllServerProfile(sender: NSMenuItem) {
         ServerProfileManager.instance.exportConfigFile()
-    }
-
-    @IBAction func toggleLaunghAtLogin(sender: NSMenuItem) {
-        launchAtLoginController.launchAtLogin = !launchAtLoginController.launchAtLogin;
-        updateLaunchAtLoginMenu()
-    }
-    
-    @IBAction func toggleConnectAtLaunch(sender: NSMenuItem) {
-        let defaults = NSUserDefaults.standardUserDefaults()
-        defaults.setBool(!defaults.boolForKey("ConnectAtLaunch"), forKey: "ConnectAtLaunch")
-        updateMainMenu()
     }
     
     @IBAction func selectPACMode(sender: NSMenuItem) {
@@ -636,7 +640,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     }
     
     //------------------------------------------------------------
-    // NSUserNotificationCenterDelegate
+    // MARK: NSUserNotificationCenterDelegate
     
     func userNotificationCenter(center: NSUserNotificationCenter
         , shouldPresentNotification notification: NSUserNotification) -> Bool {
