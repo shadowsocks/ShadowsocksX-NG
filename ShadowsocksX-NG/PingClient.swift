@@ -8,21 +8,32 @@
 
 
 import Foundation
+fileprivate func < <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
+  switch (lhs, rhs) {
+  case let (l?, r?):
+    return l < r
+  case (nil, _?):
+    return true
+  default:
+    return false
+  }
+}
+
 
 public typealias SimplePingClientCallback = (String?)->()
 
-public class SimplePingClient: NSObject {
+open class SimplePingClient: NSObject {
     static let singletonPC = SimplePingClient()
 
-    private var resultCallback: SimplePingClientCallback?
-    private var pingClinet: SimplePing?
-    private var dateReference: NSDate?
+    fileprivate var resultCallback: SimplePingClientCallback?
+    fileprivate var pingClinet: SimplePing?
+    fileprivate var dateReference: Date?
 
-    public static func pingHostname(hostname: String, andResultCallback callback: SimplePingClientCallback?) {
+    open static func pingHostname(_ hostname: String, andResultCallback callback: SimplePingClientCallback?) {
         singletonPC.pingHostname(hostname, andResultCallback: callback)
     }
 
-    public func pingHostname(hostname: String, andResultCallback callback: SimplePingClientCallback?) {
+    open func pingHostname(_ hostname: String, andResultCallback callback: SimplePingClientCallback?) {
         resultCallback = callback
         pingClinet = SimplePing(hostName: hostname)
         pingClinet?.delegate = self
@@ -31,37 +42,37 @@ public class SimplePingClient: NSObject {
 }
 
 extension SimplePingClient: SimplePingDelegate {
-    public func simplePing(pinger: SimplePing, didStartWithAddress address: NSData) {
-        pinger.sendPingWithData(nil)
+    public func simplePing(_ pinger: SimplePing, didStartWithAddress address: Data) {
+        pinger.send(with: nil)
 
 
     }
 
-    public func simplePing(pinger: SimplePing, didFailWithError error: NSError) {
+    @nonobjc public func simplePing(_ pinger: SimplePing, didFailWithError error: NSError) {
         resultCallback?(nil)
     }
 
-    public func simplePing(pinger: SimplePing, didSendPacket packet: NSData, sequenceNumber: UInt16) {
-        dateReference = NSDate()
+    public func simplePing(_ pinger: SimplePing, didSendPacket packet: Data, sequenceNumber: UInt16) {
+        dateReference = Date()
     }
 
-    public func simplePing(pinger: SimplePing, didFailToSendPacket packet: NSData, sequenceNumber: UInt16, error: NSError) {
+    @nonobjc public func simplePing(_ pinger: SimplePing, didFailToSendPacket packet: Data, sequenceNumber: UInt16, error: NSError) {
         pinger.stop()
         resultCallback?(nil)
     }
 
-    public func simplePing(pinger: SimplePing, didReceiveUnexpectedPacket packet: NSData) {
+    public func simplePing(_ pinger: SimplePing, didReceiveUnexpectedPacket packet: Data) {
         pinger.stop()
         resultCallback?(nil)
     }
 
-    public func simplePing(pinger: SimplePing, didReceivePingResponsePacket packet: NSData, sequenceNumber: UInt16 ){
+    public func simplePing(_ pinger: SimplePing, didReceivePingResponsePacket packet: Data, sequenceNumber: UInt16 ){
         pinger.stop()
 
         guard let dateReference = dateReference else{return }
 
         //timeIntervalSinceDate returns seconds, so we convert to milis
-        let latency = NSDate().timeIntervalSinceDate(dateReference) * 1000
+        let latency = Date().timeIntervalSince(dateReference) * 1000
         resultCallback?(String(format: "%.f", latency))
     }
 }
@@ -76,19 +87,19 @@ class PingServers:NSObject{
     var fastest:String?
     var fastest_id : Int=0
 
-    func ping(i:Int=0){
+    func ping(_ i:Int=0){
         if i == 0{
             fastest_id = 0
             fastest = nil
         }
 
         if i >= SerMgr.profiles.count{
-            (NSApplication.sharedApplication().delegate as! AppDelegate).updateServersMenu()
-            (NSApplication.sharedApplication().delegate as! AppDelegate).updateRunningModeMenu()
+            (NSApplication.shared().delegate as! AppDelegate).updateServersMenu()
+            (NSApplication.shared().delegate as! AppDelegate).updateRunningModeMenu()
             let notice = NSUserNotification()
             notice.title = "Ping测试完成！"
             notice.subtitle = "最快的是\(SerMgr.profiles[fastest_id].remark) \(SerMgr.profiles[fastest_id].serverHost) \(SerMgr.profiles[fastest_id].latency!)ms"
-            NSUserNotificationCenter.defaultUserNotificationCenter().deliverNotification(notice)
+            NSUserNotificationCenter.default.deliver(notice)
             return
         }
         let host = SerMgr.profiles[i].serverHost

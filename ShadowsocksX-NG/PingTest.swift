@@ -14,8 +14,8 @@ class PingTest: NSObject, SimplePingDelegate {
     var hostName = "jp10.hexiehao.pw"
     
     var pinger: SimplePing?
-    var sendTimer: NSTimer?
-    var dateReference: NSDate?
+    var sendTimer: Timer?
+    var dateReference: Date?
     
     /// Called by the table view selection delegate callback to start the ping.
     init(hostName:String) {
@@ -49,12 +49,12 @@ class PingTest: NSObject, SimplePingDelegate {
     /// via a timer (to continue sending pings periodically).
     
     func sendPing() {
-        self.pinger!.sendPingWithData(nil)
+        self.pinger!.send(with: nil)
     }
     
     // MARK: pinger delegate callback
     
-    func simplePing(pinger: SimplePing, didStartWithAddress address: NSData) {
+    func simplePing(_ pinger: SimplePing, didStartWithAddress address: Data) {
         NSLog("pinging %@",hostName)
         
         // Send the first ping straight away.
@@ -64,45 +64,45 @@ class PingTest: NSObject, SimplePingDelegate {
         // And start a timer to send the subsequent pings.
         
         assert(self.sendTimer == nil)
-        self.sendTimer = NSTimer.scheduledTimerWithTimeInterval(1.0, target: self, selector: #selector(PingTest.sendPing), userInfo: nil, repeats: true)
+        self.sendTimer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(PingTest.sendPing), userInfo: nil, repeats: true)
     }
     
-    func simplePing(pinger: SimplePing, didFailWithError error: NSError) {
-        NSLog("failed: %@", PingTest.shortErrorFromError(error))
+    func simplePing(_ pinger: SimplePing, didFailWithError error: Error) {
+        NSLog("failed: %@", PingTest.shortErrorFromError(error as NSError))
         
         self.stop()
     }
     
-    func simplePing(pinger: SimplePing, didSendPacket packet: NSData, sequenceNumber: UInt16) {
+    func simplePing(_ pinger: SimplePing, didSendPacket packet: Data, sequenceNumber: UInt16) {
         NSLog("#%u sent", sequenceNumber)
-        dateReference = NSDate()
+        dateReference = Date()
     }
     
-    func simplePing(pinger: SimplePing, didFailToSendPacket packet: NSData, sequenceNumber: UInt16, error: NSError) {
-        NSLog("#%u send failed: %@", sequenceNumber, PingTest.shortErrorFromError(error))
+    func simplePing(_ pinger: SimplePing, didFailToSendPacket packet: Data, sequenceNumber: UInt16, error: Error) {
+        NSLog("#%u send failed: %@", sequenceNumber, PingTest.shortErrorFromError(error as NSError))
     }
     
-    func simplePing(pinger: SimplePing, didReceivePingResponsePacket packet: NSData, sequenceNumber: UInt16) {
+    func simplePing(_ pinger: SimplePing, didReceivePingResponsePacket packet: Data, sequenceNumber: UInt16) {
         
         pinger.stop()
         
         guard let dateReference = dateReference else { return }
         
         //timeIntervalSinceDate returns seconds, so we convert to milis
-        dispatch_async(dispatch_get_main_queue(), {
-            let latency = NSDate().timeIntervalSinceDate(dateReference) * 1000
-            NSLog("#%u received, host=%@, size=%zu, latency=%.f", sequenceNumber, self.hostName , packet.length,latency)
+        DispatchQueue.main.async(execute: {
+            let latency = Date().timeIntervalSince(dateReference) * 1000
+            NSLog("#%u received, host=%@, size=%zu, latency=%.f", sequenceNumber, self.hostName , packet.count,latency)
             let userNote = NSUserNotification()
             userNote.title = "\(self.hostName) ping \(latency)".localized
             userNote.subtitle = "Address can't not be recognized".localized
-            NSUserNotificationCenter.defaultUserNotificationCenter()
-                .deliverNotification(userNote)
+            NSUserNotificationCenter.default
+                .deliver(userNote)
 
             })
     }
     
-    func simplePing(pinger: SimplePing, didReceiveUnexpectedPacket packet: NSData) {
-        NSLog("unexpected packet, size=%zu", packet.length)
+    func simplePing(_ pinger: SimplePing, didReceiveUnexpectedPacket packet: Data) {
+        NSLog("unexpected packet, size=%zu", packet.count)
     }
     
     // MARK: utilities
@@ -113,12 +113,12 @@ class PingTest: NSObject, SimplePingDelegate {
     ///
     /// - returns: A string representation of that address.
     
-    static func displayAddressForAddress(address: NSData) -> String {
-        var hostStr = [Int8](count: Int(NI_MAXHOST), repeatedValue: 0)
+    static func displayAddressForAddress(_ address: Data) -> String {
+        var hostStr = [Int8](repeating: 0, count: Int(NI_MAXHOST))
         
         let success = getnameinfo(
-            UnsafePointer(address.bytes),
-            socklen_t(address.length),
+            (address as NSData).bytes.bindMemory(to: sockaddr.self, capacity: address.count),
+            socklen_t(address.count),
             &hostStr,
             socklen_t(hostStr.count),
             nil,
@@ -127,7 +127,7 @@ class PingTest: NSObject, SimplePingDelegate {
             ) == 0
         let result: String
         if success {
-            result = String.fromCString(hostStr)!
+            result = String(cString: hostStr)
         } else {
             result = "?"
         }
@@ -140,14 +140,14 @@ class PingTest: NSObject, SimplePingDelegate {
     ///
     /// - returns: A short string representing that error.
     
-    static func shortErrorFromError(error: NSError) -> String {
-        if error.domain == kCFErrorDomainCFNetwork as String && error.code == Int(CFNetworkErrors.CFHostErrorUnknown.rawValue) {
-            if let failureObj = error.userInfo[kCFGetAddrInfoFailureKey] {
+    static func shortErrorFromError(_ error: NSError) -> String {
+        if error.domain == kCFErrorDomainCFNetwork as String && error.code == Int(CFNetworkErrors.cfHostErrorUnknown.rawValue) {
+            if let failureObj = error.userInfo[kCFGetAddrInfoFailureKey as AnyHashable] {
                 if let failureNum = failureObj as? NSNumber {
-                    if failureNum.intValue != 0 {
-                        let f = gai_strerror(failureNum.intValue)
+                    if failureNum.int32Value != 0 {
+                        let f = gai_strerror(failureNum.int32Value)
                         if f != nil {
-                            return String.fromCString(f)!
+                            return String(cString: f!)
                         }
                     }
                 }
