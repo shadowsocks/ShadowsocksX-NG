@@ -29,7 +29,7 @@ class PreferencesWindowController: NSWindowController
     @IBOutlet weak var removeButton: NSButton!
     let tableViewDragType: String = "ss.server.profile.data"
     
-    var defaults: NSUserDefaults!
+    var defaults: UserDefaults!
     var profileMgr: ServerProfileManager!
     
     var editingProfile: ServerProfile!
@@ -39,10 +39,10 @@ class PreferencesWindowController: NSWindowController
         super.windowDidLoad()
 
         // Implement this method to handle any initialization after your window controller's window has been loaded from its nib file.
-        defaults = NSUserDefaults.standardUserDefaults()
+        defaults = UserDefaults.standard
         profileMgr = ServerProfileManager.instance
         
-        methodTextField.addItemsWithObjectValues([
+        methodTextField.addItems(withObjectValues: [
             "aes-128-cfb",
             "aes-192-cfb",
             "aes-256-cfb",
@@ -61,10 +61,10 @@ class PreferencesWindowController: NSWindowController
     }
     
     override func awakeFromNib() {
-        profilesTableView.registerForDraggedTypes([tableViewDragType])
+        profilesTableView.register(forDraggedTypes: [tableViewDragType])
     }
     
-    @IBAction func addProfile(sender: NSButton) {
+    @IBAction func addProfile(_ sender: NSButton) {
         if editingProfile != nil && !editingProfile.isValid(){
             shakeWindows()
             return
@@ -74,8 +74,8 @@ class PreferencesWindowController: NSWindowController
         profile.remark = "New Server".localized
         profileMgr.profiles.append(profile)
         
-        let index = NSIndexSet(index: profileMgr.profiles.count-1)
-        profilesTableView.insertRowsAtIndexes(index, withAnimation: .EffectFade)
+        let index = IndexSet(integer: profileMgr.profiles.count-1)
+        profilesTableView.insertRows(at: index, withAnimation: .effectFade)
         
         self.profilesTableView.scrollRowToVisible(self.profileMgr.profiles.count-1)
         self.profilesTableView.selectRowIndexes(index, byExtendingSelection: false)
@@ -83,18 +83,18 @@ class PreferencesWindowController: NSWindowController
         updateProfileBoxVisible()
     }
     
-    @IBAction func removeProfile(sender: NSButton) {
+    @IBAction func removeProfile(_ sender: NSButton) {
         let index = profilesTableView.selectedRow
         if index >= 0 {
             profilesTableView.beginUpdates()
-            profileMgr.profiles.removeAtIndex(index)
-            profilesTableView.removeRowsAtIndexes(NSIndexSet(index: index), withAnimation: .EffectFade)
+            profileMgr.profiles.remove(at: index)
+            profilesTableView.removeRows(at: IndexSet(integer: index), withAnimation: .effectFade)
             profilesTableView.endUpdates()
         }
         updateProfileBoxVisible()
     }
     
-    @IBAction func ok(sender: NSButton) {
+    @IBAction func ok(_ sender: NSButton) {
         if editingProfile != nil {
             if !editingProfile.isValid() {
                 // TODO Shake window?
@@ -106,15 +106,15 @@ class PreferencesWindowController: NSWindowController
         window?.performClose(nil)
 
         
-        NSNotificationCenter.defaultCenter()
-            .postNotificationName(NOTIFY_SERVER_PROFILES_CHANGED, object: nil)
+        NotificationCenter.default
+            .post(name: Notification.Name(rawValue: NOTIFY_SERVER_PROFILES_CHANGED), object: nil)
     }
     
-    @IBAction func cancel(sender: NSButton) {
+    @IBAction func cancel(_ sender: NSButton) {
         window?.performClose(self)
     }
     
-    @IBAction func copyCurrentProfileURL2Pasteboard(sender: NSButton) {
+    @IBAction func copyCurrentProfileURL2Pasteboard(_ sender: NSButton) {
         let index = profilesTableView.selectedRow
         if  index >= 0 {
             let profile = profileMgr.profiles[index]
@@ -122,9 +122,9 @@ class PreferencesWindowController: NSWindowController
             if let url = ssURL {
                 // Then copy url to pasteboard
                 // TODO Why it not working?? It's ok in objective-c
-                let pboard = NSPasteboard.generalPasteboard()
+                let pboard = NSPasteboard.general()
                 pboard.clearContents()
-                let rs = pboard.writeObjects([url])
+                let rs = pboard.writeObjects([url as NSPasteboardWriting])
                 if rs {
                     NSLog("copy to pasteboard success")
                 } else {
@@ -136,37 +136,37 @@ class PreferencesWindowController: NSWindowController
     
     func updateProfileBoxVisible() {
         if profileMgr.profiles.count <= 1 {
-            removeButton.enabled = false
+            removeButton.isEnabled = false
         }else{
-            removeButton.enabled = true
+            removeButton.isEnabled = true
         }
 
         if profileMgr.profiles.isEmpty {
-            profileBox.hidden = true
+            profileBox.isHidden = true
         } else {
-            profileBox.hidden = false
+            profileBox.isHidden = false
         }
     }
     
-    func bindProfile(index:Int) {
+    func bindProfile(_ index:Int) {
         NSLog("bind profile \(index)")
         if index >= 0 && index < profileMgr.profiles.count {
             editingProfile = profileMgr.profiles[index]
             
-            hostTextField.bind("value", toObject: editingProfile, withKeyPath: "serverHost"
+            hostTextField.bind("value", to: editingProfile, withKeyPath: "serverHost"
                 , options: [NSContinuouslyUpdatesValueBindingOption: true])
-            portTextField.bind("value", toObject: editingProfile, withKeyPath: "serverPort"
-                , options: [NSContinuouslyUpdatesValueBindingOption: true])
-            
-            methodTextField.bind("value", toObject: editingProfile, withKeyPath: "method"
-                , options: [NSContinuouslyUpdatesValueBindingOption: true])
-            passwordTextField.bind("value", toObject: editingProfile, withKeyPath: "password"
+            portTextField.bind("value", to: editingProfile, withKeyPath: "serverPort"
                 , options: [NSContinuouslyUpdatesValueBindingOption: true])
             
-            remarkTextField.bind("value", toObject: editingProfile, withKeyPath: "remark"
+            methodTextField.bind("value", to: editingProfile, withKeyPath: "method"
+                , options: [NSContinuouslyUpdatesValueBindingOption: true])
+            passwordTextField.bind("value", to: editingProfile, withKeyPath: "password"
                 , options: [NSContinuouslyUpdatesValueBindingOption: true])
             
-            otaCheckBoxBtn.bind("value", toObject: editingProfile, withKeyPath: "ota"
+            remarkTextField.bind("value", to: editingProfile, withKeyPath: "remark"
+                , options: [NSContinuouslyUpdatesValueBindingOption: true])
+            
+            otaCheckBoxBtn.bind("value", to: editingProfile, withKeyPath: "ota"
                 , options: [NSContinuouslyUpdatesValueBindingOption: true])
         } else {
             editingProfile = nil
@@ -182,7 +182,7 @@ class PreferencesWindowController: NSWindowController
         }
     }
     
-    func getDataAtRow(index:Int) -> (String, Bool) {
+    func getDataAtRow(_ index:Int) -> (String, Bool) {
         let profile = profileMgr.profiles[index]
         let isActive = (profileMgr.activeProfileId == profile.uuid)
         if !profile.remark.isEmpty {
@@ -195,16 +195,16 @@ class PreferencesWindowController: NSWindowController
     //--------------------------------------------------
     // For NSTableViewDataSource
     
-    func numberOfRowsInTableView(tableView: NSTableView) -> Int {
+    func numberOfRows(in tableView: NSTableView) -> Int {
         if let mgr = profileMgr {
             return mgr.profiles.count
         }
         return 0
     }
     
-    func tableView(tableView: NSTableView
-        , objectValueForTableColumn tableColumn: NSTableColumn?
-        , row: Int) -> AnyObject? {
+    func tableView(_ tableView: NSTableView
+        , objectValueFor tableColumn: NSTableColumn?
+        , row: Int) -> Any? {
         
         let (title, isActive) = getDataAtRow(row)
         
@@ -222,26 +222,26 @@ class PreferencesWindowController: NSWindowController
     
     // Drag & Drop reorder rows
     
-    func tableView(tableView: NSTableView, pasteboardWriterForRow row: Int) -> NSPasteboardWriting? {
+    func tableView(_ tableView: NSTableView, pasteboardWriterForRow row: Int) -> NSPasteboardWriting? {
         let item = NSPasteboardItem()
         item.setString(String(row), forType: tableViewDragType)
         return item
     }
     
-    func tableView(tableView: NSTableView, validateDrop info: NSDraggingInfo, proposedRow row: Int
+    func tableView(_ tableView: NSTableView, validateDrop info: NSDraggingInfo, proposedRow row: Int
         , proposedDropOperation dropOperation: NSTableViewDropOperation) -> NSDragOperation {
-        if dropOperation == .Above {
-            return .Move
+        if dropOperation == .above {
+            return .move
         }
-        return .None
+        return NSDragOperation()
     }
     
-    func tableView(tableView: NSTableView, acceptDrop info: NSDraggingInfo
+    func tableView(_ tableView: NSTableView, acceptDrop info: NSDraggingInfo
         , row: Int, dropOperation: NSTableViewDropOperation) -> Bool {
         if let mgr = profileMgr {
             var oldIndexes = [Int]()
-            info.enumerateDraggingItemsWithOptions([], forView: tableView, classes: [NSPasteboardItem.self], searchOptions: [:]) {
-                if let str = ($0.0.item as! NSPasteboardItem).stringForType(self.tableViewDragType), index = Int(str) {
+            info.enumerateDraggingItems(options: [], for: tableView, classes: [NSPasteboardItem.self], searchOptions: [:]) {
+                if let str = ($0.0.item as! NSPasteboardItem).string(forType: self.tableViewDragType), let index = Int(str) {
                     oldIndexes.append(index)
                 }
             }
@@ -254,14 +254,14 @@ class PreferencesWindowController: NSWindowController
             tableView.beginUpdates()
             for oldIndex in oldIndexes {
                 if oldIndex < row {
-                    let o = mgr.profiles.removeAtIndex(oldIndex + oldIndexOffset)
-                    mgr.profiles.insert(o, atIndex:row - 1)
-                    tableView.moveRowAtIndex(oldIndex + oldIndexOffset, toIndex: row - 1)
+                    let o = mgr.profiles.remove(at: oldIndex + oldIndexOffset)
+                    mgr.profiles.insert(o, at:row - 1)
+                    tableView.moveRow(at: oldIndex + oldIndexOffset, to: row - 1)
                     oldIndexOffset -= 1
                 } else {
-                    let o = mgr.profiles.removeAtIndex(oldIndex)
-                    mgr.profiles.insert(o, atIndex:row + newIndexOffset)
-                    tableView.moveRowAtIndex(oldIndex, toIndex: row + newIndexOffset)
+                    let o = mgr.profiles.remove(at: oldIndex)
+                    mgr.profiles.insert(o, at:row + newIndexOffset)
+                    tableView.moveRow(at: oldIndex, to: row + newIndexOffset)
                     newIndexOffset += 1
                 }
             }
@@ -275,12 +275,12 @@ class PreferencesWindowController: NSWindowController
     //--------------------------------------------------
     // For NSTableViewDelegate
     
-    func tableView(tableView: NSTableView
-        , shouldEditTableColumn tableColumn: NSTableColumn?, row: Int) -> Bool {
+    func tableView(_ tableView: NSTableView
+        , shouldEdit tableColumn: NSTableColumn?, row: Int) -> Bool {
         return false
     }
     
-    func tableView(tableView: NSTableView, shouldSelectRow row: Int) -> Bool {
+    func tableView(_ tableView: NSTableView, shouldSelectRow row: Int) -> Bool {
         if row < 0 {
             editingProfile = nil
             return true
@@ -294,12 +294,12 @@ class PreferencesWindowController: NSWindowController
         return true
     }
     
-    func tableViewSelectionDidChange(notification: NSNotification) {
+    func tableViewSelectionDidChange(_ notification: Notification) {
         if profilesTableView.selectedRow >= 0 {
             bindProfile(profilesTableView.selectedRow)
         } else {
             if !profileMgr.profiles.isEmpty {
-                let index = NSIndexSet(index: profileMgr.profiles.count - 1)
+                let index = IndexSet(integer: profileMgr.profiles.count - 1)
                 profilesTableView.selectRowIndexes(index, byExtendingSelection: false)
             }
         }
@@ -313,15 +313,15 @@ class PreferencesWindowController: NSWindowController
         let frame:CGRect = (window?.frame)!
         let shakeAnimation = CAKeyframeAnimation()
 
-        let shakePath = CGPathCreateMutable()
-        CGPathMoveToPoint(shakePath, nil, NSMinX(frame), NSMinY(frame))
+        let shakePath = CGMutablePath()
+        shakePath.move(to: CGPoint(x:NSMinX(frame), y:NSMinY(frame)))
 
         for _ in 1...numberOfShakes{
-            CGPathAddLineToPoint(shakePath, nil, NSMinX(frame) - frame.size.width * CGFloat(vigourOfShake), NSMinY(frame))
-            CGPathAddLineToPoint(shakePath, nil, NSMinX(frame) + frame.size.width * CGFloat(vigourOfShake), NSMinY(frame))
+            shakePath.addLine(to: CGPoint(x: NSMinX(frame) - frame.size.width * CGFloat(vigourOfShake), y: NSMinY(frame)))
+            shakePath.addLine(to: CGPoint(x: NSMinX(frame) + frame.size.width * CGFloat(vigourOfShake), y: NSMinY(frame)))
         }
 
-        CGPathCloseSubpath(shakePath)
+        shakePath.closeSubpath()
         shakeAnimation.path = shakePath
         shakeAnimation.duration = CFTimeInterval(durationOfShake)
         window?.animations = ["frameOrigin":shakeAnimation]
