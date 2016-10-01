@@ -376,8 +376,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     }
     
     func updateStatusItemUI() {
-        let defaults = NSUserDefaults.standardUserDefaults()
-        let mode = defaults.stringForKey("ShadowsocksRunningMode")
+        let defaults = UserDefaults.standard
+        let mode = defaults.string(forKey: "ShadowsocksRunningMode")
         if mode == "auto" {
             statusItem.title = "Auto".localized
         } else if mode == "global" {
@@ -385,7 +385,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         } else if mode == "manual" {
             statusItem.title = "Manual".localized
         }
-        let titleWidth = statusItem.title!.sizeWithAttributes([NSFontAttributeName: statusItem.button!.font!]).width
+        let titleWidth = statusItem.title!.size(withAttributes: [NSFontAttributeName: statusItem.button!.font!]).width
         let imageWidth:CGFloat = 22
         statusItem.length = titleWidth + imageWidth
     }
