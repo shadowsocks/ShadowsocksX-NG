@@ -176,7 +176,7 @@ GCDWebServer *webServer =nil;
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     NSString * address = [defaults stringForKey:@"PacServer.ListenAddress"];
     int port = (short)[defaults integerForKey:@"PacServer.ListenPort"];
-    [webServer startWithPort:port bonjourName:@"webserver"];
+    [webServer startWithOptions:@{@"BindToLocalhost":@YES, @"Port":@(port)} error:nil];
     return [NSString stringWithFormat:@"%@%@:%d%@",@"http://",address,port,routerPath];
 }
 
