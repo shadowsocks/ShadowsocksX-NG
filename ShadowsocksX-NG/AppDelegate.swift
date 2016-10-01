@@ -347,11 +347,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         for v in defaults.array(forKey: "ServerProfiles")! {
             let profile = v as! [String:Any]
             if profile["Id"] as! String == defaults.string(forKey: "ActiveServerProfileId")! {
+                var profileName :String
                 if profile["Remark"] as! String != "" {
-                    serverMenuText = profile["Remark"] as! String
+                    profileName = profile["Remark"] as! String
                 } else {
-                    serverMenuText = profile["ServerHost"] as! String
+                    profileName = profile["ServerHost"] as! String
                 }
+                serverMenuText = "\(serverMenuText) - \(profileName)"
             }
         }
         serversMenuItem.title = serverMenuText
