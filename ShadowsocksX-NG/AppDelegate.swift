@@ -349,6 +349,22 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             globalModeMenuItem.state = 0
             manualModeMenuItem.state = 1
         }
+        updateStatusItemUI()
+    }
+    
+    func updateStatusItemUI() {
+        let defaults = NSUserDefaults.standardUserDefaults()
+        let mode = defaults.stringForKey("ShadowsocksRunningMode")
+        if mode == "auto" {
+            statusItem.title = "Auto".localized
+        } else if mode == "global" {
+            statusItem.title = "Global".localized
+        } else if mode == "manual" {
+            statusItem.title = "Manual".localized
+        }
+        let titleWidth = statusItem.title!.sizeWithAttributes([NSFontAttributeName: statusItem.button!.font!]).width
+        let imageWidth:CGFloat = 22
+        statusItem.length = titleWidth + imageWidth
     }
     
     func updateMainMenu() {
