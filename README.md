@@ -20,11 +20,11 @@ Then I rewrite the GUI code by swift.
 
 ### Running
 
-- Mac OS X 10.10 +
+- Mac OS X 10.11 +
 
 ### Building
 
-- XCode 7.3+
+- XCode 8.0+
 - cocoapod 1.0.1+
 
 ## Fetures
