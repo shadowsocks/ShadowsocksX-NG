@@ -13,6 +13,7 @@
 
 @implementation ProxyConfHelper
 
+GCDWebServer *webServer =nil;
 
 + (BOOL)isVersionOk {
     NSTask *task;
@@ -113,14 +114,17 @@
     }
 }
 
-+ (void)enablePACProxy {
-    NSString* urlString = [NSString stringWithFormat:@"%@/.ShadowsocksX-NG/gfwlist.js", NSHomeDirectory()];
-    NSURL* url = [NSURL fileURLWithPath:urlString];
-    
++ (void)enablePACProxy:(NSString*) PACFilePath {
+    //start server here and then using the string next line
+    //next two lines can open gcdwebserver and work around pac file
+    NSString *PACURLString = [self startPACServer: PACFilePath];//hi 可以切换成定制pac文件路径来达成使用定制文件路径
+    NSURL* url = [NSURL URLWithString: PACURLString];
+//    NSString* urlString = [NSString stringWithFormat:@"%@/.ShadowsocksX-NG/gfwlist.js", NSHomeDirectory()];
+//    NSURL* url = [NSURL fileURLWithPath:urlString];
+
     NSMutableArray* args = [@[@"--mode", @"auto", @"--pac-url", [url absoluteString]]mutableCopy];
     
     [self addArguments4ManualSpecifyNetworkServices:args];
-    
     [self callHelper:args];
 }
 
@@ -131,14 +135,16 @@
                               , [NSString stringWithFormat:@"%lu", (unsigned long)port]]mutableCopy];
     
     [self addArguments4ManualSpecifyNetworkServices:args];
-    
     [self callHelper:args];
+    [self stopPACServer];
 }
 
-+ (void)disableProxy {
-    // 带上所有参数是为了判断是否原有代理设置是否由ssx-ng设置的。如果是用户手工设置的其他配置，则不进行清空。
-    NSString* urlString = [NSString stringWithFormat:@"%@/.ShadowsocksX-NG/gfwlist.js", NSHomeDirectory()];
-    NSURL* url = [NSURL fileURLWithPath:urlString];
++ (void)disableProxy:(NSString*) PACFilePath {
+//    带上所有参数是为了判断是否原有代理设置是否由ssx-ng设置的。如果是用户手工设置的其他配置，则不进行清空。
+//    NSString* urlString = [NSString stringWithFormat:@"%@/.ShadowsocksX-NG/gfwlist.js", NSHomeDirectory()];
+//    NSURL* url = [NSURL fileURLWithPath:urlString];
+    NSString *PACURLString = [self startPACServer: PACFilePath];//hi 可以切换成定制pac文件路径来达成使用定制文件路径
+    NSURL* url = [NSURL URLWithString: PACURLString];
     NSUInteger port = [[NSUserDefaults standardUserDefaults]integerForKey:@"LocalSocks5.ListenPort"];
     
     NSMutableArray* args = [@[@"--mode", @"off"
@@ -147,6 +153,38 @@
                               ]mutableCopy];
     [self addArguments4ManualSpecifyNetworkServices:args];
     [self callHelper:args];
+    [self stopPACServer];
+}
+
++ (NSString*)startPACServer:(NSString*) PACFilePath {
+    //接受参数为以后使用定制PAC文件
+    NSData * originalPACData;
+    NSString * routerPath = @"/proxy.pac";
+    if ([PACFilePath isEqual: @"hi"]) {//用默认路径来代替
+        PACFilePath = [NSString stringWithFormat:@"%@/%@", NSHomeDirectory(), @".ShadowsocksX-NG/gfwlist.js"];
+        originalPACData = [NSData dataWithContentsOfFile: [NSString stringWithFormat:@"%@/%@", NSHomeDirectory(), @".ShadowsocksX-NG/gfwlist.js"]];
+    }else{//用定制路径来代替
+        originalPACData = [NSData dataWithContentsOfFile: [NSString stringWithFormat:@"%@/%@/%@", NSHomeDirectory(), @".ShadowsocksX-NG", PACFilePath]];
+        routerPath = [NSString stringWithFormat:@"/%@",PACFilePath];
+    }
+    [self stopPACServer];
+    webServer = [[GCDWebServer alloc] init];
+    [webServer addHandlerForMethod:@"GET" path:routerPath requestClass:[GCDWebServerRequest class] processBlock:^GCDWebServerResponse *(GCDWebServerRequest *request) {
+        return [GCDWebServerDataResponse responseWithData: originalPACData contentType:@"application/x-ns-proxy-autoconfig"];
+    }
+     ];
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    NSString * address = [defaults stringForKey:@"PacServer.ListenAddress"];
+    int port = (short)[defaults integerForKey:@"PacServer.ListenPort"];
+    [webServer startWithPort:port bonjourName:@"webserver"];
+    return [NSString stringWithFormat:@"%@%@:%d%@",@"http://",address,port,routerPath];
+}
+
++ (void)stopPACServer {
+    //原版似乎没有处理这个，本来设计计划如果切换到全局模式或者手动模式就关掉webserver 似乎没有这个必要了？
+    if ([webServer isRunning]) {
+        [webServer stop];
+    }
 }
 
 @end
