@@ -310,6 +310,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             updateServersMenu()
             SyncSSLocal()
         }
+        updateRunningModeMenu()
     }
     
     @IBAction func showLogs(_ sender: NSMenuItem) {
@@ -341,6 +342,20 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     func updateRunningModeMenu() {
         let defaults = UserDefaults.standard
         let mode = defaults.string(forKey: "ShadowsocksRunningMode")
+
+        var serverMenuText = "Servers".localized
+        for v in defaults.array(forKey: "ServerProfiles")! {
+            let profile = v as! [String:Any]
+            if profile["Id"] as! String == defaults.string(forKey: "ActiveServerProfileId")! {
+                if profile["Remark"] as! String != "" {
+                    serverMenuText = profile["Remark"] as! String
+                } else {
+                    serverMenuText = profile["ServerHost"] as! String
+                }
+            }
+        }
+        serversMenuItem.title = serverMenuText
+
         if mode == "auto" {
             proxyMenuItem.title = "Proxy - Auto By PAC".localized
             autoModeMenuItem.state = 1
