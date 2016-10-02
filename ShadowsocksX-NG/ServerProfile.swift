@@ -101,6 +101,7 @@ class ServerProfile: NSObject {
         conf["local_address"] = defaults.string(forKey: "LocalSocks5.ListenAddress") as AnyObject?
         conf["timeout"] = NSNumber(value: UInt32(defaults.integer(forKey: "LocalSocks5.Timeout")) as UInt32)
         conf["auth"] = NSNumber(value: ota as Bool)
+        
         if(!ssrObfs.isEmpty){
             conf["protocol"] = ssrProtocol as AnyObject?
             conf["protocol_param"] = ssrProtocolParam as AnyObject?

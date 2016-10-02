@@ -50,7 +50,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     
     // MARK: Variables
     var statusItemView:StatusItemView!
-    
     var statusItem: NSStatusItem?
     var speedMonitor:NetWorkMonitor?
 
@@ -95,9 +94,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             "AutoConfigureNetworkServices": NSNumber(value: true as Bool)
         ])
 
-
         setUpMenu(defaults.bool(forKey: "enable_showSpeed"))
-
+        
+//        statusItem = NSStatusBar.system().statusItem(withLength: 20)
+//        let image = NSImage(named: "menu_icon")
+//        image?.isTemplate = true
+//        statusItem.image = image
+//        statusItem.menu = statusMenu
 
         let notifyCenter = NotificationCenter.default
         notifyCenter.addObserver(forName: NSNotification.Name(rawValue: NOTIFY_ADV_PROXY_CONF_CHANGED), object: nil, queue: nil
@@ -191,8 +194,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         }
     }
 
-    
-    
     func applicationWillTerminate(_ aNotification: Notification) {
         // Insert code here to tear down your application
         StopSSLocal()
@@ -284,6 +285,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     }
     
     // MARK: Server submenu function
+
     @IBAction func showQRCodeForCurrentServer(_ sender: NSMenuItem) {
         var errMsg: String?
         if let profile = ServerProfileManager.instance.getActiveProfile() {
@@ -455,6 +457,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     func updateRunningModeMenu() {
         let defaults = UserDefaults.standard
         let mode = defaults.string(forKey: "ShadowsocksRunningMode")
+//<<<<<<< HEAD
         var serverMenuText = "Servers".localized
         
         let mgr = ServerProfileManager.instance
@@ -468,10 +471,25 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                 if let latency = p.latency{
                     serverMenuText += "  - \(latency)ms"
                 }
+//=======
+//
+//        var serverMenuText = "Servers".localized
+//        for v in defaults.array(forKey: "ServerProfiles")! {
+//            let profile = v as! [String:Any]
+//            if profile["Id"] as! String == defaults.string(forKey: "ActiveServerProfileId")! {
+//                var profileName :String
+//                if profile["Remark"] as! String != "" {
+//                    profileName = profile["Remark"] as! String
+//                } else {
+//                    profileName = profile["ServerHost"] as! String
+//>>>>>>> shadowsocks/develop
+//                }
+//                serverMenuText = "\(serverMenuText) - \(profileName)"
             }
         }
 
         serversMenuItem.title = serverMenuText
+
         if mode == "auto" {
             proxyMenuItem.title = "Proxy - Auto By PAC".localized
             autoModeMenuItem.state = 1
@@ -513,6 +531,22 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             whiteListDomainMenuItem.state = 0
             whiteListIPMenuItem.state = 1
         }
+        updateStatusItemUI()
+    }
+    
+    func updateStatusItemUI() {
+        let defaults = UserDefaults.standard
+        let mode = defaults.string(forKey: "ShadowsocksRunningMode")
+        if mode == "auto" {
+            statusItem?.title = "Auto".localized
+        } else if mode == "global" {
+            statusItem?.title = "Global".localized
+        } else if mode == "manual" {
+            statusItem?.title = "Manual".localized
+        }
+        let titleWidth = statusItem?.title!.size(withAttributes: [NSFontAttributeName: statusItem?.button!.font!]).width
+        let imageWidth:CGFloat = 22
+        statusItem?.length = titleWidth! + imageWidth
     }
     
     func updateMainMenu() {
@@ -625,7 +659,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     }
     
     // MARK: 
-    
+
     func handleURLEvent(_ event: NSAppleEventDescriptor, withReplyEvent replyEvent: NSAppleEventDescriptor) {
         if let urlString = event.paramDescriptor(forKeyword: AEKeyword(keyDirectObject))?.stringValue {
             if let url = URL(string: urlString) {

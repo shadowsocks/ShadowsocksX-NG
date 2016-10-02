@@ -379,14 +379,12 @@ class PreferencesWindowController: NSWindowController
         let shakeAnimation = CAKeyframeAnimation()
 
         let shakePath = CGMutablePath()
-        shakePath.move(to: CGPoint.init(x: NSMinX(frame), y: NSMinY(frame)), transform: CGAffineTransform.init())
-//        CGPathMoveToPoint(shakePath, nil, NSMinX(frame), NSMinY(frame))
+        
+        shakePath.move(to: CGPoint(x:NSMinX(frame), y:NSMinY(frame)))
 
         for _ in 1...numberOfShakes{
-            shakePath.addLine(to: CGPoint.init(x: NSMinX(frame) - frame.size.width * CGFloat(vigourOfShake), y: NSMinY(frame)))
-            shakePath.addLine(to: CGPoint.init(x: NSMinX(frame) + frame.size.width * CGFloat(vigourOfShake), y: NSMinY(frame)))
-//            CGPathAddLineToPoint(shakePath, nil, NSMinX(frame) - frame.size.width * CGFloat(vigourOfShake), NSMinY(frame))
-//            CGPathAddLineToPoint(shakePath, nil, NSMinX(frame) + frame.size.width * CGFloat(vigourOfShake), NSMinY(frame))
+            shakePath.addLine(to: CGPoint(x: NSMinX(frame) - frame.size.width * CGFloat(vigourOfShake), y: NSMinY(frame)))
+            shakePath.addLine(to: CGPoint(x: NSMinX(frame) + frame.size.width * CGFloat(vigourOfShake), y: NSMinY(frame)))
         }
 
         shakePath.closeSubpath()

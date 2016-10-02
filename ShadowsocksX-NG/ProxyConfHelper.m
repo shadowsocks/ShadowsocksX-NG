@@ -159,6 +159,7 @@ GCDWebServer *webServer = nil;
     
     [self addArguments4ManualSpecifyNetworkServices:args];
     [self callHelper:args];
+    [self stopPACServer];
 }
 
 + (void)disableProxy:(NSString*) PACFilePath {
@@ -201,12 +202,14 @@ GCDWebServer *webServer = nil;
     NSString * address = [defaults stringForKey:@"PacServer.ListenAddress"];
     int port = (short)[defaults integerForKey:@"PacServer.ListenPort"];
 
-    NSMutableDictionary* options = [NSMutableDictionary dictionary];
-    [options setObject:[NSNumber numberWithInteger:port] forKey:GCDWebServerOption_Port];
-    [options setObject:@YES forKey:@"BindToLocalhost"];
-    
-    [webServer startWithOptions:options error:NULL];
-//    [webServer startWithPort:port bonjourName:@"webserver"];
+//    NSMutableDictionary* options = [NSMutableDictionary dictionary];
+//    [options setObject:[NSNumber numberWithInteger:port] forKey:GCDWebServerOption_Port];
+//    [options setObject:@YES forKey:@"BindToLocalhost"];
+//    
+//    [webServer startWithOptions:options error:NULL];
+
+    [webServer startWithOptions:@{@"BindToLocalhost":@YES, @"Port":@(port)} error:nil];
+
     return [NSString stringWithFormat:@"%@%@:%d%@",@"http://",address,port,routerPath];
 }
 

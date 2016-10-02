@@ -40,7 +40,9 @@ func SyncPac() {
     }
     
     if needGenerate {
-        let _ = GeneratePACFile()
+        if !GeneratePACFile() {
+            NSLog("GeneratePACFile failed!")
+        }
     }
 }
 
@@ -79,6 +81,7 @@ func GeneratePACFile() -> Bool {
     if !fileMgr.fileExists(atPath: WhiteListIPPACFilePath) {
         let src = Bundle.main.path(forResource: "whiteiplist", ofType: "pac")
         try! fileMgr.copyItem(atPath: src!, toPath: WhiteListIPPACFilePath)
+
     }
     
     let socks5Port = UserDefaults.standard.integer(forKey: "LocalSocks5.ListenPort")
