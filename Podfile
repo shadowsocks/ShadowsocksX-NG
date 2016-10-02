@@ -6,7 +6,7 @@ target 'ShadowsocksX-NG' do
   use_frameworks!
 
   # Pods for ShadowsocksX-NG
-  pod 'Alamofire', '~> 4.0'
+  pod 'Alamofire', '~> 4.0.1'
   pod 'GCDWebServer', '~> 3.0'
 
   target 'ShadowsocksX-NGTests' do
