@@ -61,7 +61,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
 //        let newInstance = PingTest.init(hostName: "www.baidu.com")
 //        newInstance.start()
         let SerMgr = ServerProfileManager.instance
-        let pingServerQueue : DispatchQueue = DispatchQueue.global(priority: DispatchQueue.GlobalQueuePriority.high);
+        let pingServerQueue : DispatchQueue = DispatchQueue.global(priority: DispatchQueue.GlobalQueuePriority.high)
         
         for profile in SerMgr.profiles {
             let host = profile.serverHost
@@ -544,9 +544,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         } else if mode == "manual" {
             statusItem?.title = "Manual".localized
         }
-        let titleWidth = statusItem?.title!.size(withAttributes: [NSFontAttributeName: statusItem?.button!.font!]).width
+        let titleWidth:CGFloat = 0//statusItem?.title!.size(withAttributes: [NSFontAttributeName: statusItem?.button!.font!]).width//这里不包含IP白名单模式等等，需要重新调整//PS还是给上游加上白名单模式？
         let imageWidth:CGFloat = 22
-        statusItem?.length = titleWidth! + imageWidth
+        statusItem?.length = titleWidth + imageWidth
     }
     
     func updateMainMenu() {
