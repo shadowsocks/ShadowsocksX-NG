@@ -23,75 +23,78 @@ let WhiteListIPPACFilePath = PACRulesDirPath + "whiteiplist.pac"
 func SyncPac() {
     var needGenerate = false
     
-    let nowSocks5Port = NSUserDefaults.standardUserDefaults().integerForKey("LocalSocks5.ListenPort")
-    let oldSocks5Port = NSUserDefaults.standardUserDefaults().integerForKey("LocalSocks5.ListenPort.Old")
+    let nowSocks5Port = UserDefaults.standard.integer(forKey: "LocalSocks5.ListenPort")
+    let oldSocks5Port = UserDefaults.standard.integer(forKey: "LocalSocks5.ListenPort.Old")
     if nowSocks5Port != oldSocks5Port {
         needGenerate = true
-        NSUserDefaults.standardUserDefaults().setInteger(nowSocks5Port, forKey: "LocalSocks5.ListenPort.Old")
+        UserDefaults.standard.set(nowSocks5Port, forKey: "LocalSocks5.ListenPort.Old")
     }
     
-    let fileMgr = NSFileManager.defaultManager()
-    if !fileMgr.fileExistsAtPath(PACRulesDirPath) {
+    let fileMgr = FileManager.default
+    if !fileMgr.fileExists(atPath: PACRulesDirPath) {
         needGenerate = true
     }
     
-    if !fileMgr.fileExistsAtPath(WhiteListDomainPACFilePath) && !fileMgr.fileExistsAtPath(WhiteListIPPACFilePath) {
+    if !fileMgr.fileExists(atPath: WhiteListDomainPACFilePath) && !fileMgr.fileExists(atPath: WhiteListIPPACFilePath) {
         needGenerate = true
     }
     
     if needGenerate {
-        GeneratePACFile()
+        if !GeneratePACFile() {
+            NSLog("GeneratePACFile failed!")
+        }
     }
 }
 
 
 func GeneratePACFile() -> Bool {
-    let fileMgr = NSFileManager.defaultManager()
+    let fileMgr = FileManager.default
     // Maker the dir if rulesDirPath is not exesited.
-    if !fileMgr.fileExistsAtPath(PACRulesDirPath) {
-        if fileMgr.fileExistsAtPath(OldErrorPACRulesDirPath) {
-            try! fileMgr.moveItemAtPath(OldErrorPACRulesDirPath, toPath: PACRulesDirPath)
+    if !fileMgr.fileExists(atPath: PACRulesDirPath) {
+        if fileMgr.fileExists(atPath: OldErrorPACRulesDirPath) {
+            try! fileMgr.moveItem(atPath: OldErrorPACRulesDirPath, toPath: PACRulesDirPath)
         } else {
-            try! fileMgr.createDirectoryAtPath(PACRulesDirPath
+            try! fileMgr.createDirectory(atPath: PACRulesDirPath
                 , withIntermediateDirectories: true, attributes: nil)
         }
     }
     
     // If gfwlist.txt is not exsited, copy from bundle
-    if !fileMgr.fileExistsAtPath(GFWListFilePath) {
-        let src = NSBundle.mainBundle().pathForResource("gfwlist", ofType: "txt")
-        try! fileMgr.copyItemAtPath(src!, toPath: GFWListFilePath)
+    if !fileMgr.fileExists(atPath: GFWListFilePath) {
+        let src = Bundle.main.path(forResource: "gfwlist", ofType: "txt")
+        try! fileMgr.copyItem(atPath: src!, toPath: GFWListFilePath)
     }
     
     // If user-rule.txt is not exsited, copy from bundle
-    if !fileMgr.fileExistsAtPath(PACUserRuleFilePath) {
-        let src = NSBundle.mainBundle().pathForResource("user-rule", ofType: "txt")
-        try! fileMgr.copyItemAtPath(src!, toPath: PACUserRuleFilePath)
+    if !fileMgr.fileExists(atPath: PACUserRuleFilePath) {
+        let src = Bundle.main.path(forResource: "user-rule", ofType: "txt")
+        try! fileMgr.copyItem(atPath: src!, toPath: PACUserRuleFilePath)
     }
     
     // If whitelist.pac is not exsited, copy from bundle
-    if !fileMgr.fileExistsAtPath(WhiteListDomainPACFilePath) {
-        let src = NSBundle.mainBundle().pathForResource("whitelist", ofType: "pac")
-        try! fileMgr.copyItemAtPath(src!, toPath: WhiteListDomainPACFilePath)
+    if !fileMgr.fileExists(atPath: WhiteListDomainPACFilePath) {
+        let src = Bundle.main.path(forResource: "whitelist", ofType: "pac")
+        try! fileMgr.copyItem(atPath: src!, toPath: WhiteListDomainPACFilePath)
     }
     
     // If whitelistip.pac is not exsited, copy from bundle
-    if !fileMgr.fileExistsAtPath(WhiteListIPPACFilePath) {
-        let src = NSBundle.mainBundle().pathForResource("whiteiplist", ofType: "pac")
-        try! fileMgr.copyItemAtPath(src!, toPath: WhiteListIPPACFilePath)
+    if !fileMgr.fileExists(atPath: WhiteListIPPACFilePath) {
+        let src = Bundle.main.path(forResource: "whiteiplist", ofType: "pac")
+        try! fileMgr.copyItem(atPath: src!, toPath: WhiteListIPPACFilePath)
+
     }
     
-    let socks5Port = NSUserDefaults.standardUserDefaults().integerForKey("LocalSocks5.ListenPort")
+    let socks5Port = UserDefaults.standard.integer(forKey: "LocalSocks5.ListenPort")
     
     do {
-        let gfwlist = try String(contentsOfFile: GFWListFilePath, encoding: NSUTF8StringEncoding)
-        if let data = NSData(base64EncodedString: gfwlist, options: .IgnoreUnknownCharacters) {
-            let str = String(data: data, encoding: NSUTF8StringEncoding)
-            var lines = str!.componentsSeparatedByCharactersInSet(NSCharacterSet.newlineCharacterSet())
+        let gfwlist = try String(contentsOfFile: GFWListFilePath, encoding: String.Encoding.utf8)
+        if let data = Data(base64Encoded: gfwlist, options: .ignoreUnknownCharacters) {
+            let str = String(data: data, encoding: String.Encoding.utf8)
+            var lines = str!.components(separatedBy: CharacterSet.newlines)
             
             do {
-                let userRuleStr = try String(contentsOfFile: PACUserRuleFilePath, encoding: NSUTF8StringEncoding)
-                let userRuleLines = userRuleStr.componentsSeparatedByCharactersInSet(NSCharacterSet.newlineCharacterSet())
+                let userRuleStr = try String(contentsOfFile: PACUserRuleFilePath, encoding: String.Encoding.utf8)
+                let userRuleLines = userRuleStr.components(separatedBy: CharacterSet.newlines)
                 
                 lines += userRuleLines
             } catch {
@@ -112,51 +115,51 @@ func GeneratePACFile() -> Bool {
             
             do {
                 // rule lines to json array
-                let rulesJsonData: NSData
-                    = try NSJSONSerialization.dataWithJSONObject(lines, options: .PrettyPrinted)
-                let rulesJsonStr = String(data: rulesJsonData, encoding: NSUTF8StringEncoding)
+                let rulesJsonData: Data
+                    = try JSONSerialization.data(withJSONObject: lines, options: .prettyPrinted)
+                let rulesJsonStr = String(data: rulesJsonData, encoding: String.Encoding.utf8)
                 
                 // Get raw pac js
-                let jsPath = NSBundle.mainBundle().URLForResource("abp", withExtension: "js")
-                let jsData = NSData(contentsOfURL: jsPath!)
-                var jsStr = String(data: jsData!, encoding: NSUTF8StringEncoding)
+                let jsPath = Bundle.main.url(forResource: "abp", withExtension: "js")
+                let jsData = try? Data(contentsOf: jsPath!)
+                var jsStr = String(data: jsData!, encoding: String.Encoding.utf8)
                 
                 // Replace rules placeholder in pac js
-                jsStr = jsStr!.stringByReplacingOccurrencesOfString("__RULES__"
-                    , withString: rulesJsonStr!)
+                jsStr = jsStr!.replacingOccurrences(of: "__RULES__"
+                    , with: rulesJsonStr!)
                 // Replace __SOCKS5PORT__ palcholder in pac js
-                let result = jsStr!.stringByReplacingOccurrencesOfString("__SOCKS5PORT__"
-                    , withString: "\(socks5Port)")
+                let result = jsStr!.replacingOccurrences(of: "__SOCKS5PORT__"
+                    , with: "\(socks5Port)")
                 
                 // Write the pac js to file.
-                try result.dataUsingEncoding(NSUTF8StringEncoding)?
-                    .writeToFile(PACFilePath, options: .DataWritingAtomic)
+                try result.data(using: String.Encoding.utf8)?
+                    .write(to: URL(fileURLWithPath: PACFilePath), options: .atomic)
                 
                 // Setup Pac for White List
-                let DomainSrc = NSBundle.mainBundle().pathForResource("whitelist", ofType: "pac")
-                let IPSrc = NSBundle.mainBundle().pathForResource("whiteiplist", ofType: "pac")
-                let DomainPacFile = NSData(contentsOfFile: DomainSrc!)
-                let IPPACFile = NSData(contentsOfFile: IPSrc!)
-                var DomainPACStr = String(data: DomainPacFile!,encoding: NSUTF8StringEncoding)!
-                var IPPACStr = String(data: IPPACFile!,encoding: NSUTF8StringEncoding)!
-                if(DomainPACStr.rangeOfString("SOCKS ") == nil) {
-                    DomainPACStr = DomainPACStr.stringByReplacingOccurrencesOfString("SOCKS5 127.0.0.1:1080;", withString: "SOCKS5 127.0.0.1:\(socks5Port);SOCKS 127.0.0.1:\(socks5Port);")
+                let DomainSrc = Bundle.main.path(forResource: "whitelist", ofType: "pac")
+                let IPSrc = Bundle.main.path(forResource: "whiteiplist", ofType: "pac")
+                let DomainPacFile = try? Data(contentsOf: URL(fileURLWithPath: DomainSrc!))
+                let IPPACFile = try? Data(contentsOf: URL(fileURLWithPath: IPSrc!))
+                var DomainPACStr = String(data: DomainPacFile!,encoding: String.Encoding.utf8)!
+                var IPPACStr = String(data: IPPACFile!,encoding: String.Encoding.utf8)!
+                if(DomainPACStr.range(of: "SOCKS ") == nil) {
+                    DomainPACStr = DomainPACStr.replacingOccurrences(of: "SOCKS5 127.0.0.1:1080;", with: "SOCKS5 127.0.0.1:\(socks5Port);SOCKS 127.0.0.1:\(socks5Port);")
                 }else{
-                    DomainPACStr = DomainPACStr.stringByReplacingOccurrencesOfString("SOCKS 127.0.0.1:1080;", withString: "SOCKS 127.0.0.1:\(socks5Port);")
-                    DomainPACStr = DomainPACStr.stringByReplacingOccurrencesOfString("SOCKS5 127.0.0.1:1080;", withString: "SOCKS5 127.0.0.1:\(socks5Port);")
+                    DomainPACStr = DomainPACStr.replacingOccurrences(of: "SOCKS 127.0.0.1:1080;", with: "SOCKS 127.0.0.1:\(socks5Port);")
+                    DomainPACStr = DomainPACStr.replacingOccurrences(of: "SOCKS5 127.0.0.1:1080;", with: "SOCKS5 127.0.0.1:\(socks5Port);")
                 }
                 
-                if(IPPACStr.rangeOfString("SOCKS ") == nil) {
-                    IPPACStr = IPPACStr.stringByReplacingOccurrencesOfString("SOCKS5 127.0.0.1:1080;", withString: "SOCKS5 127.0.0.1:\(socks5Port);SOCKS 127.0.0.1:\(socks5Port);")
+                if(IPPACStr.range(of: "SOCKS ") == nil) {
+                    IPPACStr = IPPACStr.replacingOccurrences(of: "SOCKS5 127.0.0.1:1080;", with: "SOCKS5 127.0.0.1:\(socks5Port);SOCKS 127.0.0.1:\(socks5Port);")
                 }else{
-                    IPPACStr = IPPACStr.stringByReplacingOccurrencesOfString("SOCKS 127.0.0.1:1080;", withString: "SOCKS 127.0.0.1:\(socks5Port);")
-                    IPPACStr = IPPACStr.stringByReplacingOccurrencesOfString("SOCKS5 127.0.0.1:1080;", withString: "SOCKS5 127.0.0.1:\(socks5Port);")
+                    IPPACStr = IPPACStr.replacingOccurrences(of: "SOCKS 127.0.0.1:1080;", with: "SOCKS 127.0.0.1:\(socks5Port);")
+                    IPPACStr = IPPACStr.replacingOccurrences(of: "SOCKS5 127.0.0.1:1080;", with: "SOCKS5 127.0.0.1:\(socks5Port);")
                 }
                 
                 try
-                    DomainPACStr.dataUsingEncoding(NSUTF8StringEncoding)?.writeToFile(WhiteListDomainPACFilePath, options: .DataWritingAtomic)
+                    DomainPACStr.data(using: String.Encoding.utf8)?.write(to: URL(fileURLWithPath: WhiteListDomainPACFilePath), options: .atomic)
                 try
-                    IPPACStr.dataUsingEncoding(NSUTF8StringEncoding)?.writeToFile(WhiteListIPPACFilePath, options: .DataWritingAtomic)
+                    IPPACStr.data(using: String.Encoding.utf8)?.write(to: URL(fileURLWithPath: WhiteListIPPACFilePath), options: .atomic)
                 
                 return true
             } catch {
@@ -172,28 +175,28 @@ func GeneratePACFile() -> Bool {
 
 func UpdatePACFromGFWList() {
     // Make the dir if rulesDirPath is not exesited.
-    if !NSFileManager.defaultManager().fileExistsAtPath(PACRulesDirPath) {
+    if !FileManager.default.fileExists(atPath: PACRulesDirPath) {
         do {
-            try NSFileManager.defaultManager().createDirectoryAtPath(PACRulesDirPath
+            try FileManager.default.createDirectory(atPath: PACRulesDirPath
                 , withIntermediateDirectories: true, attributes: nil)
         } catch {
         }
     }
     
-    let url = NSUserDefaults.standardUserDefaults().stringForKey("GFWListURL")
-    Alamofire.request(.GET, url!)
+    let url = UserDefaults.standard.string(forKey: "GFWListURL")
+    Alamofire.request(url!)
         .responseString {
             response in
             if response.result.isSuccess {
                 if let v = response.result.value {
                     do {
-                        try v.writeToFile(GFWListFilePath, atomically: true, encoding: NSUTF8StringEncoding)
+                        try v.write(toFile: GFWListFilePath, atomically: true, encoding: String.Encoding.utf8)
                         if GeneratePACFile() {
                             // Popup a user notification
                             let notification = NSUserNotification()
                             notification.title = "PAC has been updated by latest GFW List.".localized
-                            NSUserNotificationCenter.defaultUserNotificationCenter()
-                                .deliverNotification(notification)
+                            NSUserNotificationCenter.default
+                                .deliver(notification)
                         }
                     } catch {
                         
@@ -203,35 +206,35 @@ func UpdatePACFromGFWList() {
                 // Popup a user notification
                 let notification = NSUserNotification()
                 notification.title = "Failed to download latest GFW List.".localized
-                NSUserNotificationCenter.defaultUserNotificationCenter()
-                    .deliverNotification(notification)
+                NSUserNotificationCenter.default
+                    .deliver(notification)
             }
         }
 }
 
 func UpdatePACFromWhiteList(){
-    if !NSFileManager.defaultManager().fileExistsAtPath(PACRulesDirPath) {
+    if !FileManager.default.fileExists(atPath: PACRulesDirPath) {
         do {
-            try NSFileManager.defaultManager().createDirectoryAtPath(PACRulesDirPath
+            try FileManager.default.createDirectory(atPath: PACRulesDirPath
                 , withIntermediateDirectories: true, attributes: nil)
         } catch {
         }
     }
     
-    let url = NSUserDefaults.standardUserDefaults().stringForKey("WhiteListURL")
-    Alamofire.request(.GET, url!)
+    let url = UserDefaults.standard.string(forKey: "WhiteListURL")
+    Alamofire.request(url!)// request(.GET, url!)
         .responseString {
             response in
             if response.result.isSuccess {
                 if let v = response.result.value {
                     do {
-                        try v.writeToFile(WhiteListDomainPACFilePath, atomically: true, encoding: NSUTF8StringEncoding)
+                        try v.write(toFile: WhiteListDomainPACFilePath, atomically: true, encoding: String.Encoding.utf8)
                         if GeneratePACFile() {
                             // Popup a user notification
                             let notification = NSUserNotification()
                             notification.title = "White List update succeed.".localized
-                            NSUserNotificationCenter.defaultUserNotificationCenter()
-                                .deliverNotification(notification)
+                            NSUserNotificationCenter.default
+                                .deliver(notification)
                         }
                     } catch {
                         
@@ -241,25 +244,25 @@ func UpdatePACFromWhiteList(){
                 // Popup a user notification
                 let notification = NSUserNotification()
                 notification.title = "Failed to download latest White List update succeed.".localized
-                NSUserNotificationCenter.defaultUserNotificationCenter()
-                    .deliverNotification(notification)
+                NSUserNotificationCenter.default
+                    .deliver(notification)
             }
     }
     
-    let IPURL = NSUserDefaults.standardUserDefaults().stringForKey("WhiteListIPURL")
-    Alamofire.request(.GET, IPURL!)
+    let IPURL = UserDefaults.standard.string(forKey: "WhiteListIPURL")
+    Alamofire.request(IPURL!)
         .responseString {
             response in
             if response.result.isSuccess {
                 if let v = response.result.value {
                     do {
-                        try v.writeToFile(WhiteListIPPACFilePath, atomically: true, encoding: NSUTF8StringEncoding)
+                        try v.write(toFile:WhiteListIPPACFilePath, atomically: true, encoding: String.Encoding.utf8)
                         if GeneratePACFile() {
                             // Popup a user notification
                             let notification = NSUserNotification()
                             notification.title = "White List update succeed.".localized
-                            NSUserNotificationCenter.defaultUserNotificationCenter()
-                                .deliverNotification(notification)
+                            NSUserNotificationCenter.default
+                                .deliver(notification)
                         }
                     } catch {
                         
@@ -269,8 +272,8 @@ func UpdatePACFromWhiteList(){
                 // Popup a user notification
                 let notification = NSUserNotification()
                 notification.title = "Failed to download latest White List update succeed.".localized
-                NSUserNotificationCenter.defaultUserNotificationCenter()
-                    .deliverNotification(notification)
+                NSUserNotificationCenter.default
+                    .deliver(notification)
             }
     }
 }

@@ -8,31 +8,31 @@
 
 import Foundation
 
-public class NetWorkMonitor: NSObject {
+open class NetWorkMonitor: NSObject {
     let statusItemView: StatusItemView
 
-    var thread:NSThread?
-    var timer:NSTimer?
+    var thread:Thread?
+    var timer:Timer?
 
     init(statusItemView view: StatusItemView) {
         statusItemView = view
     }
     
     func start() {
-        thread = NSThread(target: self, selector: #selector(startUpdateTimer), object: nil)
+        thread = Thread(target: self, selector: #selector(startUpdateTimer), object: nil)
         thread?.start()
         statusItemView.showSpeed = true
     }
     
     func startUpdateTimer() {
-        timer = NSTimer.scheduledTimerWithTimeInterval(1, target: self, selector: #selector(updateNetWorkData), userInfo: nil, repeats: true)
+        timer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(updateNetWorkData), userInfo: nil, repeats: true)
         if #available(OSX 10.12, *){
             
             let alertView = NSAlert()
             alertView.messageText = "网速显示不支持 macOS 10.12 Sierra!"
             alertView.informativeText = "因为 macOS 10.12 Sierra ABI 不稳定，因此暂时移除网速功能"
-            alertView.addButtonWithTitle("取消网速显示")
-            dispatch_sync(dispatch_get_main_queue(), { Void in
+            alertView.addButton(withTitle: "取消网速显示")
+            DispatchQueue.main.sync(execute: { Void in
                 alertView.runModal()
             })
             stop()
@@ -40,9 +40,9 @@ public class NetWorkMonitor: NSObject {
 //            CFRunLoopRun()
             
         } else {
-            NSRunLoop.currentRunLoop().addTimer(timer!, forMode: NSRunLoopCommonModes)
-            NSRunLoop.currentRunLoop().run()
-            print(NSRunLoop.currentRunLoop().getCFRunLoop())
+            RunLoop.current.add(timer!, forMode: RunLoopMode.commonModes)
+            RunLoop.current.run()
+            print(RunLoop.current.getCFRunLoop())
         }
     }
 
@@ -55,19 +55,19 @@ public class NetWorkMonitor: NSObject {
     
     func updateNetWorkData() {
 
-        if NSThread.currentThread().cancelled{
+        if Thread.current.isCancelled{
             timer?.invalidate()
             timer = nil
             thread = nil
-            NSThread.exit()
+            Thread.exit()
 
         }
 
-        let task = NSTask()
+        let task = Process()
         task.launchPath = "/usr/bin/sar"
         task.arguments = ["-n", "DEV", "1"]
         
-        let pipe = NSPipe()
+        let pipe = Pipe()
         task.standardOutput = pipe
         
         task.launch()
@@ -79,8 +79,8 @@ public class NetWorkMonitor: NSObject {
             let fileHandle = pipe.fileHandleForReading
             let data = fileHandle.readDataToEndOfFile()
             
-            var string = String(data: data, encoding: NSUTF8StringEncoding)
-            string = string?.substringFromIndex((string?.rangeOfString("Aver")?.startIndex)!)
+            var string = String(data: data, encoding: String.Encoding.utf8)
+            string = string?.substring(from: (string?.range(of: "Aver")?.lowerBound)!)
             handleNetWorkData(string!)
         } else {
             print("Task failed.")
@@ -112,17 +112,17 @@ public class NetWorkMonitor: NSObject {
      Average:   bridge0        0             0           0             0
      Average:   en4            0             0           0             0
      */
-    func handleNetWorkData(string: String) {
+    func handleNetWorkData(_ string: String) {
         //        print(string)
         let pattern = "en\\w+\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)"
         do {
-            let regex = try NSRegularExpression(pattern: pattern, options: NSRegularExpressionOptions.CaseInsensitive)
-            let results = regex.matchesInString(string, options: NSMatchingOptions(rawValue: 0), range: NSMakeRange(0, string.characters.count))
+            let regex = try NSRegularExpression(pattern: pattern, options: NSRegularExpression.Options.caseInsensitive)
+            let results = regex.matches(in: string, options: NSRegularExpression.MatchingOptions(rawValue: 0), range: NSMakeRange(0, string.characters.count))
             var upRate: Float = 0.00
             var downRate: Float = 0.00
             for result in results {
-                downRate += Float((string as NSString).substringWithRange(result.rangeAtIndex(2)))!
-                upRate += Float((string as NSString).substringWithRange(result.rangeAtIndex(4)))!
+                downRate += Float((string as NSString).substring(with: result.rangeAt(2)))!
+                upRate += Float((string as NSString).substring(with: result.rangeAt(4)))!
             }
             statusItemView.setRateData(up: upRate, down: downRate)
         }

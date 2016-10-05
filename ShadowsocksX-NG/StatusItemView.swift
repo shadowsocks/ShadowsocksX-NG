@@ -9,14 +9,14 @@
 import AppKit
 import Foundation
 
-public class StatusItemView: NSControl {
+open class StatusItemView: NSControl {
     static let KB:Float = 1024
     static let MB:Float = KB*1024
     static let GB:Float = MB*1024
     static let TB:Float = GB*1024
     
     var fontSize:CGFloat = 9
-    var fontColor = NSColor.blackColor()
+    var fontColor = NSColor.black
     var darkMode = false
     var mouseDown = false
     var statusItem:NSStatusItem
@@ -42,30 +42,30 @@ public class StatusItemView: NSControl {
         fatalError("init(coder:) has not been implemented")
     }
     
-    public override func drawRect(dirtyRect: NSRect) {
-        statusItem.drawStatusBarBackgroundInRect(dirtyRect, withHighlight: mouseDown)
+    open override func draw(_ dirtyRect: NSRect) {
+        statusItem.drawStatusBarBackground(in: dirtyRect, withHighlight: mouseDown)
         
-        fontColor = (darkMode||mouseDown) ? NSColor.whiteColor() : NSColor.blackColor()
-        let fontAttributes = [NSFontAttributeName: NSFont.systemFontOfSize(fontSize), NSForegroundColorAttributeName: fontColor]
+        fontColor = (darkMode||mouseDown) ? NSColor.white : NSColor.black
+        let fontAttributes = [NSFontAttributeName: NSFont.systemFont(ofSize: fontSize), NSForegroundColorAttributeName: fontColor] as [String : Any]
         if showSpeed{
             let upRateString = NSAttributedString(string: upRate+" ↑", attributes: fontAttributes)
-            let upRateRect = upRateString.boundingRectWithSize(NSSize(width: 100, height: 100), options: .UsesLineFragmentOrigin)
-            upRateString.drawAtPoint(NSMakePoint(bounds.width - upRateRect.width - 5, 10))
+            let upRateRect = upRateString.boundingRect(with: NSSize(width: 100, height: 100), options: .usesLineFragmentOrigin)
+            upRateString.draw(at: NSMakePoint(bounds.width - upRateRect.width - 5, 10))
 
             let downRateString = NSAttributedString(string: downRate+" ↓", attributes: fontAttributes)
-            let downRateRect = downRateString.boundingRectWithSize(NSSize(width: 100, height: 100), options: .UsesLineFragmentOrigin)
-            downRateString.drawAtPoint(NSMakePoint(bounds.width - downRateRect.width - 5, 0))
+            let downRateRect = downRateString.boundingRect(with: NSSize(width: 100, height: 100), options: .usesLineFragmentOrigin)
+            downRateString.draw(at: NSMakePoint(bounds.width - downRateRect.width - 5, 0))
         }
-        image?.drawAtPoint(NSPoint(x: 0, y: 0), fromRect: NSRect(x: 0, y: 0, width: bounds.height, height: bounds.height), operation: NSCompositeSourceOver, fraction: 1.0)
+        image?.draw(at: NSPoint(x: 0, y: 0), from: NSRect(x: 0, y: 0, width: bounds.height, height: bounds.height), operation: NSCompositeSourceOver, fraction: 1.0)
     }
     
-    public func setRateData(up up:Float, down: Float) {
+    open func setRateData(up:Float, down: Float) {
         upRate = formatRateData(up)
         downRate = formatRateData(down)
         setNeedsDisplay()
     }
     
-    func formatRateData(data:Float) -> String {
+    func formatRateData(_ data:Float) -> String {
         var result:Float
         var unit: String
         
@@ -110,7 +110,7 @@ public class StatusItemView: NSControl {
         setNeedsDisplay()
     }
     
-    func setIcon(image: NSImage) {
+    func setIcon(_ image: NSImage) {
         self.image = image
         setNeedsDisplay()
     }
@@ -119,16 +119,16 @@ public class StatusItemView: NSControl {
 
 //action
 extension StatusItemView: NSMenuDelegate{
-    public override func mouseDown(theEvent: NSEvent) {
-        statusItem.popUpStatusItemMenu(menu!)
+    open override func mouseDown(with theEvent: NSEvent) {
+        statusItem.popUpMenu(menu!)
     }
     
-    public func menuWillOpen(menu: NSMenu) {
+    public func menuWillOpen(_ menu: NSMenu) {
         mouseDown = true
         setNeedsDisplay()
     }
     
-    public func menuDidClose(menu: NSMenu) {
+    public func menuDidClose(_ menu: NSMenu) {
         mouseDown = false
         setNeedsDisplay()
     }

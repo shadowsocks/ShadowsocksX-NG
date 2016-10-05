@@ -14,8 +14,8 @@ let LAUNCH_AGENT_DIR = "/Library/LaunchAgents/"
 let LAUNCH_AGENT_CONF_NAME = "com.qiuyuzhou.shadowsocksX-NG.local.plist"
 
 
-func getFileSHA1Sum(filepath: String) -> String {
-    if let data = NSData(contentsOfFile: filepath) {
+func getFileSHA1Sum(_ filepath: String) -> String {
+    if let data = try? Data(contentsOf: URL(fileURLWithPath: filepath)) {
         return data.sha1()
     }
     return ""
@@ -30,16 +30,16 @@ func generateSSLocalLauchAgentPlist() -> Bool {
     let plistFilepath = launchAgentDirPath + LAUNCH_AGENT_CONF_NAME
     
     // Ensure launch agent directory is existed.
-    let fileMgr = NSFileManager.defaultManager()
-    if !fileMgr.fileExistsAtPath(launchAgentDirPath) {
-        try! fileMgr.createDirectoryAtPath(launchAgentDirPath, withIntermediateDirectories: true, attributes: nil)
+    let fileMgr = FileManager.default
+    if !fileMgr.fileExists(atPath: launchAgentDirPath) {
+        try! fileMgr.createDirectory(atPath: launchAgentDirPath, withIntermediateDirectories: true, attributes: nil)
     }
     
     let oldSha1Sum = getFileSHA1Sum(plistFilepath)
     
-    let defaults = NSUserDefaults.standardUserDefaults()
-    let enableUdpRelay = defaults.boolForKey("LocalSocks5.EnableUDPRelay")
-    let enableVerboseMode = defaults.boolForKey("LocalSocks5.EnableVerboseMode")
+    let defaults = UserDefaults.standard
+    let enableUdpRelay = defaults.bool(forKey: "LocalSocks5.EnableUDPRelay")
+    let enableVerboseMode = defaults.bool(forKey: "LocalSocks5.EnableVerboseMode")
     
     var arguments = [sslocalPath, "-c", "ss-local-config.json"]
     if enableUdpRelay {
@@ -59,7 +59,7 @@ func generateSSLocalLauchAgentPlist() -> Bool {
         "ProgramArguments": arguments,
         "EnvironmentVariables": ["DYLD_LIBRARY_PATH": NSHomeDirectory() + APP_SUPPORT_DIR]
     ]
-    dict.writeToFile(plistFilepath, atomically: true)
+    dict.write(toFile: plistFilepath, atomically: true)
     let Sha1Sum = getFileSHA1Sum(plistFilepath)
     if oldSha1Sum != Sha1Sum {
         return true
@@ -69,9 +69,9 @@ func generateSSLocalLauchAgentPlist() -> Bool {
 }
 
 func ReloadConfSSLocal() {
-    let bundle = NSBundle.mainBundle()
-    let installerPath = bundle.pathForResource("reload_conf_ss_local.sh", ofType: nil)
-    let task = NSTask.launchedTaskWithLaunchPath(installerPath!, arguments: [""])
+    let bundle = Bundle.main
+    let installerPath = bundle.path(forResource: "reload_conf_ss_local.sh", ofType: nil)
+    let task = Process.launchedProcess(launchPath: installerPath!, arguments: [""])
     task.waitUntilExit()
     if task.terminationStatus == 0 {
         NSLog("Start ss-local succeeded.")
@@ -81,9 +81,9 @@ func ReloadConfSSLocal() {
 }
 
 func StartSSLocal() {
-    let bundle = NSBundle.mainBundle()
-    let installerPath = bundle.pathForResource("start_ss_local.sh", ofType: nil)
-    let task = NSTask.launchedTaskWithLaunchPath(installerPath!, arguments: [""])
+    let bundle = Bundle.main
+    let installerPath = bundle.path(forResource: "start_ss_local.sh", ofType: nil)
+    let task = Process.launchedProcess(launchPath: installerPath!, arguments: [""])
     task.waitUntilExit()
     if task.terminationStatus == 0 {
         NSLog("Start ss-local succeeded.")
@@ -93,9 +93,9 @@ func StartSSLocal() {
 }
 
 func StopSSLocal() {
-    let bundle = NSBundle.mainBundle()
-    let installerPath = bundle.pathForResource("stop_ss_local.sh", ofType: nil)
-    let task = NSTask.launchedTaskWithLaunchPath(installerPath!, arguments: [""])
+    let bundle = Bundle.main
+    let installerPath = bundle.path(forResource: "stop_ss_local.sh", ofType: nil)
+    let task = Process.launchedProcess(launchPath: installerPath!, arguments: [""])
     task.waitUntilExit()
     if task.terminationStatus == 0 {
         NSLog("Stop ss-local succeeded.")
@@ -105,14 +105,14 @@ func StopSSLocal() {
 }
 
 func InstallSSLocal() {
-    let fileMgr = NSFileManager.defaultManager()
+    let fileMgr = FileManager.default
     let homeDir = NSHomeDirectory()
     let appSupportDir = homeDir+APP_SUPPORT_DIR
-    if !fileMgr.fileExistsAtPath(appSupportDir + "ss-local-\(SS_LOCAL_VERSION)/ss-local")
-    || !fileMgr.fileExistsAtPath(appSupportDir + "libcrypto.1.0.0.dylib") {
-        let bundle = NSBundle.mainBundle()
-        let installerPath = bundle.pathForResource("install_ss_local.sh", ofType: nil)
-        let task = NSTask.launchedTaskWithLaunchPath(installerPath!, arguments: [""])
+    if !fileMgr.fileExists(atPath: appSupportDir + "ss-local-\(SS_LOCAL_VERSION)/ss-local")
+    || !fileMgr.fileExists(atPath: appSupportDir + "libcrypto.1.0.0.dylib") {
+        let bundle = Bundle.main
+        let installerPath = bundle.path(forResource: "install_ss_local.sh", ofType: nil)
+        let task = Process.launchedProcess(launchPath: installerPath!, arguments: [""])
         task.waitUntilExit()
         if task.terminationStatus == 0 {
             NSLog("Install ss-local succeeded.")
@@ -122,13 +122,13 @@ func InstallSSLocal() {
     }
 }
 
-func writeSSLocalConfFile(conf:[String:AnyObject]) -> Bool {
+func writeSSLocalConfFile(_ conf:[String:AnyObject]) -> Bool {
     do {
         let filepath = NSHomeDirectory() + APP_SUPPORT_DIR + "ss-local-config.json"
-        let data: NSData = try NSJSONSerialization.dataWithJSONObject(conf, options: .PrettyPrinted)
+        let data: Data = try JSONSerialization.data(withJSONObject: conf, options: .prettyPrinted)
         
         let oldSum = getFileSHA1Sum(filepath)
-        try data.writeToFile(filepath, options: .DataWritingAtomic)
+        try data.write(to: URL(fileURLWithPath: filepath), options: .atomic)
         let newSum = getFileSHA1Sum(filepath)
         
         if oldSum == newSum {
@@ -145,7 +145,7 @@ func writeSSLocalConfFile(conf:[String:AnyObject]) -> Bool {
 func removeSSLocalConfFile() {
     do {
         let filepath = NSHomeDirectory() + APP_SUPPORT_DIR + "ss-local-config.json"
-        try NSFileManager.defaultManager().removeItemAtPath(filepath)
+        try FileManager.default.removeItem(atPath: filepath)
     } catch {
         
     }
@@ -158,7 +158,7 @@ func SyncSSLocal() {
     if mgr.activeProfileId != nil {
         changed = changed || writeSSLocalConfFile((mgr.getActiveProfile()?.toJsonConfig())!)
         
-        let on = NSUserDefaults.standardUserDefaults().boolForKey("ShadowsocksOn")
+        let on = UserDefaults.standard.bool(forKey: "ShadowsocksOn")
         if on {
             StartSSLocal()
             ReloadConfSSLocal()

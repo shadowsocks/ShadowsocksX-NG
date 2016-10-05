@@ -6,7 +6,7 @@ target 'ShadowsocksX-NG' do
   use_frameworks!
 
   # Pods for ShadowsocksX-NG
-  pod 'Alamofire', '~> 3.5'
+  pod 'Alamofire', '~> 4.0.1'
   pod 'GCDWebServer', '~> 3.0'
 
   target 'ShadowsocksX-NGTests' do
@@ -23,7 +23,7 @@ end
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     target.build_configurations.each do |config|
-      config.build_settings['SWIFT_VERSION'] = '2.3'
+      config.build_settings['SWIFT_VERSION'] = '3.0'
     end
   end
 end
