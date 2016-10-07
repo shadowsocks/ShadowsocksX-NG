@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="10117" systemVersion="15F34" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="10117"/>
+        <deployment identifier="macosx"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="11201"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="NSApplication">
@@ -118,6 +119,12 @@
                         <action selector="editAdvPreferences:" target="Voe-Tx-rLC" id="mEF-XS-HJE"/>
                     </connections>
                 </menuItem>
+                <menuItem title="HTTP Proxy Preference ..." id="uEp-Gz-cu0">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <connections>
+                        <action selector="editHTTPPreferences:" target="Voe-Tx-rLC" id="tkC-e3-PH9"/>
+                    </connections>
+                </menuItem>
                 <menuItem title="Launch At Login" id="eUq-p7-ICK">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
@@ -148,6 +155,19 @@
                     <connections>
                         <action selector="terminate:" target="-2" id="Mrp-4z-omR"/>
                     </connections>
+                </menuItem>
+            </items>
+        </menu>
+        <menu id="2oY-e9-q1Z">
+            <items>
+                <menuItem title="Item 1" id="oR3-cT-RTC">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                </menuItem>
+                <menuItem title="Item 2" id="lay-XB-0oV">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                </menuItem>
+                <menuItem title="Item 3" id="m00-ru-6Po">
+                    <modifierMask key="keyEquivalentModifierMask"/>
                 </menuItem>
             </items>
         </menu>
