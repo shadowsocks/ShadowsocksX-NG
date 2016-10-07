@@ -60,17 +60,20 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
 //        PingServers.instance.ping()
 //        let newInstance = PingTest.init(hostName: "www.baidu.com")
 //        newInstance.start()
-        let SerMgr = ServerProfileManager.instance
-        let pingServerQueue : DispatchQueue = DispatchQueue.global(priority: DispatchQueue.GlobalQueuePriority.high)
         
-        for profile in SerMgr.profiles {
-            let host = profile.serverHost
-            
-            pingServerQueue.async(execute: {
+//        let SerMgr = ServerProfileManager.instance
+//        let pingServerQueue : DispatchQueue = DispatchQueue.global(priority: DispatchQueue.GlobalQueuePriority.high)
+//        
+//        for profile in SerMgr.profiles {
+//            let host = profile.serverHost
+//            
+//            pingServerQueue.async(execute: {
 //                print(profile.serverHost)
-                let pingInstance = PingTest.init(hostName: host)
-                pingInstance.start()
-            })}
+//                SimplePingClient().pingHostname(host) { latency in
+//                    print("-----------\(host) latency is \(latency ?? "fail")")}
+////                let pingInstance = PingTest.init(hostName: host)
+////                pingInstance.start()
+//            })}
         NSUserNotificationCenter.default.delegate = self
         
         // Prepare ss-local
@@ -120,6 +123,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                     }
                 }
                 self.updateServersMenu()
+                self.updateMainMenu()
                 SyncSSLocal()
             }
         )
@@ -152,9 +156,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                         } else if userInfo["source"] as! String == "url" {
                             userNote.subtitle = "By Handle SS URL".localized
                         }
-                        userNote.informativeText = "Host: \(profile.serverHost)"
-                        " Port: \(profile.serverPort)"
-                        " Encription Method: \(profile.method)".localized
+                        userNote.informativeText = "Host: \(profile.serverHost)\n Port: \(profile.serverPort)\n Encription Method: \(profile.method)".localized
                         userNote.soundName = NSUserNotificationDefaultSoundName
                         
                         NSUserNotificationCenter.default
