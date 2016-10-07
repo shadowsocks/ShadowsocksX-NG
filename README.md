@@ -63,7 +63,7 @@ ref: [GitFlow](http://nvie.com/posts/a-successful-git-branching-model/)
 
 ## TODO List
 
-- [ ] Embed the http proxy server [privoxy](http://www.privoxy.org/).
+- [x] Embed the http proxy server [privoxy](http://www.privoxy.org/), [get it](https://homebrew.bintray.com/bottles/privoxy-3.0.26.sierra.bottle.tar.gz).
 
 ## Know Issue
 Solved [Issue 1.]() Auto PAC & White list is not working on macOS 10.12 Serria because system proxy not allow [file:///](file:///) protocol.
