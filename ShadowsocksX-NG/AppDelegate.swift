@@ -166,6 +166,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     func applicationWillTerminate(_ aNotification: Notification) {
         // Insert code here to tear down your application
         StopSSLocal()
+        StopPrivoxy()
         ProxyConfHelper.disableProxy("hi")
         let defaults = UserDefaults.standard
         defaults.set(false, forKey: "ShadowsocksOn")
@@ -179,6 +180,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         
         if isOn {
             StartSSLocal()
+            StartPrivoxy()
             if mode == "auto" {
                 ProxyConfHelper.enablePACProxy("hi")
             } else if mode == "global" {
@@ -188,6 +190,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             }
         } else {
             StopSSLocal()
+            StopPrivoxy()
             ProxyConfHelper.disableProxy("hi")
         }
     }
