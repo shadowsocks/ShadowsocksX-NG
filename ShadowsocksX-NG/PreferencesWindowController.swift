@@ -78,7 +78,7 @@ class PreferencesWindowController: NSWindowController
             "auth_sha1_v4",
             ])
         ObfsTextField.addItems(withObjectValues: [
-            "palin",
+            "plain",
             "http_simple",
             "tls_simple",
             "random_head",
