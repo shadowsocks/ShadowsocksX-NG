@@ -10,12 +10,32 @@
         <customObject id="-3" userLabel="Application" customClass="NSObject"/>
         <window title="HTTP Proxy Preferences" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" oneShot="NO" releasedWhenClosed="NO" showsToolbarButton="NO" frameAutosaveName="" animationBehavior="default" id="vS3-DL-Nq3">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
-            <rect key="contentRect" x="109" y="131" width="209" height="163"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1280" height="777"/>
+            <rect key="contentRect" x="109" y="131" width="209" height="197"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="2560" height="1417"/>
             <view key="contentView" id="Qef-Mj-9z1">
-                <rect key="frame" x="0.0" y="0.0" width="209" height="163"/>
+                <rect key="frame" x="0.0" y="0.0" width="209" height="197"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
+                    <button translatesAutoresizingMaskIntoConstraints="NO" id="hgn-81-fsH">
+                        <rect key="frame" x="18" y="161" width="138" height="18"/>
+                        <buttonCell key="cell" type="check" title="HTTP Proxy Enable" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="dqU-MG-Sum">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="system"/>
+                        </buttonCell>
+                        <connections>
+                            <binding destination="Adn-6l-wm4" name="value" keyPath="values.LocalHTTPOn" id="Oey-LL-A84"/>
+                        </connections>
+                    </button>
+                    <button translatesAutoresizingMaskIntoConstraints="NO" id="P4f-0N-7JI">
+                        <rect key="frame" x="18" y="133" width="141" height="18"/>
+                        <buttonCell key="cell" type="check" title="Follow Globel Mode" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="ofk-Pc-c8f">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="system"/>
+                        </buttonCell>
+                        <connections>
+                            <binding destination="Adn-6l-wm4" name="value" keyPath="values.LocalHTTP.FollowGlobel" id="mwB-AA-WgF"/>
+                        </connections>
+                    </button>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="CKF-K9-m8X">
                         <rect key="frame" x="18" y="103" width="173" height="17"/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="HTTP Proxy Listen Address:" id="qd0-kc-ttB">
@@ -55,36 +75,28 @@
                             <outlet property="formatter" destination="ji3-e7-HNW" id="xWV-vJ-7eq"/>
                         </connections>
                     </textField>
-                    <button translatesAutoresizingMaskIntoConstraints="NO" id="hgn-81-fsH">
-                        <rect key="frame" x="18" y="133" width="138" height="18"/>
-                        <buttonCell key="cell" type="check" title="HTTP Proxy Enable" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="dqU-MG-Sum">
-                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                            <font key="font" metaFont="system"/>
-                            <connections>
-                                <binding destination="Adn-6l-wm4" name="value" keyPath="values.LocalHTTPOn" id="1Pd-0E-d1Z"/>
-                            </connections>
-                        </buttonCell>
-                    </button>
                 </subviews>
                 <constraints>
-                    <constraint firstItem="lD1-xm-Qy3" firstAttribute="top" secondItem="Ecd-cS-zUI" secondAttribute="bottom" constant="8" symbolic="YES" id="5Yk-wJ-yNC"/>
-                    <constraint firstItem="vsw-6L-eh3" firstAttribute="leading" secondItem="Ecd-cS-zUI" secondAttribute="leading" id="5mp-aQ-Qhg"/>
-                    <constraint firstItem="vsw-6L-eh3" firstAttribute="top" secondItem="CKF-K9-m8X" secondAttribute="bottom" constant="8" symbolic="YES" id="7uP-qc-xvy"/>
-                    <constraint firstItem="CKF-K9-m8X" firstAttribute="trailing" secondItem="vsw-6L-eh3" secondAttribute="trailing" id="Ezc-Tf-zrc"/>
-                    <constraint firstItem="hgn-81-fsH" firstAttribute="leading" secondItem="Qef-Mj-9z1" secondAttribute="leading" constant="20" symbolic="YES" id="Fpc-TK-Ies"/>
-                    <constraint firstItem="Ecd-cS-zUI" firstAttribute="top" secondItem="vsw-6L-eh3" secondAttribute="bottom" constant="6" id="KgW-Uu-Md4"/>
-                    <constraint firstItem="Ecd-cS-zUI" firstAttribute="leading" secondItem="lD1-xm-Qy3" secondAttribute="leading" id="Mbc-uA-iWI"/>
-                    <constraint firstItem="hgn-81-fsH" firstAttribute="leading" secondItem="CKF-K9-m8X" secondAttribute="leading" id="ScT-n3-3a6"/>
-                    <constraint firstItem="CKF-K9-m8X" firstAttribute="top" secondItem="hgn-81-fsH" secondAttribute="bottom" constant="15" id="Vg9-Uw-dYv"/>
-                    <constraint firstItem="vsw-6L-eh3" firstAttribute="trailing" secondItem="lD1-xm-Qy3" secondAttribute="trailing" id="iO8-bs-YWa"/>
-                    <constraint firstAttribute="bottom" secondItem="lD1-xm-Qy3" secondAttribute="bottom" constant="20" symbolic="YES" id="tqJ-4V-bgH"/>
-                    <constraint firstItem="CKF-K9-m8X" firstAttribute="leading" secondItem="vsw-6L-eh3" secondAttribute="leading" id="yJ3-vA-lWm"/>
+                    <constraint firstItem="hgn-81-fsH" firstAttribute="leading" secondItem="P4f-0N-7JI" secondAttribute="leading" id="1R6-Zi-ctk"/>
+                    <constraint firstItem="P4f-0N-7JI" firstAttribute="top" secondItem="hgn-81-fsH" secondAttribute="bottom" constant="14" id="45x-uF-HIp"/>
+                    <constraint firstItem="vsw-6L-eh3" firstAttribute="leading" secondItem="Ecd-cS-zUI" secondAttribute="leading" id="5Fh-yR-UAH"/>
+                    <constraint firstItem="CKF-K9-m8X" firstAttribute="trailing" secondItem="vsw-6L-eh3" secondAttribute="trailing" id="7Y3-mK-KBC"/>
+                    <constraint firstItem="hgn-81-fsH" firstAttribute="top" secondItem="Qef-Mj-9z1" secondAttribute="top" constant="20" symbolic="YES" id="Frc-hf-qrH"/>
+                    <constraint firstItem="vsw-6L-eh3" firstAttribute="trailing" secondItem="lD1-xm-Qy3" secondAttribute="trailing" id="How-c9-yLj"/>
+                    <constraint firstItem="vsw-6L-eh3" firstAttribute="top" secondItem="CKF-K9-m8X" secondAttribute="bottom" constant="8" symbolic="YES" id="JrQ-Uu-Dpf"/>
+                    <constraint firstItem="Ecd-cS-zUI" firstAttribute="top" secondItem="vsw-6L-eh3" secondAttribute="bottom" constant="6" id="Pcx-Pb-Am7"/>
+                    <constraint firstItem="Ecd-cS-zUI" firstAttribute="leading" secondItem="lD1-xm-Qy3" secondAttribute="leading" id="VkT-8o-eV5"/>
+                    <constraint firstItem="hgn-81-fsH" firstAttribute="leading" secondItem="Qef-Mj-9z1" secondAttribute="leading" constant="20" symbolic="YES" id="Ybz-LX-Dja"/>
+                    <constraint firstItem="P4f-0N-7JI" firstAttribute="leading" secondItem="CKF-K9-m8X" secondAttribute="leading" id="Zgf-bS-WDG"/>
+                    <constraint firstItem="lD1-xm-Qy3" firstAttribute="top" secondItem="Ecd-cS-zUI" secondAttribute="bottom" constant="8" symbolic="YES" id="g09-v2-V3P"/>
+                    <constraint firstAttribute="bottom" secondItem="lD1-xm-Qy3" secondAttribute="bottom" constant="20" symbolic="YES" id="hSP-RV-6f4"/>
+                    <constraint firstItem="CKF-K9-m8X" firstAttribute="leading" secondItem="vsw-6L-eh3" secondAttribute="leading" id="imf-dG-QVW"/>
                 </constraints>
             </view>
             <connections>
                 <outlet property="delegate" destination="-2" id="mD3-X9-VEN"/>
             </connections>
-            <point key="canvasLocation" x="-19.5" y="92.5"/>
+            <point key="canvasLocation" x="-19.5" y="109.5"/>
         </window>
         <userDefaultsController representsSharedInstance="YES" id="Adn-6l-wm4"/>
         <numberFormatter formatterBehavior="default10_4" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="0" maximumIntegerDigits="42" id="ji3-e7-HNW" userLabel="Port Number Formatter">
