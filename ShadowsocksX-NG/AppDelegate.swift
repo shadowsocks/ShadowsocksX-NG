@@ -65,7 +65,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             "AutoConfigureNetworkServices": NSNumber(value: true as Bool),
             "LocalHTTP.ListenAddress": "127.0.0.1",
             "LocalHTTP.ListenPort": NSNumber(value: 1087 as UInt16),
-            "LocalHTTPOn": true
+            "LocalHTTPOn": true,
+            "LocalHTTP.FollowGlobel": true
         ])
         
         statusItem = NSStatusBar.system().statusItem(withLength: 20)
@@ -107,6 +108,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             , using: {
                 (note) in
                 SyncPrivoxy()
+                self.applyConfig()
             }
         )
         notifyCenter.addObserver(forName: NSNotification.Name(rawValue: "NOTIFY_FOUND_SS_URL"), object: nil, queue: nil) {
