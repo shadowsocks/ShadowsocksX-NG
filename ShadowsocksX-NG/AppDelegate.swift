@@ -104,11 +104,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
 
         setUpMenu(defaults.bool(forKey: "enable_showSpeed"))
         
-//        statusItem = NSStatusBar.system().statusItem(withLength: 20)
-//        let image = NSImage(named: "menu_icon")
-//        image?.isTemplate = true
-//        statusItem.image = image
-//        statusItem.menu = statusMenu
+        statusItem = NSStatusBar.system().statusItem(withLength: 20)
+        let image = NSImage(named: "menu_icon")
+        image?.isTemplate = true
+        statusItem?.image = image
+        statusItem?.menu = statusMenu
 
         let notifyCenter = NotificationCenter.default
         notifyCenter.addObserver(forName: NSNotification.Name(rawValue: NOTIFY_ADV_PROXY_CONF_CHANGED), object: nil, queue: nil
@@ -585,21 +585,23 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             runningStatusMenuItem.title = "Shadowsocks: On".localized
             toggleRunningMenuItem.title = "Turn Shadowsocks Off".localized
             var image = NSImage(named: "menu_icon")
-            if SystemThemeChangeHelper.isCurrentDark() {
-                image = NSImage(named: "menu_icon_dark_mode")
-            }
+            image?.isTemplate = true
+//            if SystemThemeChangeHelper.isCurrentDark() {
+//                image = NSImage(named: "menu_icon_dark_mode")
+//            }
             
-            statusItemView.setIcon(image!)
-//            statusItem!.image = image
+//            statusItemView.setIcon(image!)
+            statusItem!.image = image
         } else {
             runningStatusMenuItem.title = "Shadowsocks: Off".localized
             toggleRunningMenuItem.title = "Turn Shadowsocks On".localized
             var image = NSImage(named: "menu_icon_disabled")
-            if SystemThemeChangeHelper.isCurrentDark() {
-                image = NSImage(named: "menu_icon_disabled_dark_mode")
-            }
-//            statusItem.image = image
-            statusItemView.setIcon(image!)
+//            if SystemThemeChangeHelper.isCurrentDark() {
+//                image = NSImage(named: "menu_icon_disabled_dark_mode")
+//            }
+            image?.isTemplate = true
+            statusItem!.image = image
+//            statusItemView.setIcon(image!)
         }
         
         if defaults.bool(forKey: "enable_showSpeed") {
@@ -666,25 +668,27 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     }
     
     func setUpMenu(_ showSpeed:Bool){
-        if statusItem == nil{
-            statusItem = NSStatusBar.system().statusItem(withLength: 85)
-            let image = NSImage(named: "menu_icon")
-            image?.isTemplate = true
-            statusItem!.image = image
-            statusItemView = StatusItemView(statusItem: statusItem!, menu: statusMenu)
-            statusItem!.view = statusItemView
-        }
-        if showSpeed{
-            if speedMonitor == nil{
-                speedMonitor = NetWorkMonitor(statusItemView: statusItemView)
-            }
-            statusItem?.length = 85
-            speedMonitor?.start()
-        }else{
-            speedMonitor?.stop()
-            speedMonitor = nil
-            statusItem?.length = 20
-        }
+        // should not operate the system status bar
+        // we can add sub menu like bittorrent sync
+//        if statusItem == nil{
+//            statusItem = NSStatusBar.system().statusItem(withLength: 85)
+//            let image = NSImage(named: "menu_icon")
+//            image?.isTemplate = true
+//            statusItem!.image = image
+//            statusItemView = StatusItemView(statusItem: statusItem!, menu: statusMenu)
+//            statusItem!.view = statusItemView
+//        }
+//        if showSpeed{
+//            if speedMonitor == nil{
+//                speedMonitor = NetWorkMonitor(statusItemView: statusItemView)
+//            }
+//            statusItem?.length = 85
+//            speedMonitor?.start()
+//        }else{
+//            speedMonitor?.stop()
+//            speedMonitor = nil
+//            statusItem?.length = 20
+//        }
     }
     
     // MARK: 

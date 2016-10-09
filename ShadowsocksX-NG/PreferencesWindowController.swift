@@ -119,6 +119,8 @@ class PreferencesWindowController: NSWindowController
             profilesTableView.removeRows(at: IndexSet(integer: index), withAnimation: .effectFade)
             profilesTableView.endUpdates()
         }
+        self.profilesTableView.scrollRowToVisible(index)
+        self.profilesTableView.selectRowIndexes(IndexSet(integer: index), byExtendingSelection: false)
         updateProfileBoxVisible()
     }
     
@@ -258,7 +260,7 @@ class PreferencesWindowController: NSWindowController
     }
     
     //--------------------------------------------------
-    // For NSTableViewDataSource
+    // MARK: For NSTableViewDataSource
     
     func numberOfRows(in tableView: NSTableView) -> Int {
         if let mgr = profileMgr {
@@ -285,7 +287,7 @@ class PreferencesWindowController: NSWindowController
         return ""
     }
     
-    // Drag & Drop reorder rows
+    // MARK: Drag & Drop reorder rows
     
     func tableView(_ tableView: NSTableView, pasteboardWriterForRow row: Int) -> NSPasteboardWriting? {
         let item = NSPasteboardItem()
