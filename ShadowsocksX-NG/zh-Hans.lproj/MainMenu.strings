@@ -97,3 +97,6 @@
 
 /* Class = "NSMenuItem"; title = "Connect At Launch"; ObjectID = "aB3-cf-5j0"; */
 "aB3-cf-5j0.title" = "打开时自动连接";
+
+/* Class = "NSMenuItem"; title = "HTTP Proxy Preference ..."; ObjectID = "uEp-Gz-cu0"; */
+"uEp-Gz-cu0.title" = "HTTP代理设置...";

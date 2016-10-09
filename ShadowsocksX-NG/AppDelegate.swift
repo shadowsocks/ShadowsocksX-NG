@@ -18,6 +18,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     var advPreferencesWinCtrl: AdvPreferencesWindowController!
     var proxyPreferencesWinCtrl: ProxyPreferencesController!
     var editUserRulesWinCtrl: UserRulesController!
+    var httpPreferencesWinCtrl : HTTPPreferencesWindowController!
     
     var launchAtLoginController: LaunchAtLoginController = LaunchAtLoginController()
     
@@ -78,7 +79,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         
         // Prepare ss-local
         InstallSSLocal()
-        
+        InstallPrivoxy()
         // Prepare defaults
         let defaults = UserDefaults.standard
         defaults.register(defaults: [
@@ -94,7 +95,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             "GFWListURL": "https://raw.githubusercontent.com/gfwlist/gfwlist/master/gfwlist.txt",
             "WhiteListURL": "https://raw.githubusercontent.com/breakwa11/gfw_whitelist/master/whitelist.pac",
             "WhiteListIPURL": "https://raw.githubusercontent.com/breakwa11/gfw_whitelist/master/whiteiplist.pac",
-            "AutoConfigureNetworkServices": NSNumber(value: true as Bool)
+            "AutoConfigureNetworkServices": NSNumber(value: true as Bool),
+            "LocalHTTP.ListenAddress": "127.0.0.1",
+            "LocalHTTP.ListenPort": NSNumber(value: 1087 as UInt16),
+            "LocalHTTPOn": true,
+            "LocalHTTP.FollowGlobel": true
         ])
 
         setUpMenu(defaults.bool(forKey: "enable_showSpeed"))
@@ -131,6 +136,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             , using: {
             (note) in
                 SyncSSLocal()
+                self.applyConfig()
+            }
+        )
+        notifyCenter.addObserver(forName: NSNotification.Name(rawValue: NOTIFY_HTTP_CONF_CHANGED), object: nil, queue: nil
+            , using: {
+                (note) in
+                SyncPrivoxy()
                 self.applyConfig()
             }
         )
@@ -199,6 +211,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     func applicationWillTerminate(_ aNotification: Notification) {
         // Insert code here to tear down your application
         StopSSLocal()
+        StopPrivoxy()
         ProxyConfHelper.disableProxy("hi")
         let defaults = UserDefaults.standard
         defaults.set(false, forKey: "ShadowsocksOn")
@@ -219,6 +232,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         
         if isOn {
             StartSSLocal()
+            StartPrivoxy()
             if mode == "auto" {
                 ProxyConfHelper.disableProxy("hi")
                 ProxyConfHelper.enablePACProxy("hi")
@@ -237,6 +251,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             }
         } else {
             StopSSLocal()
+            StopPrivoxy()
             ProxyConfHelper.disableProxy("hi")
         }
 
@@ -387,6 +402,18 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         }
         let ctrl = AdvPreferencesWindowController(windowNibName: "AdvPreferencesWindowController")
         advPreferencesWinCtrl = ctrl
+        
+        ctrl.showWindow(self)
+        NSApp.activate(ignoringOtherApps: true)
+        ctrl.window?.makeKeyAndOrderFront(self)
+    }
+    
+    @IBAction func editHTTPPreferences(_ sender: NSMenuItem) {
+        if httpPreferencesWinCtrl != nil {
+            httpPreferencesWinCtrl.close()
+        }
+        let ctrl = HTTPPreferencesWindowController(windowNibName: "HTTPPreferencesWindowController")
+        httpPreferencesWinCtrl = ctrl
         
         ctrl.showWindow(self)
         NSApp.activate(ignoringOtherApps: true)

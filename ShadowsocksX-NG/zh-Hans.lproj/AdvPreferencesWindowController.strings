@@ -18,10 +18,22 @@
 "cwr-n0-zwn.title" = "本地 Socks5 监听地址:";
 
 /* Class = "NSTextFieldCell"; title = "GFW List URL:"; ObjectID = "dg0-gS-z5V"; */
-"dg0-gS-z5V.title" = "GFW List URL:";
+"dg0-gS-z5V.title" = "GFW LIST URL:";
 
 /* Class = "NSTextFieldCell"; title = "Timeout:"; ObjectID = "i4l-2S-gOQ"; */
 "i4l-2S-gOQ.title" = "超时:";
 
 /* Class = "NSTextFieldCell"; title = "本地 Socks5 监听端口:"; ObjectID = "qRs-ow-vVB"; */
 "qRs-ow-vVB.title" = "本地 Socks5 监听端口:";
+
+/* Class = "NSTextFieldCell"; title = "Local PAC Listen Address:"; ObjectID = "dvL-Ic-Wae"; */
+"dvL-Ic-Wae.title" = "本地 PAC 监听地址:";
+
+/* Class = "NSTextFieldCell"; title = "Local PAC Listen Port:"; ObjectID = "PSg-XK-qhl"; */
+"PSg-XK-qhl.title" = "本地 PAC 监听端口:";
+
+/* Class = "NSTextFieldCell"; title = "White List URL:"; ObjectID = "aif-uV-Lxk"; */
+"aif-uV-Lxk.title" = "白名单列表 URL:";
+
+/* Class = "NSTextFieldCell"; title = "White IP List URL:"; ObjectID = "qhu-d1-qgq"; */
+"qhu-d1-qgq.title" = "白名单IP列表 URL:";
