@@ -12,14 +12,17 @@ import Cocoa
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDelegate {
     
+    // MARK: Controllers
     var qrcodeWinCtrl: SWBQRCodeWindowController!
     var preferencesWinCtrl: PreferencesWindowController!
     var advPreferencesWinCtrl: AdvPreferencesWindowController!
     var proxyPreferencesWinCtrl: ProxyPreferencesController!
     var editUserRulesWinCtrl: UserRulesController!
-
+    var httpPreferencesWinCtrl : HTTPPreferencesWindowController!
+    
     var launchAtLoginController: LaunchAtLoginController = LaunchAtLoginController()
     
+    // MARK: Outlets
     @IBOutlet weak var window: NSWindow!
     @IBOutlet weak var statusMenu: NSMenu!
     
@@ -29,24 +32,54 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     @IBOutlet weak var autoModeMenuItem: NSMenuItem!
     @IBOutlet weak var globalModeMenuItem: NSMenuItem!
     @IBOutlet weak var manualModeMenuItem: NSMenuItem!
+    @IBOutlet weak var whiteListModeMenuItem: NSMenuItem!
+    @IBOutlet weak var whiteListDomainMenuItem: NSMenuItem!
+    @IBOutlet weak var whiteListIPMenuItem: NSMenuItem!
     
     @IBOutlet weak var serversMenuItem: NSMenuItem!
+    @IBOutlet var pingserverMenuItem: NSMenuItem!
     @IBOutlet var showQRCodeMenuItem: NSMenuItem!
     @IBOutlet var scanQRCodeMenuItem: NSMenuItem!
+    @IBOutlet var showBunchJsonExampleFileItem: NSMenuItem!
+    @IBOutlet var importBunchJsonFileItem: NSMenuItem!
+    @IBOutlet var exportAllServerProfileItem: NSMenuItem!
     @IBOutlet var serversPreferencesMenuItem: NSMenuItem!
     
     @IBOutlet weak var lanchAtLoginMenuItem: NSMenuItem!
+    @IBOutlet weak var connectAtLaunchMenuItem: NSMenuItem!
+    @IBOutlet weak var ShowNetworkSpeedItem: NSMenuItem!
     
-    var statusItem: NSStatusItem!
-    
+    // MARK: Variables
+    var statusItemView:StatusItemView!
+    var statusItem: NSStatusItem?
+    var speedMonitor:NetWorkMonitor?
+
+    // MARK: Application function
+
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         // Insert code here to initialize your application
+//        PingServers.instance.ping()
+//        let newInstance = PingTest.init(hostName: "www.baidu.com")
+//        newInstance.start()
         
+//        let SerMgr = ServerProfileManager.instance
+//        let pingServerQueue : DispatchQueue = DispatchQueue.global(priority: DispatchQueue.GlobalQueuePriority.high)
+//        
+//        for profile in SerMgr.profiles {
+//            let host = profile.serverHost
+//            
+//            pingServerQueue.async(execute: {
+//                print(profile.serverHost)
+//                SimplePingClient().pingHostname(host) { latency in
+//                    print("-----------\(host) latency is \(latency ?? "fail")")}
+////                let pingInstance = PingTest.init(hostName: host)
+////                pingInstance.start()
+//            })}
         NSUserNotificationCenter.default.delegate = self
         
         // Prepare ss-local
         InstallSSLocal()
-        
+        InstallPrivoxy()
         // Prepare defaults
         let defaults = UserDefaults.standard
         defaults.register(defaults: [
@@ -60,16 +93,23 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             "LocalSocks5.EnableUDPRelay": NSNumber(value: false as Bool),
             "LocalSocks5.EnableVerboseMode": NSNumber(value: false as Bool),
             "GFWListURL": "https://raw.githubusercontent.com/gfwlist/gfwlist/master/gfwlist.txt",
-            "AutoConfigureNetworkServices": NSNumber(value: true as Bool)
+            "WhiteListURL": "https://raw.githubusercontent.com/breakwa11/gfw_whitelist/master/whitelist.pac",
+            "WhiteListIPURL": "https://raw.githubusercontent.com/breakwa11/gfw_whitelist/master/whiteiplist.pac",
+            "AutoConfigureNetworkServices": NSNumber(value: true as Bool),
+            "LocalHTTP.ListenAddress": "127.0.0.1",
+            "LocalHTTP.ListenPort": NSNumber(value: 1087 as UInt16),
+            "LocalHTTPOn": true,
+            "LocalHTTP.FollowGlobel": true
         ])
+
+        setUpMenu(defaults.bool(forKey: "enable_showSpeed"))
         
-        statusItem = NSStatusBar.system().statusItem(withLength: 20)
-        let image = NSImage(named: "menu_icon")
-        image?.isTemplate = true
-        statusItem.image = image
-        statusItem.menu = statusMenu
-        
-        
+//        statusItem = NSStatusBar.system().statusItem(withLength: 20)
+//        let image = NSImage(named: "menu_icon")
+//        image?.isTemplate = true
+//        statusItem.image = image
+//        statusItem.menu = statusMenu
+
         let notifyCenter = NotificationCenter.default
         notifyCenter.addObserver(forName: NSNotification.Name(rawValue: NOTIFY_ADV_PROXY_CONF_CHANGED), object: nil, queue: nil
             , using: {
@@ -88,6 +128,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                     }
                 }
                 self.updateServersMenu()
+                self.updateMainMenu()
                 SyncSSLocal()
             }
         )
@@ -95,6 +136,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             , using: {
             (note) in
                 SyncSSLocal()
+                self.applyConfig()
+            }
+        )
+        notifyCenter.addObserver(forName: NSNotification.Name(rawValue: NOTIFY_HTTP_CONF_CHANGED), object: nil, queue: nil
+            , using: {
+                (note) in
+                SyncPrivoxy()
                 self.applyConfig()
             }
         )
@@ -120,11 +168,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                         } else if userInfo["source"] as! String == "url" {
                             userNote.subtitle = "By Handle SS URL".localized
                         }
-                        userNote.informativeText = "Host: \(profile.serverHost)"
-                        " Port: \(profile.serverPort)"
-                        " Encription Method: \(profile.method)".localized
+                        userNote.informativeText = "Host: \(profile.serverHost)\n Port: \(profile.serverPort)\n Encription Method: \(profile.method)".localized
                         userNote.soundName = NSUserNotificationDefaultSoundName
                         
+                        NSUserNotificationCenter.default
+                            .deliver(userNote);
+                    }else{
+                        let userNote = NSUserNotification()
+                        userNote.title = "Failed to Add Server Profile".localized
+                        userNote.subtitle = "Address can't not be recognized".localized
                         NSUserNotificationCenter.default
                             .deliver(userNote);
                     }
@@ -150,11 +202,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         ProxyConfHelper.install()
         applyConfig()
         SyncSSLocal()
+
+        if defaults.bool(forKey: "ConnectAtLaunch") {
+            toggleRunning(toggleRunningMenuItem)
+        }
     }
 
     func applicationWillTerminate(_ aNotification: Notification) {
         // Insert code here to tear down your application
         StopSSLocal()
+        StopPrivoxy()
         ProxyConfHelper.disableProxy("hi")
         let defaults = UserDefaults.standard
         defaults.set(false, forKey: "ShadowsocksOn")
@@ -162,24 +219,45 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     }
     
     func applyConfig() {
+        let profileMgr = ServerProfileManager.instance
+        if profileMgr.profiles.count == 0{
+            let notice = NSUserNotification()
+            notice.title = "还没有服务器设定！"
+            notice.subtitle = "去设置里面填一下吧，填完记得选择呦~"
+            NSUserNotificationCenter.default.deliver(notice)
+        }
         let defaults = UserDefaults.standard
         let isOn = defaults.bool(forKey: "ShadowsocksOn")
         let mode = defaults.string(forKey: "ShadowsocksRunningMode")
         
         if isOn {
             StartSSLocal()
+            StartPrivoxy()
             if mode == "auto" {
+                ProxyConfHelper.disableProxy("hi")
                 ProxyConfHelper.enablePACProxy("hi")
             } else if mode == "global" {
+                ProxyConfHelper.disableProxy("hi")
                 ProxyConfHelper.enableGlobalProxy()
             } else if mode == "manual" {
                 ProxyConfHelper.disableProxy("hi")
+                ProxyConfHelper.disableProxy("hi")
+            } else if mode == "whiteListDomain" {
+                ProxyConfHelper.disableProxy("hi")
+                ProxyConfHelper.enableWhiteDomainListProxy()
+            } else if mode == "whiteListIP" {
+                ProxyConfHelper.disableProxy("hi")
+                ProxyConfHelper.enableWhiteIPListProxy()
             }
         } else {
             StopSSLocal()
+            StopPrivoxy()
             ProxyConfHelper.disableProxy("hi")
         }
+
     }
+    
+    // MARK: Mainmenu functions
     
     @IBAction func toggleRunning(_ sender: NSMenuItem) {
         let defaults = UserDefaults.standard
@@ -196,6 +274,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         UpdatePACFromGFWList()
     }
     
+    @IBAction func updateWhiteList(_ sender: NSMenuItem) {
+        UpdatePACFromWhiteList()
+    }
+    
     @IBAction func editUserRulesForPAC(_ sender: NSMenuItem) {
         if editUserRulesWinCtrl != nil {
             editUserRulesWinCtrl.close()
@@ -208,6 +290,19 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         ctrl.window?.makeKeyAndOrderFront(self)
     }
     
+    @IBAction func toggleLaunghAtLogin(_ sender: NSMenuItem) {
+        launchAtLoginController.launchAtLogin = !launchAtLoginController.launchAtLogin;
+        updateLaunchAtLoginMenu()
+    }
+    
+    @IBAction func toggleConnectAtLaunch(_ sender: NSMenuItem) {
+        let defaults = UserDefaults.standard
+        defaults.set(!defaults.bool(forKey: "ConnectAtLaunch"), forKey: "ConnectAtLaunch")
+        updateMainMenu()
+    }
+    
+    // MARK: Server submenu function
+
     @IBAction func showQRCodeForCurrentServer(_ sender: NSMenuItem) {
         var errMsg: String?
         if let profile = ServerProfileManager.instance.getActiveProfile() {
@@ -240,10 +335,18 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     @IBAction func scanQRCodeFromScreen(_ sender: NSMenuItem) {
         ScanQRCodeOnScreen()
     }
-
-    @IBAction func toggleLaunghAtLogin(_ sender: NSMenuItem) {
-        launchAtLoginController.launchAtLogin = !launchAtLoginController.launchAtLogin;
-        updateLaunchAtLoginMenu()
+    
+    @IBAction func showBunchJsonExampleFile(_ sender: NSMenuItem) {
+        ServerProfileManager.showExampleConfigFile()
+    }
+    
+    @IBAction func importBunchJsonFile(_ sender: NSMenuItem) {
+        ServerProfileManager.instance.importConfigFile()
+        //updateServersMenu()//not working
+    }
+    
+    @IBAction func exportAllServerProfile(_ sender: NSMenuItem) {
+        ServerProfileManager.instance.exportConfigFile()
     }
     
     @IBAction func selectPACMode(_ sender: NSMenuItem) {
@@ -267,6 +370,20 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         applyConfig()
     }
     
+    @IBAction func selectWhiteDomainListMode(_ sender: NSMenuItem) {
+        let defaults = UserDefaults.standard
+        defaults.setValue("whiteListDomain", forKey: "ShadowsocksRunningMode")
+        updateRunningModeMenu()
+        applyConfig()
+    }
+    
+    @IBAction func selectWhiteIPListMode(_ sender: NSMenuItem) {
+        let defaults = UserDefaults.standard
+        defaults.setValue("whiteListIP", forKey: "ShadowsocksRunningMode")
+        updateRunningModeMenu()
+        applyConfig()
+    }
+
     @IBAction func editServerPreferences(_ sender: NSMenuItem) {
         if preferencesWinCtrl != nil {
             preferencesWinCtrl.close()
@@ -285,6 +402,18 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         }
         let ctrl = AdvPreferencesWindowController(windowNibName: "AdvPreferencesWindowController")
         advPreferencesWinCtrl = ctrl
+        
+        ctrl.showWindow(self)
+        NSApp.activate(ignoringOtherApps: true)
+        ctrl.window?.makeKeyAndOrderFront(self)
+    }
+    
+    @IBAction func editHTTPPreferences(_ sender: NSMenuItem) {
+        if httpPreferencesWinCtrl != nil {
+            httpPreferencesWinCtrl.close()
+        }
+        let ctrl = HTTPPreferencesWindowController(windowNibName: "HTTPPreferencesWindowController")
+        httpPreferencesWinCtrl = ctrl
         
         ctrl.showWindow(self)
         NSApp.activate(ignoringOtherApps: true)
@@ -312,7 +441,20 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         }
         updateRunningModeMenu()
     }
+
+    @IBAction func doPingTest(_ sender: AnyObject) {
+        PingServers.instance.ping()
+    }
     
+    @IBAction func showSpeedTap(_ sender: NSMenuItem) {
+        let defaults = UserDefaults.standard
+        var enable = defaults.bool(forKey: "enable_showSpeed")
+        enable = !enable
+        setUpMenu(enable)
+        defaults.set(enable, forKey: "enable_showSpeed")
+        updateMainMenu()
+    }
+
     @IBAction func showLogs(_ sender: NSMenuItem) {
         let ws = NSWorkspace.shared()
         if let appUrl = ws.urlForApplication(withBundleIdentifier: "com.apple.Console") {
@@ -323,7 +465,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     }
     
     @IBAction func feedback(_ sender: NSMenuItem) {
-        NSWorkspace.shared().open(URL(string: "https://github.com/qiuyuzhou/ShadowsocksX-NG/issues")!)
+        NSWorkspace.shared().open(URL(string: "https://github.com/qinyuhang/ShadowsocksX-NG/issues")!)
     }
     
     @IBAction func showAbout(_ sender: NSMenuItem) {
@@ -339,23 +481,42 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         }
     }
     
+    // MARK: this function is use to update menu bar
+
     func updateRunningModeMenu() {
         let defaults = UserDefaults.standard
         let mode = defaults.string(forKey: "ShadowsocksRunningMode")
-
+//<<<<<<< HEAD
         var serverMenuText = "Servers".localized
-        for v in defaults.array(forKey: "ServerProfiles")! {
-            let profile = v as! [String:Any]
-            if profile["Id"] as! String == defaults.string(forKey: "ActiveServerProfileId")! {
-                var profileName :String
-                if profile["Remark"] as! String != "" {
-                    profileName = profile["Remark"] as! String
+        
+        let mgr = ServerProfileManager.instance
+        for p in mgr.profiles {
+            if mgr.activeProfileId == p.uuid {
+                if !p.remark.isEmpty {
+                    serverMenuText = p.remark
                 } else {
-                    profileName = profile["ServerHost"] as! String
+                    serverMenuText = p.serverHost
                 }
-                serverMenuText = "\(serverMenuText) - \(profileName)"
+                if let latency = p.latency{
+                    serverMenuText += "  - \(latency)ms"
+                }
+//=======
+//
+//        var serverMenuText = "Servers".localized
+//        for v in defaults.array(forKey: "ServerProfiles")! {
+//            let profile = v as! [String:Any]
+//            if profile["Id"] as! String == defaults.string(forKey: "ActiveServerProfileId")! {
+//                var profileName :String
+//                if profile["Remark"] as! String != "" {
+//                    profileName = profile["Remark"] as! String
+//                } else {
+//                    profileName = profile["ServerHost"] as! String
+//>>>>>>> shadowsocks/develop
+//                }
+//                serverMenuText = "\(serverMenuText) - \(profileName)"
             }
         }
+
         serversMenuItem.title = serverMenuText
 
         if mode == "auto" {
@@ -363,16 +524,41 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             autoModeMenuItem.state = 1
             globalModeMenuItem.state = 0
             manualModeMenuItem.state = 0
+            whiteListModeMenuItem.state = 0
+            whiteListDomainMenuItem.state = 0
+            whiteListIPMenuItem.state = 0
         } else if mode == "global" {
             proxyMenuItem.title = "Proxy - Global".localized
             autoModeMenuItem.state = 0
             globalModeMenuItem.state = 1
             manualModeMenuItem.state = 0
+            whiteListModeMenuItem.state = 0
+            whiteListDomainMenuItem.state = 0
+            whiteListIPMenuItem.state = 0
         } else if mode == "manual" {
             proxyMenuItem.title = "Proxy - Manual".localized
             autoModeMenuItem.state = 0
             globalModeMenuItem.state = 0
             manualModeMenuItem.state = 1
+            whiteListModeMenuItem.state = 0
+            whiteListDomainMenuItem.state = 0
+            whiteListIPMenuItem.state = 0
+        } else if mode == "whiteListDomain" {
+            proxyMenuItem.title = "Proxy - White List Domain".localized
+            autoModeMenuItem.state = 0
+            globalModeMenuItem.state = 0
+            manualModeMenuItem.state = 0
+            whiteListModeMenuItem.state = 1
+            whiteListDomainMenuItem.state = 1
+            whiteListIPMenuItem.state = 0
+        } else if mode == "whiteListIP" {
+            proxyMenuItem.title = "Proxy - White List IP".localized
+            autoModeMenuItem.state = 0
+            globalModeMenuItem.state = 0
+            manualModeMenuItem.state = 0
+            whiteListModeMenuItem.state = 1
+            whiteListDomainMenuItem.state = 0
+            whiteListIPMenuItem.state = 1
         }
         updateStatusItemUI()
     }
@@ -381,15 +567,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         let defaults = UserDefaults.standard
         let mode = defaults.string(forKey: "ShadowsocksRunningMode")
         if mode == "auto" {
-            statusItem.title = "Auto".localized
+            statusItem?.title = "Auto".localized
         } else if mode == "global" {
-            statusItem.title = "Global".localized
+            statusItem?.title = "Global".localized
         } else if mode == "manual" {
-            statusItem.title = "Manual".localized
+            statusItem?.title = "Manual".localized
         }
-        let titleWidth = statusItem.title!.size(withAttributes: [NSFontAttributeName: statusItem.button!.font!]).width
+        let titleWidth:CGFloat = 0//statusItem?.title!.size(withAttributes: [NSFontAttributeName: statusItem?.button!.font!]).width//这里不包含IP白名单模式等等，需要重新调整//PS还是给上游加上白名单模式？
         let imageWidth:CGFloat = 22
-        statusItem.length = titleWidth + imageWidth
+        statusItem?.length = titleWidth + imageWidth
     }
     
     func updateMainMenu() {
@@ -398,13 +584,34 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         if isOn {
             runningStatusMenuItem.title = "Shadowsocks: On".localized
             toggleRunningMenuItem.title = "Turn Shadowsocks Off".localized
-            let image = NSImage(named: "menu_icon")
-            statusItem.image = image
+            var image = NSImage(named: "menu_icon")
+            if SystemThemeChangeHelper.isCurrentDark() {
+                image = NSImage(named: "menu_icon_dark_mode")
+            }
+            
+            statusItemView.setIcon(image!)
+//            statusItem!.image = image
         } else {
             runningStatusMenuItem.title = "Shadowsocks: Off".localized
             toggleRunningMenuItem.title = "Turn Shadowsocks On".localized
-            let image = NSImage(named: "menu_icon_disabled")
-            statusItem.image = image
+            var image = NSImage(named: "menu_icon_disabled")
+            if SystemThemeChangeHelper.isCurrentDark() {
+                image = NSImage(named: "menu_icon_disabled_dark_mode")
+            }
+//            statusItem.image = image
+            statusItemView.setIcon(image!)
+        }
+        
+        if defaults.bool(forKey: "enable_showSpeed") {
+            ShowNetworkSpeedItem.state = 1
+        }else{
+            ShowNetworkSpeedItem.state = 0
+        }
+        
+        if defaults.bool(forKey: "ConnectAtLaunch") {
+            connectAtLaunchMenuItem.state = 1
+        } else {
+            connectAtLaunchMenuItem.state = 0
         }
     }
     
@@ -414,7 +621,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         let showQRItem = showQRCodeMenuItem
         let scanQRItem = scanQRCodeMenuItem
         let preferencesItem = serversPreferencesMenuItem
-        
+        let showBunch = showBunchJsonExampleFileItem
+        let importBuntch = importBunchJsonFileItem
+        let exportAllServer = exportAllServerProfileItem
+//        let pingItem = pingserverMenuItem
+
         var i = 0
         for p in mgr.profiles {
             let item = NSMenuItem()
@@ -424,6 +635,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             } else {
                 item.title = "\(p.remark) (\(p.serverHost):\(p.serverPort))"
             }
+
+            if let latency = p.latency{
+                item.title += "  - \(latency)ms"
+            }
+
             if mgr.activeProfileId == p.uuid {
                 item.state = 1
             }
@@ -440,10 +656,39 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         }
         serversMenuItem.submenu?.addItem(showQRItem!)
         serversMenuItem.submenu?.addItem(scanQRItem!)
+        serversMenuItem.submenu?.addItem(showBunch!)
+        serversMenuItem.submenu?.addItem(importBuntch!)
+        serversMenuItem.submenu?.addItem(exportAllServer!)
         serversMenuItem.submenu?.addItem(NSMenuItem.separator())
         serversMenuItem.submenu?.addItem(preferencesItem!)
+//        serversMenuItem.submenu?.addItem(pingItem)
+
     }
     
+    func setUpMenu(_ showSpeed:Bool){
+        if statusItem == nil{
+            statusItem = NSStatusBar.system().statusItem(withLength: 85)
+            let image = NSImage(named: "menu_icon")
+            image?.isTemplate = true
+            statusItem!.image = image
+            statusItemView = StatusItemView(statusItem: statusItem!, menu: statusMenu)
+            statusItem!.view = statusItemView
+        }
+        if showSpeed{
+            if speedMonitor == nil{
+                speedMonitor = NetWorkMonitor(statusItemView: statusItemView)
+            }
+            statusItem?.length = 85
+            speedMonitor?.start()
+        }else{
+            speedMonitor?.stop()
+            speedMonitor = nil
+            statusItem?.length = 20
+        }
+    }
+    
+    // MARK: 
+
     func handleURLEvent(_ event: NSAppleEventDescriptor, withReplyEvent replyEvent: NSAppleEventDescriptor) {
         if let urlString = event.paramDescriptor(forKeyword: AEKeyword(keyDirectObject))?.stringValue {
             if let url = URL(string: urlString) {
@@ -458,7 +703,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     }
     
     //------------------------------------------------------------
-    // NSUserNotificationCenterDelegate
+    // MARK: NSUserNotificationCenterDelegate
     
     func userNotificationCenter(_ center: NSUserNotificationCenter
         , shouldPresent notification: NSUserNotification) -> Bool {

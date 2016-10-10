@@ -68,22 +68,20 @@ class ProxyPreferencesController: NSWindowController, NSTableViewDataSource, NST
         , row: Int) -> Any? {
         let cell = tableColumn!.dataCell as! NSButtonCell
         
-        let networkService = networkServices[row] as! [String: Any]
-        let key = networkService["key"] as! String
+        let key = (networkServices[row] as AnyObject)["key"] as! String
         if selectedNetworkServices.contains(key) {
             cell.state = 1
         } else {
             cell.state = 0
         }
-        let userDefinedName = networkService["userDefinedName"] as! String
+        let userDefinedName = (networkServices[row] as AnyObject)["userDefinedName"] as! String
         cell.title = userDefinedName
         return cell
     }
     
     func tableView(_ tableView: NSTableView, setObjectValue object: Any?
         , for tableColumn: NSTableColumn?, row: Int) {
-        let networkService = networkServices[row] as! [String: Any]
-        let key = networkService["key"] as! String
+        let key = (networkServices[row] as AnyObject)["key"] as! String
         
 //        NSLog("%d", object!.integerValue)
         if (object! as AnyObject).intValue == 1 {

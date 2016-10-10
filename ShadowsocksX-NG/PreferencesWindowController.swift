@@ -19,6 +19,12 @@ class PreferencesWindowController: NSWindowController
     @IBOutlet weak var portTextField: NSTextField!
     @IBOutlet weak var methodTextField: NSComboBox!
     
+    @IBOutlet weak var ProtocolTextField: NSComboBox!
+    @IBOutlet weak var ProtocolParamTextField: NSTextField!
+    @IBOutlet weak var ObfsTextField: NSComboBox!
+    @IBOutlet weak var ObfsParamTextField: NSTextField!
+    
+    @IBOutlet weak var duplicateProfileButton: NSButton!
     @IBOutlet weak var passwordTextField: NSTextField!
     @IBOutlet weak var remarkTextField: NSTextField!
     
@@ -43,19 +49,41 @@ class PreferencesWindowController: NSWindowController
         profileMgr = ServerProfileManager.instance
         
         methodTextField.addItems(withObjectValues: [
+            "table",
+            "rc4",
+            "rc4-md5-6",
+            "rc4-md5",
             "aes-128-cfb",
             "aes-192-cfb",
             "aes-256-cfb",
-            "des-cfb",
             "bf-cfb",
+            "camellia-128-cfb",
+            "camellia-192-cfb",
+            "camellia-256-cfb",
             "cast5-cfb",
-            "rc4-md5",
-            "chacha20",
+            "des-cfb",
+            "idea-cfb",
+            "rc2-cfb",
+            "seed-cfb",
             "salsa20",
-            "rc4",
-            "table",
+            "chacha20",
+            "chacha20-ietf"
             ])
-        
+        ProtocolTextField.addItems(withObjectValues: [
+            "origin",
+            "verify_simple",
+            "verify_sha1",
+            "auth_sha1",
+            "auth_sha1_v2",
+            "auth_sha1_v4",
+            ])
+        ObfsTextField.addItems(withObjectValues: [
+            "palin",
+            "http_simple",
+            "tls_simple",
+            "random_head",
+            "tls1.2_ticket_auth",
+            ])
         profilesTableView.reloadData()
         updateProfileBoxVisible()
     }
@@ -97,7 +125,7 @@ class PreferencesWindowController: NSWindowController
     @IBAction func ok(_ sender: NSButton) {
         if editingProfile != nil {
             if !editingProfile.isValid() {
-                // TODO Shake window?
+                // Done Shake window
                 shakeWindows()
                 return
             }
@@ -114,17 +142,41 @@ class PreferencesWindowController: NSWindowController
         window?.performClose(self)
     }
     
+    @IBAction func duplicateProfile(_ sender: NSButton) {
+        //读取当前profile，并且保存
+        if editingProfile != nil && !editingProfile.isValid(){
+            return
+        }
+        let oldProfileIndex = profilesTableView.selectedRow
+        if  oldProfileIndex >= 0 {
+            let oldProfile = profileMgr.profiles[oldProfileIndex]
+            profilesTableView.beginUpdates()
+            var newProfile = ServerProfile()
+            let newUUID = newProfile.uuid
+            newProfile = ServerProfile.fromDictionary(oldProfile.toDictionary())//here 因为UUID重复了
+            newProfile.uuid = newUUID
+            profileMgr.profiles.append(newProfile)
+            let index = IndexSet(integer: profileMgr.profiles.count-1)
+            profilesTableView.insertRows(at: index, withAnimation: .effectFade)
+            self.profilesTableView.scrollRowToVisible(self.profileMgr.profiles.count-1)
+            self.profilesTableView.selectRowIndexes(index, byExtendingSelection: false)
+            profilesTableView.endUpdates()
+            updateProfileBoxVisible()
+            NotificationCenter.default
+                .post(name: Notification.Name(rawValue: NOTIFY_SERVER_PROFILES_CHANGED), object: nil)
+        }
+    }
+    
     @IBAction func copyCurrentProfileURL2Pasteboard(_ sender: NSButton) {
         let index = profilesTableView.selectedRow
         if  index >= 0 {
             let profile = profileMgr.profiles[index]
             let ssURL = profile.URL()
             if let url = ssURL {
-                // Then copy url to pasteboard
-                // TODO Why it not working?? It's ok in objective-c
+                
                 let pboard = NSPasteboard.general()
                 pboard.clearContents()
-                let rs = pboard.writeObjects([url as NSPasteboardWriting])
+                let rs = pboard.setString(String(describing: url), forType: NSStringPboardType)//writeObjects([url])
                 if rs {
                     NSLog("copy to pasteboard success")
                 } else {
@@ -166,6 +218,14 @@ class PreferencesWindowController: NSWindowController
             remarkTextField.bind("value", to: editingProfile, withKeyPath: "remark"
                 , options: [NSContinuouslyUpdatesValueBindingOption: true])
             
+            ProtocolTextField.bind("value", to: editingProfile, withKeyPath: "ssrProtocol", options: [NSContinuouslyUpdatesValueBindingOption: true])
+            
+            ProtocolParamTextField.bind("value", to: editingProfile, withKeyPath: "ssrProtocolParam", options: [NSContinuouslyUpdatesValueBindingOption: true])
+            
+            ObfsTextField.bind("value", to: editingProfile, withKeyPath: "ssrObfs", options: [NSContinuouslyUpdatesValueBindingOption: true])
+            
+            ObfsParamTextField.bind("value", to: editingProfile, withKeyPath: "ssrObfsParam", options: [NSContinuouslyUpdatesValueBindingOption: true])
+            
             otaCheckBoxBtn.bind("value", to: editingProfile, withKeyPath: "ota"
                 , options: [NSContinuouslyUpdatesValueBindingOption: true])
         } else {
@@ -175,6 +235,11 @@ class PreferencesWindowController: NSWindowController
             
             methodTextField.unbind("value")
             passwordTextField.unbind("value")
+            
+            ProtocolTextField.unbind("value")
+            ProtocolParamTextField.unbind("value")
+            ObfsTextField.unbind("value")
+            ObfsParamTextField.unbind("value")
             
             remarkTextField.unbind("value")
             
@@ -314,6 +379,7 @@ class PreferencesWindowController: NSWindowController
         let shakeAnimation = CAKeyframeAnimation()
 
         let shakePath = CGMutablePath()
+        
         shakePath.move(to: CGPoint(x:NSMinX(frame), y:NSMinY(frame)))
 
         for _ in 1...numberOfShakes{

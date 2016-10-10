@@ -24,4 +24,8 @@
 
 + (void)stopPACServer;
 
++ (void)enableWhiteDomainListProxy;
+
++ (void)enableWhiteIPListProxy;
+
 @end
