@@ -47,3 +47,11 @@
 "Proxy - Manual" = "Proxy - Manual";
 
 "Servers" = "Servers";
+
+"Auto" = "PAC";
+
+"Global" = "Global";
+
+"Manual" = "Manual";
+
+"Show Running Mode On Status Bar" = "Show Running Mode On Status Bar";

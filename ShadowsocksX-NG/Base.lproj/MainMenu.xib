@@ -1,7 +1,8 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="10117" systemVersion="15F34" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="11201" systemVersion="16A323" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="10117"/>
+        <deployment identifier="macosx"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="11201"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="NSApplication">
@@ -24,6 +25,7 @@
                 <outlet property="serversMenuItem" destination="u5M-hQ-VSc" id="8gp-SY-Y4U"/>
                 <outlet property="serversPreferencesMenuItem" destination="M5r-E7-44f" id="voe-SX-k6a"/>
                 <outlet property="showQRCodeMenuItem" destination="R6A-96-Zcb" id="XHz-pz-nCz"/>
+                <outlet property="showRunningModeMenuItem" destination="CCV-hX-fVA" id="AU2-hH-w8F"/>
                 <outlet property="statusMenu" destination="Hob-KD-bx9" id="clA-ZW-0pT"/>
                 <outlet property="toggleRunningMenuItem" destination="GSu-Tf-StS" id="XHw-pU-nCa"/>
             </connections>
@@ -77,6 +79,12 @@
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="bMX-qn-Qwi"/>
+                            <menuItem title="Show Running Mode On Status Bar" id="CCV-hX-fVA">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="showRunningMode:" target="Voe-Tx-rLC" id="PxO-ut-PEx"/>
+                                </connections>
+                            </menuItem>
                             <menuItem title="Advance Proxy Preference..." id="sbx-yz-3lO">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
@@ -150,6 +158,7 @@
                     </connections>
                 </menuItem>
             </items>
+            <point key="canvasLocation" x="22" y="89"/>
         </menu>
     </objects>
 </document>

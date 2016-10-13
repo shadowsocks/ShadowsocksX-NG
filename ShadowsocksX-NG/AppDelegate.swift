@@ -17,7 +17,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     var advPreferencesWinCtrl: AdvPreferencesWindowController!
     var proxyPreferencesWinCtrl: ProxyPreferencesController!
     var editUserRulesWinCtrl: UserRulesController!
-
+    
     var launchAtLoginController: LaunchAtLoginController = LaunchAtLoginController()
     
     @IBOutlet weak var window: NSWindow!
@@ -29,6 +29,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     @IBOutlet weak var autoModeMenuItem: NSMenuItem!
     @IBOutlet weak var globalModeMenuItem: NSMenuItem!
     @IBOutlet weak var manualModeMenuItem: NSMenuItem!
+    @IBOutlet weak var showRunningModeMenuItem: NSMenuItem!
     
     @IBOutlet weak var serversMenuItem: NSMenuItem!
     @IBOutlet var showQRCodeMenuItem: NSMenuItem!
@@ -38,6 +39,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     @IBOutlet weak var lanchAtLoginMenuItem: NSMenuItem!
     
     var statusItem: NSStatusItem!
+    
+    static let StatusItemIconWidth:CGFloat = 20
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         // Insert code here to initialize your application
@@ -61,9 +64,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             "LocalSocks5.EnableVerboseMode": NSNumber(value: false as Bool),
             "GFWListURL": "https://raw.githubusercontent.com/gfwlist/gfwlist/master/gfwlist.txt",
             "AutoConfigureNetworkServices": NSNumber(value: true as Bool)
-        ])
+            ])
         
-        statusItem = NSStatusBar.system().statusItem(withLength: 20)
+        statusItem = NSStatusBar.system().statusItem(withLength: AppDelegate.StatusItemIconWidth)
         let image = NSImage(named: "menu_icon")
         image?.isTemplate = true
         statusItem.image = image
@@ -73,13 +76,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         let notifyCenter = NotificationCenter.default
         notifyCenter.addObserver(forName: NSNotification.Name(rawValue: NOTIFY_ADV_PROXY_CONF_CHANGED), object: nil, queue: nil
             , using: {
-            (note) in
+                (note) in
                 self.applyConfig()
             }
         )
         notifyCenter.addObserver(forName: NSNotification.Name(rawValue: NOTIFY_SERVER_PROFILES_CHANGED), object: nil, queue: nil
             , using: {
-            (note) in
+                (note) in
                 let profileMgr = ServerProfileManager.instance
                 if profileMgr.activeProfileId == nil &&
                     profileMgr.profiles.count > 0{
@@ -93,7 +96,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         )
         notifyCenter.addObserver(forName: NSNotification.Name(rawValue: NOTIFY_ADV_CONF_CHANGED), object: nil, queue: nil
             , using: {
-            (note) in
+                (note) in
                 SyncSSLocal()
                 self.applyConfig()
             }
@@ -151,7 +154,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         applyConfig()
         SyncSSLocal()
     }
-
+    
     func applicationWillTerminate(_ aNotification: Notification) {
         // Insert code here to tear down your application
         StopSSLocal()
@@ -191,7 +194,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         
         applyConfig()
     }
-
+    
     @IBAction func updateGFWList(_ sender: NSMenuItem) {
         UpdatePACFromGFWList()
     }
@@ -202,7 +205,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         }
         let ctrl = UserRulesController(windowNibName: "UserRulesController")
         editUserRulesWinCtrl = ctrl
-
+        
         ctrl.showWindow(self)
         NSApp.activate(ignoringOtherApps: true)
         ctrl.window?.makeKeyAndOrderFront(self)
@@ -240,7 +243,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     @IBAction func scanQRCodeFromScreen(_ sender: NSMenuItem) {
         ScanQRCodeOnScreen()
     }
-
+    
     @IBAction func toggleLaunghAtLogin(_ sender: NSMenuItem) {
         launchAtLoginController.launchAtLogin = !launchAtLoginController.launchAtLogin;
         updateLaunchAtLoginMenu()
@@ -331,6 +334,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         NSApp.activate(ignoringOtherApps: true)
     }
     
+    @IBAction func showRunningMode(_ sender: NSMenuItem) {
+        sender.state = sender.state == 1 ? 0 : 1
+        let defaults = UserDefaults.standard
+        let isShown = (sender.state == 1)
+        defaults.set(isShown, forKey: "ShowRunningModeOnStatusBar")
+        updateStatusItemUI(isShownnRunningMode: isShown)
+    }
+    
     func updateLaunchAtLoginMenu() {
         if launchAtLoginController.launchAtLogin {
             lanchAtLoginMenuItem.state = 1
@@ -342,7 +353,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     func updateRunningModeMenu() {
         let defaults = UserDefaults.standard
         let mode = defaults.string(forKey: "ShadowsocksRunningMode")
-
+        
+        showRunningModeMenuItem.title = "Show Running Mode On Status Bar".localized
+        showRunningModeMenuItem.state = defaults.bool(forKey: "ShowRunningModeOnStatusBar") ? 1 : 0
+        
         var serverMenuText = "Servers".localized
         for v in defaults.array(forKey: "ServerProfiles")! {
             let profile = v as! [String:Any]
@@ -357,7 +371,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             }
         }
         serversMenuItem.title = serverMenuText
-
+        
         if mode == "auto" {
             proxyMenuItem.title = "Proxy - Auto By PAC".localized
             autoModeMenuItem.state = 1
@@ -374,22 +388,27 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             globalModeMenuItem.state = 0
             manualModeMenuItem.state = 1
         }
-        updateStatusItemUI()
+        let isShown = defaults.bool(forKey: "ShowRunningModeOnStatusBar")
+        updateStatusItemUI(isShownnRunningMode: isShown)
     }
     
-    func updateStatusItemUI() {
-        let defaults = UserDefaults.standard
-        let mode = defaults.string(forKey: "ShadowsocksRunningMode")
-        if mode == "auto" {
-            statusItem.title = "Auto".localized
-        } else if mode == "global" {
-            statusItem.title = "Global".localized
-        } else if mode == "manual" {
-            statusItem.title = "Manual".localized
+    func updateStatusItemUI(isShownnRunningMode: Bool) {
+        if isShownnRunningMode {
+            let defaults = UserDefaults.standard
+            let mode = defaults.string(forKey: "ShadowsocksRunningMode")
+            if mode == "auto" {
+                statusItem.title = "Auto".localized
+            } else if mode == "global" {
+                statusItem.title = "Global".localized
+            } else if mode == "manual" {
+                statusItem.title = "Manual".localized
+            }
+            let titleWidth = statusItem.title!.size(withAttributes: [NSFontAttributeName: statusItem.button!.font!]).width
+            let imageWidth:CGFloat = AppDelegate.StatusItemIconWidth
+            statusItem.length = titleWidth + imageWidth + 2
+        } else {
+            statusItem.length = AppDelegate.StatusItemIconWidth
         }
-        let titleWidth = statusItem.title!.size(withAttributes: [NSFontAttributeName: statusItem.button!.font!]).width
-        let imageWidth:CGFloat = 22
-        statusItem.length = titleWidth + imageWidth
     }
     
     func updateMainMenu() {
@@ -452,7 +471,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                     , userInfo: [
                         "ruls": [url],
                         "source": "url",
-                    ])
+                        ])
             }
         }
     }
