@@ -50,3 +50,12 @@
 
 "Proxy - Manual" = "代理 - 手动";
 
+"Servers" = "服务器";
+
+"Auto" = "自动";
+
+"Global" = "全局";
+
+"Manual" = "手动";
+
+"Show Running Mode On Status Bar" = "在状态栏显示运行模式";

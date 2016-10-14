@@ -15,45 +15,45 @@ class ServerProfileManager: NSObject {
     var profiles:[ServerProfile]
     var activeProfileId: String?
     
-    private override init() {
+    fileprivate override init() {
         profiles = [ServerProfile]()
         
-        let defaults = NSUserDefaults.standardUserDefaults()
-        if let _profiles = defaults.arrayForKey("ServerProfiles") {
+        let defaults = UserDefaults.standard
+        if let _profiles = defaults.array(forKey: "ServerProfiles") {
             for _profile in _profiles {
                 let profile = ServerProfile.fromDictionary(_profile as! [String : AnyObject])
                 profiles.append(profile)
             }
         }
-        activeProfileId = defaults.stringForKey("ActiveServerProfileId")
+        activeProfileId = defaults.string(forKey: "ActiveServerProfileId")
     }
     
-    func setActiveProfiledId(id: String) {
+    func setActiveProfiledId(_ id: String) {
         activeProfileId = id
-        let defaults = NSUserDefaults.standardUserDefaults()
-        defaults.setObject(id, forKey: "ActiveServerProfileId")
+        let defaults = UserDefaults.standard
+        defaults.set(id, forKey: "ActiveServerProfileId")
     }
     
     func save() {
-        let defaults = NSUserDefaults.standardUserDefaults()
+        let defaults = UserDefaults.standard
         var _profiles = [AnyObject]()
         for profile in profiles {
             if profile.isValid() {
                 let _profile = profile.toDictionary()
-                _profiles.append(_profile)
+                _profiles.append(_profile as AnyObject)
             }
         }
-        defaults.setObject(_profiles, forKey: "ServerProfiles")
+        defaults.set(_profiles, forKey: "ServerProfiles")
         
         if getActiveProfile() == nil {
             activeProfileId = nil
         }
         
         if activeProfileId != nil {
-            defaults.setObject(activeProfileId, forKey: "ActiveServerProfileId")
+            defaults.set(activeProfileId, forKey: "ActiveServerProfileId")
             writeSSLocalConfFile((getActiveProfile()?.toJsonConfig())!)
         } else {
-            defaults.removeObjectForKey("ActiveServerProfileId")
+            defaults.removeObject(forKey: "ActiveServerProfileId")
             removeSSLocalConfFile()
         }
     }

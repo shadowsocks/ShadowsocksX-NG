@@ -21,18 +21,18 @@ class ServerProfile: NSObject {
     var ota: Bool = false // onetime authentication
     
     override init() {
-        uuid = NSUUID().UUIDString
+        uuid = UUID().uuidString
     }
     
     init(uuid: String) {
         self.uuid = uuid
     }
     
-    static func fromDictionary(data:[String:AnyObject]) -> ServerProfile {
+    static func fromDictionary(_ data:[String:AnyObject]) -> ServerProfile {
         let cp = {
             (profile: ServerProfile) in
             profile.serverHost = data["ServerHost"] as! String
-            profile.serverPort = (data["ServerPort"] as! NSNumber).unsignedShortValue
+            profile.serverPort = (data["ServerPort"] as! NSNumber).uint16Value
             profile.method = data["Method"] as! String
             profile.password = data["Password"] as! String
             if let remark = data["Remark"] {
@@ -56,33 +56,33 @@ class ServerProfile: NSObject {
     
     func toDictionary() -> [String:AnyObject] {
         var d = [String:AnyObject]()
-        d["Id"] = uuid
-        d["ServerHost"] = serverHost
-        d["ServerPort"] = NSNumber(unsignedShort:serverPort)
-        d["Method"] = method
-        d["Password"] = password
-        d["Remark"] = remark
-        d["OTA"] = ota
+        d["Id"] = uuid as AnyObject?
+        d["ServerHost"] = serverHost as AnyObject?
+        d["ServerPort"] = NSNumber(value: serverPort as UInt16)
+        d["Method"] = method as AnyObject?
+        d["Password"] = password as AnyObject?
+        d["Remark"] = remark as AnyObject?
+        d["OTA"] = ota as AnyObject?
         return d
     }
     
     func toJsonConfig() -> [String: AnyObject] {
-        var conf: [String: AnyObject] = ["server": serverHost,
-                                         "server_port": NSNumber(unsignedShort: serverPort),
-                                         "password": password,
-                                         "method": method,]
+        var conf: [String: AnyObject] = ["server": serverHost as AnyObject,
+                                         "server_port": NSNumber(value: serverPort as UInt16),
+                                         "password": password as AnyObject,
+                                         "method": method as AnyObject,]
         
-        let defaults = NSUserDefaults.standardUserDefaults()
-        conf["local_port"] = NSNumber(unsignedShort: UInt16(defaults.integerForKey("LocalSocks5.ListenPort")))
-        conf["local_address"] = defaults.stringForKey("LocalSocks5.ListenAddress")
-        conf["timeout"] = NSNumber(unsignedInt: UInt32(defaults.integerForKey("LocalSocks5.Timeout")))
-        conf["auth"] = NSNumber(bool: ota)
+        let defaults = UserDefaults.standard
+        conf["local_port"] = NSNumber(value: UInt16(defaults.integer(forKey: "LocalSocks5.ListenPort")) as UInt16)
+        conf["local_address"] = defaults.string(forKey: "LocalSocks5.ListenAddress") as AnyObject?
+        conf["timeout"] = NSNumber(value: UInt32(defaults.integer(forKey: "LocalSocks5.Timeout")) as UInt32)
+        conf["auth"] = NSNumber(value: ota as Bool)
         
         return conf
     }
     
     func isValid() -> Bool {
-        func validateIpAddress(ipToValidate: String) -> Bool {
+        func validateIpAddress(_ ipToValidate: String) -> Bool {
             
             var sin = sockaddr_in()
             var sin6 = sockaddr_in6()
@@ -99,10 +99,10 @@ class ServerProfile: NSObject {
             return false;
         }
         
-        func validateDomainName(value: String) -> Bool {
+        func validateDomainName(_ value: String) -> Bool {
             let validHostnameRegex = "^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])$"
             
-            if (value.rangeOfString(validHostnameRegex, options: .RegularExpressionSearch) != nil) {
+            if (value.range(of: validHostnameRegex, options: .regularExpression) != nil) {
                 return true
             } else {
                 return false
@@ -120,13 +120,13 @@ class ServerProfile: NSObject {
         return true
     }
     
-    func URL() -> NSURL? {
+    func URL() -> Foundation.URL? {
         let parts = "\(method):\(password)@\(serverHost):\(serverPort)"
-        let base64String = parts.dataUsingEncoding(NSUTF8StringEncoding)?
-            .base64EncodedStringWithOptions(NSDataBase64EncodingOptions())
+        let base64String = parts.data(using: String.Encoding.utf8)?
+            .base64EncodedString(options: NSData.Base64EncodingOptions())
         if var s = base64String {
-            s = s.stringByTrimmingCharactersInSet(NSCharacterSet(charactersInString: "="))
-            return NSURL(string: "ss://\(s)")
+            s = s.trimmingCharacters(in: CharacterSet(charactersIn: "="))
+            return Foundation.URL(string: "ss://\(s)")
         }
         return nil
     }

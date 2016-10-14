@@ -7,15 +7,21 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <GCDWebServer/GCDWebServer.h>
+#import <GCDWebServer/GCDWebServerDataResponse.h>
 
 @interface ProxyConfHelper : NSObject
 
 + (void)install;
 
-+ (void)enablePACProxy;
++ (void)enablePACProxy:(NSString*) PACFilePath;
 
 + (void)enableGlobalProxy;
 
-+ (void)disableProxy;
++ (void)disableProxy:(NSString*) PACFilePath;
+
++ (NSString*)startPACServer:(NSString*) PACFilePath;
+
++ (void)stopPACServer;
 
 @end

@@ -67,3 +67,16 @@
 
 /* Class = "NSMenuItem"; title = "退出"; ObjectID = "vJS-JW-byz"; */
 "vJS-JW-byz.title" = "退出";
+
+/* Class = "NSMenuItem"; title = "Ping server"; ObjectID = "zfR-Jt-GmS"; */
+"zfR-Jt-GmS.title" = "服务器测速";
+
+/* Class = "NSMenuItem"; title = "Show network speed"; ObjectID = "a3h-uQ-DuO"; */
+"a3h-uQ-DuO.title" = "显示网速";
+
+/* Class = "NSMenuItem"; title = "Connect At Launch"; ObjectID = "aB3-cf-5j0"; */
+"aB3-cf-5j0.title" = "打开时自动连接";
+
+/* Class = "NSMenuItem"; title = "HTTP Proxy Preference ..."; ObjectID = "uEp-Gz-cu0"; */
+"uEp-Gz-cu0.title" = "HTTP代理设置...";
+

@@ -23,71 +23,73 @@ class ProxyPreferencesController: NSWindowController, NSTableViewDataSource, NST
         super.windowDidLoad()
 
         // Implement this method to handle any initialization after your window controller's window has been loaded from its nib file.
-        let defaults = NSUserDefaults.standardUserDefaults()
-        self.setValue(defaults.boolForKey("AutoConfigureNetworkServices"), forKey: "autoConfigureNetworkServices")
+        let defaults = UserDefaults.standard
+        self.setValue(defaults.bool(forKey: "AutoConfigureNetworkServices"), forKey: "autoConfigureNetworkServices")
         
-        if let services = defaults.arrayForKey("Proxy4NetworkServices") {
+        if let services = defaults.array(forKey: "Proxy4NetworkServices") {
             selectedNetworkServices = NSMutableSet(array: services)
         } else {
             selectedNetworkServices = NSMutableSet()
         }
         
-        networkServices = ProxyConfTool.networkServicesList()
+        networkServices = ProxyConfTool.networkServicesList() as NSArray!
         tableView.reloadData()
     }
     
-    @IBAction func ok(sender: NSObject){
-        ProxyConfHelper.disableProxy()
+    @IBAction func ok(_ sender: NSObject){
+        ProxyConfHelper.disableProxy("hi")
         
-        let defaults = NSUserDefaults.standardUserDefaults()
+        let defaults = UserDefaults.standard
         defaults.setValue(selectedNetworkServices.allObjects, forKeyPath: "Proxy4NetworkServices")
-        defaults.setBool(autoConfigureNetworkServices, forKey: "AutoConfigureNetworkServices")
+        defaults.set(autoConfigureNetworkServices, forKey: "AutoConfigureNetworkServices")
         
         defaults.synchronize()
         
         window?.performClose(self)
         
-        NSNotificationCenter.defaultCenter()
-            .postNotificationName(NOTIFY_ADV_PROXY_CONF_CHANGED, object: nil)
+        NotificationCenter.default
+            .post(name: Notification.Name(rawValue: NOTIFY_ADV_PROXY_CONF_CHANGED), object: nil)
     }
     
-    @IBAction func cancel(sender: NSObject){
+    @IBAction func cancel(_ sender: NSObject){
         window?.performClose(self)
     }
     
     //--------------------------------------------------
     // For NSTableViewDataSource
-    func numberOfRowsInTableView(tableView: NSTableView) -> Int {
+    func numberOfRows(in tableView: NSTableView) -> Int {
         if networkServices != nil {
             return networkServices.count
         }
         return 0;
     }
     
-    func tableView(tableView: NSTableView, objectValueForTableColumn tableColumn: NSTableColumn?
-        , row: Int) -> AnyObject? {
+    func tableView(_ tableView: NSTableView, objectValueFor tableColumn: NSTableColumn?
+        , row: Int) -> Any? {
         let cell = tableColumn!.dataCell as! NSButtonCell
         
-        let key = networkServices[row]["key"] as! String
-        if selectedNetworkServices.containsObject(key) {
+        let networkService = networkServices[row] as! [String: Any]
+        let key = networkService["key"] as! String
+        if selectedNetworkServices.contains(key) {
             cell.state = 1
         } else {
             cell.state = 0
         }
-        let userDefinedName = networkServices[row]["userDefinedName"] as! String
+        let userDefinedName = networkService["userDefinedName"] as! String
         cell.title = userDefinedName
         return cell
     }
     
-    func tableView(tableView: NSTableView, setObjectValue object: AnyObject?
-        , forTableColumn tableColumn: NSTableColumn?, row: Int) {
-        let key = networkServices[row]["key"] as! String
+    func tableView(_ tableView: NSTableView, setObjectValue object: Any?
+        , for tableColumn: NSTableColumn?, row: Int) {
+        let networkService = networkServices[row] as! [String: Any]
+        let key = networkService["key"] as! String
         
 //        NSLog("%d", object!.integerValue)
-        if object!.integerValue == 1 {
-            selectedNetworkServices.addObject(key)
+        if (object! as AnyObject).intValue == 1 {
+            selectedNetworkServices.add(key)
         } else {
-            selectedNetworkServices.removeObject(key)
+            selectedNetworkServices.remove(key)
         }
     }
 }

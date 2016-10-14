@@ -1,30 +1,30 @@
 # ShadowsocksX-NG
 
-Current version is 1.2
+Current version is 1.3
 
-[![Build Status](https://travis-ci.org/qiuyuzhou/ShadowsocksX-NG.svg?branch=develop)](https://travis-ci.org/qiuyuzhou/ShadowsocksX-NG)
+[![Build Status](https://travis-ci.org/shadowsocks/ShadowsocksX-NG.svg?branch=develop)](https://travis-ci.org/shadowsocks/ShadowsocksX-NG)
 
 Next Generation of [ShadowsocksX](https://github.com/shadowsocks/shadowsocks-iOS)
 
 ## Why?
 
-It's hard to maintaine the original implement. There are too many unused code in it. 
-It also embed ss-local source. It's crazy to maitaine depandences of ss-local. 
+It's hard to maintain the original implement. There are too many unused code in it. 
+It also embed ss-local source. It's crazy to maintain depandences of ss-local. 
 So it's hard to update ss-local version.
 
 Now I just copy the ss-local from home brew. Run ss-local executable as a Launch Agent in background. 
-Serve pac js file as a file url. So there are only some souce codes related to GUI left. 
-Then I rewrite the gui code by swift.
+Serve pac js file as a file url. So there are only some souce code related to GUI left. 
+Then I rewrite the GUI code by swift.
 
 ## Requirements
 
 ### Running
 
-- Mac OS X 10.10 +
+- Mac OS X 10.11 +
 
 ### Building
 
-- XCode 7.3+
+- XCode 8.0+
 - cocoapod 1.0.1+
 
 ## Fetures
@@ -61,7 +61,7 @@ ref: [GitFlow](http://nvie.com/posts/a-successful-git-branching-model/)
 
 ## TODO List
 
-- [ ] Embed the http proxy server [privoxy](http://www.privoxy.org/).
+- [x] Embed the http proxy server [privoxy](http://www.privoxy.org/), [get it](https://homebrew.bintray.com/bottles/privoxy-3.0.26.sierra.bottle.tar.gz).
 
 ## License
 

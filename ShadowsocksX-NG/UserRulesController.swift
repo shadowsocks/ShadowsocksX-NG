@@ -15,36 +15,36 @@ class UserRulesController: NSWindowController {
     override func windowDidLoad() {
         super.windowDidLoad()
 
-        let fileMgr = NSFileManager.defaultManager()
-        if !fileMgr.fileExistsAtPath(PACUserRuleFilePath) {
-            let src = NSBundle.mainBundle().pathForResource("user-rule", ofType: "txt")
-            try! fileMgr.copyItemAtPath(src!, toPath: PACUserRuleFilePath)
+        let fileMgr = FileManager.default
+        if !fileMgr.fileExists(atPath: PACUserRuleFilePath) {
+            let src = Bundle.main.path(forResource: "user-rule", ofType: "txt")
+            try! fileMgr.copyItem(atPath: src!, toPath: PACUserRuleFilePath)
         }
 
-        let str = try? String(contentsOfFile: PACUserRuleFilePath, encoding: NSUTF8StringEncoding)
+        let str = try? String(contentsOfFile: PACUserRuleFilePath, encoding: String.Encoding.utf8)
         userRulesView.string = str
     }
     
-    @IBAction func didCancel(sender: AnyObject) {
+    @IBAction func didCancel(_ sender: AnyObject) {
         window?.performClose(self)
     }
 
-    @IBAction func didOK(sender: AnyObject) {
+    @IBAction func didOK(_ sender: AnyObject) {
         if let str = userRulesView.string {
             do {
-                try str.dataUsingEncoding(NSUTF8StringEncoding)?.writeToFile(PACUserRuleFilePath, options: .DataWritingAtomic)
+                try str.data(using: String.Encoding.utf8)?.write(to: URL(fileURLWithPath: PACUserRuleFilePath), options: .atomic)
 
                 if GeneratePACFile() {
                     // Popup a user notification
                     let notification = NSUserNotification()
                     notification.title = "PAC has been updated by User Rules.".localized
-                    NSUserNotificationCenter.defaultUserNotificationCenter()
-                        .deliverNotification(notification)
+                    NSUserNotificationCenter.default
+                        .deliver(notification)
                 } else {
                     let notification = NSUserNotification()
                     notification.title = "It's failed to update PAC by User Rules.".localized
-                    NSUserNotificationCenter.defaultUserNotificationCenter()
-                        .deliverNotification(notification)
+                    NSUserNotificationCenter.default
+                        .deliver(notification)
                 }
             } catch {}
         }
