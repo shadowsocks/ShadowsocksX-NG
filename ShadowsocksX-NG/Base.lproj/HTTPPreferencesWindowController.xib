@@ -11,7 +11,7 @@
         <window title="HTTP Proxy Preferences" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" oneShot="NO" releasedWhenClosed="NO" showsToolbarButton="NO" frameAutosaveName="" animationBehavior="default" id="vS3-DL-Nq3">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
             <rect key="contentRect" x="109" y="131" width="209" height="197"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="2560" height="1417"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1680" height="1027"/>
             <view key="contentView" id="Qef-Mj-9z1">
                 <rect key="frame" x="0.0" y="0.0" width="209" height="197"/>
                 <autoresizingMask key="autoresizingMask"/>
