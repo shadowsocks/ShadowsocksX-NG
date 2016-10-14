@@ -126,6 +126,12 @@
                         <action selector="editAdvPreferences:" target="Voe-Tx-rLC" id="mEF-XS-HJE"/>
                     </connections>
                 </menuItem>
+                <menuItem title="HTTP Proxy Preference ..." id="uEp-Gz-cu0">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <connections>
+                        <action selector="editHTTPPreferences:" target="Voe-Tx-rLC" id="tkC-e3-PH9"/>
+                    </connections>
+                </menuItem>
                 <menuItem title="Launch At Login" id="eUq-p7-ICK">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
@@ -159,6 +165,19 @@
                 </menuItem>
             </items>
             <point key="canvasLocation" x="22" y="89"/>
+        </menu>
+        <menu id="2oY-e9-q1Z">
+            <items>
+                <menuItem title="Item 1" id="oR3-cT-RTC">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                </menuItem>
+                <menuItem title="Item 2" id="lay-XB-0oV">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                </menuItem>
+                <menuItem title="Item 3" id="m00-ru-6Po">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                </menuItem>
+            </items>
         </menu>
     </objects>
 </document>
