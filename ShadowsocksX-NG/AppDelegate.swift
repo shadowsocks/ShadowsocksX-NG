@@ -385,16 +385,18 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         showRunningModeMenuItem.state = defaults.bool(forKey: "ShowRunningModeOnStatusBar") ? 1 : 0
         
         var serverMenuText = "Servers".localized
-        for v in defaults.array(forKey: "ServerProfiles")! {
-            let profile = v as! [String:Any]
-            if profile["Id"] as! String == defaults.string(forKey: "ActiveServerProfileId")! {
-                var profileName :String
-                if profile["Remark"] as! String != "" {
-                    profileName = profile["Remark"] as! String
-                } else {
-                    profileName = profile["ServerHost"] as! String
+        if let serverProfiles = defaults.array(forKey: "ServerProfiles") {
+            for v in serverProfiles {
+                let profile = v as! [String:Any]
+                if profile["Id"] as! String == defaults.string(forKey: "ActiveServerProfileId")! {
+                    var profileName :String
+                    if profile["Remark"] as! String != "" {
+                        profileName = profile["Remark"] as! String
+                    } else {
+                        profileName = profile["ServerHost"] as! String
+                    }
+                    serverMenuText = "\(serverMenuText) - \(profileName)"
                 }
-                serverMenuText = "\(serverMenuText) - \(profileName)"
             }
         }
         serversMenuItem.title = serverMenuText
