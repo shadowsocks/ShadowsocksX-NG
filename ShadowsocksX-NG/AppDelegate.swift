@@ -395,6 +395,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                 } else {
                     profileName = p.serverHost
                 }
+                serverMenuText = "\(serverMenuText) - \(profileName)"
             }
         }
         serversMenuItem.title = serverMenuText
