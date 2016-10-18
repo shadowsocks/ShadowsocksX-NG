@@ -37,7 +37,7 @@ class ProxyPreferencesController: NSWindowController, NSTableViewDataSource, NST
     }
     
     @IBAction func ok(_ sender: NSObject){
-        ProxyConfHelper.disableProxy("hi")
+        ProxyConfHelper.disableProxy()
         
         let defaults = UserDefaults.standard
         defaults.setValue(selectedNetworkServices.allObjects, forKeyPath: "Proxy4NetworkServices")

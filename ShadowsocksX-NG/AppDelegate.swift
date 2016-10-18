@@ -58,7 +58,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             "ShadowsocksRunningMode": "auto",
             "LocalSocks5.ListenPort": NSNumber(value: 1086 as UInt16),
             "LocalSocks5.ListenAddress": "127.0.0.1",
-            "PacServer.ListenAddress": "127.0.0.1",
             "PacServer.ListenPort":NSNumber(value: 8090 as UInt16),
             "LocalSocks5.Timeout": NSNumber(value: 60 as UInt),
             "LocalSocks5.EnableUDPRelay": NSNumber(value: false as Bool),
@@ -171,10 +170,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         // Insert code here to tear down your application
         StopSSLocal()
         StopPrivoxy()
-        ProxyConfHelper.disableProxy("hi")
+        ProxyConfHelper.disableProxy()
         let defaults = UserDefaults.standard
         defaults.set(false, forKey: "ShadowsocksOn")
-        ProxyConfHelper.stopPACServer()
     }
     
     func applyConfig() {
@@ -186,16 +184,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             StartSSLocal()
             StartPrivoxy()
             if mode == "auto" {
-                ProxyConfHelper.enablePACProxy("hi")
+                ProxyConfHelper.enablePACProxy()
             } else if mode == "global" {
                 ProxyConfHelper.enableGlobalProxy()
             } else if mode == "manual" {
-                ProxyConfHelper.disableProxy("hi")
+                ProxyConfHelper.disableProxy()
             }
         } else {
             StopSSLocal()
             StopPrivoxy()
-            ProxyConfHelper.disableProxy("hi")
+            ProxyConfHelper.disableProxy()
         }
     }
     
