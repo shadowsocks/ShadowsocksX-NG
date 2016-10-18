@@ -20,8 +20,6 @@
 
 + (void)disableProxy;
 
-//+ (void)startPACServer:(NSString*) PACFilePath;
-//
-//+ (void)stopPACServer;
++ (void)startMonitorPAC;
 
 @end

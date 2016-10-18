@@ -162,6 +162,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         updateLaunchAtLoginMenu()
         
         ProxyConfHelper.install()
+        ProxyConfHelper.startMonitorPAC()
         applyConfig()
         SyncSSLocal()
     }
