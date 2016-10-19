@@ -14,6 +14,7 @@
 @implementation ProxyConfHelper
 
 GCDWebServer *webServer =nil;
+FSEventStreamRef fsEventStream;
 
 + (BOOL)isVersionOk {
     NSTask *task;
@@ -114,14 +115,18 @@ GCDWebServer *webServer =nil;
     }
 }
 
-+ (void)enablePACProxy:(NSString*) PACFilePath {
++ (NSString*)getPACFilePath {
+    return [NSString stringWithFormat:@"%@/%@", NSHomeDirectory(), @".ShadowsocksX-NG/gfwlist.js"];
+}
+
++ (void)enablePACProxy {
     //start server here and then using the string next line
     //next two lines can open gcdwebserver and work around pac file
-    NSString *PACURLString = [self startPACServer: PACFilePath];//hi 可以切换成定制pac文件路径来达成使用定制文件路径
-    NSURL* url = [NSURL URLWithString: PACURLString];
-//    NSString* urlString = [NSString stringWithFormat:@"%@/.ShadowsocksX-NG/gfwlist.js", NSHomeDirectory()];
-//    NSURL* url = [NSURL fileURLWithPath:urlString];
-
+    NSString* PACFilePath = [self getPACFilePath];
+    [self startPACServer: PACFilePath];
+    
+    NSURL* url = [NSURL URLWithString: [self getHttpPACUrl]];
+    
     NSMutableArray* args = [@[@"--mode", @"auto", @"--pac-url", [url absoluteString]]mutableCopy];
     
     [self addArguments4ManualSpecifyNetworkServices:args];
@@ -146,12 +151,9 @@ GCDWebServer *webServer =nil;
     [self stopPACServer];
 }
 
-+ (void)disableProxy:(NSString*) PACFilePath {
-//    带上所有参数是为了判断是否原有代理设置是否由ssx-ng设置的。如果是用户手工设置的其他配置，则不进行清空。
-//    NSString* urlString = [NSString stringWithFormat:@"%@/.ShadowsocksX-NG/gfwlist.js", NSHomeDirectory()];
-//    NSURL* url = [NSURL fileURLWithPath:urlString];
-    NSString *PACURLString = [self startPACServer: PACFilePath];//hi 可以切换成定制pac文件路径来达成使用定制文件路径
-    NSURL* url = [NSURL URLWithString: PACURLString];
++ (void)disableProxy {
+    // 带上所有参数是为了判断是否原有代理设置是否由ssx-ng设置的。如果是用户手工设置的其他配置，则不进行清空。
+    NSURL* url = [NSURL URLWithString: [self getHttpPACUrl]];
     NSUInteger port = [[NSUserDefaults standardUserDefaults]integerForKey:@"LocalSocks5.ListenPort"];
     
     NSMutableArray* args = [@[@"--mode", @"off"
@@ -163,28 +165,41 @@ GCDWebServer *webServer =nil;
     [self stopPACServer];
 }
 
-+ (NSString*)startPACServer:(NSString*) PACFilePath {
-    //接受参数为以后使用定制PAC文件
-    NSData * originalPACData;
++ (NSString*)getHttpPACUrl {
     NSString * routerPath = @"/proxy.pac";
-    if ([PACFilePath isEqual: @"hi"]) {//用默认路径来代替
-        PACFilePath = [NSString stringWithFormat:@"%@/%@", NSHomeDirectory(), @".ShadowsocksX-NG/gfwlist.js"];
-        originalPACData = [NSData dataWithContentsOfFile: [NSString stringWithFormat:@"%@/%@", NSHomeDirectory(), @".ShadowsocksX-NG/gfwlist.js"]];
-    }else{//用定制路径来代替
-        originalPACData = [NSData dataWithContentsOfFile: [NSString stringWithFormat:@"%@/%@/%@", NSHomeDirectory(), @".ShadowsocksX-NG", PACFilePath]];
-        routerPath = [NSString stringWithFormat:@"/%@",PACFilePath];
-    }
+    
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+
+    NSString * address = @"127.0.0.1";
+    int port = (short)[defaults integerForKey:@"PacServer.ListenPort"];
+    
+    return [NSString stringWithFormat:@"%@%@:%d%@",@"http://",address,port,routerPath];
+}
+
++ (void)startPACServer:(NSString*) PACFilePath {
     [self stopPACServer];
+    
+    NSString * routerPath = @"/proxy.pac";
+    
+    NSData* originalPACData = [NSData dataWithContentsOfFile:PACFilePath];
+    
     webServer = [[GCDWebServer alloc] init];
-    [webServer addHandlerForMethod:@"GET" path:routerPath requestClass:[GCDWebServerRequest class] processBlock:^GCDWebServerResponse *(GCDWebServerRequest *request) {
-        return [GCDWebServerDataResponse responseWithData: originalPACData contentType:@"application/x-ns-proxy-autoconfig"];
+    [webServer addHandlerForMethod:@"GET"
+                              path:routerPath
+                      requestClass:[GCDWebServerRequest class]
+                      processBlock:^GCDWebServerResponse *(GCDWebServerRequest *request)
+    {
+        GCDWebServerDataResponse* resp = [GCDWebServerDataResponse responseWithData:originalPACData
+                                                                        contentType:@"application/x-ns-proxy-autoconfig"];
+        return resp;
     }
      ];
+    
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    NSString * address = [defaults stringForKey:@"PacServer.ListenAddress"];
+    
     int port = (short)[defaults integerForKey:@"PacServer.ListenPort"];
+    
     [webServer startWithOptions:@{@"BindToLocalhost":@YES, @"Port":@(port)} error:nil];
-    return [NSString stringWithFormat:@"%@%@:%d%@",@"http://",address,port,routerPath];
 }
 
 + (void)stopPACServer {
@@ -192,6 +207,47 @@ GCDWebServer *webServer =nil;
     if ([webServer isRunning]) {
         [webServer stop];
     }
+}
+
+void onPACChange(
+                 ConstFSEventStreamRef streamRef,
+                 void *clientCallBackInfo,
+                 size_t numEvents,
+                 void *eventPaths,
+                 const FSEventStreamEventFlags eventFlags[],
+                 const FSEventStreamEventId eventIds[])
+{
+    NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+    if ([defaults boolForKey:@"ShadowsocksOn"]) {
+        if ([[defaults stringForKey:@"ShadowsocksRunningMode"] isEqualToString:@"auto"]) {
+            [ProxyConfHelper disableProxy];
+            [ProxyConfHelper enablePACProxy];
+        }
+    }
+}
+
++ (void)startMonitorPAC {
+    NSString* PACFilePath = [self getPACFilePath];
+    
+    if (fsEventStream) {
+        return;
+    }
+    CFStringRef mypath = (__bridge CFStringRef)(PACFilePath);
+    CFArrayRef pathsToWatch = CFArrayCreate(NULL, (const void **)&mypath, 1, NULL);
+    void *callbackInfo = NULL; // could put stream-specific data here.
+    CFAbsoluteTime latency = 3.0; /* Latency in seconds */
+    
+    /* Create the stream, passing in a callback */
+    fsEventStream = FSEventStreamCreate(NULL,
+                                        &onPACChange,
+                                        callbackInfo,
+                                        pathsToWatch,
+                                        kFSEventStreamEventIdSinceNow, /* Or a previous event ID */
+                                        latency,
+                                        kFSEventStreamCreateFlagNone /* Flags explained in reference */
+                                        );
+    FSEventStreamScheduleWithRunLoop(fsEventStream, [[NSRunLoop mainRunLoop] getCFRunLoop], (__bridge CFStringRef)NSDefaultRunLoopMode);
+    FSEventStreamStart(fsEventStream);
 }
 
 @end

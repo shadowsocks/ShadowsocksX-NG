@@ -58,7 +58,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             "ShadowsocksRunningMode": "auto",
             "LocalSocks5.ListenPort": NSNumber(value: 1086 as UInt16),
             "LocalSocks5.ListenAddress": "127.0.0.1",
-            "PacServer.ListenAddress": "127.0.0.1",
             "PacServer.ListenPort":NSNumber(value: 8090 as UInt16),
             "LocalSocks5.Timeout": NSNumber(value: 60 as UInt),
             "LocalSocks5.EnableUDPRelay": NSNumber(value: false as Bool),
@@ -163,6 +162,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         updateLaunchAtLoginMenu()
         
         ProxyConfHelper.install()
+        ProxyConfHelper.startMonitorPAC()
         applyConfig()
         SyncSSLocal()
     }
@@ -171,10 +171,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         // Insert code here to tear down your application
         StopSSLocal()
         StopPrivoxy()
-        ProxyConfHelper.disableProxy("hi")
+        ProxyConfHelper.disableProxy()
         let defaults = UserDefaults.standard
         defaults.set(false, forKey: "ShadowsocksOn")
-        ProxyConfHelper.stopPACServer()
     }
     
     func applyConfig() {
@@ -186,16 +185,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             StartSSLocal()
             StartPrivoxy()
             if mode == "auto" {
-                ProxyConfHelper.enablePACProxy("hi")
+                ProxyConfHelper.enablePACProxy()
             } else if mode == "global" {
                 ProxyConfHelper.enableGlobalProxy()
             } else if mode == "manual" {
-                ProxyConfHelper.disableProxy("hi")
+                ProxyConfHelper.disableProxy()
             }
         } else {
             StopSSLocal()
             StopPrivoxy()
-            ProxyConfHelper.disableProxy("hi")
+            ProxyConfHelper.disableProxy()
         }
     }
     
@@ -385,18 +384,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         showRunningModeMenuItem.state = defaults.bool(forKey: "ShowRunningModeOnStatusBar") ? 1 : 0
         
         var serverMenuText = "Servers".localized
-        if let serverProfiles = defaults.array(forKey: "ServerProfiles") {
-            for v in serverProfiles {
-                let profile = v as! [String:Any]
-                if profile["Id"] as! String == defaults.string(forKey: "ActiveServerProfileId")! {
-                    var profileName :String
-                    if profile["Remark"] as! String != "" {
-                        profileName = profile["Remark"] as! String
-                    } else {
-                        profileName = profile["ServerHost"] as! String
-                    }
-                    serverMenuText = "\(serverMenuText) - \(profileName)"
+
+        let mgr = ServerProfileManager.instance
+        for p in mgr.profiles {
+            if mgr.activeProfileId == p.uuid {
+                var profileName :String
+                if !p.remark.isEmpty {
+                    profileName = p.remark
+                } else {
+                    profileName = p.serverHost
                 }
+                serverMenuText = "\(serverMenuText) - \(profileName)"
             }
         }
         serversMenuItem.title = serverMenuText

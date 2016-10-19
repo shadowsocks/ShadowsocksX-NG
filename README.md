@@ -27,6 +27,10 @@ Then I rewrite the GUI code by swift.
 - XCode 8.0+
 - cocoapod 1.0.1+
 
+## Download
+
+From [here](https://github.com/shadowsocks/ShadowsocksX-NG/releases/)
+
 ## Fetures
 
 - Use ss-local from shadowsocks-libev 2.4.6
