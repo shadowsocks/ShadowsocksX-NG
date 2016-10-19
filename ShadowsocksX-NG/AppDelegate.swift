@@ -172,8 +172,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         StopSSLocal()
         StopPrivoxy()
         ProxyConfHelper.disableProxy()
-        let defaults = UserDefaults.standard
-        defaults.set(false, forKey: "ShadowsocksOn")
     }
     
     func applyConfig() {
