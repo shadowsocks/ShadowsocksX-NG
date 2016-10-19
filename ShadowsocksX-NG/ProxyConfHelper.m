@@ -166,7 +166,6 @@ GCDWebServer *webServer = nil;
     
     [self addArguments4ManualSpecifyNetworkServices:args];
     [self callHelper:args];
-    [self stopPACServer];
 }
 
 + (void)disableProxy:(NSString*) PACFilePath {
