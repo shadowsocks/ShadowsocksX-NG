@@ -11,7 +11,7 @@
         <window title="HTTP Proxy Preferences" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" oneShot="NO" releasedWhenClosed="NO" showsToolbarButton="NO" frameAutosaveName="" animationBehavior="default" id="vS3-DL-Nq3">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
             <rect key="contentRect" x="109" y="131" width="209" height="197"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1680" height="1027"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1920" height="1057"/>
             <view key="contentView" id="Qef-Mj-9z1">
                 <rect key="frame" x="0.0" y="0.0" width="209" height="197"/>
                 <autoresizingMask key="autoresizingMask"/>
@@ -60,7 +60,11 @@
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                         <connections>
-                            <binding destination="Adn-6l-wm4" name="value" keyPath="values.LocalHTTP.ListenAddress" id="YV3-cX-xGk"/>
+                            <binding destination="Adn-6l-wm4" name="value" keyPath="values.LocalHTTP.ListenAddress" id="TLb-4n-tsg">
+                                <dictionary key="options">
+                                    <bool key="NSContinuouslyUpdatesValue" value="YES"/>
+                                </dictionary>
+                            </binding>
                         </connections>
                     </textField>
                     <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="lD1-xm-Qy3">
@@ -71,7 +75,11 @@
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                         <connections>
-                            <binding destination="Adn-6l-wm4" name="value" keyPath="values.LocalHTTP.ListenPort" id="URg-d3-2U6"/>
+                            <binding destination="Adn-6l-wm4" name="value" keyPath="values.LocalHTTP.ListenPort" id="bVc-jE-7Ve">
+                                <dictionary key="options">
+                                    <bool key="NSContinuouslyUpdatesValue" value="YES"/>
+                                </dictionary>
+                            </binding>
                             <outlet property="formatter" destination="ji3-e7-HNW" id="xWV-vJ-7eq"/>
                         </connections>
                     </textField>
