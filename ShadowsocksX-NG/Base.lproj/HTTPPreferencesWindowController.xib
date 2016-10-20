@@ -60,7 +60,11 @@
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                         <connections>
-                            <binding destination="Adn-6l-wm4" name="value" keyPath="values.LocalHTTP.ListenAddress" id="YV3-cX-xGk"/>
+                            <binding destination="Adn-6l-wm4" name="value" keyPath="values.LocalHTTP.ListenAddress" id="TLb-4n-tsg">
+                                <dictionary key="options">
+                                    <bool key="NSContinuouslyUpdatesValue" value="YES"/>
+                                </dictionary>
+                            </binding>
                         </connections>
                     </textField>
                     <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="lD1-xm-Qy3">
@@ -71,7 +75,11 @@
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                         <connections>
-                            <binding destination="Adn-6l-wm4" name="value" keyPath="values.LocalHTTP.ListenPort" id="URg-d3-2U6"/>
+                            <binding destination="Adn-6l-wm4" name="value" keyPath="values.LocalHTTP.ListenPort" id="bVc-jE-7Ve">
+                                <dictionary key="options">
+                                    <bool key="NSContinuouslyUpdatesValue" value="YES"/>
+                                </dictionary>
+                            </binding>
                             <outlet property="formatter" destination="ji3-e7-HNW" id="xWV-vJ-7eq"/>
                         </connections>
                     </textField>
