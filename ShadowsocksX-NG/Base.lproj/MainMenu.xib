@@ -79,13 +79,13 @@
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="bMX-qn-Qwi"/>
-                            <menuItem title="Show Running Mode On Status Bar" id="CCV-hX-fVA">
+                            <menuItem title="Show Running Mode In Status Bar" id="CCV-hX-fVA">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
                                     <action selector="showRunningMode:" target="Voe-Tx-rLC" id="PxO-ut-PEx"/>
                                 </connections>
                             </menuItem>
-                            <menuItem title="Advance Proxy Preference..." id="sbx-yz-3lO">
+                            <menuItem title="Advanced Proxy Preferences..." id="sbx-yz-3lO">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
                                     <action selector="editProxyPreferences:" target="Voe-Tx-rLC" id="Jji-Ea-Sy8"/>
@@ -120,13 +120,13 @@
                         </items>
                     </menu>
                 </menuItem>
-                <menuItem title="Advance Preference ..." id="bZ3-fy-34d">
+                <menuItem title="Advanced Preferences ..." id="bZ3-fy-34d">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
                         <action selector="editAdvPreferences:" target="Voe-Tx-rLC" id="mEF-XS-HJE"/>
                     </connections>
                 </menuItem>
-                <menuItem title="HTTP Proxy Preference ..." id="uEp-Gz-cu0">
+                <menuItem title="HTTP Proxy Preferences ..." id="uEp-Gz-cu0">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
                         <action selector="editHTTPPreferences:" target="Voe-Tx-rLC" id="tkC-e3-PH9"/>
