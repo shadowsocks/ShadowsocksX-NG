@@ -1,13 +1,13 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="10117" systemVersion="15G31" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="11201" systemVersion="16A323" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="10117"/>
-        <plugIn identifier="com.apple.WebKitIBPlugin" version="10117"/>
+        <deployment identifier="macosx"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="11201"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="SWBQRCodeWindowController">
             <connections>
-                <outlet property="webView" destination="ojI-LR-jEw" id="bpE-vv-uIe"/>
+                <outlet property="imageView" destination="yRy-QH-TEe" id="aa5-Ri-k04"/>
                 <outlet property="window" destination="QvC-M9-y7g" id="HLy-eJ-5RD"/>
             </connections>
         </customObject>
@@ -16,24 +16,17 @@
         <window title="QR Code" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" restorable="NO" oneShot="NO" animationBehavior="default" id="QvC-M9-y7g">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES"/>
             <rect key="contentRect" x="566" y="456" width="250" height="250"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1440" height="877"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1680" height="1027"/>
             <view key="contentView" id="EiT-Mj-1SZ">
                 <rect key="frame" x="0.0" y="0.0" width="250" height="250"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <webView translatesAutoresizingMaskIntoConstraints="NO" id="ojI-LR-jEw">
+                    <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="yRy-QH-TEe">
                         <rect key="frame" x="0.0" y="0.0" width="250" height="250"/>
-                        <webPreferences key="preferences" defaultFontSize="12" defaultFixedFontSize="12">
-                            <nil key="identifier"/>
-                        </webPreferences>
-                    </webView>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" id="iAJ-tw-LNU"/>
+                    </imageView>
                 </subviews>
-                <constraints>
-                    <constraint firstAttribute="trailing" secondItem="ojI-LR-jEw" secondAttribute="trailing" id="ImJ-r1-FF9"/>
-                    <constraint firstAttribute="bottom" secondItem="ojI-LR-jEw" secondAttribute="bottom" id="LQv-2G-kyf"/>
-                    <constraint firstItem="ojI-LR-jEw" firstAttribute="leading" secondItem="EiT-Mj-1SZ" secondAttribute="leading" id="kok-J1-X08"/>
-                    <constraint firstItem="ojI-LR-jEw" firstAttribute="top" secondItem="EiT-Mj-1SZ" secondAttribute="top" id="voV-aN-Ggt"/>
-                </constraints>
             </view>
         </window>
     </objects>
