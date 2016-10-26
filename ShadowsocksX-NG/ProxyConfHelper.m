@@ -141,7 +141,7 @@ FSEventStreamRef fsEventStream;
     
     // Because issue #106 https://github.com/shadowsocks/ShadowsocksX-NG/issues/106
     // Comment below out.
-//    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"LocalHTTPOn"] && [[NSUserDefaults standardUserDefaults] boolForKey:@"LocalHTTP.FollowGlobel"]) {
+//    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"LocalHTTPOn"] && [[NSUserDefaults standardUserDefaults] boolForKey:@"LocalHTTP.FollowGlobal"]) {
 //        NSUInteger privoxyPort = [[NSUserDefaults standardUserDefaults]integerForKey:@"LocalHTTP.ListenPort"];
 //
 //        [args addObject:@"--privoxy-port"];
