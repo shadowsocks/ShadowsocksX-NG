@@ -137,7 +137,19 @@ NSDictionary<NSString *, id>* ParseSSURL(NSURL* url) {
 
     }else if ([urlString hasPrefix:@"ssr://"]){
         // ssr:// + base64(abc.xyz:12345:auth_sha1_v2:rc4-md5:tls1.2_ticket_auth:{base64(password)}/?obfsparam={base64(混淆参数(网址))}&remarks={base64(节点名称)})
+
+
         urlString = [urlString stringByReplacingOccurrencesOfString:@"ssr://" withString:@"" options:NSAnchoredSearch range:NSMakeRange(0, urlString.length)];
+        urlString = [urlString stringByReplacingOccurrencesOfString:@"-" withString:@"+"];
+        urlString = [urlString stringByReplacingOccurrencesOfString:@"_" withString:@"/"];
+        if ([urlString length]%4!=0) {
+            int n = 4 - [urlString length]%4;
+            if (1==n) {
+                urlString = [urlString stringByAppendingString:@"="];
+            } else if (2==n) {
+                urlString = [urlString stringByAppendingString:@"=="];
+            }
+        }
         NSData *data = [[NSData alloc] initWithBase64EncodedString:urlString options:0];
         NSString *decodedString = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
         urlString = decodedString;
@@ -163,12 +175,12 @@ NSDictionary<NSString *, id>* ParseSSURL(NSURL* url) {
                 NSRange lastParamSplit = [toSplitString rangeOfString:@"="];
                 if (lastParamSplit.location != NSNotFound) {
                     NSString *key = [toSplitString substringToIndex:lastParamSplit.location];
-                    NSString *value =  [[NSString alloc] initWithData:[[NSData alloc] initWithBase64EncodedString:[toSplitString substringFromIndex:lastParamSplit.location+1] options:0]encoding:NSUTF8StringEncoding];
+                    NSString *value =  [[NSString alloc] initWithData:[[NSData alloc] initWithBase64EncodedString:[[[toSplitString stringByReplacingOccurrencesOfString:@"-" withString:@"+"] stringByReplacingOccurrencesOfString:@"_" withString:@"/"]substringFromIndex:lastParamSplit.location+1] options:0]encoding:NSUTF8StringEncoding];
                     //                            NSString *value =  [toSplitString substringFromIndex:lastParamSplit.location+1];
                     [parserLastParamDict setValue: value forKey: key];
                 }
             }
-            NSLog(@"parserLastParamDict is %@",parserLastParamDict);
+//            NSLog(@"parserLastParamDict is %@",parserLastParamDict);
             
             //后面已经parser完成，接下来需要解析到profile里面
             //abc.xyz:12345:auth_sha1_v2:rc4-md5:tls1.2_ticket_auth:{base64(password)}
@@ -217,6 +229,7 @@ NSDictionary<NSString *, id>* ParseSSURL(NSURL* url) {
                  @"ssrObfsParam":ssrObfsParam,
                  @"ssrProtocol":ssrProtocol,
                  @"ssrProtocolParam":ssrProtocolParam,
+                 @"Remark":remarks,
                  };
         }
     }
