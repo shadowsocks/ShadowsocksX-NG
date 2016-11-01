@@ -8,13 +8,13 @@ Next Generation of [ShadowsocksX](https://github.com/shadowsocks/shadowsocks-iOS
 
 ## Why?
 
-It's hard to maintain the original implement. There are too many unused code in it. 
-It also embed ss-local source. It's crazy to maintain depandences of ss-local. 
-So it's hard to update ss-local version.
+It's hard to maintain the original implementation as there is too much unused code in it.
+It also embeds the ss-local source. It's crazy to maintain dependencies of ss-local.
+So it's hard to update the ss-local version.
 
-Now I just copy the ss-local from home brew. Run ss-local executable as a Launch Agent in background. 
-Serve pac js file as a file url. So there are only some souce code related to GUI left. 
-Then I rewrite the GUI code by swift.
+Now I just copied the ss-local from homebrew. Run ss-local executable as a Launch Agent in the background.
+Serve PAC js file as a file URL. So there is only some source code related to GUI left.
+Then I will rewrite the GUI code in Swift.
 
 ## Requirements
 
@@ -34,27 +34,27 @@ From [here](https://github.com/shadowsocks/ShadowsocksX-NG/releases/)
 ## Fetures
 
 - Use ss-local from shadowsocks-libev 2.4.6
-- Update PAC by download GFW List from github.
+- Update PAC by download GFW List from GitHub.
 - Show QRCode for current server profile.
 - Scan QRCode from screen.
 - Auto launch at login.
 - User rules for PAC.
 - Support OTA
-- An advance preferences panel to configure:
+- An advanced preferences panel to configure:
 	- Local socks5 listen address.
 	- Local socks5 listen port.
 	- Local socks5 timeout.
 	- If enable UDP relay.
-	- GFW List url.
-- Manual spesify network service profiles which would be configure the proxy.
+	- GFW List URL.
+- Manual specify network service profiles which would be configure the proxy.
 - Could reorder shadowsocks profiles by drag & drop in servers preferences panel.
 
 ## Different from orignal ShadowsocksX
 
-Run ss-local as backgroud service through launchd, not in app process.
-So after you quit the app, the ss-local maybe is still running. 
+Run ss-local as a background service through launchd, not as an in-app process.
+So after you quit the app, the ss-local maybe be still running.
 
-Add a manual mode which won't configure the system proxy settings. 
+Added a manual mode which won't configure the system proxy settings.
 Then you could configure your apps to use socks5 proxy manual.
 
 ## Contributing
@@ -69,5 +69,5 @@ ref: [GitFlow](http://nvie.com/posts/a-successful-git-branching-model/)
 
 ## License
 
-The project is released under the terms of GPLv3.
+The project is released under the terms of the GPLv3.
 

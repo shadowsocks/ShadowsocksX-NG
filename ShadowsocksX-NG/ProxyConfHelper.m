@@ -139,12 +139,14 @@ FSEventStreamRef fsEventStream;
     NSMutableArray* args = [@[@"--mode", @"global", @"--port"
                               , [NSString stringWithFormat:@"%lu", (unsigned long)port]]mutableCopy];
     
-    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"LocalHTTPOn"] && [[NSUserDefaults standardUserDefaults] boolForKey:@"LocalHTTP.FollowGlobel"]) {
-        NSUInteger privoxyPort = [[NSUserDefaults standardUserDefaults]integerForKey:@"LocalHTTP.ListenPort"];
-
-        [args addObject:@"--privoxy-port"];
-        [args addObject:[NSString stringWithFormat:@"%lu", (unsigned long)privoxyPort]];
-    }
+    // Because issue #106 https://github.com/shadowsocks/ShadowsocksX-NG/issues/106
+    // Comment below out.
+//    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"LocalHTTPOn"] && [[NSUserDefaults standardUserDefaults] boolForKey:@"LocalHTTP.FollowGlobel"]) {
+//        NSUInteger privoxyPort = [[NSUserDefaults standardUserDefaults]integerForKey:@"LocalHTTP.ListenPort"];
+//
+//        [args addObject:@"--privoxy-port"];
+//        [args addObject:[NSString stringWithFormat:@"%lu", (unsigned long)privoxyPort]];
+//    }
     
     [self addArguments4ManualSpecifyNetworkServices:args];
     [self callHelper:args];
