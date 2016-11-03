@@ -43,17 +43,27 @@ class PreferencesWindowController: NSWindowController
         profileMgr = ServerProfileManager.instance
         
         methodTextField.addItems(withObjectValues: [
+            "table",
+            "rc4",
+            "rc4-md5",
             "aes-128-cfb",
             "aes-192-cfb",
             "aes-256-cfb",
-            "des-cfb",
+            "aes-128-ctr",
+            "aes-192-ctr",
+            "aes-256-ctr",
             "bf-cfb",
+            "camellia-128-cfb",
+            "camellia-192-cfb",
+            "camellia-256-cfb",
             "cast5-cfb",
-            "rc4-md5",
-            "chacha20",
+            "des-cfb",
+            "idea-cfb",
+            "rc2-cfb",
+            "seed-cfb",
             "salsa20",
-            "rc4",
-            "table",
+            "chacha20",
+            "chacha20-ietf",
             ])
         
         profilesTableView.reloadData()
