@@ -28,12 +28,12 @@
                     </button>
                     <button translatesAutoresizingMaskIntoConstraints="NO" id="P4f-0N-7JI">
                         <rect key="frame" x="18" y="133" width="141" height="18"/>
-                        <buttonCell key="cell" type="check" title="Follow Globel Mode" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="ofk-Pc-c8f">
+                        <buttonCell key="cell" type="check" title="Follow Global Mode" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="ofk-Pc-c8f">
                             <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                             <font key="font" metaFont="system"/>
                         </buttonCell>
                         <connections>
-                            <binding destination="Adn-6l-wm4" name="value" keyPath="values.LocalHTTP.FollowGlobel" id="mwB-AA-WgF"/>
+                            <binding destination="Adn-6l-wm4" name="value" keyPath="values.LocalHTTP.FollowGlobal" id="mwB-AA-WgF"/>
                         </connections>
                     </button>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="CKF-K9-m8X">
