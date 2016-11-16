@@ -8,7 +8,7 @@
 
 import Foundation
 
-let SS_LOCAL_VERSION = "2.5.4"
+let SS_LOCAL_VERSION = "2.5.6.static"
 let PRIVOXY_VERSION = "3.0.26.static"
 let APP_SUPPORT_DIR = "/Library/Application Support/ShadowsocksX-NG/"
 let LAUNCH_AGENT_DIR = "/Library/LaunchAgents/"
@@ -320,3 +320,5 @@ func SyncPrivoxy() {
     }
     }
 }
+
+// MARK: dependency
