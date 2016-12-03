@@ -7,7 +7,7 @@
 //
 
 import Cocoa
-
+import Carbon
 
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDelegate {
@@ -18,7 +18,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     var proxyPreferencesWinCtrl: ProxyPreferencesController!
     var editUserRulesWinCtrl: UserRulesController!
     var httpPreferencesWinCtrl : HTTPPreferencesWindowController!
-    
+
+    let keyCode = kVK_ANSI_P
+    let modifierKeys = cmdKey+controlKey
+    var hotKeyRef: EventHotKeyRef?
+
     var launchAtLoginController: LaunchAtLoginController = LaunchAtLoginController()
     
     @IBOutlet weak var window: NSWindow!
@@ -135,8 +139,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                             userNote.subtitle = "By Handle SS URL".localized
                         }
                         userNote.informativeText = "Host: \(profile.serverHost)"
-                        " Port: \(profile.serverPort)"
-                        " Encription Method: \(profile.method)".localized
+                        //" Port: \(profile.serverPort)"
+                        //" Encription Method: \(profile.method)".localized
                         userNote.soundName = NSUserNotificationDefaultSoundName
                         
                         NSUserNotificationCenter.default
@@ -165,6 +169,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         ProxyConfHelper.startMonitorPAC()
         applyConfig()
         SyncSSLocal()
+
+        // Register global hotkey
+        registerHotkey()
     }
     
     func applicationWillTerminate(_ aNotification: Notification) {
@@ -172,8 +179,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         StopSSLocal()
         StopPrivoxy()
         ProxyConfHelper.disableProxy()
+        if let ref = hotKeyRef { UnregisterEventHotKey(ref) }
     }
-    
+
     func applyConfig() {
         let defaults = UserDefaults.standard
         let isOn = defaults.bool(forKey: "ShadowsocksOn")
@@ -195,7 +203,60 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             ProxyConfHelper.disableProxy()
         }
     }
-    
+
+    // MARK: - Hotkey Methods
+    func registerHotkey() -> Void {
+        var gMyHotKeyID = EventHotKeyID()
+        gMyHotKeyID.signature = OSType(fourCharCodeFrom(string: "sxng"))
+        gMyHotKeyID.id = UInt32(keyCode)
+
+        var eventType = EventTypeSpec()
+        eventType.eventClass = OSType(kEventClassKeyboard)
+        eventType.eventKind = OSType(kEventHotKeyPressed)
+
+        // Void pointer to `self`:
+        let context = Unmanaged.passUnretained(self).toOpaque()
+
+        // Install handler.
+        InstallEventHandler(GetApplicationEventTarget(), {(nextHanlder, theEvent, userContext) -> OSStatus in
+            // Extract pointer to `self` from void pointer:
+            let mySelf = Unmanaged<AppDelegate>.fromOpaque(userContext!).takeUnretainedValue()
+
+            switch Globals.proxyType {
+            case .pac:
+                Globals.proxyType = .global
+                UserDefaults.standard.setValue("global", forKey: "ShadowsocksRunningMode")
+                mySelf.updateRunningModeMenu()
+                mySelf.applyConfig()
+            case .global:
+                Globals.proxyType = .pac
+                UserDefaults.standard.setValue("auto", forKey: "ShadowsocksRunningMode")
+                mySelf.updateRunningModeMenu()
+                mySelf.applyConfig()
+            }
+
+            return noErr
+        }, 1, &eventType, context, nil)
+
+        // Register hotkey.
+        RegisterEventHotKey(UInt32(keyCode),
+                            UInt32(modifierKeys),
+                            gMyHotKeyID,
+                            GetApplicationEventTarget(),
+                            0,
+                            &hotKeyRef)
+    }
+
+    func fourCharCodeFrom(string: String) -> FourCharCode {
+        assert(string.characters.count == 4, "String length must be 4")
+        var result: FourCharCode = 0
+        for char in string.utf16 {
+            result = (result << 8) + FourCharCode(char)
+        }
+        return result
+    }
+
+    // MARK: - UI Methods
     @IBAction func toggleRunning(_ sender: NSMenuItem) {
         let defaults = UserDefaults.standard
         var isOn = defaults.bool(forKey: "ShadowsocksOn")
