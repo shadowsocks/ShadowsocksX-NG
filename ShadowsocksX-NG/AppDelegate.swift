@@ -95,6 +95,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                     }
                 }
                 self.updateServersMenu()
+                self.updateRunningModeMenu()
                 SyncSSLocal()
             }
         )
