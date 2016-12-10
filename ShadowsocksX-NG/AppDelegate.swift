@@ -42,7 +42,23 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     @IBOutlet var serversPreferencesMenuItem: NSMenuItem!
     
     @IBOutlet weak var lanchAtLoginMenuItem: NSMenuItem!
-    
+
+    @IBOutlet weak var hudWindow: NSPanel!
+    @IBOutlet weak var panelView: NSView!
+    @IBOutlet weak var isNameTextField: NSTextField!
+
+    let kHudFadeInDuration: Double = 0.25
+    let kHudFadeOutDuration: Double = 0.5
+    let kHudDisplayDuration: Double = 2.0
+
+    let kHudAlphaValue: CGFloat = 0.75
+    let kHudCornerRadius: CGFloat = 18.0
+    let kHudHorizontalMargin: CGFloat = 30
+    let kHudHeight: CGFloat = 90.0
+
+    var timerToFadeOut: Timer? = nil
+    var fadingOut: Bool = false
+
     var statusItem: NSStatusItem!
     
     static let StatusItemIconWidth:CGFloat = 20
@@ -226,14 +242,18 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             case .pac:
                 Globals.proxyType = .global
                 UserDefaults.standard.setValue("global", forKey: "ShadowsocksRunningMode")
+                mySelf.isNameTextField.stringValue = "Gobal Mode"
                 mySelf.updateRunningModeMenu()
                 mySelf.applyConfig()
             case .global:
                 Globals.proxyType = .pac
                 UserDefaults.standard.setValue("auto", forKey: "ShadowsocksRunningMode")
+                mySelf.isNameTextField.stringValue = "Auto Mode"
                 mySelf.updateRunningModeMenu()
                 mySelf.applyConfig()
             }
+
+            mySelf.fadeInHud()
 
             return noErr
         }, 1, &eventType, context, nil)
@@ -571,3 +591,93 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     }
 }
 
+extension AppDelegate {
+    func fadeInHud() -> Void {
+        if timerToFadeOut != nil {
+            timerToFadeOut?.invalidate()
+            timerToFadeOut = nil
+        }
+
+        fadingOut = false
+
+        hudWindow.orderFrontRegardless()
+
+        CATransaction.begin()
+        CATransaction.setAnimationDuration(kHudFadeInDuration)
+        CATransaction.setCompletionBlock { self.didFadeIn() }
+        panelView.layer?.opacity = 1.0
+        CATransaction.commit()
+    }
+
+    func didFadeIn() -> Void {
+        timerToFadeOut = Timer.scheduledTimer(
+            timeInterval: kHudDisplayDuration,
+            target: self,
+            selector: #selector(fadeOutHud),
+            userInfo: nil,
+            repeats: false)
+    }
+
+    func fadeOutHud() -> Void {
+        fadingOut = true
+
+        CATransaction.begin()
+        CATransaction.setAnimationDuration(kHudFadeOutDuration)
+        CATransaction.setCompletionBlock { self.didFadeOut() }
+        panelView.layer?.opacity = 0.0
+        CATransaction.commit()
+    }
+
+    func didFadeOut() -> Void {
+        if fadingOut {
+            self.hudWindow.orderOut(nil)
+        }
+        fadingOut = false
+    }
+
+    func setupHud() -> Void {
+        isNameTextField.stringValue = "Global Mode"
+        isNameTextField.sizeToFit()
+
+        var labelFrame: CGRect = isNameTextField.frame
+        var hudWindowFrame: CGRect = hudWindow.frame
+        hudWindowFrame.size.width = labelFrame.size.width + kHudHorizontalMargin * 2
+        hudWindowFrame.size.height = kHudHeight
+
+        let screenRect: NSRect = NSScreen.screens()![0].visibleFrame
+        hudWindowFrame.origin.x = (screenRect.size.width - hudWindowFrame.size.width) / 2
+        hudWindowFrame.origin.y = (screenRect.size.height - hudWindowFrame.size.height) / 2
+        hudWindow.setFrame(hudWindowFrame, display: true)
+
+        var viewFrame: NSRect = hudWindowFrame;
+        viewFrame.origin.x = 0
+        viewFrame.origin.y = 0
+        panelView.frame = viewFrame
+
+        labelFrame.origin.x = kHudHorizontalMargin
+        labelFrame.origin.y = (hudWindowFrame.size.height - labelFrame.size.height) / 2
+        isNameTextField.frame = labelFrame
+    }
+
+    func initUIComponent() -> Void {
+        hudWindow.isOpaque = false
+        hudWindow.backgroundColor = .clear
+        hudWindow.level = Int(CGWindowLevelForKey(.utilityWindow)) + 1000
+        hudWindow.styleMask = .borderless
+        hudWindow.hidesOnDeactivate = false
+        hudWindow.collectionBehavior = .canJoinAllSpaces
+
+        let viewLayer: CALayer = CALayer()
+        viewLayer.backgroundColor = CGColor.init(red: 0.05, green: 0.05, blue: 0.05, alpha: kHudAlphaValue)
+        viewLayer.cornerRadius = kHudCornerRadius
+        panelView.wantsLayer = true
+        panelView.layer = viewLayer
+        panelView.layer?.opacity = 0.0
+
+        setupHud()
+    }
+    
+    override func awakeFromNib() {
+        initUIComponent()
+    }
+}
