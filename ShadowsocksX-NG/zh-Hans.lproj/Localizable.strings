@@ -44,9 +44,9 @@
 
 "Turn Shadowsocks On" = "打开 Shadowsocks";
 
-"Proxy - Auto By PAC" = "代理 - PAC自动";
+"Proxy - Auto By PAC" = "代理 - PAC自动（⌃⌘P）";
 
-"Proxy - Global" = "代理 - 全局";
+"Proxy - Global" = "代理 - 全局（⌃⌘P）";
 
 "Proxy - Manual" = "代理 - 手动";
 
