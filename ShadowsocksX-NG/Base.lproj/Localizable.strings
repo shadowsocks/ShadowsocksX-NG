@@ -26,7 +26,7 @@
 
 "By Handle SS URL" = "By Handle SS URL";
 
-" Encription Method: \(profile.method)" = " Encription Method: \(profile.method)";
+" Encryption Method: \(profile.method)" = " Encryption Method: \(profile.method)";
 
 "Current server profile is not valid." = "Current server profile is not valid.";
 
