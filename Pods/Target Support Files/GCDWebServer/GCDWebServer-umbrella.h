@@ -1,4 +1,6 @@
+#ifdef __OBJC__
 #import <Cocoa/Cocoa.h>
+#endif
 
 #import "GCDWebServer.h"
 #import "GCDWebServerConnection.h"
