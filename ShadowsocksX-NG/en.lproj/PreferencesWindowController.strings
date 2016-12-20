@@ -17,8 +17,8 @@
 /* Class = "NSButtonCell"; title = "Enable OTA"; ObjectID = "hRZ-Rp-I5e"; */
 "hRZ-Rp-I5e.title" = "Enable OTA";
 
-/* Class = "NSButtonCell"; title = "Cacnel"; ObjectID = "j03-9E-uHW"; */
-"j03-9E-uHW.title" = "Cacnel";
+/* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "j03-9E-uHW"; */
+"j03-9E-uHW.title" = "Cancel";
 
 /* Class = "NSTextFieldCell"; title = "Password:"; ObjectID = "kil-xC-HPD"; */
 "kil-xC-HPD.title" = "Password:";
