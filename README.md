@@ -1,10 +1,16 @@
 # ShadowsocksX-NG-R
 
-Current version is 1.3.4-R
+Current version is 1.3.8-R8
+
+Continuesly release under 1.3.8-R8-buildVersion
 
 [![Build Status](https://travis-ci.org/qinyuhang/ShadowsocksX-NG.svg?branches=develop)](https://travis-ci.org/qinyuhang/ShadowsocksX-NG)
 
-Next Generation of [ShadowsocksX](https://github.com/shadowsocks/shadowsocks-iOS)
+Next Generation of [ShadowsocksX](https://github.com/shadowsocks/shadowsocks-iOS) with SSR support.
+
+After Download Please check the GPG signature!
+
+[My pub key](https://github.com/qinyuhang/Pubkey)
 
 ## Why?
 
@@ -37,13 +43,13 @@ Then I rewrite the GUI code by swift.
 - User rules for PAC.
 - Support OTA
 - An advance preferences panel to configure:
-	- Local socks5 listen address.
-	- Local socks5 listen port.
-	- Local socks5 timeout.
-	- If enable UDP relay.
-	- GFW List url.
-	- White List url.(will be added after solve PAC not work on macOS 10.12)
-	- Auto update PAC list & white list.
+  - Local socks5 listen address.
+  - Local socks5 listen port.
+  - Local socks5 timeout.
+  - If enable UDP relay.
+  - GFW List url.
+  - White List url.(will be added after solve PAC not work on macOS 10.12)
+  - Auto update PAC list & white list.
 - Manual spesify network service profiles which would be configure the proxy.
 - Could reorder shadowsocks profiles by drag & drop in servers preferences panel.
 
