@@ -10,7 +10,8 @@ import Cocoa
 
 
 
-class ServerProfile: NSObject {
+class ServerProfile: NSObject, NSCopying {
+    
     var uuid: String
     
     var serverHost: String = ""
@@ -26,6 +27,17 @@ class ServerProfile: NSObject {
     
     init(uuid: String) {
         self.uuid = uuid
+    }
+    
+    public func copy(with zone: NSZone? = nil) -> Any {
+        let copy = ServerProfile()
+        copy.serverHost = self.serverHost
+        copy.serverPort = self.serverPort
+        copy.method = self.method
+        copy.password = self.password
+        copy.remark = self.remark
+        copy.ota = self.ota
+        return copy;
     }
     
     static func fromDictionary(_ data:[String:AnyObject]) -> ServerProfile {

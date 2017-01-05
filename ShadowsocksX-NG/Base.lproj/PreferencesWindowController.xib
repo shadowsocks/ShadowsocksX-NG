@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="11201" systemVersion="16A323" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="11762" systemVersion="16C67" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="11201"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="11762"/>
         <capability name="box content view" minToolsVersion="7.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="PreferencesWindowController" customModule="ShadowsocksX_NG" customModuleProvider="target">
@@ -26,7 +27,7 @@
         <window title="Server Preferences" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" restorable="NO" oneShot="NO" animationBehavior="default" id="F0z-JX-Cv5">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES"/>
             <rect key="contentRect" x="423" y="365" width="590" height="330"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1680" height="1027"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="2560" height="1418"/>
             <view key="contentView" id="se5-gp-TjO">
                 <rect key="frame" x="0.0" y="0.0" width="590" height="330"/>
                 <autoresizingMask key="autoresizingMask"/>
@@ -70,6 +71,7 @@
                                     <connections>
                                         <outlet property="dataSource" destination="-2" id="fz3-X6-PbB"/>
                                         <outlet property="delegate" destination="-2" id="6zR-v1-wZj"/>
+                                        <outlet property="menu" destination="QmU-th-vjP" id="J0d-c9-pYs"/>
                                     </connections>
                                 </tableView>
                             </subviews>
@@ -339,6 +341,17 @@ DQ
             <real key="minimum" value="1"/>
             <real key="maximum" value="65535"/>
         </numberFormatter>
+        <menu showsStateColumn="NO" id="QmU-th-vjP">
+            <items>
+                <menuItem title="Duplicate" id="bl9-lq-u9V">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <connections>
+                        <action selector="duplicate:" target="-2" id="dEb-Dt-yBW"/>
+                    </connections>
+                </menuItem>
+            </items>
+            <point key="canvasLocation" x="-25.5" y="171.5"/>
+        </menu>
     </objects>
     <resources>
         <image name="NSAddTemplate" width="11" height="11"/>

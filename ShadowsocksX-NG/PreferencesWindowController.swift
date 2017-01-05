@@ -114,6 +114,20 @@ class PreferencesWindowController: NSWindowController
         window?.performClose(self)
     }
     
+    @IBAction func duplicate(_ sender: Any) {
+        let profile = profileMgr.profiles[profilesTableView.clickedRow]
+        let duplicateProfile = profile.copy() as! ServerProfile
+        duplicateProfile.uuid = UUID().uuidString
+        profileMgr.profiles.insert(duplicateProfile, at: profilesTableView.clickedRow+1)
+        profilesTableView.beginUpdates()
+        let index = IndexSet(integer: profileMgr.profiles.count-1)
+        profilesTableView.insertRows(at: index, withAnimation: .effectFade)
+        self.profilesTableView.scrollRowToVisible(profilesTableView.clickedRow+1)
+        self.profilesTableView.selectRowIndexes(index, byExtendingSelection: false)
+        profilesTableView.endUpdates()
+        updateProfileBoxVisible()
+    }
+    
     @IBAction func copyCurrentProfileURL2Pasteboard(_ sender: NSButton) {
         let index = profilesTableView.selectedRow
         if  index >= 0 {
