@@ -121,9 +121,22 @@ class ServerProfile: NSObject {
     }
     
     func URL() -> Foundation.URL? {
-        let parts = "\(method):\(password)@\(serverHost):\(serverPort)"
-        let base64String = parts.data(using: String.Encoding.utf8)?
-            .base64EncodedString(options: NSData.Base64EncodingOptions())
+        var url = URLComponents()
+
+        url.host = serverHost
+        url.user = method
+        url.password = password
+        url.port = Int(serverPort)
+
+        url.queryItems = [URLQueryItem(name: "Remark", value: remark),
+                          URLQueryItem(name: "OTA", value: ota.description)]
+
+        let parts = url.string?.replacingOccurrences(
+            of: "//", with: "",
+            options: String.CompareOptions.anchored, range: nil)
+
+        let base64String = parts?.data(using: String.Encoding.utf8)?
+            .base64EncodedString(options: Data.Base64EncodingOptions())
         if var s = base64String {
             s = s.trimmingCharacters(in: CharacterSet(charactersIn: "="))
             return Foundation.URL(string: "ss://\(s)")

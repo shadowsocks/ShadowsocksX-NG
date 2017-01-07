@@ -26,7 +26,7 @@ class ServerProfileTests: XCTestCase {
                                                 "ServerPort": 8388,
                                                 "Method": "aes-256-cfb",
                                                 "Password": "password",
-                                                "Remark": "Prism",
+                                                "Remark": "Protoss Prism",
                                                 "OTA": true])
         XCTAssertNotNil(profile)
     }
@@ -45,6 +45,8 @@ class ServerProfileTests: XCTestCase {
         XCTAssertEqual(parsed?["ServerPort"] as? UInt16, profile.serverPort)
         XCTAssertEqual(parsed?["Method"] as? String, profile.method)
         XCTAssertEqual(parsed?["Password"] as? String, profile.password)
+        XCTAssertEqual(parsed?["Remark"] as? String, profile.remark)
+        XCTAssertEqual(parsed?["OTA"] as? Bool, profile.ota)
     }
 
     func testPerformanceExample() {

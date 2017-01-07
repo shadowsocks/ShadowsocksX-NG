@@ -28,8 +28,12 @@ func ParseSSURL(_ url: URL?) -> [String: Any?]? {
 
     func padBase64(string: String) -> String {
         var length = string.characters.count
-        length = 4 - length % 4 + length
-        return string.padding(toLength: length, withPad: "=", startingAt: 0)
+        if length % 4 == 0 {
+            return string
+        } else {
+            length = 4 - length % 4 + length
+            return string.padding(toLength: length, withPad: "=", startingAt: 0)
+        }
     }
 
     if url?.host == nil {
