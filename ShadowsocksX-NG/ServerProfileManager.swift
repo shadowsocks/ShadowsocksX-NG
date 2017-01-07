@@ -21,7 +21,7 @@ class ServerProfileManager: NSObject {
         let defaults = UserDefaults.standard
         if let _profiles = defaults.array(forKey: "ServerProfiles") {
             for _profile in _profiles {
-                let profile = ServerProfile.fromDictionary(_profile as! [String : AnyObject])
+                let profile = ServerProfile.fromDictionary(_profile as! [String: Any])
                 profiles.append(profile)
             }
         }

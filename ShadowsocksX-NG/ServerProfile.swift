@@ -28,7 +28,7 @@ class ServerProfile: NSObject {
         self.uuid = uuid
     }
     
-    static func fromDictionary(_ data:[String:AnyObject]) -> ServerProfile {
+    static func fromDictionary(_ data:[String: Any?]) -> ServerProfile {
         let cp = {
             (profile: ServerProfile) in
             profile.serverHost = data["ServerHost"] as! String
