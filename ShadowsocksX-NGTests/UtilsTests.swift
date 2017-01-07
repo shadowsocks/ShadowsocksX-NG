@@ -45,6 +45,23 @@ class UtilsTests: XCTestCase {
         XCTAssertEqual(profile?["ServerPort"] as? UInt16, 8388)
         XCTAssertEqual(profile?["Method"] as? String, "aes-256-cfb")
         XCTAssertEqual(profile?["Password"] as? String, "password")
+        XCTAssertEqual(profile?["Remark"] as? String, "Prism")
+        XCTAssertEqual(profile?["OTA"] as? Bool, true)
+    }
+
+    func testParseSSURLwithPlainURLandAnotherQuery() {
+        let url = URL(string: "ss://aes-256-cfb:password@example.com:8388?Remark=Prism&OTA=0")
+
+        let profile = ParseSSURL(url)
+
+        XCTAssertNotNil(profile)
+
+        XCTAssertEqual(profile?["ServerHost"] as? String, "example.com")
+        XCTAssertEqual(profile?["ServerPort"] as? UInt16, 8388)
+        XCTAssertEqual(profile?["Method"] as? String, "aes-256-cfb")
+        XCTAssertEqual(profile?["Password"] as? String, "password")
+        XCTAssertEqual(profile?["Remark"] as? String, "Prism")
+        XCTAssertEqual(profile?["OTA"] as? Bool, false)
     }
 
     func testParseSSURLwithBase64EncodedURL() {
@@ -73,6 +90,8 @@ class UtilsTests: XCTestCase {
         XCTAssertEqual(profile?["ServerPort"] as? UInt16, 8388)
         XCTAssertEqual(profile?["Method"] as? String, "aes-256-cfb")
         XCTAssertEqual(profile?["Password"] as? String, "password")
+        XCTAssertEqual(profile?["Remark"] as? String, "Prism")
+        XCTAssertEqual(profile?["OTA"] as? Bool, true)
     }
 
     func testParseSSURLwithEmptyURL() {

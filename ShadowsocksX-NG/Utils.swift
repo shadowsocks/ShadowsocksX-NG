@@ -36,23 +36,36 @@ func ParseSSURL(_ url: URL?) -> [String: Any?]? {
         return nil
     }
 
-    var plainUrl: URL! = url
+    var plainUrl: URLComponents! = URLComponents(url: url!,
+                                                 resolvingAgainstBaseURL: false)
 
     let data = Data(base64Encoded: padBase64(string: url!.host!),
                     options: Data.Base64DecodingOptions())
 
     if data != nil {
         let decoded = String(data: data!, encoding: String.Encoding.utf8)
-        plainUrl = URL(string: "ss://\(decoded!)")
+        plainUrl = URLComponents(string: "ss://\(decoded!)")
 
         if plainUrl == nil {
             return nil
         }
     }
 
+    let remark = plainUrl.queryItems?
+        .filter({ $0.name == "Remark" }).first?.value
+    let otaStr = plainUrl.queryItems?
+        .filter({ $0.name == "OTA" }).first?.value
+
+    var ota: Bool? = nil
+    if otaStr != nil {
+        ota = NSString(string: otaStr!).boolValue
+    }
+
     return ["ServerHost": plainUrl.host,
             "ServerPort": UInt16(plainUrl.port!),
             "Method": plainUrl.user,
             "Password": plainUrl.password,
+            "Remark": remark,
+            "OTA": ota,
     ]
 }
