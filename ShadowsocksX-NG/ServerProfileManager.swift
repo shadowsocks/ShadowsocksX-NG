@@ -107,8 +107,8 @@ class ServerProfileManager: NSObject {
                             if (item["obfsparam"] != nil){
                                 profile.ssrObfsParam = item["obfsparam"] as! String
                             }
-                            if (item["protoparam"] != nil){
-                                profile.ssrProtocolParam = item["protoparam"] as! String
+                            if (item["protocolparam"] != nil){
+                                profile.ssrProtocolParam = item["protocolparam"] as! String
                             }
                         }
                         self.profiles.append(profile)
@@ -163,7 +163,7 @@ class ServerProfileManager: NSObject {
                     configProfile.setValue(profile.ssrObfsParam, forKey: "obfsparam")
                 }
                 if profile.ssrProtocolParam != "" {
-                    configProfile.setValue(profile.ssrProtocolParam, forKey: "protoparam")
+                    configProfile.setValue(profile.ssrProtocolParam, forKey: "protocolparam")
                 }
             }
             if profile.ssrGroup != "" {
