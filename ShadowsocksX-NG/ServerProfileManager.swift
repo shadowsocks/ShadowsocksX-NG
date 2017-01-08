@@ -113,8 +113,8 @@ class ServerProfileManager: NSObject {
                         }
                         self.profiles.append(profile)
                         self.save()
-                        NotificationCenter.default.post(name: Notification.Name(rawValue: NOTIFY_SERVER_PROFILES_CHANGED), object: nil)
                     }
+                    NotificationCenter.default.post(name: Notification.Name(rawValue: NOTIFY_SERVER_PROFILES_CHANGED), object: nil)
                     let configsCount = (jsonArr1.object(forKey: "configs") as! [[String: AnyObject]]).count
                     let notification = NSUserNotification()
                     notification.title = "Import Server Profile succeed!".localized
