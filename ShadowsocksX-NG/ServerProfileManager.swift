@@ -80,6 +80,7 @@ class ServerProfileManager: NSObject {
         openPanel.canChooseFiles = true
         openPanel.becomeKey()
         openPanel.begin { (result) -> Void in
+            // TODO not freeze the screen when running import process
             if (result == NSFileHandlingPanelOKButton && (openPanel.url) != nil) {
                 let fileManager = FileManager.default
                 let filePath:String = (openPanel.url?.path)!
@@ -97,14 +98,17 @@ class ServerProfileManager: NSObject {
                         profile.method = item["method"] as! String
                         profile.password = item["password"] as! String
                         profile.remark = item["remarks"] as! String
+                        if(item["group"] != nil){
+                            profile.ssrGroup = item["group"] as! String
+                        }
                         if (item["obfs"] != nil) {
                             profile.ssrObfs = item["obfs"] as! String
                             profile.ssrProtocol = item["protocol"] as! String
                             if (item["obfsparam"] != nil){
                                 profile.ssrObfsParam = item["obfsparam"] as! String
                             }
-                            if (item["protocolparam"] != nil){
-                                profile.ssrProtocolParam = item["protocolparam"] as! String
+                            if (item["protoparam"] != nil){
+                                profile.ssrProtocolParam = item["protoparam"] as! String
                             }
                         }
                         self.profiles.append(profile)
@@ -159,8 +163,11 @@ class ServerProfileManager: NSObject {
                     configProfile.setValue(profile.ssrObfsParam, forKey: "obfsparam")
                 }
                 if profile.ssrProtocolParam != "" {
-                    configProfile.setValue(profile.ssrProtocolParam, forKey: "protoclparam")
+                    configProfile.setValue(profile.ssrProtocolParam, forKey: "protoparam")
                 }
+            }
+            if profile.ssrGroup != "" {
+                configProfile.setValue(profile.ssrGroup, forKey: "group")
             }
             configsArray.add(configProfile)
         }

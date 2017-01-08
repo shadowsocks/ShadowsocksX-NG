@@ -648,7 +648,36 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             if !p.isValid() {
                 item.isEnabled = false
             }
+            
             item.action = #selector(AppDelegate.selectServer)
+            
+            if !p.ssrGroup.isEmpty {
+                if((serversMenuItem.submenu?.item(withTitle: p.ssrGroup)) == nil){
+                    let groupSubmenu = NSMenu()
+                    let groupSubmenuItem = NSMenuItem()
+                    groupSubmenuItem.title = p.ssrGroup
+//if i == 2 {// to delete
+                    serversMenuItem.submenu?.addItem(groupSubmenuItem)
+                    serversMenuItem.submenu?.setSubmenu(groupSubmenu, for: groupSubmenuItem)
+                    if mgr.activeProfileId == p.uuid {
+                        item.state = 1
+                        groupSubmenuItem.state = 1
+                    }
+                    groupSubmenuItem.submenu?.addItem(item)
+                    i += 1
+                    continue
+//}// to delete
+                }
+                else{
+                    if mgr.activeProfileId == p.uuid {
+                        item.state = 1
+                        serversMenuItem.submenu?.item(withTitle: p.ssrGroup)?.state = 1
+                    }
+                    serversMenuItem.submenu?.item(withTitle: p.ssrGroup)?.submenu?.addItem(item)
+                    i += 1
+                    continue
+                }
+            }
             
             serversMenuItem.submenu?.addItem(item)
             i += 1

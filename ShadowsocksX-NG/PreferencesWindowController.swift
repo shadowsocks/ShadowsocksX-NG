@@ -27,6 +27,7 @@ class PreferencesWindowController: NSWindowController
     @IBOutlet weak var duplicateProfileButton: NSButton!
     @IBOutlet weak var passwordTextField: NSTextField!
     @IBOutlet weak var remarkTextField: NSTextField!
+    @IBOutlet weak var groupTextField: NSTextField!
     
     @IBOutlet weak var otaCheckBoxBtn: NSButton!
     
@@ -231,6 +232,7 @@ class PreferencesWindowController: NSWindowController
             ObfsTextField.bind("value", to: editingProfile, withKeyPath: "ssrObfs", options: [NSContinuouslyUpdatesValueBindingOption: true])
             
             ObfsParamTextField.bind("value", to: editingProfile, withKeyPath: "ssrObfsParam", options: [NSContinuouslyUpdatesValueBindingOption: true])
+            groupTextField.bind("value", to: editingProfile, withKeyPath: "ssrGroup", options: [NSContinuouslyUpdatesValueBindingOption: true])
             
             otaCheckBoxBtn.bind("value", to: editingProfile, withKeyPath: "ota"
                 , options: [NSContinuouslyUpdatesValueBindingOption: true])

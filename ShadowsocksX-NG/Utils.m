@@ -136,7 +136,7 @@ NSDictionary<NSString *, id>* ParseSSURL(NSURL* url) {
         }
 
     }else if ([urlString hasPrefix:@"ssr://"]){
-        // ssr:// + base64(abc.xyz:12345:auth_sha1_v2:rc4-md5:tls1.2_ticket_auth:{base64(password)}/?obfsparam={base64(混淆参数(网址))}&remarks={base64(节点名称)})
+        // ssr:// + base64(abc.xyz:12345:auth_sha1_v2:rc4-md5:tls1.2_ticket_auth:{base64(password)}/?obfsparam={base64(混淆参数(网址))}&protoparam={base64(混淆协议)}&remarks={base64(节点名称)}&group={base64(分组名)})
 
 
         urlString = [urlString stringByReplacingOccurrencesOfString:@"ssr://" withString:@"" options:NSAnchoredSearch range:NSMakeRange(0, urlString.length)];
@@ -210,14 +210,17 @@ NSDictionary<NSString *, id>* ParseSSURL(NSURL* url) {
             NSString *ssrObfsParam = @"";
             NSString *remarks = @"";
             NSString *ssrProtocolParam = @"";
+            NSString *ssrGroup = @"";
             for (NSString *key in parserLastParamDict) {
                 NSLog(@"key: %@ value: %@", key, parserLastParamDict[key]);
                 if ([key  isEqual: @"obfsparam"]) {
                     ssrObfsParam = parserLastParamDict[key];
                 } else if ([key  isEqual: @"remarks"]) {
                     remarks = parserLastParamDict[key];
-                } else if([key isEqual:@"protocolparam"]){
+                } else if([key isEqual:@"protoparam"]){
                     ssrProtocolParam = parserLastParamDict[key];
+                } else if([key isEqual:@"group"]){
+                    ssrGroup = parserLastParamDict[key];
                 }
             }
         
@@ -230,6 +233,7 @@ NSDictionary<NSString *, id>* ParseSSURL(NSURL* url) {
                  @"ssrProtocol":ssrProtocol,
                  @"ssrProtocolParam":ssrProtocolParam,
                  @"Remark":remarks,
+                 @"Group":ssrGroup,
                  };
         }
     }
