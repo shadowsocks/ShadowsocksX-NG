@@ -134,7 +134,7 @@ GCDWebServer *webServer = nil;
     NSMutableArray* args = [@[@"--mode", @"global", @"--port"
                               , [NSString stringWithFormat:@"%lu", (unsigned long)port]]mutableCopy];
     
-    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"LocalHTTPOn"] && [[NSUserDefaults standardUserDefaults] boolForKey:@"LocalHTTP.FollowGlobel"]) {
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"LocalHTTPOn"] && [[NSUserDefaults standardUserDefaults] boolForKey:@"LocalHTTP.FollowGlobal"]) {
         NSUInteger privoxyPort = [[NSUserDefaults standardUserDefaults]integerForKey:@"LocalHTTP.ListenPort"];
 
         [args addObject:@"--privoxy-port"];
