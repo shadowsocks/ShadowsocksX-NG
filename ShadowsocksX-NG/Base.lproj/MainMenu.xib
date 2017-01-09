@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="11201" systemVersion="16A323" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="11762" systemVersion="16D17a" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="11201"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="11762"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="NSApplication">
@@ -17,6 +17,7 @@
                 <outlet property="RunningStatusMenuItem" destination="fzk-mE-CEV" id="R4x-gK-Qcw"/>
                 <outlet property="ShowNetworkSpeedItem" destination="a3h-uQ-DuO" id="OLq-K8-rEO"/>
                 <outlet property="autoModeMenuItem" destination="r07-Gu-aEz" id="9aH-pQ-Rgi"/>
+                <outlet property="checkUpdateMenuItem" destination="wyZ-4G-qg9" id="Sva-xA-VQY"/>
                 <outlet property="connectAtLaunchMenuItem" destination="aB3-cf-5j0" id="kW6-UF-38P"/>
                 <outlet property="exportAllServerProfileItem" destination="6k0-gn-DQv" id="1xA-cd-5Ia"/>
                 <outlet property="globalModeMenuItem" destination="Mw3-Jm-eXA" id="ar5-Yx-3ze"/>
@@ -212,6 +213,12 @@
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
                         <action selector="feedback:" target="Voe-Tx-rLC" id="ogn-lf-bqE"/>
+                    </connections>
+                </menuItem>
+                <menuItem title="Check Updates" id="wyZ-4G-qg9">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <connections>
+                        <action selector="checkForUpdate:" target="Voe-Tx-rLC" id="HSc-jw-aqr"/>
                     </connections>
                 </menuItem>
                 <menuItem title="About" id="LgB-6g-Gba">

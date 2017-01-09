@@ -48,6 +48,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     @IBOutlet weak var lanchAtLoginMenuItem: NSMenuItem!
     @IBOutlet weak var connectAtLaunchMenuItem: NSMenuItem!
     @IBOutlet weak var ShowNetworkSpeedItem: NSMenuItem!
+    @IBOutlet weak var checkUpdateMenuItem: NSMenuItem!
     
     // MARK: Variables
     var statusItemView:StatusItemView!
@@ -206,6 +207,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         if defaults.bool(forKey: "ConnectAtLaunch") {
             toggleRunning(toggleRunningMenuItem)
         }
+        // Version Check!
+        checkForUpdate(mustShowAlert: false)
     }
 
     func applicationWillTerminate(_ aNotification: Notification) {
@@ -468,6 +471,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         NSWorkspace.shared().open(URL(string: "https://github.com/qinyuhang/ShadowsocksX-NG/issues")!)
     }
     
+    @IBAction func checkForUpdate(_ sender: NSMenuItem) {
+        checkForUpdate(mustShowAlert: true)
+    }
+    
     @IBAction func showAbout(_ sender: NSMenuItem) {
         NSApp.orderFrontStandardAboutPanel(sender);
         NSApp.activate(ignoringOtherApps: true)
@@ -718,6 +725,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
 //            speedMonitor = nil
 //            statusItem?.length = 20
 //        }
+    }
+    
+    func checkForUpdate(mustShowAlert: Bool) -> Void {
+        DispatchQueue.global().async {
+            DispatchQueue.main.async {
+                _ = VersionChecker().checkNewVersion(showAlert: mustShowAlert)
+            }
+        }
     }
     
     // MARK: 

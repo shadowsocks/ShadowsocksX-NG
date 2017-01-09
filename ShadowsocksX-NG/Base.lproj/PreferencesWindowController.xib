@@ -293,7 +293,7 @@
                                     </textFieldCell>
                                 </textField>
                                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" translatesAutoresizingMaskIntoConstraints="NO" id="8zX-44-xj8">
-                                    <rect key="frame" x="55" y="105" width="46" height="17"/>
+                                    <rect key="frame" x="55" y="102" width="46" height="17"/>
                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Group:" id="j0N-8s-9Z3">
                                         <font key="font" metaFont="system"/>
                                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -309,7 +309,7 @@
                                 <constraint firstItem="KdT-hY-ALS" firstAttribute="leading" secondItem="CbS-wf-XMN" secondAttribute="leading" id="7wS-bA-EZx"/>
                                 <constraint firstItem="R4F-j7-GkK" firstAttribute="leading" secondItem="ef4-8J-eFn" secondAttribute="leading" id="8H4-fq-Si2"/>
                                 <constraint firstItem="P1H-Vl-P4W" firstAttribute="leading" secondItem="8zX-44-xj8" secondAttribute="trailing" constant="12" id="9Nc-BF-7f1"/>
-                                <constraint firstItem="8zX-44-xj8" firstAttribute="top" secondItem="EgC-0w-FPq" secondAttribute="bottom" constant="21" id="E6W-yf-hGQ"/>
+                                <constraint firstItem="8zX-44-xj8" firstAttribute="top" secondItem="EgC-0w-FPq" secondAttribute="bottom" constant="24" id="E6W-yf-hGQ"/>
                                 <constraint firstItem="q3C-S0-iNn" firstAttribute="top" secondItem="ZXA-oi-Zv3" secondAttribute="bottom" constant="20" id="FEG-Xh-U87"/>
                                 <constraint firstItem="6ha-OP-X4G" firstAttribute="top" secondItem="dl9-Pk-Krw" secondAttribute="bottom" constant="22" id="FMk-4S-m3v"/>
                                 <constraint firstItem="CbS-wf-XMN" firstAttribute="leading" secondItem="q3C-S0-iNn" secondAttribute="leading" id="FNr-O1-HJY"/>
@@ -331,7 +331,7 @@
                                 <constraint firstItem="P1H-Vl-P4W" firstAttribute="trailing" secondItem="9CP-zt-WuH" secondAttribute="trailing" id="QGr-BM-E7I"/>
                                 <constraint firstItem="ZXA-oi-Zv3" firstAttribute="trailing" secondItem="q3C-S0-iNn" secondAttribute="trailing" id="QwO-x4-05P"/>
                                 <constraint firstItem="5ze-PG-cOA" firstAttribute="trailing" secondItem="CbS-wf-XMN" secondAttribute="trailing" id="Riv-KQ-heB"/>
-                                <constraint firstItem="8zX-44-xj8" firstAttribute="bottom" secondItem="P1H-Vl-P4W" secondAttribute="bottom" constant="-5" id="SiB-oY-d4m"/>
+                                <constraint firstItem="8zX-44-xj8" firstAttribute="bottom" secondItem="P1H-Vl-P4W" secondAttribute="bottom" constant="-2" id="SiB-oY-d4m"/>
                                 <constraint firstItem="ZXA-oi-Zv3" firstAttribute="leading" secondItem="Qfe-Ql-iCO" secondAttribute="trailing" constant="8" symbolic="YES" id="ThC-cn-3Ti"/>
                                 <constraint firstItem="5ze-PG-cOA" firstAttribute="leading" secondItem="CbS-wf-XMN" secondAttribute="leading" id="WQF-hJ-RpZ"/>
                                 <constraint firstItem="Qfe-Ql-iCO" firstAttribute="baseline" secondItem="ZXA-oi-Zv3" secondAttribute="baseline" id="WTh-JA-YlZ"/>
