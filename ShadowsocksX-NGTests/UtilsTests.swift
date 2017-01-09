@@ -24,7 +24,7 @@ class UtilsTests: XCTestCase {
     func testParseSSURLwithPlainURL() {
         let url = URL(string: "ss://aes-256-cfb:password@example.com:8388")
 
-        let profile = ParseSSURL(url)
+        let profile = ServerProfile(url: url)?.toDictionary()
 
         XCTAssertNotNil(profile)
 
@@ -37,7 +37,7 @@ class UtilsTests: XCTestCase {
     func testParseSSURLwithPlainURLandQuery() {
         let url = URL(string: "ss://aes-256-cfb:password@example.com:8388?Remark=Prism&OTA=true")
 
-        let profile = ParseSSURL(url)
+        let profile = ServerProfile(url: url)?.toDictionary()
 
         XCTAssertNotNil(profile)
 
@@ -52,7 +52,7 @@ class UtilsTests: XCTestCase {
     func testParseSSURLwithPlainURLandAnotherQuery() {
         let url = URL(string: "ss://aes-256-cfb:password@example.com:8388?Remark=Prism&OTA=0")
 
-        let profile = ParseSSURL(url)
+        let profile = ServerProfile(url: url)?.toDictionary()
 
         XCTAssertNotNil(profile)
 
@@ -68,7 +68,7 @@ class UtilsTests: XCTestCase {
         // "ss://aes-256-cfb:password@example.com:8388"
         let url = URL(string: "ss://YWVzLTI1Ni1jZmI6cGFzc3dvcmRAZXhhbXBsZS5jb206ODM4OA")
 
-        let profile = ParseSSURL(url)
+        let profile = ServerProfile(url: url)?.toDictionary()
 
         XCTAssertNotNil(profile)
 
@@ -82,7 +82,7 @@ class UtilsTests: XCTestCase {
         // "ss://aes-256-cfb:password@example.com:8388?Remark=Prism&OTA=true"
         let url = URL(string: "ss://YWVzLTI1Ni1jZmI6cGFzc3dvcmRAZXhhbXBsZS5jb206ODM4OD9SZW1hcms9UHJpc20mT1RBPXRydWU")
 
-        let profile = ParseSSURL(url)
+        let profile = ServerProfile(url: url)?.toDictionary()
 
         XCTAssertNotNil(profile)
 
@@ -97,7 +97,7 @@ class UtilsTests: XCTestCase {
     func testParseSSURLwithEmptyURL() {
         let url = URL(string: "ss://")
 
-        let profile = ParseSSURL(url)
+        let profile = ServerProfile(url: url)
 
         XCTAssertNil(profile)
     }
@@ -105,7 +105,7 @@ class UtilsTests: XCTestCase {
     func testParseSSURLwithInvalidURL() {
         let url = URL(string: "ss://invalid url")
 
-        let profile = ParseSSURL(url)
+        let profile = ServerProfile(url: url)
 
         XCTAssertNil(profile)
     }
@@ -114,7 +114,7 @@ class UtilsTests: XCTestCase {
         // "ss://invalid url"
         let url = URL(string: "ss://aW52YWxpZCB1cmw")
 
-        let profile = ParseSSURL(url)
+        let profile = ServerProfile(url: url)
 
         XCTAssertNil(profile)
     }

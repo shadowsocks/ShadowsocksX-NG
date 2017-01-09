@@ -37,7 +37,7 @@ class ServerProfileTests: XCTestCase {
     }
 
     func testServerProfileURL() {
-        let parsed = ParseSSURL(profile.URL())
+        let parsed = ServerProfile(url: profile.URL())?.toDictionary()
 
         XCTAssertNotNil(parsed)
 
@@ -47,6 +47,17 @@ class ServerProfileTests: XCTestCase {
         XCTAssertEqual(parsed?["Password"] as? String, profile.password)
         XCTAssertEqual(parsed?["Remark"] as? String, profile.remark)
         XCTAssertEqual(parsed?["OTA"] as? Bool, profile.ota)
+    }
+
+    func testServerProfileInitFromURL() {
+        let newProfile = ServerProfile.init(url: profile.URL())
+
+        XCTAssertEqual(newProfile?.serverHost, profile.serverHost)
+        XCTAssertEqual(newProfile?.serverPort, profile.serverPort)
+        XCTAssertEqual(newProfile?.method, profile.method)
+        XCTAssertEqual(newProfile?.password, profile.password)
+        XCTAssertEqual(newProfile?.remark, profile.remark)
+        XCTAssertEqual(newProfile?.ota, profile.ota)
     }
 
     func testPerformanceExample() {
