@@ -8,7 +8,7 @@
 
 import Foundation
 
-let SS_LOCAL_VERSION = "2.4.6"
+let SS_LOCAL_VERSION = "2.5.6"
 let PRIVOXY_VERSION = "3.0.26.static"
 let APP_SUPPORT_DIR = "/Library/Application Support/ShadowsocksX-NG/"
 let LAUNCH_AGENT_DIR = "/Library/LaunchAgents/"
@@ -114,7 +114,8 @@ func InstallSSLocal() {
     let homeDir = NSHomeDirectory()
     let appSupportDir = homeDir+APP_SUPPORT_DIR
     if !fileMgr.fileExists(atPath: appSupportDir + "ss-local-\(SS_LOCAL_VERSION)/ss-local")
-    || !fileMgr.fileExists(atPath: appSupportDir + "libcrypto.1.0.0.dylib") {
+    || !fileMgr.fileExists(atPath: appSupportDir + "libcrypto.1.0.0.dylib")
+    || !fileMgr.fileExists(atPath: appSupportDir + "libpcre.1.dylib") {
         let bundle = Bundle.main
         let installerPath = bundle.path(forResource: "install_ss_local.sh", ofType: nil)
         let task = Process.launchedProcess(launchPath: installerPath!, arguments: [""])
