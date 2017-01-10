@@ -8,7 +8,9 @@
 
 import Cocoa
 
-class ServerProfile: NSObject {
+
+class ServerProfile: NSObject, NSCopying {
+    
     var uuid: String
 
     var serverHost: String = ""
@@ -75,8 +77,19 @@ class ServerProfile: NSObject {
             ota = NSString(string: otaStr).boolValue
         }
     }
-
-    static func fromDictionary(_ data:[String: Any?]) -> ServerProfile {
+    
+    public func copy(with zone: NSZone? = nil) -> Any {
+        let copy = ServerProfile()
+        copy.serverHost = self.serverHost
+        copy.serverPort = self.serverPort
+        copy.method = self.method
+        copy.password = self.password
+        copy.remark = self.remark
+        copy.ota = self.ota
+        return copy;
+    }
+    
+    static func fromDictionary(_ data:[String:Any?]) -> ServerProfile {
         let cp = {
             (profile: ServerProfile) in
             profile.serverHost = data["ServerHost"] as! String
