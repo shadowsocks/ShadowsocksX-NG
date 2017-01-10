@@ -23,3 +23,12 @@ extension Data {
         return hexBytes.joined(separator: "")
     }
 }
+
+enum ProxyType {
+    case pac
+    case global
+}
+
+struct Globals {
+    static var proxyType = ProxyType.pac
+}

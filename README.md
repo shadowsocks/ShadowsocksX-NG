@@ -57,6 +57,8 @@ So after you quit the app, the ss-local maybe be still running.
 Added a manual mode which won't configure the system proxy settings.
 Then you could configure your apps to use socks5 proxy manual.
 
+Added global Keyboard shortcut <kbd>⌃</kbd> + <kbd>⌘</kbd> + <kbd>P</kbd> to switch between `global` mode and `auto` mode.
+
 ## Contributing
 
 Contributions must be available on a separately named branch based on the latest version of the main branch develop.

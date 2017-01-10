@@ -199,7 +199,39 @@ public struct URLEncoding: ParameterEncoding {
         var allowedCharacterSet = CharacterSet.urlQueryAllowed
         allowedCharacterSet.remove(charactersIn: "\(generalDelimitersToEncode)\(subDelimitersToEncode)")
 
-        return string.addingPercentEncoding(withAllowedCharacters: allowedCharacterSet) ?? string
+        var escaped = ""
+
+        //==========================================================================================================
+        //
+        //  Batching is required for escaping due to an internal bug in iOS 8.1 and 8.2. Encoding more than a few
+        //  hundred Chinese characters causes various malloc error crashes. To avoid this issue until iOS 8 is no
+        //  longer supported, batching MUST be used for encoding. This introduces roughly a 20% overhead. For more
+        //  info, please refer to:
+        //
+        //      - https://github.com/Alamofire/Alamofire/issues/206
+        //
+        //==========================================================================================================
+
+        if #available(iOS 8.3, *) {
+            escaped = string.addingPercentEncoding(withAllowedCharacters: allowedCharacterSet) ?? string
+        } else {
+            let batchSize = 50
+            var index = string.startIndex
+
+            while index != string.endIndex {
+                let startIndex = index
+                let endIndex = string.index(index, offsetBy: batchSize, limitedBy: string.endIndex) ?? string.endIndex
+                let range = startIndex..<endIndex
+
+                let substring = string.substring(with: range)
+
+                escaped += substring.addingPercentEncoding(withAllowedCharacters: allowedCharacterSet) ?? substring
+
+                index = endIndex
+            }
+        }
+
+        return escaped
     }
 
     private func query(_ parameters: [String: Any]) -> String {
@@ -277,6 +309,34 @@ public struct JSONEncoding: ParameterEncoding {
 
         do {
             let data = try JSONSerialization.data(withJSONObject: parameters, options: options)
+
+            if urlRequest.value(forHTTPHeaderField: "Content-Type") == nil {
+                urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            }
+
+            urlRequest.httpBody = data
+        } catch {
+            throw AFError.parameterEncodingFailed(reason: .jsonEncodingFailed(error: error))
+        }
+
+        return urlRequest
+    }
+
+    /// Creates a URL request by encoding the JSON object and setting the resulting data on the HTTP body.
+    ///
+    /// - parameter urlRequest: The request to apply the JSON object to.
+    /// - parameter jsonObject: The JSON object to apply to the request.
+    ///
+    /// - throws: An `Error` if the encoding process encounters an error.
+    ///
+    /// - returns: The encoded request.
+    public func encode(_ urlRequest: URLRequestConvertible, withJSONObject jsonObject: Any? = nil) throws -> URLRequest {
+        var urlRequest = try urlRequest.asURLRequest()
+
+        guard let jsonObject = jsonObject else { return urlRequest }
+
+        do {
+            let data = try JSONSerialization.data(withJSONObject: jsonObject, options: options)
 
             if urlRequest.value(forHTTPHeaderField: "Content-Type") == nil {
                 urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
