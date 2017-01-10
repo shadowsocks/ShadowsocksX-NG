@@ -121,9 +121,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                 var isChanged = false
                 
                 for url in urls {
-                    let profielDict = ParseSSURL(url)
-                    if let profielDict = profielDict {
-                        let profile = ServerProfile.fromDictionary(profielDict as [String : AnyObject])
+                    if let profile = ServerProfile(url: url) {
                         mgr.profiles.append(profile)
                         isChanged = true
                         
