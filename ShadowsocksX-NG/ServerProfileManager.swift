@@ -99,8 +99,8 @@ class ServerProfileManager: NSObject {
                         profile.remark = item["remarks"] as! String
                         self.profiles.append(profile)
                         self.save()
-                        NotificationCenter.default.post(name: NSNotification.Name(rawValue: NOTIFY_SERVER_PROFILES_CHANGED), object: nil)
                     }
+                    NotificationCenter.default.post(name: NSNotification.Name(rawValue: NOTIFY_SERVER_PROFILES_CHANGED), object: nil)
                     let configsCount = (jsonArr1.object(forKey: "configs") as! [[String: AnyObject]]).count
                     let notification = NSUserNotification()
                     notification.title = "Import Server Profile succeed!".localized
@@ -123,7 +123,7 @@ class ServerProfileManager: NSObject {
         //读取example文件，删掉configs里面的配置，再用NSDictionary填充到configs里面
         let fileManager = FileManager.default
         
-        let filePath:String = Bundle.main.bundlePath + "/Contents/Resources/example-gui-config.json"
+        let filePath:String = Bundle.main.path(forResource: "example-gui-config", ofType: "json")!
         let data = fileManager.contents(atPath: filePath)
         let readString = NSString(data: data!, encoding: String.Encoding.utf8.rawValue)!
         let readStringData = readString.data(using: String.Encoding.utf8.rawValue)
@@ -168,7 +168,7 @@ class ServerProfileManager: NSObject {
     
     class func showExampleConfigFile() {
         //copy file to ~/Downloads folder
-        let filePath:String = Bundle.main.bundlePath + "/Contents/Resources/example-gui-config.json"
+        let filePath:String = Bundle.main.path(forResource: "example-gui-config", ofType: "json")!
         let fileMgr = FileManager.default
         let dataPath = NSHomeDirectory() + "/Downloads"
         let destPath = dataPath + "/example-gui-config.json"
