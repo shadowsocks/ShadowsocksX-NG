@@ -48,9 +48,16 @@ class PreferencesWindowController: NSWindowController
             "aes-256-cfb",
             "des-cfb",
             "bf-cfb",
+            "camellia-128-cfb",
+            "camellia-192-cfb",
+            "camellia-256-cfb",
+            "idea-cfb",
             "cast5-cfb",
+            "rc2-cfb",
             "rc4-md5",
+            "seed-cfb",
             "chacha20",
+            "chacha20-ietf",
             "salsa20",
             "rc4",
             "table",
@@ -112,6 +119,20 @@ class PreferencesWindowController: NSWindowController
     
     @IBAction func cancel(_ sender: NSButton) {
         window?.performClose(self)
+    }
+    
+    @IBAction func duplicate(_ sender: Any) {
+        let profile = profileMgr.profiles[profilesTableView.clickedRow]
+        let duplicateProfile = profile.copy() as! ServerProfile
+        duplicateProfile.uuid = UUID().uuidString
+        profileMgr.profiles.insert(duplicateProfile, at: profilesTableView.clickedRow+1)
+        profilesTableView.beginUpdates()
+        let index = IndexSet(integer: profileMgr.profiles.count-1)
+        profilesTableView.insertRows(at: index, withAnimation: .effectFade)
+        self.profilesTableView.scrollRowToVisible(profilesTableView.clickedRow+1)
+        self.profilesTableView.selectRowIndexes(index, byExtendingSelection: false)
+        profilesTableView.endUpdates()
+        updateProfileBoxVisible()
     }
     
     @IBAction func copyCurrentProfileURL2Pasteboard(_ sender: NSButton) {
