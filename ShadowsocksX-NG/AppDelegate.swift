@@ -494,7 +494,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     func updateRunningModeMenu() {
         let defaults = UserDefaults.standard
         let mode = defaults.string(forKey: "ShadowsocksRunningMode")
-//<<<<<<< HEAD
         var serverMenuText = "Servers".localized
         
         let mgr = ServerProfileManager.instance
@@ -508,20 +507,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                 if let latency = p.latency{
                     serverMenuText += "  - \(latency)ms"
                 }
-//=======
-//
-//        var serverMenuText = "Servers".localized
-//        for v in defaults.array(forKey: "ServerProfiles")! {
-//            let profile = v as! [String:Any]
-//            if profile["Id"] as! String == defaults.string(forKey: "ActiveServerProfileId")! {
-//                var profileName :String
-//                if profile["Remark"] as! String != "" {
-//                    profileName = profile["Remark"] as! String
-//                } else {
-//                    profileName = profile["ServerHost"] as! String
-//>>>>>>> shadowsocks/develop
-//                }
-//                serverMenuText = "\(serverMenuText) - \(profileName)"
             }
         }
 
@@ -664,7 +649,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                     let groupSubmenu = NSMenu()
                     let groupSubmenuItem = NSMenuItem()
                     groupSubmenuItem.title = p.ssrGroup
-//if i == 2 {// to delete
                     serversMenuItem.submenu?.addItem(groupSubmenuItem)
                     serversMenuItem.submenu?.setSubmenu(groupSubmenu, for: groupSubmenuItem)
                     if mgr.activeProfileId == p.uuid {
@@ -674,7 +658,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                     groupSubmenuItem.submenu?.addItem(item)
                     i += 1
                     continue
-//}// to delete
                 }
                 else{
                     if mgr.activeProfileId == p.uuid {
