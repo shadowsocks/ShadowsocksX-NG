@@ -19,7 +19,10 @@ class ServerProfile: NSObject, NSCopying {
     var password:String = ""
     var remark:String = ""
     var ota: Bool = false // onetime authentication
-
+    
+    var enabledKcptun: Bool = false
+    var kcptunProfile = KcptunProfile()
+    
     override init() {
         uuid = UUID().uuidString
     }
@@ -104,6 +107,9 @@ class ServerProfile: NSObject, NSCopying {
             if let ota = data["OTA"] {
                 profile.ota = ota as! Bool
             }
+            if let kcptunData = data["KcptunProfile"] {
+                profile.kcptunProfile =  KcptunProfile.fromDictionary(kcptunData as! [String:Any?])
+            }
         }
 
         if let id = data["Id"] as? String {
@@ -126,21 +132,38 @@ class ServerProfile: NSObject, NSCopying {
         d["Password"] = password as AnyObject?
         d["Remark"] = remark as AnyObject?
         d["OTA"] = ota as AnyObject?
+        d["EnabledKcptun"] = enabledKcptun as AnyObject
+        d["KcptunProfile"] = kcptunProfile.toDictionary() as AnyObject
         return d
     }
 
     func toJsonConfig() -> [String: AnyObject] {
-        var conf: [String: AnyObject] = ["server": serverHost as AnyObject,
-                                         "server_port": NSNumber(value: serverPort as UInt16),
-                                         "password": password as AnyObject,
+        var conf: [String: AnyObject] = ["password": password as AnyObject,
                                          "method": method as AnyObject,]
-
+        
         let defaults = UserDefaults.standard
         conf["local_port"] = NSNumber(value: UInt16(defaults.integer(forKey: "LocalSocks5.ListenPort")) as UInt16)
         conf["local_address"] = defaults.string(forKey: "LocalSocks5.ListenAddress") as AnyObject?
         conf["timeout"] = NSNumber(value: UInt32(defaults.integer(forKey: "LocalSocks5.Timeout")) as UInt32)
         conf["auth"] = NSNumber(value: ota as Bool)
+        
+        if enabledKcptun {
+            let localHost = defaults.string(forKey: "Kcptun.LocalHost")
+            let localPort = uint16(defaults.integer(forKey: "Kcptun.LocalPort"))
+            
+            conf["server"] = localHost as AnyObject
+            conf["server_port"] = NSNumber(value: localPort as UInt16)
+        } else {
+            conf["server"] = serverHost as AnyObject
+            conf["server_port"] = NSNumber(value: serverPort as UInt16)
+        }
 
+        return conf
+    }
+    
+    func toKcptunJsonConfig() -> [String: AnyObject] {
+        var conf = kcptunProfile.toJsonConfig()
+        conf["remoteaddr"] = "\(serverHost):\(serverPort)" as AnyObject
         return conf
     }
 
