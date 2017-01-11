@@ -38,6 +38,8 @@
 		9B3FFF541D09E2D10019A709 /* proxy_conf_helper in Resources */ = {isa = PBXBuildFile; fileRef = 9B3FFF441D09CD3B0019A709 /* proxy_conf_helper */; };
 		9B9CBCAF1E263B1600FC61AA /* libpcre.1.dylib in Resources */ = {isa = PBXBuildFile; fileRef = 9B9CBCAD1E263A6600FC61AA /* libpcre.1.dylib */; };
 		9B9CBCA61E25E1DB00FC61AA /* KcptunProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B9CBCA51E25E1DB00FC61AA /* KcptunProfile.swift */; };
+		9B9CBCA81E26312E00FC61AA /* install_kcptun.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9B9CBCA71E26310E00FC61AA /* install_kcptun.sh */; };
+		9B9CBCAA1E2633CB00FC61AA /* kcptun_client in Resources */ = {isa = PBXBuildFile; fileRef = 9B9CBCA91E2633CB00FC61AA /* kcptun_client */; };
 		9BA04B231D23D5A5005AAD7F /* ProxyConfTool.m in Sources */ = {isa = PBXBuildFile; fileRef = 9BA04B221D23D5A5005AAD7F /* ProxyConfTool.m */; };
 		9BA04B261D24044D005AAD7F /* ProxyPreferencesController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BA04B241D24044D005AAD7F /* ProxyPreferencesController.swift */; };
 		9BB706A71D1B982300551F0E /* SWBApplication.m in Sources */ = {isa = PBXBuildFile; fileRef = 9BB706A51D1B982300551F0E /* SWBApplication.m */; };
@@ -153,6 +155,8 @@
 		9B3FFF511D09DBA20019A709 /* ShadowsocksX-NG-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ShadowsocksX-NG-Bridging-Header.h"; sourceTree = "<group>"; };
 		9B9CBCAD1E263A6600FC61AA /* libpcre.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libpcre.1.dylib; sourceTree = "<group>"; };
 		9B9CBCA51E25E1DB00FC61AA /* KcptunProfile.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KcptunProfile.swift; sourceTree = "<group>"; };
+		9B9CBCA71E26310E00FC61AA /* install_kcptun.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = install_kcptun.sh; sourceTree = "<group>"; };
+		9B9CBCA91E2633CB00FC61AA /* kcptun_client */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = kcptun_client; sourceTree = "<group>"; };
 		9BA04B211D23D5A5005AAD7F /* ProxyConfTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ProxyConfTool.h; sourceTree = "<group>"; };
 		9BA04B221D23D5A5005AAD7F /* ProxyConfTool.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ProxyConfTool.m; sourceTree = "<group>"; };
 		9BA04B241D24044D005AAD7F /* ProxyPreferencesController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ProxyPreferencesController.swift; sourceTree = "<group>"; };
@@ -236,6 +240,7 @@
 			isa = PBXGroup;
 			children = (
 				9B9CBCAD1E263A6600FC61AA /* libpcre.1.dylib */,
+				9B9CBCA91E2633CB00FC61AA /* kcptun_client */,
 				08FCA0FE1E24BE1A0070984F /* example-gui-config.json */,
 				C6D4298E1DA75988002A5711 /* install_privoxy.sh */,
 				C6D4298F1DA75988002A5711 /* privoxy */,
@@ -254,6 +259,7 @@
 				9B07EFAA1D048E880052D9DF /* menu_icon_disabled.png */,
 				9B07EFAB1D048E880052D9DF /* menu_icon_disabled@2x.png */,
 				9BEEF0651D04CB8500FC52B3 /* install_ss_local.sh */,
+				9B9CBCA71E26310E00FC61AA /* install_kcptun.sh */,
 				9BEEF0661D04CE8D00FC52B3 /* start_ss_local.sh */,
 				9BEEF0671D04CE9A00FC52B3 /* stop_ss_local.sh */,
 				9BEEF0681D04CFE500FC52B3 /* reload_conf_ss_local.sh */,
@@ -483,6 +489,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				9B9CBCAF1E263B1600FC61AA /* libpcre.1.dylib in Resources */,
+				9B9CBCA81E26312E00FC61AA /* install_kcptun.sh in Resources */,
+				9B9CBCAA1E2633CB00FC61AA /* kcptun_client in Resources */,
 				9BE8FBBF1D0B211600CAFD01 /* libcrypto.1.0.0.dylib in Resources */,
 				9B3FFF541D09E2D10019A709 /* proxy_conf_helper in Resources */,
 				C6E28E951DA79705004F8330 /* HTTPPreferencesWindowController.xib in Resources */,

@@ -9,6 +9,7 @@
 import Foundation
 
 let SS_LOCAL_VERSION = "2.5.6"
+let KCPTUN_CLIENT_VERSION = "20161222"
 let PRIVOXY_VERSION = "3.0.26.static"
 let APP_SUPPORT_DIR = "/Library/Application Support/ShadowsocksX-NG/"
 let LAUNCH_AGENT_DIR = "/Library/LaunchAgents/"
@@ -124,6 +125,23 @@ func InstallSSLocal() {
             NSLog("Install ss-local succeeded.")
         } else {
             NSLog("Install ss-local failed.")
+        }
+    }
+}
+
+func InstallKcptunClient() {
+    let fileMgr = FileManager.default
+    let homeDir = NSHomeDirectory()
+    let appSupportDir = homeDir+APP_SUPPORT_DIR
+    if !fileMgr.fileExists(atPath: appSupportDir + "kcptun_\(KCPTUN_CLIENT_VERSION)/kcptun_client") {
+        let bundle = Bundle.main
+        let installerPath = bundle.path(forResource: "install_kcptun", ofType: "sh")
+        let task = Process.launchedProcess(launchPath: installerPath!, arguments: [""])
+        task.waitUntilExit()
+        if task.terminationStatus == 0 {
+            NSLog("Install kcptun succeeded.")
+        } else {
+            NSLog("Install kcptun failed.")
         }
     }
 }
