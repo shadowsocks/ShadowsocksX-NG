@@ -90,6 +90,7 @@ class PreferencesWindowController: NSWindowController
             "normal",
             "fast",
             "fast2",
+            "fast3",
             ])
         
         profilesTableView.reloadData()

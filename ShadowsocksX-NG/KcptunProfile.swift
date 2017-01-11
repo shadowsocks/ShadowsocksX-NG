@@ -11,11 +11,11 @@ import Foundation
 
 class KcptunProfile: NSObject {
     
-    var mode: String = "normal"
+    var mode: String = "fast"
     
     var key: String = "it's a secrect"
     var crypt: String = "aes"
-    var nocomp: Bool = true
+    var nocomp: Bool = false
     var datashard: uint = 10
     var parityshard: uint = 3
     
@@ -57,7 +57,7 @@ class KcptunProfile: NSObject {
     
     func toJsonConfig() -> [String: AnyObject] {
         let defaults = UserDefaults.standard
-        let localHost = defaults.string(forKey: "Kcptun.LocalHost")
+        let localHost = defaults.string(forKey: "Kcptun.LocalHost")! as String
         let localPort = defaults.integer(forKey: "Kcptun.LocalPort")
         
         let conf: [String: AnyObject] = [

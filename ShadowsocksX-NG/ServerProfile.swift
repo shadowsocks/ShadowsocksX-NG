@@ -107,6 +107,9 @@ class ServerProfile: NSObject, NSCopying {
             if let ota = data["OTA"] {
                 profile.ota = ota as! Bool
             }
+            if let enabledKcptun = data["EnabledKcptun"] {
+                profile.enabledKcptun = enabledKcptun as! Bool
+            }
             if let kcptunData = data["KcptunProfile"] {
                 profile.kcptunProfile =  KcptunProfile.fromDictionary(kcptunData as! [String:Any?])
             }
@@ -132,7 +135,7 @@ class ServerProfile: NSObject, NSCopying {
         d["Password"] = password as AnyObject?
         d["Remark"] = remark as AnyObject?
         d["OTA"] = ota as AnyObject?
-        d["EnabledKcptun"] = enabledKcptun as AnyObject
+        d["EnabledKcptun"] = NSNumber(value: enabledKcptun)
         d["KcptunProfile"] = kcptunProfile.toDictionary() as AnyObject
         return d
     }
