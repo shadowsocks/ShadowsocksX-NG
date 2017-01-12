@@ -71,4 +71,11 @@
     return scaledImage;
 }
 
+- (IBAction) copyQRCode: (id) sender{
+    NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
+    [pasteboard clearContents];
+    NSArray *copiedObjects = [NSArray arrayWithObject: self.imageView.image];
+    [pasteboard writeObjects:copiedObjects];
+}
+
 @end
