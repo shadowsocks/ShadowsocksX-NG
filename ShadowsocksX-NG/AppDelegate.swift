@@ -138,6 +138,20 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         )
         notifyCenter.addObserver(forName: NSNotification.Name(rawValue: "NOTIFY_FOUND_SS_URL"), object: nil, queue: nil) {
             (note: Notification) in
+            
+            let sendNotify = {
+                (title: String, subtitle: String, infoText: String) in
+                
+                let userNote = NSUserNotification()
+                userNote.title = title
+                userNote.subtitle = subtitle
+                userNote.informativeText = infoText
+                userNote.soundName = NSUserNotificationDefaultSoundName
+                
+                NSUserNotificationCenter.default
+                    .deliver(userNote);
+            }
+            
             if let userInfo = (note as NSNotification).userInfo {
                 let urls: [URL] = userInfo["urls"] as! [URL]
                 
@@ -149,26 +163,22 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                         mgr.profiles.append(profile)
                         isChanged = true
                         
-                        let userNote = NSUserNotification()
-                        userNote.title = "Add Shadowsocks Server Profile".localized
+                        var subtitle: String = ""
                         if userInfo["source"] as! String == "qrcode" {
-                            userNote.subtitle = "By scan QR Code".localized
+                            subtitle = "By scan QR Code".localized
                         } else if userInfo["source"] as! String == "url" {
-                            userNote.subtitle = "By Handle SS URL".localized
+                            subtitle = "By Handle SS URL".localized
                         }
-                        userNote.informativeText = "Host: \(profile.serverHost)"
-                        //" Port: \(profile.serverPort)"
-                        //" Encription Method: \(profile.method)".localized
-                        userNote.soundName = NSUserNotificationDefaultSoundName
                         
-                        NSUserNotificationCenter.default
-                            .deliver(userNote);
+                        sendNotify("Add Shadowsocks Server Profile".localized, subtitle, "Host: \(profile.serverHost)")
                     }
                 }
                 
                 if isChanged {
                     mgr.save()
                     self.updateServersMenu()
+                } else {
+                    sendNotify("Not found valid qrcode of shadowsocks profile.", "", "")
                 }
             }
         }
