@@ -81,6 +81,16 @@ class ServerProfile: NSObject, NSCopying {
             .filter({ $0.name == "OTA" }).first?.value {
             ota = NSString(string: otaStr).boolValue
         }
+        if let enabledKcptunStr = parsedUrl.queryItems?
+            .filter({ $0.name == "Kcptun" }).first?.value {
+            enabledKcptun = NSString(string: enabledKcptunStr).boolValue
+        }
+        
+        if enabledKcptun {
+            if let items = parsedUrl.queryItems {
+                self.kcptunProfile.loadUrlQueryItems(items: items)
+            }
+        }
     }
     
     public func copy(with zone: NSZone? = nil) -> Any {
@@ -219,6 +229,12 @@ class ServerProfile: NSObject, NSCopying {
 
         url.queryItems = [URLQueryItem(name: "Remark", value: remark),
                           URLQueryItem(name: "OTA", value: ota.description)]
+        if enabledKcptun {
+            url.queryItems?.append(contentsOf: [
+                URLQueryItem(name: "Kcptun", value: enabledKcptun.description),
+                ])
+            url.queryItems?.append(contentsOf: kcptunProfile.urlQueryItems())
+        }
 
         let parts = url.string?.replacingOccurrences(
             of: "//", with: "",

@@ -71,4 +71,54 @@ class KcptunProfile: NSObject {
                                          ]
         return conf
     }
+    
+    func urlQueryItems() -> [URLQueryItem] {
+        return [
+            URLQueryItem(name: "mode", value: mode),
+            URLQueryItem(name: "key", value: key),
+            URLQueryItem(name: "crypt", value: crypt),
+            URLQueryItem(name: "datashard", value: "\(datashard)"),
+            URLQueryItem(name: "parityshard", value: "\(parityshard)"),
+            URLQueryItem(name: "nocomp", value: nocomp.description),
+        ]
+    }
+    
+    func loadUrlQueryItems(items: [URLQueryItem]) {
+        for item in items {
+            switch item.name {
+            case "mode":
+                if let v = item.value {
+                    mode = v
+                }
+            case "key":
+                if let v = item.value {
+                    key = v
+                }
+            case "crypt":
+                if let v = item.value {
+                    crypt = v
+                }
+            case "datashard":
+                if let v = item.value {
+                    if let vv = uint(v) {
+                        datashard = vv
+                    }
+                }
+            case "parityshard":
+                if let v = item.value {
+                    if let vv = uint(v) {
+                        parityshard = vv
+                    }
+                }
+            case "nocomp":
+                if let v = item.value {
+                    if let vv = Bool(v) {
+                        nocomp = vv
+                    }
+                }
+            default:
+                continue
+            }
+        }
+    }
 }
