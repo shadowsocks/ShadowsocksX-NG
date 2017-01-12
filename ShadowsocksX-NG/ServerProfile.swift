@@ -42,9 +42,11 @@ class ServerProfile: NSObject, NSCopying {
         }
 
         func decodeUrl(url: URL?) -> String? {
-            guard let encodedStr = url?.host else {
+            guard let urlStr = url?.absoluteString else {
                 return nil
             }
+            let index = urlStr.index(urlStr.startIndex, offsetBy: 5)
+            let encodedStr = urlStr.substring(from: index)
             guard let data = Data(base64Encoded: padBase64(string: encodedStr)) else {
                 return url?.absoluteString
             }
