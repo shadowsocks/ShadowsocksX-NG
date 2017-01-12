@@ -14,4 +14,6 @@
 @property (nonatomic, copy) NSString *qrCode;
 @property (nonatomic, weak) NSImageView *imageView;
 
+- (IBAction) copyQRCode: (id) sender;
+
 @end

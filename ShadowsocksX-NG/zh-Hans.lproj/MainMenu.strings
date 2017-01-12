@@ -80,3 +80,11 @@
 /* Class = "NSMenuItem"; title = "HTTP Proxy Preference ..."; ObjectID = "uEp-Gz-cu0"; */
 "uEp-Gz-cu0.title" = "HTTP代理设置...";
 
+/* Class = "NSMenuItem"; title = "Show Bunch Json Example File..."; ObjectID = "pdy-JE-50Q"; */
+"pdy-JE-50Q.title" = "显示示例服务器配置文件...";
+
+/* Class = "NSMenuItem"; title = "Import Bunch Json File..."; ObjectID = "T9g-gy-gvv"; */
+"T9g-gy-gvv.title" = "导入服务器配置文件...";
+
+/* Class = "NSMenuItem"; title = "Export All Server To Json..."; ObjectID = "6k0-gn-DQv"; */
+"6k0-gn-DQv.title" = "导出全部服务器配置...";

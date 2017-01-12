@@ -14,6 +14,7 @@ class PreferencesWindowController: NSWindowController
     @IBOutlet weak var profilesTableView: NSTableView!
     
     @IBOutlet weak var profileBox: NSBox!
+    @IBOutlet weak var kcptunProfileBox: NSBox!
     
     @IBOutlet weak var hostTextField: NSTextField!
     @IBOutlet weak var portTextField: NSTextField!
@@ -24,7 +25,14 @@ class PreferencesWindowController: NSWindowController
     
     @IBOutlet weak var otaCheckBoxBtn: NSButton!
     
-    @IBOutlet weak var copyURLBtn: NSButton!
+    @IBOutlet weak var kcptunCheckBoxBtn: NSButton!
+    @IBOutlet weak var kcptunCryptComboBox: NSComboBox!
+    @IBOutlet weak var kcptunKeyTextField: NSTextField!
+    @IBOutlet weak var kcptunModeComboBox: NSComboBox!
+    @IBOutlet weak var kcptunNocompCheckBoxBtn: NSButton!
+    @IBOutlet weak var kcptunDatashardTextField: NSTextField!
+    @IBOutlet weak var kcptunParityshardTextField: NSTextField!
+    @IBOutlet weak var kcptunMTUTextField: NSTextField!
     
     @IBOutlet weak var removeButton: NSButton!
     let tableViewDragType: String = "ss.server.profile.data"
@@ -48,12 +56,42 @@ class PreferencesWindowController: NSWindowController
             "aes-256-cfb",
             "des-cfb",
             "bf-cfb",
+            "camellia-128-cfb",
+            "camellia-192-cfb",
+            "camellia-256-cfb",
+            "idea-cfb",
             "cast5-cfb",
+            "rc2-cfb",
             "rc4-md5",
+            "seed-cfb",
             "chacha20",
+            "chacha20-ietf",
             "salsa20",
             "rc4",
             "table",
+            ])
+        
+        kcptunCryptComboBox.addItems(withObjectValues: [
+            "none",
+            "aes",
+            "aes-128",
+            "aes-192",
+            "salsa20",
+            "blowfish",
+            "twofish",
+            "cast5",
+            "3des",
+            "tea",
+            "xtea",
+            "xor",
+            ])
+        
+        kcptunModeComboBox.addItems(withObjectValues: [
+            "default",
+            "normal",
+            "fast",
+            "fast2",
+            "fast3",
             ])
         
         profilesTableView.reloadData()
@@ -114,6 +152,20 @@ class PreferencesWindowController: NSWindowController
         window?.performClose(self)
     }
     
+    @IBAction func duplicate(_ sender: Any) {
+        let profile = profileMgr.profiles[profilesTableView.clickedRow]
+        let duplicateProfile = profile.copy() as! ServerProfile
+        duplicateProfile.uuid = UUID().uuidString
+        profileMgr.profiles.insert(duplicateProfile, at: profilesTableView.clickedRow+1)
+        profilesTableView.beginUpdates()
+        let index = IndexSet(integer: profileMgr.profiles.count-1)
+        profilesTableView.insertRows(at: index, withAnimation: .effectFade)
+        self.profilesTableView.scrollRowToVisible(profilesTableView.clickedRow+1)
+        self.profilesTableView.selectRowIndexes(index, byExtendingSelection: false)
+        profilesTableView.endUpdates()
+        updateProfileBoxVisible()
+    }
+    
     @IBAction func copyCurrentProfileURL2Pasteboard(_ sender: NSButton) {
         let index = profilesTableView.selectedRow
         if  index >= 0 {
@@ -168,6 +220,34 @@ class PreferencesWindowController: NSWindowController
             
             otaCheckBoxBtn.bind("value", to: editingProfile, withKeyPath: "ota"
                 , options: [NSContinuouslyUpdatesValueBindingOption: true])
+            
+            // --------------------------------------------------
+            // Kcptun
+            kcptunCheckBoxBtn.bind("value", to: editingProfile, withKeyPath: "enabledKcptun"
+                , options: [NSContinuouslyUpdatesValueBindingOption: true])
+            
+            kcptunProfileBox.bind("Hidden", to: editingProfile, withKeyPath: "enabledKcptun"
+                , options: [NSContinuouslyUpdatesValueBindingOption: false,
+                            NSValueTransformerNameBindingOption: NSValueTransformerName.negateBooleanTransformerName])
+            
+            kcptunNocompCheckBoxBtn.bind("value", to: editingProfile, withKeyPath: "kcptunProfile.nocomp", options: nil)
+            
+            kcptunModeComboBox.bind("value", to: editingProfile, withKeyPath: "kcptunProfile.mode", options: nil)
+            
+            kcptunCryptComboBox.bind("value", to: editingProfile, withKeyPath: "kcptunProfile.crypt", options: nil)
+            
+            kcptunKeyTextField.bind("value", to: editingProfile, withKeyPath: "kcptunProfile.key"
+                , options: [NSContinuouslyUpdatesValueBindingOption: true])
+            
+            kcptunDatashardTextField.bind("value", to: editingProfile, withKeyPath: "kcptunProfile.datashard"
+                , options: [NSContinuouslyUpdatesValueBindingOption: true])
+            
+            kcptunParityshardTextField.bind("value", to: editingProfile, withKeyPath: "kcptunProfile.parityshard"
+                , options: [NSContinuouslyUpdatesValueBindingOption: true])
+            
+            kcptunMTUTextField.bind("value", to: editingProfile, withKeyPath: "kcptunProfile.mtu"
+                , options: [NSContinuouslyUpdatesValueBindingOption: true])
+            
         } else {
             editingProfile = nil
             hostTextField.unbind("value")
@@ -179,6 +259,8 @@ class PreferencesWindowController: NSWindowController
             remarkTextField.unbind("value")
             
             otaCheckBoxBtn.unbind("value")
+            
+            kcptunCheckBoxBtn.unbind("value")
         }
     }
     
