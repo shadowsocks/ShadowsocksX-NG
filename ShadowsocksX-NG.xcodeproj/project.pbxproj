@@ -39,7 +39,6 @@
 		9B9CBCA61E25E1DB00FC61AA /* KcptunProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B9CBCA51E25E1DB00FC61AA /* KcptunProfile.swift */; };
 		9B9CBCA81E26312E00FC61AA /* install_kcptun.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9B9CBCA71E26310E00FC61AA /* install_kcptun.sh */; };
 		9B9CBCAA1E2633CB00FC61AA /* kcptun_client in Resources */ = {isa = PBXBuildFile; fileRef = 9B9CBCA91E2633CB00FC61AA /* kcptun_client */; };
-		9B9CBCAE1E263A6600FC61AA /* libpcre.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B9CBCAD1E263A6600FC61AA /* libpcre.1.dylib */; };
 		9B9CBCAF1E263B1600FC61AA /* libpcre.1.dylib in Resources */ = {isa = PBXBuildFile; fileRef = 9B9CBCAD1E263A6600FC61AA /* libpcre.1.dylib */; };
 		9B9CBCB31E26452500FC61AA /* reload_conf_kcptun.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9B9CBCB21E26452500FC61AA /* reload_conf_kcptun.sh */; };
 		9B9CBCB41E26453C00FC61AA /* start_kcptun.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9B9CBCB01E2644DC00FC61AA /* start_kcptun.sh */; };
@@ -206,7 +205,6 @@
 			files = (
 				9B3FFF3E1D08D9910019A709 /* SystemConfiguration.framework in Frameworks */,
 				258E511BA910B0521B24DAB8 /* Pods_ShadowsocksX_NG.framework in Frameworks */,
-				9B9CBCAE1E263A6600FC61AA /* libpcre.1.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
