@@ -18,6 +18,7 @@ class KcptunProfile: NSObject {
     var nocomp: Bool = false
     var datashard: uint = 10
     var parityshard: uint = 3
+    var mtu: uint = 1350
     
     
     public func copy(with zone: NSZone? = nil) -> Any {
@@ -39,6 +40,7 @@ class KcptunProfile: NSObject {
                                          "nocomp": NSNumber(value: self.nocomp),
                                          "datashard": NSNumber(value: self.datashard),
                                          "parityshard": NSNumber(value: self.parityshard),
+                                         "mtu": NSNumber(value: self.mtu),
                                          ]
         return conf
     }
@@ -51,6 +53,9 @@ class KcptunProfile: NSObject {
         profile.nocomp = (data["nocomp"] as! NSNumber).boolValue
         profile.datashard = uint((data["datashard"] as! NSNumber).uintValue)
         profile.parityshard = uint((data["parityshard"] as! NSNumber).uintValue)
+        if let v = data["mtu"] as? NSNumber {
+            profile.mtu = uint(v.uintValue)
+        }
         
         return profile
     }
@@ -68,6 +73,7 @@ class KcptunProfile: NSObject {
                                          "nocomp": NSNumber(value: self.nocomp),
                                          "datashard": NSNumber(value: self.datashard),
                                          "parityshard": NSNumber(value: self.parityshard),
+                                         "mtu": NSNumber(value: self.mtu),
                                          ]
         return conf
     }
@@ -80,6 +86,7 @@ class KcptunProfile: NSObject {
             URLQueryItem(name: "datashard", value: "\(datashard)"),
             URLQueryItem(name: "parityshard", value: "\(parityshard)"),
             URLQueryItem(name: "nocomp", value: nocomp.description),
+            URLQueryItem(name: "mtu", value: "\(mtu)"),
         ]
     }
     
@@ -114,6 +121,12 @@ class KcptunProfile: NSObject {
                 if let v = item.value {
                     if let vv = Bool(v) {
                         nocomp = vv
+                    }
+                }
+            case "mtu":
+                if let v = item.value {
+                    if let vv = uint(v) {
+                        mtu = vv
                     }
                 }
             default:

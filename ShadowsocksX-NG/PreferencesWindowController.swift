@@ -32,6 +32,7 @@ class PreferencesWindowController: NSWindowController
     @IBOutlet weak var kcptunNocompCheckBoxBtn: NSButton!
     @IBOutlet weak var kcptunDatashardTextField: NSTextField!
     @IBOutlet weak var kcptunParityshardTextField: NSTextField!
+    @IBOutlet weak var kcptunMTUTextField: NSTextField!
     
     @IBOutlet weak var removeButton: NSButton!
     let tableViewDragType: String = "ss.server.profile.data"
@@ -242,6 +243,9 @@ class PreferencesWindowController: NSWindowController
                 , options: [NSContinuouslyUpdatesValueBindingOption: true])
             
             kcptunParityshardTextField.bind("value", to: editingProfile, withKeyPath: "kcptunProfile.parityshard"
+                , options: [NSContinuouslyUpdatesValueBindingOption: true])
+            
+            kcptunMTUTextField.bind("value", to: editingProfile, withKeyPath: "kcptunProfile.mtu"
                 , options: [NSContinuouslyUpdatesValueBindingOption: true])
             
         } else {
