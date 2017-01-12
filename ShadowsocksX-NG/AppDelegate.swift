@@ -30,7 +30,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     
     @IBOutlet weak var runningStatusMenuItem: NSMenuItem!
     @IBOutlet weak var toggleRunningMenuItem: NSMenuItem!
-    @IBOutlet weak var proxyMenuItem: NSMenuItem!
     @IBOutlet weak var autoModeMenuItem: NSMenuItem!
     @IBOutlet weak var globalModeMenuItem: NSMenuItem!
     @IBOutlet weak var manualModeMenuItem: NSMenuItem!
@@ -58,6 +57,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     let kHudCornerRadius: CGFloat = 18.0
     let kHudHorizontalMargin: CGFloat = 30
     let kHudHeight: CGFloat = 90.0
+    
+    let kProfileMenuItemIndexBase = 100
 
     var timerToFadeOut: Timer? = nil
     var fadingOut: Bool = false
@@ -438,7 +439,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     }
     
     @IBAction func selectServer(_ sender: NSMenuItem) {
-        let index = sender.tag
+        let index = sender.tag - kProfileMenuItemIndexBase
         let spMgr = ServerProfileManager.instance
         let newProfile = spMgr.profiles[index]
         if newProfile.uuid != spMgr.activeProfileId {
@@ -507,17 +508,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         serversMenuItem.title = serverMenuText
         
         if mode == "auto" {
-            proxyMenuItem.title = "Proxy - Auto By PAC".localized
             autoModeMenuItem.state = 1
             globalModeMenuItem.state = 0
             manualModeMenuItem.state = 0
         } else if mode == "global" {
-            proxyMenuItem.title = "Proxy - Global".localized
             autoModeMenuItem.state = 0
             globalModeMenuItem.state = 1
             manualModeMenuItem.state = 0
         } else if mode == "manual" {
-            proxyMenuItem.title = "Proxy - Manual".localized
             autoModeMenuItem.state = 0
             globalModeMenuItem.state = 0
             manualModeMenuItem.state = 1
@@ -564,17 +562,18 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     func updateServersMenu() {
         let mgr = ServerProfileManager.instance
         serversMenuItem.submenu?.removeAllItems()
-        let showQRItem = showQRCodeMenuItem
-        let scanQRItem = scanQRCodeMenuItem
         let preferencesItem = serversPreferencesMenuItem
         let showBunch = showBunchJsonExampleFileItem
         let importBuntch = importBunchJsonFileItem
         let exportAllServer = exportAllServerProfileItem
         
+        serversMenuItem.submenu?.addItem(preferencesItem!)
+        serversMenuItem.submenu?.addItem(NSMenuItem.separator())
+        
         var i = 0
         for p in mgr.profiles {
             let item = NSMenuItem()
-            item.tag = i
+            item.tag = i + kProfileMenuItemIndexBase
             if p.remark.isEmpty {
                 item.title = "\(p.serverHost):\(p.serverPort)"
             } else {
@@ -594,13 +593,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         if !mgr.profiles.isEmpty {
             serversMenuItem.submenu?.addItem(NSMenuItem.separator())
         }
-        serversMenuItem.submenu?.addItem(showQRItem!)
-        serversMenuItem.submenu?.addItem(scanQRItem!)
+        
         serversMenuItem.submenu?.addItem(showBunch!)
         serversMenuItem.submenu?.addItem(importBuntch!)
         serversMenuItem.submenu?.addItem(exportAllServer!)
-        serversMenuItem.submenu?.addItem(NSMenuItem.separator())
-        serversMenuItem.submenu?.addItem(preferencesItem!)
     }
     
     func handleURLEvent(_ event: NSAppleEventDescriptor, withReplyEvent replyEvent: NSAppleEventDescriptor) {
