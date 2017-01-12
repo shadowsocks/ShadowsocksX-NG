@@ -28,7 +28,7 @@ class HTTPPreferencesWindowController: NSWindowController, NSWindowDelegate {
     }
     
     @IBAction func copyExportCommand(_ sender: Any) {
-        let command = "export http_proxy=http://\(address.stringValue):\(port.stringValue)"
+        let command = "export http_proxy=http://\(address.stringValue):\(port.stringValue);export https_proxy=http://\(address.stringValue):\(port.stringValue);"
         NSPasteboard.general().clearContents()
         NSPasteboard.general().setString(command, forType: NSStringPboardType)
         let notification = NSUserNotification()
