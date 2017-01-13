@@ -1,16 +1,24 @@
 # ShadowsocksX-NG-R
 
-Current version is 1.3.8-R8
+Current version is 1.3.9-R8
 
-Continuesly release under 1.3.8-R8-buildVersion
+Continuesly release under 1.3.9-R8-buildVersion
 
-[![Build Status](https://travis-ci.org/qinyuhang/ShadowsocksX-NG.svg?branches=develop)](https://travis-ci.org/qinyuhang/ShadowsocksX-NG)
+[![Build Status](https://travis-ci.org/shadowsocksr/ShadowsocksX-NG.svg?branches=develop)](https://travis-ci.org/shadowsocksr/ShadowsocksX-NG)
 
 Next Generation of [ShadowsocksX](https://github.com/shadowsocks/shadowsocks-iOS) with SSR support.
 
-After Download Please check the GPG signature!
+**After Download Please check the GPG signature!**
 
-[My pub key](https://github.com/qinyuhang/Pubkey)
+First get [My pub key](https://github.com/qinyuhang/Pubkey) and [import the Pub key]()
+
+`gpg --import pubkeys.txt`
+
+Then [verify the signature](http://stackoverflow.com/questions/19011093/how-do-i-verify-a-gpg-signature-matches-a-public-key-file)
+
+Place the `.dmg` and `.dmg.sig` file together in a directory
+
+`gpg --verify {drag the ShadowsocksX-NG-R8.dmg.sig into your terminal}`
 
 ## Why?
 
@@ -26,17 +34,21 @@ Then I rewrite the GUI code by swift.
 
 ### Running
 
-- Mac OS X 10.11 +
+- macOS 10.11 +
 
 ### Building
 
-- XCode 8.0+
+- Xcode 8.2.1+
 - cocoapod 1.0.1+
 
 ## Fetures
 
-- Use ss-local from shadowsocks-libev 2.4.6
-- Update PAC by download GFW List from github.
+- SSR features!
+- Ability to check update from GitHub.
+- White domain list & white IP list
+- Use ss-local from shadowsocks-libev 2.5.6
+- Ability to update PAC by download GFW List from GitHub.
+- Ability to update white list from GutHub.
 - Show QRCode for current server profile.
 - Scan QRCode from screen.
 - Auto launch at login.
@@ -48,7 +60,7 @@ Then I rewrite the GUI code by swift.
   - Local socks5 timeout.
   - If enable UDP relay.
   - GFW List url.
-  - White List url.(will be added after solve PAC not work on macOS 10.12)
+  - White List url.
   - Auto update PAC list & white list.
 - Manual spesify network service profiles which would be configure the proxy.
 - Could reorder shadowsocks profiles by drag & drop in servers preferences panel.
@@ -70,6 +82,9 @@ ref: [GitFlow](http://nvie.com/posts/a-successful-git-branching-model/)
 ## TODO List
 
 - [x] Embed the http proxy server [privoxy](http://www.privoxy.org/), [get it](https://homebrew.bintray.com/bottles/privoxy-3.0.26.sierra.bottle.tar.gz).
+
+
+- [ ] ACL mode support [Shadowsocks ACL](https://github.com/shadowsocksr/shadowsocksr-libev/tree/master/acl)
 
 ## Know Issue
 Solved [Issue 1.]() Auto PAC & White list is not working on macOS 10.12 Serria because system proxy not allow [file:///](file:///) protocol.
