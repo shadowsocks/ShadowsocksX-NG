@@ -31,25 +31,31 @@ class VersionChecker: NSObject {
             return false
         }
     }
-    func checkNewVersion(showAlert: Bool) -> Bool {
-        
+    func showAlertView(Title: String, SubTitle: String, ConfirmBtn: String, CancelBtn: String) -> Int {
+        let alertView = NSAlert()
+        alertView.messageText = Title
+        alertView.informativeText = SubTitle
+        alertView.addButton(withTitle: ConfirmBtn)
+        if CancelBtn != "" {
+            alertView.addButton(withTitle: CancelBtn)
+        }
+        let action = alertView.runModal()
+        return action
+    }
+    func checkNewVersion() -> [String:Any] {
+        // return 
+        // newVersion: Bool, 
+        // error: String,
+        // alertTitle: String,
+        // alertSubtitle: String,
+        // alertConfirmBtn: String,
+        // alertCancelBtn: String
+        let showAlert: Bool = true
         func getOnlineData() throws -> NSDictionary{
             guard NSDictionary(contentsOf: URL(string:_VERSION_XML_URL)!) != nil else {
                 throw versionError.CanNotGetOnlineData
             }
             return NSDictionary(contentsOf: URL(string:_VERSION_XML_URL)!)!
-        }
-        
-        func showAlertView(Title: String, SubTitle: String, ConfirmBtn: String, CancelBtn: String) -> Int {
-            let alertView = NSAlert()
-            alertView.messageText = Title
-            alertView.informativeText = SubTitle
-            alertView.addButton(withTitle: ConfirmBtn)
-            if CancelBtn != "" {
-                alertView.addButton(withTitle: CancelBtn)
-            }
-            let action = alertView.runModal()
-            return action
         }
         
         var localData: NSDictionary = NSDictionary()
@@ -59,37 +65,42 @@ class VersionChecker: NSObject {
         do{
             try onlineData = getOnlineData()
         }catch{
-            _ = showAlertView(Title: "网络错误", SubTitle: "由于网络错误无法检查更新", ConfirmBtn: "确认", CancelBtn: "")
-            return false
+            return ["newVersion" : false,
+                    "error": "network error",
+                    "Title": "网络错误",
+                    "SubTitle": "由于网络错误无法检查更新",
+                    "ConfirmBtn": "确认",
+                    "CancelBtn": ""
+            ]
         }
         if (onlineData["CFBundleShortVersionString"] as! String == localData["CFBundleShortVersionString"] as! String && onlineData["CFBundleVersion"] as! String == localData["CFBundleVersion"] as! String){
-            if showAlert {
-                let currentVersionString:String = localData["CFBundleShortVersionString"] as! String
-                let currentBuildString:String = localData["CFBundleVersion"] as! String
-                _ = showAlertView(Title: "已是最新版本！", SubTitle: "当前版本 " + currentVersionString + " build " + currentBuildString, ConfirmBtn: "确认", CancelBtn: "")
-            }
-            return false
+
+            let currentVersionString:String = localData["CFBundleShortVersionString"] as! String
+            let currentBuildString:String = localData["CFBundleVersion"] as! String
+            let subtitle = "当前版本 " + currentVersionString + " build " + currentBuildString
+            return ["newVersion" : false,
+                    "error": "",
+                    "Title": "已是最新版本！",
+                    "SubTitle": subtitle,
+                    "ConfirmBtn": "确认",
+                    "CancelBtn": ""
+            ]
         }
         else{
             haveNewVersion = true
-            // 弹窗提示有软件更新
+
             let versionString:String = onlineData["CFBundleShortVersionString"] as! String
             let buildString:String = onlineData["CFBundleVersion"] as! String
             let currentVersionString:String = localData["CFBundleShortVersionString"] as! String
             let currentBuildString:String = localData["CFBundleVersion"] as! String
-            let action = showAlertView(Title: "软件有更新！", SubTitle: "新版本为 " + versionString + " build " + buildString + "\n" + "当前版本 " + currentVersionString + " build " + currentBuildString, ConfirmBtn: "前往下载", CancelBtn: "取消")
-            switch action {
-                case 1000:
-                    // go to download
-                    NSWorkspace.shared().open(URL(string: "https://github.com/shadowsocksr/ShadowsocksX-NG/releases")!)
-                    break
-                case 1001:
-                    // cancel
-                    break
-                default:
-                    break
-            }
-            return true
+            let subtitle = "新版本为 " + versionString + " build " + buildString + "\n" + "当前版本 " + currentVersionString + " build " + currentBuildString
+            return ["newVersion" : true,
+                    "error": "",
+                    "Title": "软件有更新！",
+                    "SubTitle": subtitle,
+                    "ConfirmBtn": "前往下载",
+                    "CancelBtn": "取消"
+            ]
         }
     }
 }

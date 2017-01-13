@@ -712,9 +712,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     }
     
     func checkForUpdate(mustShowAlert: Bool) -> Void {
+        let versionChecker = VersionChecker()
         DispatchQueue.global().async {
+            let newVersion = versionChecker.checkNewVersion()
             DispatchQueue.main.async {
-                _ = VersionChecker().checkNewVersion(showAlert: mustShowAlert)
+                if (mustShowAlert || newVersion["newVersion"] as! Bool){
+                    let alertResult = versionChecker.showAlertView(Title: newVersion["Title"] as! String, SubTitle: newVersion["SubTitle"] as! String, ConfirmBtn: newVersion["ConfirmBtn"] as! String, CancelBtn: newVersion["CancelBtn"] as! String)
+                    print(alertResult)
+                    if (newVersion["newVersion"] as! Bool && alertResult == 1000){
+                        NSWorkspace.shared().open(URL(string: "https://github.com/shadowsocksr/ShadowsocksX-NG/releases")!)
+                    }
+                }
             }
         }
     }
