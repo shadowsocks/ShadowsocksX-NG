@@ -19,7 +19,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     var editUserRulesWinCtrl: UserRulesController!
     var httpPreferencesWinCtrl : HTTPPreferencesWindowController!
 
-    let keyCode = kVK_ANSI_P
+    let keyCodeP = kVK_ANSI_P
+    let keyCodeS = kVK_ANSI_S
     let modifierKeys = cmdKey+controlKey
     var hotKeyRef: EventHotKeyRef?
 
@@ -238,42 +239,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
 
     // MARK: - Hotkey Methods
     func registerHotkey() -> Void {
+        registerEventHotKey(keyCode: UInt32(keyCodeP)) // to toggle PAC and Global Mode
+        registerEventHotKey(keyCode: UInt32(keyCodeS)) // to toggle SS on or off
+        registerEventHandler()
+    }
+    
+    func registerEventHotKey(keyCode: UInt32) {
         var gMyHotKeyID = EventHotKeyID()
         gMyHotKeyID.signature = OSType(fourCharCodeFrom(string: "sxng"))
-        gMyHotKeyID.id = UInt32(keyCode)
-
-        var eventType = EventTypeSpec()
-        eventType.eventClass = OSType(kEventClassKeyboard)
-        eventType.eventKind = OSType(kEventHotKeyPressed)
-
-        // Void pointer to `self`:
-        let context = Unmanaged.passUnretained(self).toOpaque()
-
-        // Install handler.
-        InstallEventHandler(GetApplicationEventTarget(), {(nextHanlder, theEvent, userContext) -> OSStatus in
-            // Extract pointer to `self` from void pointer:
-            let mySelf = Unmanaged<AppDelegate>.fromOpaque(userContext!).takeUnretainedValue()
-
-            switch Globals.proxyType {
-            case .pac:
-                Globals.proxyType = .global
-                UserDefaults.standard.setValue("global", forKey: "ShadowsocksRunningMode")
-                mySelf.isNameTextField.stringValue = "Gobal Mode"
-                mySelf.updateRunningModeMenu()
-                mySelf.applyConfig()
-            case .global:
-                Globals.proxyType = .pac
-                UserDefaults.standard.setValue("auto", forKey: "ShadowsocksRunningMode")
-                mySelf.isNameTextField.stringValue = "Auto Mode"
-                mySelf.updateRunningModeMenu()
-                mySelf.applyConfig()
-            }
-
-            mySelf.fadeInHud()
-
-            return noErr
-        }, 1, &eventType, context, nil)
-
+        gMyHotKeyID.id = keyCode
+        
         // Register hotkey.
         RegisterEventHotKey(UInt32(keyCode),
                             UInt32(modifierKeys),
@@ -282,7 +257,63 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                             0,
                             &hotKeyRef)
     }
+    
+    func registerEventHandler() {
+        var eventType = EventTypeSpec()
+        eventType.eventClass = OSType(kEventClassKeyboard)
+        eventType.eventKind = OSType(kEventHotKeyPressed)
+        
+        // Void pointer to `self`:
+        let context = Unmanaged.passUnretained(self).toOpaque()
+        
+        // Install handler.
+        InstallEventHandler(GetApplicationEventTarget(), {(nextHanlder, theEvent, userContext) -> OSStatus in
+            // Extract pointer to `self` from void pointer:
+            let mySelf = Unmanaged<AppDelegate>.fromOpaque(userContext!).takeUnretainedValue()
+            
+            var hotKeyId = EventHotKeyID()
+            GetEventParameter(theEvent, EventParamName(kEventParamDirectObject), EventParamType(typeEventHotKeyID), nil, MemoryLayout<EventHotKeyID>.size, nil, &hotKeyId)
+            
+            if hotKeyId.id == UInt32(mySelf.keyCodeP) {
+                // P key pressed
+                switch Globals.proxyType {
+                case .pac:
+                    Globals.proxyType = .global
+                    UserDefaults.standard.setValue("global", forKey: "ShadowsocksRunningMode")
+                    mySelf.isNameTextField.stringValue = "Gobal Mode"
+                    mySelf.updateRunningModeMenu()
+                    mySelf.applyConfig()
+                case .global:
+                    Globals.proxyType = .pac
+                    UserDefaults.standard.setValue("auto", forKey: "ShadowsocksRunningMode")
+                    mySelf.isNameTextField.stringValue = "Auto Mode"
+                    mySelf.updateRunningModeMenu()
+                    mySelf.applyConfig()
+                }
+            }
+            else if hotKeyId.id == UInt32(mySelf.keyCodeS) {
+                // S key pressed
+                var isOn = UserDefaults.standard.bool(forKey: "ShadowsocksOn")
+                isOn = !isOn
+                if isOn {
+                    mySelf.isNameTextField.stringValue = "Shadowsocks: On".localized
+                }
+                else {
+                    mySelf.isNameTextField.stringValue = "Shadowsocks: Off".localized
+                }
 
+                UserDefaults.standard.set(isOn, forKey: "ShadowsocksOn")
+                mySelf.updateMainMenu()
+                mySelf.applyConfig()
+            }
+        
+            mySelf.fadeInHud()
+            
+            return noErr
+        }, 1, &eventType, context, nil)
+    }
+    
+    
     func fourCharCodeFrom(string: String) -> FourCharCode {
         assert(string.characters.count == 4, "String length must be 4")
         var result: FourCharCode = 0
@@ -666,7 +697,7 @@ extension AppDelegate {
     }
 
     func setupHud() -> Void {
-        isNameTextField.stringValue = "Global Mode"
+        isNameTextField.stringValue = "Shadowsocks: Off"
         isNameTextField.sizeToFit()
 
         var labelFrame: CGRect = isNameTextField.frame
