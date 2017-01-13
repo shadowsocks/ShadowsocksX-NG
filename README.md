@@ -1,6 +1,6 @@
 # ShadowsocksX-NG
 
-Current version is 1.3
+Current version is 1.4
 
 [![Build Status](https://travis-ci.org/shadowsocks/ShadowsocksX-NG.svg?branch=develop)](https://travis-ci.org/shadowsocks/ShadowsocksX-NG)
 
@@ -24,7 +24,7 @@ Then I will rewrite the GUI code in Swift.
 
 ### Building
 
-- XCode 8.0+
+- XCode 8.2.1+
 - cocoapod 1.0.1+
 
 ## Download
@@ -33,13 +33,16 @@ From [here](https://github.com/shadowsocks/ShadowsocksX-NG/releases/)
 
 ## Fetures
 
-- Use ss-local from shadowsocks-libev 2.4.6
-- Update PAC by download GFW List from GitHub.
+- Use ss-local from shadowsocks-libev 2.5.6
+- Could Update PAC by download GFW List from GitHub.
 - Show QRCode for current server profile.
 - Scan QRCode from screen.
 - Auto launch at login.
 - User rules for PAC.
 - Support OTA
+- HTTP Proxy by [privoxy](http://www.privoxy.org/)
+- Over [kcptun](https://github.com/xtaci/kcptun)
+- Export/Import configure file.
 - An advanced preferences panel to configure:
 	- Local socks5 listen address.
 	- Local socks5 listen port.
@@ -64,10 +67,6 @@ Added global Keyboard shortcut <kbd>⌃</kbd> + <kbd>⌘</kbd> + <kbd>P</kbd> to
 Contributions must be available on a separately named branch based on the latest version of the main branch develop.
 
 ref: [GitFlow](http://nvie.com/posts/a-successful-git-branching-model/)
-
-## TODO List
-
-- [x] Embed the http proxy server [privoxy](http://www.privoxy.org/), [get it](https://homebrew.bintray.com/bottles/privoxy-3.0.26.sierra.bottle.tar.gz).
 
 ## License
 
