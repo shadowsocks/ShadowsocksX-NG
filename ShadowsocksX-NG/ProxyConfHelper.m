@@ -14,7 +14,6 @@
 @implementation ProxyConfHelper
 
 GCDWebServer *webServer =nil;
-FSEventStreamRef fsEventStream;
 
 + (BOOL)isVersionOk {
     NSTask *task;
