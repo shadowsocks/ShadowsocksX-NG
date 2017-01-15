@@ -96,6 +96,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             "LocalHTTP.FollowGlobal": true,
             "Kcptun.LocalHost": "127.0.0.1",
             "Kcptun.LocalPort": NSNumber(value: 8388),
+            "Kcptun.Conn": NSNumber(value: 1),
             ])
         
         statusItem = NSStatusBar.system().statusItem(withLength: AppDelegate.StatusItemIconWidth)

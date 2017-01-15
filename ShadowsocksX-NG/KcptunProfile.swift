@@ -64,6 +64,7 @@ class KcptunProfile: NSObject {
         let defaults = UserDefaults.standard
         let localHost = defaults.string(forKey: "Kcptun.LocalHost")! as String
         let localPort = defaults.integer(forKey: "Kcptun.LocalPort")
+        let connNum = defaults.integer(forKey: "Kcptun.Conn")
         
         let conf: [String: AnyObject] = [
                                          "localaddr": "\(localHost):\(localPort)" as AnyObject,
@@ -74,6 +75,7 @@ class KcptunProfile: NSObject {
                                          "datashard": NSNumber(value: self.datashard),
                                          "parityshard": NSNumber(value: self.parityshard),
                                          "mtu": NSNumber(value: self.mtu),
+                                         "conn": NSNumber(value: connNum),
                                          ]
         return conf
     }
