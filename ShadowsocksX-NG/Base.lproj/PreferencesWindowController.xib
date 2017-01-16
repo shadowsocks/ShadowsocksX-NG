@@ -35,7 +35,7 @@
         <window title="Server Preferences" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" restorable="NO" oneShot="NO" animationBehavior="default" id="F0z-JX-Cv5">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES"/>
             <rect key="contentRect" x="423" y="365" width="590" height="504"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1920" height="1057"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1440" height="877"/>
             <view key="contentView" id="se5-gp-TjO">
                 <rect key="frame" x="0.0" y="0.0" width="590" height="504"/>
                 <autoresizingMask key="autoresizingMask"/>
@@ -250,8 +250,8 @@
                                                 </textFieldCell>
                                             </textField>
                                             <button translatesAutoresizingMaskIntoConstraints="NO" id="WiD-LX-WHu">
-                                                <rect key="frame" x="117" y="117" width="151" height="18"/>
-                                                <buttonCell key="cell" type="check" title="Disable Compressing" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="ezp-Vb-ouI">
+                                                <rect key="frame" x="117" y="117" width="148" height="18"/>
+                                                <buttonCell key="cell" type="check" title="Disable compression" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="ezp-Vb-ouI">
                                                     <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                                     <font key="font" metaFont="system"/>
                                                 </buttonCell>
@@ -481,9 +481,12 @@ DQ
                         <constraints>
                             <constraint firstAttribute="width" constant="69" id="QPa-bs-qw0"/>
                         </constraints>
-                        <buttonCell key="cell" type="push" title="Cacnel" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="j03-9E-uHW">
+                        <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="j03-9E-uHW">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                             <font key="font" metaFont="system"/>
+                            <string key="keyEquivalent" base64-UTF8="YES">
+Gw
+</string>
                         </buttonCell>
                         <connections>
                             <action selector="cancel:" target="-2" id="514-4D-a6S"/>
