@@ -97,6 +97,13 @@ class ServerProfileManager: NSObject {
                         profile.method = item["method"] as! String
                         profile.password = item["password"] as! String
                         profile.remark = item["remarks"] as! String
+                        
+                        // Kcptun
+                        profile.enabledKcptun = item["enabled_kcptun"]?.boolValue ?? false
+                        if let kcptun = item["kcptun"] {
+                            profile.kcptunProfile = KcptunProfile.fromDictionary(kcptun as! [String : Any?])
+                        }
+                        
                         self.profiles.append(profile)
                         self.save()
                     }
@@ -141,6 +148,11 @@ class ServerProfileManager: NSObject {
             configProfile.setValue(profile.method, forKey: "method")
             configProfile.setValue(profile.remark, forKey: "remarks")
             configProfile.setValue(profile.remark.data(using: String.Encoding.utf8)?.base64EncodedString(options: NSData.Base64EncodingOptions(rawValue: 0)), forKey: "remarks_base64")
+            
+            // Kcptun
+            configProfile.setValue(profile.enabledKcptun, forKey: "enabled_kcptun")
+            configProfile.setValue(profile.kcptunProfile.toDictionary(), forKey: "kcptun")
+            
             configsArray.add(configProfile)
         }
         jsonArr1.setValue(configsArray, forKey: "configs")
