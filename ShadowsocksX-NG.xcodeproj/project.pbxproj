@@ -42,7 +42,6 @@
 		9B9CBCA81E26312E00FC61AA /* install_kcptun.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9B9CBCA71E26310E00FC61AA /* install_kcptun.sh */; };
 		9B9CBCAA1E2633CB00FC61AA /* kcptun_client in Resources */ = {isa = PBXBuildFile; fileRef = 9B9CBCA91E2633CB00FC61AA /* kcptun_client */; };
 		9B9CBCAF1E263B1600FC61AA /* libpcre.1.dylib in Resources */ = {isa = PBXBuildFile; fileRef = 9B9CBCAD1E263A6600FC61AA /* libpcre.1.dylib */; };
-		9B9CBCB31E26452500FC61AA /* reload_conf_kcptun.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9B9CBCB21E26452500FC61AA /* reload_conf_kcptun.sh */; };
 		9B9CBCB41E26453C00FC61AA /* start_kcptun.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9B9CBCB01E2644DC00FC61AA /* start_kcptun.sh */; };
 		9B9CBCB51E26453C00FC61AA /* stop_kcptun.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9B9CBCB11E26450D00FC61AA /* stop_kcptun.sh */; };
 		9BA04B231D23D5A5005AAD7F /* ProxyConfTool.m in Sources */ = {isa = PBXBuildFile; fileRef = 9BA04B221D23D5A5005AAD7F /* ProxyConfTool.m */; };
@@ -53,7 +52,6 @@
 		9BEEF0691D04D4D500FC52B3 /* install_ss_local.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9BEEF0651D04CB8500FC52B3 /* install_ss_local.sh */; };
 		9BEEF06A1D04D4D500FC52B3 /* start_ss_local.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9BEEF0661D04CE8D00FC52B3 /* start_ss_local.sh */; };
 		9BEEF06B1D04D4D500FC52B3 /* stop_ss_local.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9BEEF0671D04CE9A00FC52B3 /* stop_ss_local.sh */; };
-		9BEEF06C1D04D4D500FC52B3 /* reload_conf_ss_local.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9BEEF0681D04CFE500FC52B3 /* reload_conf_ss_local.sh */; };
 		9BEEF06E1D04DCE400FC52B3 /* ServerProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BEEF06D1D04DCE400FC52B3 /* ServerProfile.swift */; };
 		9BEEF0701D04DDB100FC52B3 /* ServerProfileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BEEF06F1D04DDB100FC52B3 /* ServerProfileManager.swift */; };
 		9BEEF0751D04EF3E00FC52B3 /* PreferencesWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BEEF0731D04EF3E00FC52B3 /* PreferencesWindowController.swift */; };
@@ -61,7 +59,6 @@
 		9BEEF07B1D05631500FC52B3 /* AdvPreferencesWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BEEF0791D05631500FC52B3 /* AdvPreferencesWindowController.swift */; };
 		C6D429931DA75988002A5711 /* install_privoxy.sh in Resources */ = {isa = PBXBuildFile; fileRef = C6D4298E1DA75988002A5711 /* install_privoxy.sh */; };
 		C6D429941DA75988002A5711 /* privoxy in Resources */ = {isa = PBXBuildFile; fileRef = C6D4298F1DA75988002A5711 /* privoxy */; };
-		C6D429951DA75988002A5711 /* reload_conf_privoxy.sh in Resources */ = {isa = PBXBuildFile; fileRef = C6D429901DA75988002A5711 /* reload_conf_privoxy.sh */; };
 		C6D429961DA75988002A5711 /* start_privoxy.sh in Resources */ = {isa = PBXBuildFile; fileRef = C6D429911DA75988002A5711 /* start_privoxy.sh */; };
 		C6D429971DA75988002A5711 /* stop_privoxy.sh in Resources */ = {isa = PBXBuildFile; fileRef = C6D429921DA75988002A5711 /* stop_privoxy.sh */; };
 		C6D429991DA76FBC002A5711 /* privoxy.config.example in Resources */ = {isa = PBXBuildFile; fileRef = C6D429981DA76FBC002A5711 /* privoxy.config.example */; };
@@ -182,7 +179,6 @@
 		9B9CBCAD1E263A6600FC61AA /* libpcre.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libpcre.1.dylib; sourceTree = "<group>"; };
 		9B9CBCB01E2644DC00FC61AA /* start_kcptun.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = start_kcptun.sh; sourceTree = "<group>"; };
 		9B9CBCB11E26450D00FC61AA /* stop_kcptun.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = stop_kcptun.sh; sourceTree = "<group>"; };
-		9B9CBCB21E26452500FC61AA /* reload_conf_kcptun.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = reload_conf_kcptun.sh; sourceTree = "<group>"; };
 		9BA04B211D23D5A5005AAD7F /* ProxyConfTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ProxyConfTool.h; sourceTree = "<group>"; };
 		9BA04B221D23D5A5005AAD7F /* ProxyConfTool.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ProxyConfTool.m; sourceTree = "<group>"; };
 		9BA04B241D24044D005AAD7F /* ProxyPreferencesController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ProxyPreferencesController.swift; sourceTree = "<group>"; };
@@ -193,7 +189,6 @@
 		9BEEF0651D04CB8500FC52B3 /* install_ss_local.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = install_ss_local.sh; sourceTree = "<group>"; };
 		9BEEF0661D04CE8D00FC52B3 /* start_ss_local.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = start_ss_local.sh; sourceTree = "<group>"; };
 		9BEEF0671D04CE9A00FC52B3 /* stop_ss_local.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = stop_ss_local.sh; sourceTree = "<group>"; };
-		9BEEF0681D04CFE500FC52B3 /* reload_conf_ss_local.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = reload_conf_ss_local.sh; sourceTree = "<group>"; };
 		9BEEF06D1D04DCE400FC52B3 /* ServerProfile.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ServerProfile.swift; sourceTree = "<group>"; };
 		9BEEF06F1D04DDB100FC52B3 /* ServerProfileManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ServerProfileManager.swift; sourceTree = "<group>"; };
 		9BEEF0731D04EF3E00FC52B3 /* PreferencesWindowController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreferencesWindowController.swift; sourceTree = "<group>"; };
@@ -202,7 +197,6 @@
 		B4E6A97CA843F3943524B686 /* Pods-proxy_conf_helper.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-proxy_conf_helper.debug.xcconfig"; path = "Pods/Target Support Files/Pods-proxy_conf_helper/Pods-proxy_conf_helper.debug.xcconfig"; sourceTree = "<group>"; };
 		C6D4298E1DA75988002A5711 /* install_privoxy.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = install_privoxy.sh; sourceTree = "<group>"; };
 		C6D4298F1DA75988002A5711 /* privoxy */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = privoxy; sourceTree = "<group>"; };
-		C6D429901DA75988002A5711 /* reload_conf_privoxy.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = reload_conf_privoxy.sh; sourceTree = "<group>"; };
 		C6D429911DA75988002A5711 /* start_privoxy.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = start_privoxy.sh; sourceTree = "<group>"; };
 		C6D429921DA75988002A5711 /* stop_privoxy.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = stop_privoxy.sh; sourceTree = "<group>"; };
 		C6D429981DA76FBC002A5711 /* privoxy.config.example */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = privoxy.config.example; sourceTree = "<group>"; };
@@ -271,7 +265,6 @@
 				08FCA0FE1E24BE1A0070984F /* example-gui-config.json */,
 				C6D4298E1DA75988002A5711 /* install_privoxy.sh */,
 				C6D4298F1DA75988002A5711 /* privoxy */,
-				C6D429901DA75988002A5711 /* reload_conf_privoxy.sh */,
 				C6D429911DA75988002A5711 /* start_privoxy.sh */,
 				C6D429921DA75988002A5711 /* stop_privoxy.sh */,
 				9BE8FBBD1D0B1FB900CAFD01 /* libcrypto.1.0.0.dylib */,
@@ -289,11 +282,9 @@
 				9B9CBCA71E26310E00FC61AA /* install_kcptun.sh */,
 				9BEEF0661D04CE8D00FC52B3 /* start_ss_local.sh */,
 				9BEEF0671D04CE9A00FC52B3 /* stop_ss_local.sh */,
-				9BEEF0681D04CFE500FC52B3 /* reload_conf_ss_local.sh */,
 				C6D429981DA76FBC002A5711 /* privoxy.config.example */,
 				9B9CBCB01E2644DC00FC61AA /* start_kcptun.sh */,
 				9B9CBCB11E26450D00FC61AA /* stop_kcptun.sh */,
-				9B9CBCB21E26452500FC61AA /* reload_conf_kcptun.sh */,
 			);
 			name = "Support Files";
 			sourceTree = "<group>";
@@ -564,16 +555,13 @@
 				C6D429991DA76FBC002A5711 /* privoxy.config.example in Resources */,
 				9BEEF06B1D04D4D500FC52B3 /* stop_ss_local.sh in Resources */,
 				9B3FFF341D08CEF70019A709 /* SWBQRCodeWindowController.xib in Resources */,
-				9BEEF06C1D04D4D500FC52B3 /* reload_conf_ss_local.sh in Resources */,
 				9B3FFF231D088E8D0019A709 /* abp.js in Resources */,
 				9B07EFAD1D048E880052D9DF /* menu_icon.png in Resources */,
-				C6D429951DA75988002A5711 /* reload_conf_privoxy.sh in Resources */,
 				9B0BFFEB1D0460A70040E62B /* Assets.xcassets in Resources */,
 				9B2491B71D0ACC3E003BBECC /* AdvPreferencesWindowController.xib in Resources */,
 				08FCA0FF1E24BE1A0070984F /* example-gui-config.json in Resources */,
 				9B3FFF271D0898EB0019A709 /* gfwlist.txt in Resources */,
 				C6D429931DA75988002A5711 /* install_privoxy.sh in Resources */,
-				9B9CBCB31E26452500FC61AA /* reload_conf_kcptun.sh in Resources */,
 				9BC70EDC1D2E3E3100EDA4CA /* Localizable.strings in Resources */,
 				9B0BFFEE1D0460A70040E62B /* MainMenu.xib in Resources */,
 				9B3FFF4C1D09D8F70019A709 /* install_helper.sh in Resources */,

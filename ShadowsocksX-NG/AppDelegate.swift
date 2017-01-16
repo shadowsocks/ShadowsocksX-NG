@@ -201,8 +201,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         
         ProxyConfHelper.install()
         ProxyConfHelper.startMonitorPAC()
-        applyConfig()
         SyncSSLocal()
+        applyConfig()
 
         // Register global hotkey
         registerHotkey()
@@ -211,6 +211,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     func applicationWillTerminate(_ aNotification: Notification) {
         // Insert code here to tear down your application
         StopSSLocal()
+        StopKcptun()
         StopPrivoxy()
         ProxyConfHelper.disableProxy()
         if let ref = hotKeyRef { UnregisterEventHotKey(ref) }
@@ -223,6 +224,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         
         if isOn {
             StartSSLocal()
+            StartKcptun()
             StartPrivoxy()
             if mode == "auto" {
                 ProxyConfHelper.enablePACProxy()
@@ -233,6 +235,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             }
         } else {
             StopSSLocal()
+            StopKcptun()
             StopPrivoxy()
             ProxyConfHelper.disableProxy()
         }

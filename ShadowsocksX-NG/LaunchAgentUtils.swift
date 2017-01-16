@@ -75,18 +75,6 @@ func generateSSLocalLauchAgentPlist() -> Bool {
     }
 }
 
-func ReloadConfSSLocal() {
-    let bundle = Bundle.main
-    let installerPath = bundle.path(forResource: "reload_conf_ss_local.sh", ofType: nil)
-    let task = Process.launchedProcess(launchPath: installerPath!, arguments: [""])
-    task.waitUntilExit()
-    if task.terminationStatus == 0 {
-        NSLog("Start ss-local succeeded.")
-    } else {
-        NSLog("Start ss-local failed.")
-    }
-}
-
 func StartSSLocal() {
     let bundle = Bundle.main
     let installerPath = bundle.path(forResource: "start_ss_local.sh", ofType: nil)
@@ -168,8 +156,8 @@ func SyncSSLocal() {
         
         let on = UserDefaults.standard.bool(forKey: "ShadowsocksOn")
         if on {
+            StopSSLocal()
             StartSSLocal()
-            ReloadConfSSLocal()
         }
     } else {
         removeSSLocalConfFile()
@@ -214,19 +202,6 @@ func generatePrivoxyLauchAgentPlist() -> Bool {
         return true
     } else {
         return false
-    }
-}
-
-
-func ReloadConfPrivoxy() {
-    let bundle = Bundle.main
-    let installerPath = bundle.path(forResource: "reload_conf_privoxy.sh", ofType: nil)
-    let task = Process.launchedProcess(launchPath: installerPath!, arguments: [""])
-    task.waitUntilExit()
-    if task.terminationStatus == 0 {
-        NSLog("reload privoxy succeeded.")
-    } else {
-        NSLog("reload privoxy failed.")
     }
 }
 
@@ -316,8 +291,8 @@ func SyncPrivoxy() {
         
         let on = UserDefaults.standard.bool(forKey: "LocalHTTPOn")
         if on {
-//            StartPrivoxy()
-            ReloadConfPrivoxy()
+            StopPrivoxy()
+            StartPrivoxy()
         }
      else {
         removePrivoxyConfFile()
@@ -401,6 +376,14 @@ func writeKcptunConfFile(_ conf:[String:AnyObject]) -> Bool {
     return false
 }
 
+func isEnabledKcptun() -> Bool {
+    let mgr = ServerProfileManager.instance
+    if let profile = mgr.getActiveProfile() {
+        return profile.enabledKcptun
+    }
+    return false
+}
+
 func removeKcptunConfFile() {
     do {
         let filepath = NSHomeDirectory() + APP_SUPPORT_DIR + "kcptun-config.json"
@@ -410,28 +393,17 @@ func removeKcptunConfFile() {
     }
 }
 
-
-func ReloadConfKcptun() {
-    let bundle = Bundle.main
-    let installerPath = bundle.path(forResource: "reload_conf_kcptun.sh", ofType: nil)
-    let task = Process.launchedProcess(launchPath: installerPath!, arguments: [""])
-    task.waitUntilExit()
-    if task.terminationStatus == 0 {
-        NSLog("Start kcptun succeeded.")
-    } else {
-        NSLog("Start kcptun failed.")
-    }
-}
-
 func StartKcptun() {
-    let bundle = Bundle.main
-    let installerPath = bundle.path(forResource: "start_kcptun.sh", ofType: nil)
-    let task = Process.launchedProcess(launchPath: installerPath!, arguments: [""])
-    task.waitUntilExit()
-    if task.terminationStatus == 0 {
-        NSLog("Start kcptun succeeded.")
-    } else {
-        NSLog("Start kcptun failed.")
+    if isEnabledKcptun() {
+        let bundle = Bundle.main
+        let installerPath = bundle.path(forResource: "start_kcptun.sh", ofType: nil)
+        let task = Process.launchedProcess(launchPath: installerPath!, arguments: [""])
+        task.waitUntilExit()
+        if task.terminationStatus == 0 {
+            NSLog("Start kcptun succeeded.")
+        } else {
+            NSLog("Start kcptun failed.")
+        }
     }
 }
 
@@ -457,8 +429,8 @@ func SyncKcptun() {
             
             let on = UserDefaults.standard.bool(forKey: "ShadowsocksOn")
             if on {
+                StopKcptun()
                 StartKcptun()
-                ReloadConfKcptun()
                 return
             }
         }
