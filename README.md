@@ -62,7 +62,9 @@ Then you could configure your apps to use socks5 proxy manual.
 
 Added global Keyboard shortcut <kbd>⌃</kbd> + <kbd>⌘</kbd> + <kbd>P</kbd> to switch between `global` mode and `auto` mode.
 
-## Contributing
+## Contributing 
+
+[![gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/ShadowsocksX-NG/Lobby)
 
 Contributions must be available on a separately named branch based on the latest version of the main branch develop.
 
