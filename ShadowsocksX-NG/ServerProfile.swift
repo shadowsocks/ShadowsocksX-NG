@@ -101,6 +101,9 @@ class ServerProfile: NSObject, NSCopying {
         copy.password = self.password
         copy.remark = self.remark
         copy.ota = self.ota
+        
+        copy.enabledKcptun = self.enabledKcptun
+        copy.kcptunProfile = self.kcptunProfile.copy() as! KcptunProfile
         return copy;
     }
     

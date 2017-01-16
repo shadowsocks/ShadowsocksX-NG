@@ -9,7 +9,7 @@
 import Foundation
 
 
-class KcptunProfile: NSObject {
+class KcptunProfile: NSObject, NSCopying {
     
     var mode: String = "fast"
     
@@ -29,6 +29,7 @@ class KcptunProfile: NSObject {
         copy.nocomp = self.nocomp
         copy.datashard = self.datashard
         copy.parityshard = self.parityshard
+        copy.mtu = self.mtu
         return copy;
     }
     
