@@ -9,7 +9,7 @@
 import Foundation
 
 let SS_LOCAL_VERSION = "2.5.6"
-let KCPTUN_CLIENT_VERSION = "20161222"
+let KCPTUN_CLIENT_VERSION = "20170117"
 let PRIVOXY_VERSION = "3.0.26.static"
 let APP_SUPPORT_DIR = "/Library/Application Support/ShadowsocksX-NG/"
 let LAUNCH_AGENT_DIR = "/Library/LaunchAgents/"
