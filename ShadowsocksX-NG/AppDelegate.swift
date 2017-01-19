@@ -244,7 +244,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     // MARK: - Hotkey Methods
     func registerHotkey() -> Void {
         registerEventHotKey(keyCode: UInt32(keyCodeP)) // to toggle PAC and Global Mode
-        registerEventHotKey(keyCode: UInt32(keyCodeS)) // to toggle SS on or off
+//        registerEventHotKey(keyCode: UInt32(keyCodeS)) // to toggle SS on or off
         registerEventHandler()
     }
     
