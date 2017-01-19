@@ -156,8 +156,12 @@ func SyncSSLocal() {
         
         let on = UserDefaults.standard.bool(forKey: "ShadowsocksOn")
         if on {
-            StopSSLocal()
+            if changed {
+                StopSSLocal()
+            }
             StartSSLocal()
+        } else {
+            StopSSLocal()
         }
     } else {
         removeSSLocalConfFile()
@@ -291,13 +295,16 @@ func SyncPrivoxy() {
         
         let on = UserDefaults.standard.bool(forKey: "LocalHTTPOn")
         if on {
-            StopPrivoxy()
+            if changed {
+                StopPrivoxy()
+            }
             StartPrivoxy()
+        } else {
+            StopPrivoxy()
         }
-     else {
+    } else {
         removePrivoxyConfFile()
         StopPrivoxy()
-    }
     }
 }
 
@@ -429,10 +436,14 @@ func SyncKcptun() {
             
             let on = UserDefaults.standard.bool(forKey: "ShadowsocksOn")
             if on {
-                StopKcptun()
+                if changed {
+                    StopKcptun()
+                }
                 StartKcptun()
-                return
+            } else {
+                StopKcptun()
             }
+            return
         }
     }
     StopKcptun()
