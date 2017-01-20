@@ -481,6 +481,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             spMgr.setActiveProfiledId(newProfile.uuid)
             updateServersMenu()
             SyncSSLocal()
+            applyConfig()
         }
         updateRunningModeMenu()
     }
