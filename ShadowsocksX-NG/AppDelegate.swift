@@ -564,11 +564,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             let defaults = UserDefaults.standard
             let mode = defaults.string(forKey: "ShadowsocksRunningMode")
             if mode == "auto" {
-                statusItem.title = "Auto".localized
+                statusItem.title = "A"
             } else if mode == "global" {
-                statusItem.title = "Global".localized
+                statusItem.title = "G"
             } else if mode == "manual" {
-                statusItem.title = "Manual".localized
+                statusItem.title = "M"
             }
             let titleWidth = statusItem.title!.size(withAttributes: [NSFontAttributeName: statusItem.button!.font!]).width
             let imageWidth:CGFloat = AppDelegate.StatusItemIconWidth
