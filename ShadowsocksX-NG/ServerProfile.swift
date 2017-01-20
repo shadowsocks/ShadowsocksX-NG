@@ -56,7 +56,8 @@ class ServerProfile: NSObject, NSCopying {
             guard let decoded = String(data: data, encoding: String.Encoding.utf8) else {
                 return nil
             }
-            return "ss://\(decoded)"
+            let s = decoded.trimmingCharacters(in: CharacterSet(charactersIn: "\n"))
+            return "ss://\(s)"
         }
 
         guard let decodedUrl = decodeUrl(url: url) else {
