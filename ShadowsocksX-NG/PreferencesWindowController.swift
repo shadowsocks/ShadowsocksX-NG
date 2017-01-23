@@ -187,7 +187,7 @@ class PreferencesWindowController: NSWindowController
     }
     
     func updateProfileBoxVisible() {
-        if profileMgr.profiles.count <= 1 {
+        if profileMgr.profiles.count <= 0 {
             removeButton.isEnabled = false
         }else{
             removeButton.isEnabled = true
