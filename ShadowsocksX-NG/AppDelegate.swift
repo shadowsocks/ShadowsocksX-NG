@@ -59,23 +59,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         // Insert code here to initialize your application
-//        PingServers.instance.ping()
-//        let newInstance = PingTest.init(hostName: "www.baidu.com")
-//        newInstance.start()
         
-//        let SerMgr = ServerProfileManager.instance
-//        let pingServerQueue : DispatchQueue = DispatchQueue.global(priority: DispatchQueue.GlobalQueuePriority.high)
-//        
-//        for profile in SerMgr.profiles {
-//            let host = profile.serverHost
-//            
-//            pingServerQueue.async(execute: {
-//                print(profile.serverHost)
-//                SimplePingClient().pingHostname(host) { latency in
-//                    print("-----------\(host) latency is \(latency ?? "fail")")}
-////                let pingInstance = PingTest.init(hostName: host)
-////                pingInstance.start()
-//            })}
         NSUserNotificationCenter.default.delegate = self
         
         // Prepare ss-local

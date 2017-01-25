@@ -94,17 +94,21 @@ class PingServers:NSObject{
         }
 
         if i >= SerMgr.profiles.count{
-            let notice = NSUserNotification()
-            notice.title = "Ping测试完成！"
-            notice.subtitle = "最快的是\(SerMgr.profiles[fastest_id].remark) \(SerMgr.profiles[fastest_id].serverHost) \(SerMgr.profiles[fastest_id].latency!)ms"
-            NSUserNotificationCenter.default.deliver(notice)
+            DispatchQueue.main.async {
+                // do the UI update HERE
+                let notice = NSUserNotification()
+                notice.title = "Ping测试完成！"
+                notice.subtitle = "最快的是\(self.SerMgr.profiles[self.fastest_id].remark) \(self.SerMgr.profiles[self.fastest_id].serverHost) \(self.SerMgr.profiles[self.fastest_id].latency!)ms"
+                NSUserNotificationCenter.default.deliver(notice)
+            }
             return
         }
-        let host = SerMgr.profiles[i].serverHost
+        let host = self.SerMgr.profiles[i].serverHost
         SimplePingClient.pingHostname(host) { latency in
-            print("-----------\(host) latency is \(latency ?? "fail")")
+            DispatchQueue.global().async {
+            print("[Ping Result]-\(host) latency is \(latency ?? "fail")")
             self.SerMgr.profiles[i].latency = latency ?? "fail"
-
+            
             if latency != nil {
                 if self.fastest == nil{
                     self.fastest = latency
@@ -115,10 +119,13 @@ class PingServers:NSObject{
                         self.fastest_id = i
                     }
                 }
-                (NSApplication.shared().delegate as! AppDelegate).updateServersMenu()
-                (NSApplication.shared().delegate as! AppDelegate).updateRunningModeMenu()
+                DispatchQueue.main.async {
+                    // do the UI update HERE
+                    (NSApplication.shared().delegate as! AppDelegate).updateServersMenu()
+                    (NSApplication.shared().delegate as! AppDelegate).updateRunningModeMenu()
+                }
             }
-
+            }
             self.ping(i+1)
         }
     }
