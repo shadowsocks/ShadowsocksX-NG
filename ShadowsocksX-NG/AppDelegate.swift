@@ -162,7 +162,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                     }else{
                         let userNote = NSUserNotification()
                         userNote.title = "Failed to Add Server Profile".localized
-                        userNote.subtitle = "Address can't not be recognized".localized
+                        userNote.subtitle = "Address can not be recognized".localized
                         NSUserNotificationCenter.default
                             .deliver(userNote);
                     }
