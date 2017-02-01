@@ -84,7 +84,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             "LocalHTTP.ListenAddress": "127.0.0.1",
             "LocalHTTP.ListenPort": NSNumber(value: 1087 as UInt16),
             "LocalHTTPOn": true,
-            "LocalHTTP.FollowGlobal": true
+            "LocalHTTP.FollowGlobal": true,
+            "AutoCheckUpdate": false
         ])
 
         setUpMenu(defaults.bool(forKey: "enable_showSpeed"))
@@ -193,7 +194,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             toggleRunning(toggleRunningMenuItem)
         }
         // Version Check!
-        checkForUpdate(mustShowAlert: false)
+        if defaults.bool(forKey: "AutoCheckUpdate"){
+            checkForUpdate(mustShowAlert: false)
+        }
     }
 
     func applicationWillTerminate(_ aNotification: Notification) {
