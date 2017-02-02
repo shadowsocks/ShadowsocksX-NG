@@ -75,9 +75,7 @@ class PreferencesWindowController: NSWindowController
             ])
         ProtocolTextField.addItems(withObjectValues: [
             "origin",
-            "verify_simple",
             "verify_deflate",
-            "verify_sha1",
             "auth_sha1",
             "auth_sha1_v2",
             "auth_sha1_v4",
@@ -89,7 +87,6 @@ class PreferencesWindowController: NSWindowController
             "http_simple",
             "tls_simple",
             "http_post",
-            "random_head",
             "tls1.2_ticket_auth",
             ])
         profilesTableView.reloadData()
