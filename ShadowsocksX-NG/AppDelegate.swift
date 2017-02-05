@@ -49,6 +49,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     @IBOutlet weak var connectAtLaunchMenuItem: NSMenuItem!
     @IBOutlet weak var ShowNetworkSpeedItem: NSMenuItem!
     @IBOutlet weak var checkUpdateMenuItem: NSMenuItem!
+    @IBOutlet weak var checkUpdateAtLaunchMenuItem: NSMenuItem!
     
     // MARK: Variables
     var statusItemView:StatusItemView!
@@ -456,11 +457,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     }
     
     @IBAction func feedback(_ sender: NSMenuItem) {
-        NSWorkspace.shared().open(URL(string: "https://github.com/qinyuhang/ShadowsocksX-NG/issues")!)
+        NSWorkspace.shared().open(URL(string: "https://github.com/shadowsocksr/ShadowsocksX-NG/issues")!)
     }
     
     @IBAction func checkForUpdate(_ sender: NSMenuItem) {
         checkForUpdate(mustShowAlert: true)
+    }
+    
+    @IBAction func checkUpdatesAtLaunch(_ sender: NSMenuItem) {
+        let defaults = UserDefaults.standard
+        defaults.set(!defaults.bool(forKey: "AutoCheckUpdate"), forKey: "AutoCheckUpdate")
+        checkUpdateAtLaunchMenuItem.state = defaults.bool(forKey: "AutoCheckUpdate") ? 1 : 0
     }
     
     @IBAction func showAbout(_ sender: NSMenuItem) {
@@ -469,11 +476,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     }
     
     func updateLaunchAtLoginMenu() {
-        if launchAtLoginController.launchAtLogin {
-            lanchAtLoginMenuItem.state = 1
-        } else {
-            lanchAtLoginMenuItem.state = 0
-        }
+        lanchAtLoginMenuItem.state = launchAtLoginController.launchAtLogin ? 1 : 0
     }
     
     // MARK: this function is use to update menu bar
@@ -584,17 +587,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
 //            statusItemView.setIcon(image!)
         }
         
-        if defaults.bool(forKey: "enable_showSpeed") {
-            ShowNetworkSpeedItem.state = 1
-        }else{
-            ShowNetworkSpeedItem.state = 0
-        }
-        
-        if defaults.bool(forKey: "ConnectAtLaunch") {
-            connectAtLaunchMenuItem.state = 1
-        } else {
-            connectAtLaunchMenuItem.state = 0
-        }
+        ShowNetworkSpeedItem.state          = defaults.bool(forKey: "enable_showSpeed") ? 1 : 0
+        connectAtLaunchMenuItem.state       = defaults.bool(forKey: "ConnectAtLaunch")  ? 1 : 0
+        checkUpdateAtLaunchMenuItem.state   = defaults.bool(forKey: "AutoCheckUpdate")  ? 1 : 0
     }
     
     func updateServersMenu() {
