@@ -18,7 +18,6 @@ class ServerProfile: NSObject {
     var method:String = "aes-128-cfb"
     var password:String = ""
     var remark:String = ""
-    var ota: Bool = false // onetime authentication
     
     var ssrProtocol:String = "origin"
     var ssrProtocolParam:String = ""
@@ -46,9 +45,6 @@ class ServerProfile: NSObject {
             
             if let remark = data["Remark"] {
                 profile.remark = remark as! String
-            }
-            if let ota = data["OTA"] {
-                profile.ota = ota as! Bool
             }
             if let ssrObfs = data["ssrObfs"] {
                 profile.ssrObfs = ssrObfs as! String
@@ -86,7 +82,6 @@ class ServerProfile: NSObject {
         d["Method"] = method as AnyObject?
         d["Password"] = password as AnyObject?
         d["Remark"] = remark as AnyObject?
-        d["OTA"] = ota as AnyObject?
         d["ssrProtocol"] = ssrProtocol as AnyObject?
         d["ssrProtocolParam"] = ssrProtocolParam as AnyObject?
         d["ssrObfs"] = ssrObfs as AnyObject?
@@ -106,7 +101,6 @@ class ServerProfile: NSObject {
         conf["local_port"] = NSNumber(value: UInt16(defaults.integer(forKey: "LocalSocks5.ListenPort")) as UInt16)
         conf["local_address"] = defaults.string(forKey: "LocalSocks5.ListenAddress") as AnyObject?
         conf["timeout"] = NSNumber(value: UInt32(defaults.integer(forKey: "LocalSocks5.Timeout")) as UInt32)
-        conf["auth"] = NSNumber(value: ota as Bool)
         
         if(!ssrObfs.isEmpty){
             conf["protocol"] = ssrProtocol as AnyObject?
