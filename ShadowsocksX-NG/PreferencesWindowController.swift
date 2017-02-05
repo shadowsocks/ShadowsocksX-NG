@@ -29,8 +29,6 @@ class PreferencesWindowController: NSWindowController
     @IBOutlet weak var remarkTextField: NSTextField!
     @IBOutlet weak var groupTextField: NSTextField!
     
-    @IBOutlet weak var otaCheckBoxBtn: NSButton!
-    
     @IBOutlet weak var copyURLBtn: NSButton!
     
     @IBOutlet weak var removeButton: NSButton!
@@ -234,8 +232,6 @@ class PreferencesWindowController: NSWindowController
             ObfsParamTextField.bind("value", to: editingProfile, withKeyPath: "ssrObfsParam", options: [NSContinuouslyUpdatesValueBindingOption: true])
             groupTextField.bind("value", to: editingProfile, withKeyPath: "ssrGroup", options: [NSContinuouslyUpdatesValueBindingOption: true])
             
-            otaCheckBoxBtn.bind("value", to: editingProfile, withKeyPath: "ota"
-                , options: [NSContinuouslyUpdatesValueBindingOption: true])
         } else {
             editingProfile = nil
             hostTextField.unbind("value")
@@ -251,7 +247,6 @@ class PreferencesWindowController: NSWindowController
             
             remarkTextField.unbind("value")
             
-            otaCheckBoxBtn.unbind("value")
         }
     }
     

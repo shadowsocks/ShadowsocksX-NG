@@ -26,9 +26,6 @@
 /* Class = "NSTextFieldCell"; title = "Obfs Param"; ObjectID = "g7c-fW-7J4"; */
 "g7c-fW-7J4.title" = "混淆参数:";
 
-/* Class = "NSButtonCell"; title = "Enable OTA"; ObjectID = "hRZ-Rp-I5e"; */
-"hRZ-Rp-I5e.title" = "启用 OTA";
-
 /* Class = "NSButtonCell"; title = "Cacnel"; ObjectID = "j03-9E-uHW"; */
 "j03-9E-uHW.title" = "取消";
 
