@@ -35,3 +35,11 @@ Copy paste the log here
 
 If the app crashes and pop up a crash log, please copy and paste here
 
+**Tips:**
+
+- Always check for the latest update, some known bug has been fix in the latest release such as old version not support auth_aes_md5 auth_aes_sha1
+
+- Beta version of macOS also may couse some problems
+
+- ss-local compiled by macOS Sierra 10.12 not compatite with 10.11, some old release's ss-local are compiled using 10.12 will not work on 10.11, new release are try build in 10.10 to max fit the compatite
+
