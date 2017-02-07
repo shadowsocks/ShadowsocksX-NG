@@ -84,7 +84,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             "ShadowsocksRunningMode": "auto",
             "LocalSocks5.ListenPort": NSNumber(value: 1086 as UInt16),
             "LocalSocks5.ListenAddress": "127.0.0.1",
-            "PacServer.ListenPort":NSNumber(value: 8090 as UInt16),
+            "PacServer.ListenPort":NSNumber(value: 1089 as UInt16),
             "LocalSocks5.Timeout": NSNumber(value: 60 as UInt),
             "LocalSocks5.EnableUDPRelay": NSNumber(value: false as Bool),
             "LocalSocks5.EnableVerboseMode": NSNumber(value: false as Bool),
