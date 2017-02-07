@@ -31,7 +31,7 @@ Then I will rewrite the GUI code in Swift.
 
 From [here](https://github.com/shadowsocks/ShadowsocksX-NG/releases/)
 
-## Fetures
+## Features
 
 - Use ss-local from shadowsocks-libev 2.5.6
 - Could Update PAC by download GFW List from GitHub.
