@@ -59,6 +59,7 @@ void ScanQRCodeOnScreen() {
                 [foundSSUrls addObject:[NSURL URLWithString:feature.messageString]];
             }
         }
+         CGImageRelease(image);
     }
     
     free(displays);
