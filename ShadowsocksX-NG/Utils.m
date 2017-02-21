@@ -156,7 +156,6 @@ NSDictionary<NSString *, id>* ParseSSURL(NSURL* url) {
         urlString = [urlString stringByReplacingOccurrencesOfString:@"ssr://" withString:@"" options:NSAnchoredSearch range:NSMakeRange(0, urlString.length)];
 //        NSData *data = [[NSData alloc] initWithBase64EncodedString:urlString options:0];
         NSString *decodedString = decode64(urlString);//[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-        urlString = decodedString;
         if ([decodedString isEqual: @""]) {
             [[NSNotificationCenter defaultCenter]
              postNotificationName:@"NOTIFY_INVALIDE_QR"
