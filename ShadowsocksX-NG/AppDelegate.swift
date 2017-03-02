@@ -288,7 +288,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                 case .pac:
                     Globals.proxyType = .global
                     UserDefaults.standard.setValue("global", forKey: "ShadowsocksRunningMode")
-                    mySelf.isNameTextField.stringValue = "Gobal Mode"
+                    mySelf.isNameTextField.stringValue = "Global Mode"
                     mySelf.updateRunningModeMenu()
                     mySelf.applyConfig()
                 case .global:
