@@ -44,6 +44,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     @IBOutlet var exportAllServerProfileItem: NSMenuItem!
     @IBOutlet var serversPreferencesMenuItem: NSMenuItem!
     
+    @IBOutlet weak var copyHttpProxyExportCmdLineMenuItem: NSMenuItem!
+    
     @IBOutlet weak var lanchAtLoginMenuItem: NSMenuItem!
 
     @IBOutlet weak var hudWindow: NSPanel!
@@ -140,6 +142,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                 (note) in
                 SyncPrivoxy()
                 self.applyConfig()
+                self.updateCopyHttpProxyExportMenu()
             }
         )
         notifyCenter.addObserver(forName: NSNotification.Name(rawValue: "NOTIFY_FOUND_SS_URL"), object: nil, queue: nil) {
@@ -195,6 +198,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             , forEventClass: AEEventClass(kInternetEventClass), andEventID: AEEventID(kAEGetURL))
         
         updateMainMenu()
+        updateCopyHttpProxyExportMenu()
         updateServersMenu()
         updateRunningModeMenu()
         updateLaunchAtLoginMenu()
@@ -486,6 +490,26 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         updateRunningModeMenu()
     }
     
+    @IBAction func copyExportCommand(_ sender: NSMenuItem) {
+        // Get the Http proxy config.
+        let defaults = UserDefaults.standard
+        let address = defaults.string(forKey: "LocalHTTP.ListenAddress")
+        let port = defaults.integer(forKey: "LocalHTTP.ListenPort")
+        
+        // Format an export string.
+        let command = "export http_proxy=http://\(address):\(port);export https_proxy=http://\(address):\(port);"
+        
+        // Copy to paste board.
+        NSPasteboard.general().clearContents()
+        NSPasteboard.general().setString(command, forType: NSStringPboardType)
+        
+        // Give a system notification.
+        let notification = NSUserNotification()
+        notification.title = "Export Command Copied.".localized
+        NSUserNotificationCenter.default
+            .deliver(notification)
+    }
+    
     @IBAction func showLogs(_ sender: NSMenuItem) {
         let ws = NSWorkspace.shared()
         if let appUrl = ws.urlForApplication(withBundleIdentifier: "com.apple.Console") {
@@ -593,6 +617,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             let image = NSImage(named: "menu_icon_disabled")
             statusItem.image = image
         }
+    }
+    
+    func updateCopyHttpProxyExportMenu() {
+        let defaults = UserDefaults.standard
+        let isOn = defaults.bool(forKey: "LocalHTTPOn")
+        copyHttpProxyExportCmdLineMenuItem.isHidden = !isOn
     }
     
     func updateServersMenu() {

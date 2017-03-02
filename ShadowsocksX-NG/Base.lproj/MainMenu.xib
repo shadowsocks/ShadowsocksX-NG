@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="11762" systemVersion="16C67" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="11762" systemVersion="16D32" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
     <dependencies>
         <deployment identifier="macosx"/>
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="11762"/>
@@ -16,6 +16,7 @@
         <customObject id="Voe-Tx-rLC" customClass="AppDelegate" customModule="ShadowsocksX_NG" customModuleProvider="target">
             <connections>
                 <outlet property="autoModeMenuItem" destination="r07-Gu-aEz" id="9aH-pQ-Rgi"/>
+                <outlet property="copyHttpProxyExportCmdLineMenuItem" destination="lg6-To-GZA" id="VTb-he-dg4"/>
                 <outlet property="exportAllServerProfileItem" destination="6k0-gn-DQv" id="W2x-96-ISj"/>
                 <outlet property="globalModeMenuItem" destination="Mw3-Jm-eXA" id="ar5-Yx-3ze"/>
                 <outlet property="hudWindow" destination="QWV-F6-ac1" id="K6D-a4-oqE"/>
@@ -103,6 +104,12 @@
                     </menu>
                 </menuItem>
                 <menuItem isSeparatorItem="YES" id="vwY-hQ-ZIz"/>
+                <menuItem title="Copy HTTP Proxy Shell Export Line" id="lg6-To-GZA">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <connections>
+                        <action selector="copyExportCommand:" target="Voe-Tx-rLC" id="2U4-3M-sAK"/>
+                    </connections>
+                </menuItem>
                 <menuItem title="Scan QR Code From Screen ..." id="Qe6-bF-paT">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
@@ -212,7 +219,7 @@
         <window title="Window" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" hidesOnDeactivate="YES" oneShot="NO" showsToolbarButton="NO" visibleAtLaunch="NO" animationBehavior="default" id="QWV-F6-ac1" customClass="NSPanel">
             <windowStyleMask key="styleMask" closable="YES" miniaturizable="YES" resizable="YES" utility="YES"/>
             <rect key="contentRect" x="139" y="81" width="200" height="100"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1440" height="877"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1920" height="1057"/>
             <value key="minSize" type="size" width="200" height="100"/>
             <value key="maxSize" type="size" width="200" height="100"/>
             <view key="contentView" id="rai-SH-9tZ" userLabel="Panel View">
