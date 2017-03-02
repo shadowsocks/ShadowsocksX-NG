@@ -158,8 +158,15 @@ func SyncSSLocal() {
         if on {
             if changed {
                 StopSSLocal()
+                DispatchQueue.main.asyncAfter(
+                    deadline: DispatchTime.now() + DispatchTimeInterval.seconds(1),
+                    execute: {
+                        () in
+                        StartSSLocal()
+                })
+            } else {
+                StartSSLocal()
             }
-            StartSSLocal()
         } else {
             StopSSLocal()
         }
@@ -297,8 +304,15 @@ func SyncPrivoxy() {
         if on {
             if changed {
                 StopPrivoxy()
+                DispatchQueue.main.asyncAfter(
+                    deadline: DispatchTime.now() + DispatchTimeInterval.seconds(1),
+                    execute: {
+                        () in
+                        StartPrivoxy()
+                })
+            } else {
+                StartPrivoxy()
             }
-            StartPrivoxy()
         } else {
             StopPrivoxy()
         }
@@ -438,8 +452,15 @@ func SyncKcptun() {
             if on {
                 if changed {
                     StopKcptun()
+                    DispatchQueue.main.asyncAfter(
+                        deadline: DispatchTime.now() + DispatchTimeInterval.seconds(1),
+                        execute: {
+                            () in
+                            StartKcptun()
+                    })
+                } else {
+                    StartKcptun()
                 }
-                StartKcptun()
             } else {
                 StopKcptun()
             }
