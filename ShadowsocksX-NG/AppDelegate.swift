@@ -22,7 +22,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     let keyCodeP = kVK_ANSI_P
     let keyCodeS = kVK_ANSI_S
     let modifierKeys = cmdKey+controlKey
-    var hotKeyRef: EventHotKeyRef?
+    var hotKeyRefs = [EventHotKeyRef]()
+    var hotKeyHandlerRef: EventHandlerRef?
 
     var launchAtLoginController: LaunchAtLoginController = LaunchAtLoginController()
     
@@ -31,6 +32,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     
     @IBOutlet weak var runningStatusMenuItem: NSMenuItem!
     @IBOutlet weak var toggleRunningMenuItem: NSMenuItem!
+    @IBOutlet weak var modeSwitchHotKeyDisplayMenuItem: NSMenuItem!
     @IBOutlet weak var autoModeMenuItem: NSMenuItem!
     @IBOutlet weak var globalModeMenuItem: NSMenuItem!
     @IBOutlet weak var manualModeMenuItem: NSMenuItem!
@@ -44,7 +46,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     @IBOutlet var exportAllServerProfileItem: NSMenuItem!
     @IBOutlet var serversPreferencesMenuItem: NSMenuItem!
     
+    @IBOutlet weak var copyHttpProxyExportCmdLineMenuItem: NSMenuItem!
+    
     @IBOutlet weak var lanchAtLoginMenuItem: NSMenuItem!
+    @IBOutlet weak var enableGlobalHotKeys: NSMenuItem!
 
     @IBOutlet weak var hudWindow: NSPanel!
     @IBOutlet weak var panelView: NSView!
@@ -97,6 +102,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             "Kcptun.LocalHost": "127.0.0.1",
             "Kcptun.LocalPort": NSNumber(value: 8388),
             "Kcptun.Conn": NSNumber(value: 1),
+            "GlobalHotKeysOn": true,
             ])
         
         statusItem = NSStatusBar.system().statusItem(withLength: AppDelegate.StatusItemIconWidth)
@@ -205,7 +211,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         applyConfig()
 
         // Register global hotkey
-        registerHotkey()
+        applyHotKey()
     }
     
     func applicationWillTerminate(_ aNotification: Notification) {
@@ -214,7 +220,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         StopKcptun()
         StopPrivoxy()
         ProxyConfHelper.disableProxy()
-        if let ref = hotKeyRef { UnregisterEventHotKey(ref) }
+        unregisterHotKey()
     }
 
     func applyConfig() {
@@ -242,10 +248,39 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     }
 
     // MARK: - Hotkey Methods
+    func applyHotKey() -> Void {
+        let defaults = UserDefaults.standard
+        let isOn = defaults.bool(forKey: "GlobalHotKeysOn")
+        if isOn {
+            registerHotkey()
+        } else {
+            unregisterHotKey()
+        }
+        enableGlobalHotKeys.state = isOn ? 1 : 0
+        modeSwitchHotKeyDisplayMenuItem.isHidden = !isOn
+
+    }
     func registerHotkey() -> Void {
-        registerEventHotKey(keyCode: UInt32(keyCodeP)) // to toggle PAC and Global Mode
-        registerEventHotKey(keyCode: UInt32(keyCodeS)) // to toggle SS on or off
+        let keyCodes = [
+            UInt32(keyCodeP), // to toggle PAC and Global Mode
+            UInt32(keyCodeS), // to toggle SS on or off
+        ]
+        for key in keyCodes {
+            registerEventHotKey(keyCode: key)
+        }
+
         registerEventHandler()
+    }
+    
+    func unregisterHotKey() -> Void {
+        for ref in hotKeyRefs {
+            UnregisterEventHotKey(ref)
+        }
+        hotKeyRefs.removeAll()
+        if let ref = hotKeyHandlerRef {
+            RemoveEventHandler(ref)
+            hotKeyHandlerRef = nil
+        }
     }
     
     func registerEventHotKey(keyCode: UInt32) {
@@ -253,6 +288,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         gMyHotKeyID.signature = OSType(fourCharCodeFrom(string: "sxng"))
         gMyHotKeyID.id = keyCode
         
+        var hotKeyRef: EventHotKeyRef?;
         // Register hotkey.
         RegisterEventHotKey(UInt32(keyCode),
                             UInt32(modifierKeys),
@@ -260,6 +296,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                             GetApplicationEventTarget(),
                             0,
                             &hotKeyRef)
+        if let ref = hotKeyRef {
+            hotKeyRefs.append(ref)
+        }
     }
     
     func registerEventHandler() {
@@ -314,7 +353,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             mySelf.fadeInHud()
             
             return noErr
-        }, 1, &eventType, context, nil)
+        }, 1, &eventType, context, &hotKeyHandlerRef)
     }
     
     
@@ -405,6 +444,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         launchAtLoginController.launchAtLogin = !launchAtLoginController.launchAtLogin;
         updateLaunchAtLoginMenu()
     }
+
+    @IBAction func toggleGlobalHotKeys(_ sender: NSMenuItem) {
+        let defaults = UserDefaults.standard
+        let isOn = !defaults.bool(forKey: "GlobalHotKeysOn")
+        defaults.setValue(isOn, forKey: "GlobalHotKeysOn")
+        applyHotKey()
+    }
+    
     
     @IBAction func selectPACMode(_ sender: NSMenuItem) {
         let defaults = UserDefaults.standard
