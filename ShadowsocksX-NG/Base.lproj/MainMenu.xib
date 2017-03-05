@@ -16,6 +16,8 @@
         <customObject id="Voe-Tx-rLC" customClass="AppDelegate" customModule="ShadowsocksX_NG" customModuleProvider="target">
             <connections>
                 <outlet property="autoModeMenuItem" destination="r07-Gu-aEz" id="9aH-pQ-Rgi"/>
+                <outlet property="copyHttpProxyExportCmdLineMenuItem" destination="lg6-To-GZA" id="VTb-he-dg4"/>
+                <outlet property="enableGlobalHotKeys" destination="TJa-pr-85d" id="snS-8E-Tfi"/>
                 <outlet property="exportAllServerProfileItem" destination="6k0-gn-DQv" id="W2x-96-ISj"/>
                 <outlet property="globalModeMenuItem" destination="Mw3-Jm-eXA" id="ar5-Yx-3ze"/>
                 <outlet property="hudWindow" destination="QWV-F6-ac1" id="K6D-a4-oqE"/>
@@ -23,6 +25,7 @@
                 <outlet property="isNameTextField" destination="rUN-Nq-HDb" id="ayK-aM-rSa"/>
                 <outlet property="lanchAtLoginMenuItem" destination="eUq-p7-ICK" id="q3D-7x-0db"/>
                 <outlet property="manualModeMenuItem" destination="8PR-gs-c5N" id="9qz-mU-5kt"/>
+                <outlet property="modeSwitchHotKeyDisplayMenuItem" destination="f0u-mr-pez" id="Rqh-Po-El1"/>
                 <outlet property="panelView" destination="rai-SH-9tZ" id="5aU-ld-rWb"/>
                 <outlet property="runningStatusMenuItem" destination="fzk-mE-CEV" id="Vwm-Rg-Ykn"/>
                 <outlet property="scanQRCodeMenuItem" destination="Qe6-bF-paT" id="XHa-pa-nCa"/>
@@ -156,6 +159,12 @@
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
                                     <action selector="toggleLaunghAtLoginWithSender:" target="Voe-Tx-rLC" id="eFB-1Q-AOT"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Enable Global Hot Keys" state="on" id="TJa-pr-85d">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="toggleGlobalHotKeys:" target="Voe-Tx-rLC" id="vBS-cB-lQG"/>
                                 </connections>
                             </menuItem>
                             <menuItem title="Show Running Mode In Status Bar" id="CCV-hX-fVA">
