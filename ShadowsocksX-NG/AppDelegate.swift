@@ -493,7 +493,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     @IBAction func copyExportCommand(_ sender: NSMenuItem) {
         // Get the Http proxy config.
         let defaults = UserDefaults.standard
-        let address = defaults.string(forKey: "LocalHTTP.ListenAddress")
+        let address = defaults.string(forKey: "LocalHTTP.ListenAddress")!
         let port = defaults.integer(forKey: "LocalHTTP.ListenPort")
         
         // Format an export string.
