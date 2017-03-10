@@ -1,20 +1,20 @@
 PODS:
-  - Alamofire (4.0.1)
+  - Alamofire (4.2.0)
   - BRLOptionParser (0.3.1)
   - GCDWebServer (3.3.3):
     - GCDWebServer/Core (= 3.3.3)
   - GCDWebServer/Core (3.3.3)
 
 DEPENDENCIES:
-  - Alamofire (~> 4.0.1)
+  - Alamofire (~> 4.2.0)
   - BRLOptionParser (~> 0.3.1)
   - GCDWebServer (~> 3.0)
 
 SPEC CHECKSUMS:
-  Alamofire: 7682d43245de14874acd142ec137b144aa1dd335
+  Alamofire: aa2e09d871c9160ac53c90e83c68064a94e3dfbe
   BRLOptionParser: a03256a8ff003ca1f5376c55f55f210e085a3958
   GCDWebServer: 1c39a1f0763e4eb492bee021e4270fce097d3555
 
-PODFILE CHECKSUM: e675030dbd86de38216dc6c44e64ca1458be94bc
+PODFILE CHECKSUM: d717746ef98bb719d87cee4fc334a392005fd32e
 
-COCOAPODS: 1.0.1
+COCOAPODS: 1.2.0.beta.1

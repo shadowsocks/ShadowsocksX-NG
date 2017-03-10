@@ -41,7 +41,7 @@
 /* Class = "NSMenu"; title = "代理"; ObjectID = "YZp-bf-L40"; */
 "YZp-bf-L40.title" = "代理";
 
-/* Class = "NSMenuItem"; title = "高级设置..."; ObjectID = "bZ3-fy-34d"; */
+/* Class = "NSMenuItem"; title = "Advanced Preferences ..."; ObjectID = "bZ3-fy-34d"; */
 "bZ3-fy-34d.title" = "高级设置...";
 
 /* Class = "NSMenuItem"; title = "代理"; ObjectID = "diI-fB-Rss"; */
@@ -59,8 +59,8 @@
 /* Class = "NSMenuItem"; title = "编辑PAC用户自定规则..."; ObjectID = "rms-p0-CvB"; */
 "rms-p0-CvB.title" = "编辑PAC用户自定规则...";
 
-/* Class = "NSMenuItem"; title = "高级设置..."; ObjectID = "sbx-yz-3lO"; */
-"sbx-yz-3lO.title" = "高级设置...";
+/* Class = "NSMenuItem"; title = "Advanced PAC Proxy Preferences..."; ObjectID = "sbx-yz-3lO"; */
+"sbx-yz-3lO.title" = "高级PAC代理设置...";
 
 /* Class = "NSMenuItem"; title = "服务器"; ObjectID = "u5M-hQ-VSc"; */
 "u5M-hQ-VSc.title" = "服务器";
@@ -79,4 +79,17 @@
 
 /* Class = "NSMenuItem"; title = "HTTP Proxy Preference ..."; ObjectID = "uEp-Gz-cu0"; */
 "uEp-Gz-cu0.title" = "HTTP代理设置...";
+
+/* Class = "NSMenuItem"; title = "Show Bunch Json Example File..."; ObjectID = "pdy-JE-50Q"; */
+"pdy-JE-50Q.title" = "显示示例服务器配置文件...";
+
+/* Class = "NSMenuItem"; title = "Import Bunch Json File..."; ObjectID = "T9g-gy-gvv"; */
+"T9g-gy-gvv.title" = "导入服务器配置文件...";
+
+/* Class = "NSMenuItem"; title = "Export All Server To Json..."; ObjectID = "6k0-gn-DQv"; */
+"6k0-gn-DQv.title" = "导出全部服务器配置...";
+
+/* Class = "NSMenuItem"; title = "Preferences"; ObjectID = "iVn-LD-Ynd"; */
+"iVn-LD-Ynd.title" = "偏好设置";
+
 

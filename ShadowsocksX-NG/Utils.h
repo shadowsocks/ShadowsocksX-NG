@@ -11,6 +11,4 @@
 
 void ScanQRCodeOnScreen();
 
-NSDictionary<NSString *, id>* ParseSSURL(NSURL* url);
-
 #endif /* QRCodeUtils_h */

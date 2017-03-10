@@ -14,7 +14,6 @@
 @implementation ProxyConfHelper
 
 GCDWebServer *webServer =nil;
-FSEventStreamRef fsEventStream;
 
 + (BOOL)isVersionOk {
     NSTask *task;
@@ -141,7 +140,7 @@ FSEventStreamRef fsEventStream;
     
     // Because issue #106 https://github.com/shadowsocks/ShadowsocksX-NG/issues/106
     // Comment below out.
-//    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"LocalHTTPOn"] && [[NSUserDefaults standardUserDefaults] boolForKey:@"LocalHTTP.FollowGlobel"]) {
+//    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"LocalHTTPOn"] && [[NSUserDefaults standardUserDefaults] boolForKey:@"LocalHTTP.FollowGlobal"]) {
 //        NSUInteger privoxyPort = [[NSUserDefaults standardUserDefaults]integerForKey:@"LocalHTTP.ListenPort"];
 //
 //        [args addObject:@"--privoxy-port"];
@@ -211,45 +210,34 @@ FSEventStreamRef fsEventStream;
     }
 }
 
-void onPACChange(
-                 ConstFSEventStreamRef streamRef,
-                 void *clientCallBackInfo,
-                 size_t numEvents,
-                 void *eventPaths,
-                 const FSEventStreamEventFlags eventFlags[],
-                 const FSEventStreamEventId eventIds[])
-{
-    NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
-    if ([defaults boolForKey:@"ShadowsocksOn"]) {
-        if ([[defaults stringForKey:@"ShadowsocksRunningMode"] isEqualToString:@"auto"]) {
-            [ProxyConfHelper disableProxy];
-            [ProxyConfHelper enablePACProxy];
-        }
-    }
-}
-
 + (void)startMonitorPAC {
     NSString* PACFilePath = [self getPACFilePath];
-    
-    if (fsEventStream) {
-        return;
-    }
-    CFStringRef mypath = (__bridge CFStringRef)(PACFilePath);
-    CFArrayRef pathsToWatch = CFArrayCreate(NULL, (const void **)&mypath, 1, NULL);
-    void *callbackInfo = NULL; // could put stream-specific data here.
-    CFAbsoluteTime latency = 3.0; /* Latency in seconds */
-    
-    /* Create the stream, passing in a callback */
-    fsEventStream = FSEventStreamCreate(NULL,
-                                        &onPACChange,
-                                        callbackInfo,
-                                        pathsToWatch,
-                                        kFSEventStreamEventIdSinceNow, /* Or a previous event ID */
-                                        latency,
-                                        kFSEventStreamCreateFlagNone /* Flags explained in reference */
-                                        );
-    FSEventStreamScheduleWithRunLoop(fsEventStream, [[NSRunLoop mainRunLoop] getCFRunLoop], (__bridge CFStringRef)NSDefaultRunLoopMode);
-    FSEventStreamStart(fsEventStream);
+    dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+    int fileId = open([PACFilePath UTF8String], O_EVTONLY);
+    __block dispatch_source_t source = dispatch_source_create(DISPATCH_SOURCE_TYPE_VNODE, fileId,
+                                                              DISPATCH_VNODE_DELETE | DISPATCH_VNODE_WRITE | DISPATCH_VNODE_EXTEND | DISPATCH_VNODE_ATTRIB | DISPATCH_VNODE_LINK | DISPATCH_VNODE_RENAME | DISPATCH_VNODE_REVOKE,
+                                                              queue);
+    dispatch_source_set_event_handler(source, ^
+                                      {
+                                          unsigned long flags = dispatch_source_get_data(source);
+                                          if(flags & DISPATCH_VNODE_DELETE)
+                                          {
+                                              dispatch_source_cancel(source);
+                                          } else {
+                                              NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+                                              if ([defaults boolForKey:@"ShadowsocksOn"]) {
+                                                  if ([[defaults stringForKey:@"ShadowsocksRunningMode"] isEqualToString:@"auto"]) {
+                                                      [ProxyConfHelper disableProxy];
+                                                      [ProxyConfHelper enablePACProxy];
+                                                  }
+                                              }
+                                          }
+                                      });
+    dispatch_source_set_cancel_handler(source, ^(void) 
+                                       {
+                                           close(fileId);
+                                       });
+    dispatch_resume(source);
 }
 
 @end

@@ -11,5 +11,8 @@
 /* Class = "NSWindow"; title = "HTTP Proxy Preferences"; ObjectID = "vS3-DL-Nq3"; */
 "vS3-DL-Nq3.title" = "HTTP 代理 设置";
 
-/* Class = "NSButtonCell"; title = "Follow Globel Mode"; ObjectID = "ofk-Pc-c8f"; */
+/* Class = "NSButtonCell"; title = "Follow Global Mode"; ObjectID = "ofk-Pc-c8f"; */
 "ofk-Pc-c8f.title" = "跟随全局模式";
+
+/* Class = "NSButton"; title = "Copy Shell Export Command"; ObjectID = "ySG-BC-5r0"; */
+"ySG-BC-5r0.title" = "复制终端 Export 命令";

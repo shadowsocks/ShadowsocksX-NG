@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		08FCA0FF1E24BE1A0070984F /* example-gui-config.json in Resources */ = {isa = PBXBuildFile; fileRef = 08FCA0FE1E24BE1A0070984F /* example-gui-config.json */; };
 		258E511BA910B0521B24DAB8 /* Pods_ShadowsocksX_NG.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 283ED1A8E9B711AC65670031 /* Pods_ShadowsocksX_NG.framework */; };
 		9B07EFA71D048BBB0052D9DF /* ss-local in Resources */ = {isa = PBXBuildFile; fileRef = 9B07EFA61D048BBB0052D9DF /* ss-local */; };
 		9B07EFAC1D048E880052D9DF /* menu_icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B07EFA81D048E880052D9DF /* menu_icon@2x.png */; };
@@ -35,6 +36,14 @@
 		9B3FFF4C1D09D8F70019A709 /* install_helper.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9B3FFF4B1D09D8F70019A709 /* install_helper.sh */; };
 		9B3FFF4F1D09D9D50019A709 /* ProxyConfHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 9B3FFF4E1D09D9D50019A709 /* ProxyConfHelper.m */; };
 		9B3FFF541D09E2D10019A709 /* proxy_conf_helper in Resources */ = {isa = PBXBuildFile; fileRef = 9B3FFF441D09CD3B0019A709 /* proxy_conf_helper */; };
+		9B6BF9521E27B23F0061B9A7 /* LaunchHelper.app in CopyFiles */ = {isa = PBXBuildFile; fileRef = 9B6BF9501E27B1F20061B9A7 /* LaunchHelper.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		9B6BF9541E27B2570061B9A7 /* ServiceManagement.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B6BF9531E27B2570061B9A7 /* ServiceManagement.framework */; };
+		9B9CBCA61E25E1DB00FC61AA /* KcptunProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B9CBCA51E25E1DB00FC61AA /* KcptunProfile.swift */; };
+		9B9CBCA81E26312E00FC61AA /* install_kcptun.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9B9CBCA71E26310E00FC61AA /* install_kcptun.sh */; };
+		9B9CBCAA1E2633CB00FC61AA /* kcptun_client in Resources */ = {isa = PBXBuildFile; fileRef = 9B9CBCA91E2633CB00FC61AA /* kcptun_client */; };
+		9B9CBCAF1E263B1600FC61AA /* libpcre.1.dylib in Resources */ = {isa = PBXBuildFile; fileRef = 9B9CBCAD1E263A6600FC61AA /* libpcre.1.dylib */; };
+		9B9CBCB41E26453C00FC61AA /* start_kcptun.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9B9CBCB01E2644DC00FC61AA /* start_kcptun.sh */; };
+		9B9CBCB51E26453C00FC61AA /* stop_kcptun.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9B9CBCB11E26450D00FC61AA /* stop_kcptun.sh */; };
 		9BA04B231D23D5A5005AAD7F /* ProxyConfTool.m in Sources */ = {isa = PBXBuildFile; fileRef = 9BA04B221D23D5A5005AAD7F /* ProxyConfTool.m */; };
 		9BA04B261D24044D005AAD7F /* ProxyPreferencesController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BA04B241D24044D005AAD7F /* ProxyPreferencesController.swift */; };
 		9BB706A71D1B982300551F0E /* SWBApplication.m in Sources */ = {isa = PBXBuildFile; fileRef = 9BB706A51D1B982300551F0E /* SWBApplication.m */; };
@@ -43,7 +52,6 @@
 		9BEEF0691D04D4D500FC52B3 /* install_ss_local.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9BEEF0651D04CB8500FC52B3 /* install_ss_local.sh */; };
 		9BEEF06A1D04D4D500FC52B3 /* start_ss_local.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9BEEF0661D04CE8D00FC52B3 /* start_ss_local.sh */; };
 		9BEEF06B1D04D4D500FC52B3 /* stop_ss_local.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9BEEF0671D04CE9A00FC52B3 /* stop_ss_local.sh */; };
-		9BEEF06C1D04D4D500FC52B3 /* reload_conf_ss_local.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9BEEF0681D04CFE500FC52B3 /* reload_conf_ss_local.sh */; };
 		9BEEF06E1D04DCE400FC52B3 /* ServerProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BEEF06D1D04DCE400FC52B3 /* ServerProfile.swift */; };
 		9BEEF0701D04DDB100FC52B3 /* ServerProfileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BEEF06F1D04DDB100FC52B3 /* ServerProfileManager.swift */; };
 		9BEEF0751D04EF3E00FC52B3 /* PreferencesWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BEEF0731D04EF3E00FC52B3 /* PreferencesWindowController.swift */; };
@@ -51,7 +59,6 @@
 		9BEEF07B1D05631500FC52B3 /* AdvPreferencesWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BEEF0791D05631500FC52B3 /* AdvPreferencesWindowController.swift */; };
 		C6D429931DA75988002A5711 /* install_privoxy.sh in Resources */ = {isa = PBXBuildFile; fileRef = C6D4298E1DA75988002A5711 /* install_privoxy.sh */; };
 		C6D429941DA75988002A5711 /* privoxy in Resources */ = {isa = PBXBuildFile; fileRef = C6D4298F1DA75988002A5711 /* privoxy */; };
-		C6D429951DA75988002A5711 /* reload_conf_privoxy.sh in Resources */ = {isa = PBXBuildFile; fileRef = C6D429901DA75988002A5711 /* reload_conf_privoxy.sh */; };
 		C6D429961DA75988002A5711 /* start_privoxy.sh in Resources */ = {isa = PBXBuildFile; fileRef = C6D429911DA75988002A5711 /* start_privoxy.sh */; };
 		C6D429971DA75988002A5711 /* stop_privoxy.sh in Resources */ = {isa = PBXBuildFile; fileRef = C6D429921DA75988002A5711 /* stop_privoxy.sh */; };
 		C6D429991DA76FBC002A5711 /* privoxy.config.example in Resources */ = {isa = PBXBuildFile; fileRef = C6D429981DA76FBC002A5711 /* privoxy.config.example */; };
@@ -59,6 +66,7 @@
 		C6E28E951DA79705004F8330 /* HTTPPreferencesWindowController.xib in Resources */ = {isa = PBXBuildFile; fileRef = C6E28E971DA79705004F8330 /* HTTPPreferencesWindowController.xib */; };
 		C8E42A6C1D4F270A0074C7EA /* UserRulesController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8E42A6A1D4F270A0074C7EA /* UserRulesController.swift */; };
 		C8E42A6E1D4F2CAF0074C7EA /* UserRulesController.xib in Resources */ = {isa = PBXBuildFile; fileRef = C8E42A701D4F2CAF0074C7EA /* UserRulesController.xib */; };
+		D8E3630B1E2072980027449B /* ServerProfileTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8E3630A1E2072980027449B /* ServerProfileTests.swift */; };
 		E0E57CCA7EB34B90F9D340F2 /* Pods_ShadowsocksX_NGTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 388120F062D7EB7DD0D8DDCA /* Pods_ShadowsocksX_NGTests.framework */; };
 		F0809FF1595BE2966343D3C7 /* libPods-proxy_conf_helper.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1E7783AEDB4A3BDDC9FF16AC /* libPods-proxy_conf_helper.a */; };
 /* End PBXBuildFile section */
@@ -78,6 +86,13 @@
 			remoteGlobalIDString = 9B3FFF431D09CD3B0019A709;
 			remoteInfo = proxy_conf_helper;
 		};
+		9B6BF94F1E27B1F20061B9A7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 9B6BF94B1E27B1F10061B9A7 /* LaunchHelper.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 9B6BF93B1E27B1F10061B9A7;
+			remoteInfo = LaunchHelper;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -90,9 +105,20 @@
 			);
 			runOnlyForDeploymentPostprocessing = 1;
 		};
+		9B6BF9511E27B2250061B9A7 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = Contents/Library/LoginItems;
+			dstSubfolderSpec = 1;
+			files = (
+				9B6BF9521E27B23F0061B9A7 /* LaunchHelper.app in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		08FCA0FE1E24BE1A0070984F /* example-gui-config.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "example-gui-config.json"; sourceTree = "<group>"; };
 		19083CFCED87354F006967FF /* Pods_ShadowsocksX_NGUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ShadowsocksX_NGUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		1E7783AEDB4A3BDDC9FF16AC /* libPods-proxy_conf_helper.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-proxy_conf_helper.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		283ED1A8E9B711AC65670031 /* Pods_ShadowsocksX_NG.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ShadowsocksX_NG.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -115,7 +141,6 @@
 		9B0BFFF41D0460A70040E62B /* ShadowsocksX-NGTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "ShadowsocksX-NGTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		9B0BFFF81D0460A70040E62B /* ShadowsocksX_NGTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShadowsocksX_NGTests.swift; sourceTree = "<group>"; };
 		9B0BFFFA1D0460A70040E62B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		9B0D55451D2CC1B800A4A8E2 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/MainMenu.strings"; sourceTree = "<group>"; };
 		9B0D554A1D2CC85E00A4A8E2 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/ProxyPreferencesController.strings"; sourceTree = "<group>"; };
 		9B0D554B1D2CC87400A4A8E2 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/ProxyPreferencesController.xib; sourceTree = "<group>"; };
 		9B172A5D1D0ACEA100B87B9A /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/AdvPreferencesWindowController.strings"; sourceTree = "<group>"; };
@@ -146,6 +171,14 @@
 		9B3FFF4E1D09D9D50019A709 /* ProxyConfHelper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ProxyConfHelper.m; sourceTree = "<group>"; };
 		9B3FFF501D09DAEA0019A709 /* proxy_conf_helper_version.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = proxy_conf_helper_version.h; sourceTree = "<group>"; };
 		9B3FFF511D09DBA20019A709 /* ShadowsocksX-NG-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ShadowsocksX-NG-Bridging-Header.h"; sourceTree = "<group>"; };
+		9B6BF94B1E27B1F10061B9A7 /* LaunchHelper.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = LaunchHelper.xcodeproj; path = LaunchHelper/LaunchHelper.xcodeproj; sourceTree = "<group>"; };
+		9B6BF9531E27B2570061B9A7 /* ServiceManagement.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ServiceManagement.framework; path = System/Library/Frameworks/ServiceManagement.framework; sourceTree = SDKROOT; };
+		9B9CBCA51E25E1DB00FC61AA /* KcptunProfile.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KcptunProfile.swift; sourceTree = "<group>"; };
+		9B9CBCA71E26310E00FC61AA /* install_kcptun.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = install_kcptun.sh; sourceTree = "<group>"; };
+		9B9CBCA91E2633CB00FC61AA /* kcptun_client */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = kcptun_client; sourceTree = "<group>"; };
+		9B9CBCAD1E263A6600FC61AA /* libpcre.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libpcre.1.dylib; sourceTree = "<group>"; };
+		9B9CBCB01E2644DC00FC61AA /* start_kcptun.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = start_kcptun.sh; sourceTree = "<group>"; };
+		9B9CBCB11E26450D00FC61AA /* stop_kcptun.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = stop_kcptun.sh; sourceTree = "<group>"; };
 		9BA04B211D23D5A5005AAD7F /* ProxyConfTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ProxyConfTool.h; sourceTree = "<group>"; };
 		9BA04B221D23D5A5005AAD7F /* ProxyConfTool.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ProxyConfTool.m; sourceTree = "<group>"; };
 		9BA04B241D24044D005AAD7F /* ProxyPreferencesController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ProxyPreferencesController.swift; sourceTree = "<group>"; };
@@ -156,7 +189,6 @@
 		9BEEF0651D04CB8500FC52B3 /* install_ss_local.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = install_ss_local.sh; sourceTree = "<group>"; };
 		9BEEF0661D04CE8D00FC52B3 /* start_ss_local.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = start_ss_local.sh; sourceTree = "<group>"; };
 		9BEEF0671D04CE9A00FC52B3 /* stop_ss_local.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = stop_ss_local.sh; sourceTree = "<group>"; };
-		9BEEF0681D04CFE500FC52B3 /* reload_conf_ss_local.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = reload_conf_ss_local.sh; sourceTree = "<group>"; };
 		9BEEF06D1D04DCE400FC52B3 /* ServerProfile.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ServerProfile.swift; sourceTree = "<group>"; };
 		9BEEF06F1D04DDB100FC52B3 /* ServerProfileManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ServerProfileManager.swift; sourceTree = "<group>"; };
 		9BEEF0731D04EF3E00FC52B3 /* PreferencesWindowController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreferencesWindowController.swift; sourceTree = "<group>"; };
@@ -165,7 +197,6 @@
 		B4E6A97CA843F3943524B686 /* Pods-proxy_conf_helper.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-proxy_conf_helper.debug.xcconfig"; path = "Pods/Target Support Files/Pods-proxy_conf_helper/Pods-proxy_conf_helper.debug.xcconfig"; sourceTree = "<group>"; };
 		C6D4298E1DA75988002A5711 /* install_privoxy.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = install_privoxy.sh; sourceTree = "<group>"; };
 		C6D4298F1DA75988002A5711 /* privoxy */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = privoxy; sourceTree = "<group>"; };
-		C6D429901DA75988002A5711 /* reload_conf_privoxy.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = reload_conf_privoxy.sh; sourceTree = "<group>"; };
 		C6D429911DA75988002A5711 /* start_privoxy.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = start_privoxy.sh; sourceTree = "<group>"; };
 		C6D429921DA75988002A5711 /* stop_privoxy.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = stop_privoxy.sh; sourceTree = "<group>"; };
 		C6D429981DA76FBC002A5711 /* privoxy.config.example */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = privoxy.config.example; sourceTree = "<group>"; };
@@ -176,6 +207,7 @@
 		C8E42A6A1D4F270A0074C7EA /* UserRulesController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UserRulesController.swift; sourceTree = "<group>"; };
 		C8E42A6F1D4F2CAF0074C7EA /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/UserRulesController.xib; sourceTree = "<group>"; };
 		C8E42A721D4F2CB10074C7EA /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/UserRulesController.strings"; sourceTree = "<group>"; };
+		D8E3630A1E2072980027449B /* ServerProfileTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ServerProfileTests.swift; sourceTree = "<group>"; };
 		E9E9FB3855DA55D0710EE7BD /* Pods-ShadowsocksX-NG.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ShadowsocksX-NG.release.xcconfig"; path = "Pods/Target Support Files/Pods-ShadowsocksX-NG/Pods-ShadowsocksX-NG.release.xcconfig"; sourceTree = "<group>"; };
 		FE3237E9FB24D9B924A0E630 /* Pods-ShadowsocksX-NG.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ShadowsocksX-NG.debug.xcconfig"; path = "Pods/Target Support Files/Pods-ShadowsocksX-NG/Pods-ShadowsocksX-NG.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -185,6 +217,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9B6BF9541E27B2570061B9A7 /* ServiceManagement.framework in Frameworks */,
 				9B3FFF3E1D08D9910019A709 /* SystemConfiguration.framework in Frameworks */,
 				258E511BA910B0521B24DAB8 /* Pods_ShadowsocksX_NG.framework in Frameworks */,
 			);
@@ -227,9 +260,11 @@
 		9B07EFB01D048E900052D9DF /* Support Files */ = {
 			isa = PBXGroup;
 			children = (
+				9B9CBCAD1E263A6600FC61AA /* libpcre.1.dylib */,
+				9B9CBCA91E2633CB00FC61AA /* kcptun_client */,
+				08FCA0FE1E24BE1A0070984F /* example-gui-config.json */,
 				C6D4298E1DA75988002A5711 /* install_privoxy.sh */,
 				C6D4298F1DA75988002A5711 /* privoxy */,
-				C6D429901DA75988002A5711 /* reload_conf_privoxy.sh */,
 				C6D429911DA75988002A5711 /* start_privoxy.sh */,
 				C6D429921DA75988002A5711 /* stop_privoxy.sh */,
 				9BE8FBBD1D0B1FB900CAFD01 /* libcrypto.1.0.0.dylib */,
@@ -244,10 +279,12 @@
 				9B07EFAA1D048E880052D9DF /* menu_icon_disabled.png */,
 				9B07EFAB1D048E880052D9DF /* menu_icon_disabled@2x.png */,
 				9BEEF0651D04CB8500FC52B3 /* install_ss_local.sh */,
+				9B9CBCA71E26310E00FC61AA /* install_kcptun.sh */,
 				9BEEF0661D04CE8D00FC52B3 /* start_ss_local.sh */,
 				9BEEF0671D04CE9A00FC52B3 /* stop_ss_local.sh */,
-				9BEEF0681D04CFE500FC52B3 /* reload_conf_ss_local.sh */,
 				C6D429981DA76FBC002A5711 /* privoxy.config.example */,
+				9B9CBCB01E2644DC00FC61AA /* start_kcptun.sh */,
+				9B9CBCB11E26450D00FC61AA /* stop_kcptun.sh */,
 			);
 			name = "Support Files";
 			sourceTree = "<group>";
@@ -255,6 +292,7 @@
 		9B0BFFDC1D0460A70040E62B = {
 			isa = PBXGroup;
 			children = (
+				9B6BF94B1E27B1F10061B9A7 /* LaunchHelper.xcodeproj */,
 				9B172A601D0ADA5B00B87B9A /* genstrings.py */,
 				9B0BFFE71D0460A70040E62B /* ShadowsocksX-NG */,
 				9B0BFFF71D0460A70040E62B /* ShadowsocksX-NGTests */,
@@ -290,6 +328,7 @@
 				9B0BFFEC1D0460A70040E62B /* MainMenu.xib */,
 				9B0BFFEF1D0460A70040E62B /* Info.plist */,
 				9BEEF06D1D04DCE400FC52B3 /* ServerProfile.swift */,
+				9B9CBCA51E25E1DB00FC61AA /* KcptunProfile.swift */,
 				9BEEF06F1D04DDB100FC52B3 /* ServerProfileManager.swift */,
 				9BEEF0771D04FE8A00FC52B3 /* LaunchAgentUtils.swift */,
 				9B3FFF0C1D05FEB30019A709 /* Utils.swift */,
@@ -309,6 +348,7 @@
 		9B0BFFF71D0460A70040E62B /* ShadowsocksX-NGTests */ = {
 			isa = PBXGroup;
 			children = (
+				D8E3630A1E2072980027449B /* ServerProfileTests.swift */,
 				9B0BFFF81D0460A70040E62B /* ShadowsocksX_NGTests.swift */,
 				9B0BFFFA1D0460A70040E62B /* Info.plist */,
 			);
@@ -343,9 +383,18 @@
 			path = proxy_conf_helper;
 			sourceTree = "<group>";
 		};
+		9B6BF94C1E27B1F10061B9A7 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				9B6BF9501E27B1F20061B9A7 /* LaunchHelper.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 		D3CE66CC039F651F28057DDB /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				9B6BF9531E27B2570061B9A7 /* ServiceManagement.framework */,
 				9B3FFF3D1D08D9910019A709 /* SystemConfiguration.framework */,
 				9B3FFF3B1D08D93B0019A709 /* WebKit.framework */,
 				283ED1A8E9B711AC65670031 /* Pods_ShadowsocksX_NG.framework */,
@@ -369,6 +418,7 @@
 				9B0BFFE31D0460A70040E62B /* Resources */,
 				5E160625E3EC80E27DA7EF05 /* [CP] Embed Pods Frameworks */,
 				3E819BD46B855EDB116A3C70 /* [CP] Copy Pods Resources */,
+				9B6BF9511E27B2250061B9A7 /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -427,7 +477,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0730;
-				LastUpgradeCheck = 0730;
+				LastUpgradeCheck = 0810;
 				ORGANIZATIONNAME = qiuyuzhou;
 				TargetAttributes = {
 					9B0BFFE41D0460A70040E62B = {
@@ -456,6 +506,12 @@
 			mainGroup = 9B0BFFDC1D0460A70040E62B;
 			productRefGroup = 9B0BFFE61D0460A70040E62B /* Products */;
 			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = 9B6BF94C1E27B1F10061B9A7 /* Products */;
+					ProjectRef = 9B6BF94B1E27B1F10061B9A7 /* LaunchHelper.xcodeproj */;
+				},
+			);
 			projectRoot = "";
 			targets = (
 				9B0BFFE41D0460A70040E62B /* ShadowsocksX-NG */,
@@ -465,11 +521,26 @@
 		};
 /* End PBXProject section */
 
+/* Begin PBXReferenceProxy section */
+		9B6BF9501E27B1F20061B9A7 /* LaunchHelper.app */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.application;
+			path = LaunchHelper.app;
+			remoteRef = 9B6BF94F1E27B1F20061B9A7 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
+
 /* Begin PBXResourcesBuildPhase section */
 		9B0BFFE31D0460A70040E62B /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9B9CBCB41E26453C00FC61AA /* start_kcptun.sh in Resources */,
+				9B9CBCB51E26453C00FC61AA /* stop_kcptun.sh in Resources */,
+				9B9CBCAF1E263B1600FC61AA /* libpcre.1.dylib in Resources */,
+				9B9CBCA81E26312E00FC61AA /* install_kcptun.sh in Resources */,
+				9B9CBCAA1E2633CB00FC61AA /* kcptun_client in Resources */,
 				9BE8FBBF1D0B211600CAFD01 /* libcrypto.1.0.0.dylib in Resources */,
 				9B3FFF541D09E2D10019A709 /* proxy_conf_helper in Resources */,
 				C6E28E951DA79705004F8330 /* HTTPPreferencesWindowController.xib in Resources */,
@@ -484,12 +555,11 @@
 				C6D429991DA76FBC002A5711 /* privoxy.config.example in Resources */,
 				9BEEF06B1D04D4D500FC52B3 /* stop_ss_local.sh in Resources */,
 				9B3FFF341D08CEF70019A709 /* SWBQRCodeWindowController.xib in Resources */,
-				9BEEF06C1D04D4D500FC52B3 /* reload_conf_ss_local.sh in Resources */,
 				9B3FFF231D088E8D0019A709 /* abp.js in Resources */,
 				9B07EFAD1D048E880052D9DF /* menu_icon.png in Resources */,
-				C6D429951DA75988002A5711 /* reload_conf_privoxy.sh in Resources */,
 				9B0BFFEB1D0460A70040E62B /* Assets.xcassets in Resources */,
 				9B2491B71D0ACC3E003BBECC /* AdvPreferencesWindowController.xib in Resources */,
+				08FCA0FF1E24BE1A0070984F /* example-gui-config.json in Resources */,
 				9B3FFF271D0898EB0019A709 /* gfwlist.txt in Resources */,
 				C6D429931DA75988002A5711 /* install_privoxy.sh in Resources */,
 				9BC70EDC1D2E3E3100EDA4CA /* Localizable.strings in Resources */,
@@ -540,7 +610,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
+			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
 			showEnvVarsInLog = 0;
 		};
 		3545247EFCD033C3FA63EA6C /* [CP] Check Pods Manifest.lock */ = {
@@ -555,7 +625,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
+			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
 			showEnvVarsInLog = 0;
 		};
 		3E819BD46B855EDB116A3C70 /* [CP] Copy Pods Resources */ = {
@@ -615,7 +685,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
+			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
 			showEnvVarsInLog = 0;
 		};
 		D8C2D6AF002916F4095E15E3 /* [CP] Copy Pods Resources */ = {
@@ -657,6 +727,7 @@
 				9BA04B231D23D5A5005AAD7F /* ProxyConfTool.m in Sources */,
 				9BEEF0781D04FE8A00FC52B3 /* LaunchAgentUtils.swift in Sources */,
 				C6E28E921DA79380004F8330 /* HTTPPreferencesWindowController.swift in Sources */,
+				9B9CBCA61E25E1DB00FC61AA /* KcptunProfile.swift in Sources */,
 				C8E42A6C1D4F270A0074C7EA /* UserRulesController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -666,6 +737,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				9B0BFFF91D0460A70040E62B /* ShadowsocksX_NGTests.swift in Sources */,
+				D8E3630B1E2072980027449B /* ServerProfileTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -697,7 +769,6 @@
 			isa = PBXVariantGroup;
 			children = (
 				9B0BFFED1D0460A70040E62B /* Base */,
-				9B0D55451D2CC1B800A4A8E2 /* zh-Hans */,
 				C6E28E9B1DA79FB9004F8330 /* zh-Hans */,
 			);
 			name = MainMenu.xib;
@@ -764,6 +835,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
@@ -774,8 +846,10 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_IDENTITY = "Mac Developer";
@@ -809,6 +883,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
@@ -819,8 +894,10 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_IDENTITY = "Mac Developer";
@@ -839,6 +916,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = macosx;
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 			};
 			name = Release;
 		};
@@ -846,6 +924,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = FE3237E9FB24D9B924A0E630 /* Pods-ShadowsocksX-NG.debug.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -873,6 +952,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = E9E9FB3855DA55D0710EE7BD /* Pods-ShadowsocksX-NG.release.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -905,6 +985,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.qiuyuzhou.ShadowsocksX-NGTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "ShadowsocksX-NG/ShadowsocksX-NG-Bridging-Header.h";
 				SWIFT_VERSION = 3.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ShadowsocksX-NG.app/Contents/MacOS/ShadowsocksX-NG";
 			};
@@ -920,6 +1001,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.qiuyuzhou.ShadowsocksX-NGTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "ShadowsocksX-NG/ShadowsocksX-NG-Bridging-Header.h";
 				SWIFT_VERSION = 3.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ShadowsocksX-NG.app/Contents/MacOS/ShadowsocksX-NG";
 			};
@@ -931,6 +1013,7 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
 			};
 			name = Debug;
 		};
@@ -940,6 +1023,7 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
 			};
 			name = Release;
 		};

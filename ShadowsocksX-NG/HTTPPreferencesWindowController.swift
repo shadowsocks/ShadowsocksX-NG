@@ -10,6 +10,9 @@ import Cocoa
 
 class HTTPPreferencesWindowController: NSWindowController, NSWindowDelegate {
     
+    @IBOutlet weak var address: NSTextField!
+    @IBOutlet weak var port: NSTextField!
+    
     override func windowDidLoad() {
         super.windowDidLoad()
         

@@ -59,6 +59,7 @@ void ScanQRCodeOnScreen() {
                 [foundSSUrls addObject:[NSURL URLWithString:feature.messageString]];
             }
         }
+         CGImageRelease(image);
     }
     
     free(displays);
@@ -70,64 +71,4 @@ void ScanQRCodeOnScreen() {
                   @"source": @"qrcode"
                  }
      ];
-}
-
-// 解析SS URL，如果成功则返回一个与ServerProfile类兼容的dict
-NSDictionary<NSString *, id>* ParseSSURL(NSURL* url) {
-    if (!url.host) {
-        return nil;
-    }
-    
-    NSString *urlString = [url absoluteString];
-    int i = 0;
-    NSString *errorReason = nil;
-    while(i < 2) {
-        if (i == 1) {
-            NSString* host = url.host;
-            if ([host length]%4!=0) {
-                int n = 4 - [host length]%4;
-                if (1==n) {
-                    host = [host stringByAppendingString:@"="];
-                } else if (2==n) {
-                    host = [host stringByAppendingString:@"=="];
-                }
-            }
-            NSData *data = [[NSData alloc] initWithBase64EncodedString:host options:0];
-            NSString *decodedString = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-            urlString = decodedString;
-        }
-        i++;
-        urlString = [urlString stringByReplacingOccurrencesOfString:@"ss://" withString:@"" options:NSAnchoredSearch range:NSMakeRange(0, urlString.length)];
-        NSRange firstColonRange = [urlString rangeOfString:@":"];
-        NSRange lastColonRange = [urlString rangeOfString:@":" options:NSBackwardsSearch];
-        NSRange lastAtRange = [urlString rangeOfString:@"@" options:NSBackwardsSearch];
-        if (firstColonRange.length == 0) {
-            errorReason = @"colon not found";
-            continue;
-        }
-        if (firstColonRange.location == lastColonRange.location) {
-            errorReason = @"only one colon";
-            continue;
-        }
-        if (lastAtRange.length == 0) {
-            errorReason = @"at not found";
-            continue;
-        }
-        if (!((firstColonRange.location < lastAtRange.location) && (lastAtRange.location < lastColonRange.location))) {
-            errorReason = @"wrong position";
-            continue;
-        }
-        NSString *method = [urlString substringWithRange:NSMakeRange(0, firstColonRange.location)];
-        NSString *password = [urlString substringWithRange:NSMakeRange(firstColonRange.location + 1, lastAtRange.location - firstColonRange.location - 1)];
-        NSString *IP = [urlString substringWithRange:NSMakeRange(lastAtRange.location + 1, lastColonRange.location - lastAtRange.location - 1)];
-        NSString *port = [urlString substringWithRange:NSMakeRange(lastColonRange.location + 1, urlString.length - lastColonRange.location - 1)];
-        
-        
-        return @{@"ServerHost": IP,
-                 @"ServerPort": @([port integerValue]),
-                 @"Method": method,
-                 @"Password": password,
-                 };
-    }
-    return nil;
 }
