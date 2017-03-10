@@ -36,6 +36,9 @@
 		9B3FFF4C1D09D8F70019A709 /* install_helper.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9B3FFF4B1D09D8F70019A709 /* install_helper.sh */; };
 		9B3FFF4F1D09D9D50019A709 /* ProxyConfHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 9B3FFF4E1D09D9D50019A709 /* ProxyConfHelper.m */; };
 		9B3FFF541D09E2D10019A709 /* proxy_conf_helper in Resources */ = {isa = PBXBuildFile; fileRef = 9B3FFF441D09CD3B0019A709 /* proxy_conf_helper */; };
+		9B5831EE1E72EBF9009D5B7D /* ShortcutsPreferencesWindowController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9B5831EC1E72EBF9009D5B7D /* ShortcutsPreferencesWindowController.xib */; };
+		9B5831F31E72FA63009D5B7D /* ShortcutsPreferencesWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9B5831F21E72FA63009D5B7D /* ShortcutsPreferencesWindowController.m */; };
+		9B5831F61E7302F8009D5B7D /* ShortcutsController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9B5831F51E7302F8009D5B7D /* ShortcutsController.m */; };
 		9B6BF9521E27B23F0061B9A7 /* LaunchHelper.app in CopyFiles */ = {isa = PBXBuildFile; fileRef = 9B6BF9501E27B1F20061B9A7 /* LaunchHelper.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		9B6BF9541E27B2570061B9A7 /* ServiceManagement.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B6BF9531E27B2570061B9A7 /* ServiceManagement.framework */; };
 		9B9CBCA61E25E1DB00FC61AA /* KcptunProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B9CBCA51E25E1DB00FC61AA /* KcptunProfile.swift */; };
@@ -171,6 +174,11 @@
 		9B3FFF4E1D09D9D50019A709 /* ProxyConfHelper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ProxyConfHelper.m; sourceTree = "<group>"; };
 		9B3FFF501D09DAEA0019A709 /* proxy_conf_helper_version.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = proxy_conf_helper_version.h; sourceTree = "<group>"; };
 		9B3FFF511D09DBA20019A709 /* ShadowsocksX-NG-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ShadowsocksX-NG-Bridging-Header.h"; sourceTree = "<group>"; };
+		9B5831EC1E72EBF9009D5B7D /* ShortcutsPreferencesWindowController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ShortcutsPreferencesWindowController.xib; sourceTree = "<group>"; };
+		9B5831F11E72FA63009D5B7D /* ShortcutsPreferencesWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ShortcutsPreferencesWindowController.h; sourceTree = "<group>"; };
+		9B5831F21E72FA63009D5B7D /* ShortcutsPreferencesWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ShortcutsPreferencesWindowController.m; sourceTree = "<group>"; };
+		9B5831F41E7302F8009D5B7D /* ShortcutsController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ShortcutsController.h; sourceTree = "<group>"; };
+		9B5831F51E7302F8009D5B7D /* ShortcutsController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ShortcutsController.m; sourceTree = "<group>"; };
 		9B6BF94B1E27B1F10061B9A7 /* LaunchHelper.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = LaunchHelper.xcodeproj; path = LaunchHelper/LaunchHelper.xcodeproj; sourceTree = "<group>"; };
 		9B6BF9531E27B2570061B9A7 /* ServiceManagement.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ServiceManagement.framework; path = System/Library/Frameworks/ServiceManagement.framework; sourceTree = SDKROOT; };
 		9B9CBCA51E25E1DB00FC61AA /* KcptunProfile.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KcptunProfile.swift; sourceTree = "<group>"; };
@@ -341,6 +349,8 @@
 				9B3FFF501D09DAEA0019A709 /* proxy_conf_helper_version.h */,
 				9BA04B211D23D5A5005AAD7F /* ProxyConfTool.h */,
 				9BA04B221D23D5A5005AAD7F /* ProxyConfTool.m */,
+				9B5831F41E7302F8009D5B7D /* ShortcutsController.h */,
+				9B5831F51E7302F8009D5B7D /* ShortcutsController.m */,
 			);
 			path = "ShadowsocksX-NG";
 			sourceTree = "<group>";
@@ -371,6 +381,9 @@
 				C8E42A701D4F2CAF0074C7EA /* UserRulesController.xib */,
 				C6E28E911DA79380004F8330 /* HTTPPreferencesWindowController.swift */,
 				C6E28E971DA79705004F8330 /* HTTPPreferencesWindowController.xib */,
+				9B5831EC1E72EBF9009D5B7D /* ShortcutsPreferencesWindowController.xib */,
+				9B5831F11E72FA63009D5B7D /* ShortcutsPreferencesWindowController.h */,
+				9B5831F21E72FA63009D5B7D /* ShortcutsPreferencesWindowController.m */,
 			);
 			name = UI;
 			sourceTree = "<group>";
@@ -569,6 +582,7 @@
 				9B07EFAC1D048E880052D9DF /* menu_icon@2x.png in Resources */,
 				9B07EFA71D048BBB0052D9DF /* ss-local in Resources */,
 				9B07EFAF1D048E880052D9DF /* menu_icon_disabled@2x.png in Resources */,
+				9B5831EE1E72EBF9009D5B7D /* ShortcutsPreferencesWindowController.xib in Resources */,
 				9B07EFAE1D048E880052D9DF /* menu_icon_disabled.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -712,6 +726,8 @@
 			files = (
 				9B3FFF171D072FDE0019A709 /* LaunchAtLoginController.m in Sources */,
 				9B3FFF4F1D09D9D50019A709 /* ProxyConfHelper.m in Sources */,
+				9B5831F61E7302F8009D5B7D /* ShortcutsController.m in Sources */,
+				9B5831F31E72FA63009D5B7D /* ShortcutsPreferencesWindowController.m in Sources */,
 				9BB706A71D1B982300551F0E /* SWBApplication.m in Sources */,
 				9B3FFF1E1D0732660019A709 /* Utils.m in Sources */,
 				9B3FFF321D08CEE40019A709 /* SWBQRCodeWindowController.m in Sources */,

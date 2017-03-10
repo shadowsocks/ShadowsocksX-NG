@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="11762" systemVersion="16D32" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
+    <dependencies>
+        <deployment identifier="macosx"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="11762"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <customObject id="-2" userLabel="File's Owner" customClass="ShortcutsPreferencesWindowController" customModule="ShadowsocksX_NG" customModuleProvider="target">
+            <connections>
+                <outlet property="switchModeShortcutCtrl" destination="nZn-Ee-h8z" id="2iw-P1-htd"/>
+                <outlet property="toggleRunningShortcutCtrl" destination="zcO-rg-gXN" id="5dF-Ls-4DH"/>
+                <outlet property="window" destination="F0z-JX-Cv5" id="gIp-Ho-8D9"/>
+            </connections>
+        </customObject>
+        <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
+        <customObject id="-3" userLabel="Application" customClass="NSObject"/>
+        <window title="Shortcuts Preferences" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" oneShot="NO" releasedWhenClosed="NO" animationBehavior="default" id="F0z-JX-Cv5">
+            <windowStyleMask key="styleMask" titled="YES" closable="YES"/>
+            <windowPositionMask key="initialPositionMask" topStrut="YES" bottomStrut="YES"/>
+            <rect key="contentRect" x="526" y="581" width="365" height="86"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1440" height="877"/>
+            <view key="contentView" wantsLayer="YES" id="se5-gp-TjO">
+                <rect key="frame" x="0.0" y="0.0" width="365" height="86"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <customView translatesAutoresizingMaskIntoConstraints="NO" id="nZn-Ee-h8z" customClass="MASShortcutView">
+                        <rect key="frame" x="182" y="20" width="163" height="19"/>
+                    </customView>
+                    <customView translatesAutoresizingMaskIntoConstraints="NO" id="zcO-rg-gXN" customClass="MASShortcutView">
+                        <rect key="frame" x="182" y="47" width="163" height="19"/>
+                    </customView>
+                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Bme-MP-1H3">
+                        <rect key="frame" x="18" y="21" width="158" height="17"/>
+                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Switch mode:" id="MJQ-KA-SGa">
+                            <font key="font" metaFont="system"/>
+                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" translatesAutoresizingMaskIntoConstraints="NO" id="b8A-hd-VRY">
+                        <rect key="frame" x="18" y="49" width="158" height="17"/>
+                        <constraints>
+                            <constraint firstAttribute="width" constant="154" id="O8A-ky-ag4"/>
+                        </constraints>
+                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Toggle On/Off:" id="7OS-YI-YRe">
+                            <font key="font" metaFont="system"/>
+                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                </subviews>
+                <constraints>
+                    <constraint firstItem="nZn-Ee-h8z" firstAttribute="leading" secondItem="Bme-MP-1H3" secondAttribute="trailing" constant="8" symbolic="YES" id="58f-cT-PLi"/>
+                    <constraint firstItem="Bme-MP-1H3" firstAttribute="centerY" secondItem="nZn-Ee-h8z" secondAttribute="centerY" id="5WG-IQ-8Wm"/>
+                    <constraint firstAttribute="trailing" secondItem="zcO-rg-gXN" secondAttribute="trailing" constant="20" symbolic="YES" id="7nF-aU-3ON"/>
+                    <constraint firstAttribute="bottom" secondItem="nZn-Ee-h8z" secondAttribute="bottom" constant="20" symbolic="YES" id="8IS-fc-KM9"/>
+                    <constraint firstItem="zcO-rg-gXN" firstAttribute="leading" secondItem="b8A-hd-VRY" secondAttribute="trailing" constant="8" symbolic="YES" id="JZG-83-he7"/>
+                    <constraint firstItem="nZn-Ee-h8z" firstAttribute="top" secondItem="zcO-rg-gXN" secondAttribute="bottom" constant="8" symbolic="YES" id="Mw8-bt-BB0"/>
+                    <constraint firstItem="Bme-MP-1H3" firstAttribute="top" secondItem="b8A-hd-VRY" secondAttribute="bottom" constant="11" id="cgI-f5-9dC"/>
+                    <constraint firstItem="b8A-hd-VRY" firstAttribute="top" secondItem="se5-gp-TjO" secondAttribute="top" constant="20" symbolic="YES" id="cge-69-H4S"/>
+                    <constraint firstItem="b8A-hd-VRY" firstAttribute="top" secondItem="zcO-rg-gXN" secondAttribute="top" id="qUk-wA-oid"/>
+                    <constraint firstItem="zcO-rg-gXN" firstAttribute="trailing" secondItem="nZn-Ee-h8z" secondAttribute="trailing" id="qUp-IB-sst"/>
+                    <constraint firstItem="b8A-hd-VRY" firstAttribute="leading" secondItem="se5-gp-TjO" secondAttribute="leading" constant="20" symbolic="YES" id="ugI-XY-drL"/>
+                    <constraint firstItem="b8A-hd-VRY" firstAttribute="leading" secondItem="Bme-MP-1H3" secondAttribute="leading" id="usZ-yb-Sy2"/>
+                    <constraint firstItem="zcO-rg-gXN" firstAttribute="leading" secondItem="nZn-Ee-h8z" secondAttribute="leading" id="v2G-eN-Shm"/>
+                </constraints>
+            </view>
+            <connections>
+                <outlet property="delegate" destination="-2" id="0bl-1N-AYu"/>
+            </connections>
+            <point key="canvasLocation" x="74.5" y="54"/>
+        </window>
+    </objects>
+</document>

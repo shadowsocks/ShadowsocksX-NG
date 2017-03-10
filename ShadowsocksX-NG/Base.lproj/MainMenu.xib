@@ -152,10 +152,16 @@
                                     <action selector="editHTTPPreferences:" target="Voe-Tx-rLC" id="tkC-e3-PH9"/>
                                 </connections>
                             </menuItem>
-                            <menuItem title="Advanced PAC Proxy Preferences..." id="sbx-yz-3lO">
+                            <menuItem title="Advanced PAC Proxy Preferences ..." id="sbx-yz-3lO">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
                                     <action selector="editProxyPreferences:" target="Voe-Tx-rLC" id="Jji-Ea-Sy8"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Shortcuts Preferences ..." id="waZ-9G-2Xw">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="editShortcutsPreferences:" target="Voe-Tx-rLC" id="dMl-t6-50N"/>
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="ZrT-7B-OmN"/>
@@ -219,7 +225,7 @@
         <window title="Window" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" hidesOnDeactivate="YES" oneShot="NO" showsToolbarButton="NO" visibleAtLaunch="NO" animationBehavior="default" id="QWV-F6-ac1" customClass="NSPanel">
             <windowStyleMask key="styleMask" closable="YES" miniaturizable="YES" resizable="YES" utility="YES"/>
             <rect key="contentRect" x="139" y="81" width="200" height="100"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1920" height="1057"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1440" height="877"/>
             <value key="minSize" type="size" width="200" height="100"/>
             <value key="maxSize" type="size" width="200" height="100"/>
             <view key="contentView" id="rai-SH-9tZ" userLabel="Panel View">
