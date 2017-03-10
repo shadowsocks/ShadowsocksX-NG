@@ -1,0 +1,47 @@
+/* Cancel action button in recording state */
+"Cancel" = "キャンセルする";
+
+/* Tooltip for non-empty shortcut button */
+"Click to record new shortcut" = "クリックしてショートカットを入力";
+
+/* Tooltip for hint button near the non-empty shortcut */
+"Delete shortcut" = "ショートカットを削除";
+
+/* VoiceOver title */
+"keyboard shortcut" = "キーボードショートカット";
+
+/* Alert button when shortcut is already used */
+"OK" = "OK";
+
+/* Empty shortcut button in normal state */
+"Record Shortcut" = "ショートカットを入力";
+
+/* VoiceOver: Shortcut cleared */
+"Shortcut cleared" = "ショートカットが削除されました";
+
+/* VoiceOver: Shortcut set */
+"Shortcut set" = "ショートカットが設定されました";
+
+/* Shortcut glyph name for SPACE key */
+"Space" = "スペース";
+
+/* Title for alert when shortcut is already used */
+"The key combination %@ cannot be used" = "%@ はショートカットに設定できません";
+
+/* Message for alert when shortcut is already used by the system */
+"This combination cannot be used because it is already used by a system-wide keyboard shortcut.\nIf you really want to use this key combination, most shortcuts can be changed in the Keyboard & Mouse panel in System Preferences." = "このショートカットは、システム全体で使用されているショートカットのため、設定することができません。\nもしこのショートカットを使用したい場合、「システム環境設定」の「キーボード」、「マウス」のパネルから既に設定されているショートカットを変更してください。";
+
+/* Message for alert when shortcut is already used */
+"This shortcut cannot be used because it is already used by the menu item ‘%@’." = "このショートカットは、メニュー操作の「%@」で使われているため、設定できません。";
+
+/* VoiceOver shortcut help */
+"To record a new shortcut, click this button, and then type the new shortcut, or press delete to clear an existing shortcut." = "このボタンをクリックし、ショートカットを入力すると、新しいショートカットが設定されます。また、削除ボタンをおすと、ショートカットが削除されます。";
+
+/* Non-empty shortcut button in recording state */
+"Type New Shortcut" = "ショートカットを入力";
+
+/* Empty shortcut button in recording state */
+"Type Shortcut" = "ショートカットを入力";
+
+/* Cancel action button for non-empty shortcut in recording state */
+"Use Old Shortcut" = "古いショートカットを使用";

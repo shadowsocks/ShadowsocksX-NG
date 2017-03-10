@@ -18,6 +18,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     var proxyPreferencesWinCtrl: ProxyPreferencesController!
     var editUserRulesWinCtrl: UserRulesController!
     var httpPreferencesWinCtrl : HTTPPreferencesWindowController!
+    var shortcutsPreferencesWinCtrl: ShortcutsPreferencesWindowController!
 
     let keyCodeP = kVK_ANSI_P
     let keyCodeS = kVK_ANSI_S
@@ -145,6 +146,45 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                 self.updateCopyHttpProxyExportMenu()
             }
         )
+        notifyCenter.addObserver(forName: NSNotification.Name(rawValue: "NOTIFY_TOGGLE_RUNNING"), object: nil, queue: nil
+            , using: {
+                (note) in
+                var isOn = UserDefaults.standard.bool(forKey: "ShadowsocksOn")
+                isOn = !isOn
+                if isOn {
+                    self.isNameTextField.stringValue = "Shadowsocks: On".localized
+                }
+                else {
+                    self.isNameTextField.stringValue = "Shadowsocks: Off".localized
+                }
+
+                UserDefaults.standard.set(isOn, forKey: "ShadowsocksOn")
+                
+                self.updateMainMenu()
+                self.applyConfig()
+                self.fadeInHud()
+            }
+        )
+        notifyCenter.addObserver(forName: NSNotification.Name(rawValue: "NOTIFY_SWITCH_PROXY_MODE"), object: nil, queue: nil
+            , using: {
+                (note) in
+                
+                switch Globals.proxyType {
+                case .pac:
+                    Globals.proxyType = .global
+                    UserDefaults.standard.setValue("global", forKey: "ShadowsocksRunningMode")
+                    self.isNameTextField.stringValue = "Global Mode".localized
+                case .global:
+                    Globals.proxyType = .pac
+                    UserDefaults.standard.setValue("auto", forKey: "ShadowsocksRunningMode")
+                    self.isNameTextField.stringValue = "Auto Mode By PAC".localized
+                }
+                
+                self.updateRunningModeMenu()
+                self.applyConfig()
+                self.fadeInHud()
+            }
+        )
         notifyCenter.addObserver(forName: NSNotification.Name(rawValue: "NOTIFY_FOUND_SS_URL"), object: nil, queue: nil) {
             (note: Notification) in
             
@@ -209,7 +249,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         applyConfig()
 
         // Register global hotkey
-        registerHotkey()
+        ShortcutsController.bindShortcuts()
     }
     
     func applicationWillTerminate(_ aNotification: Notification) {
@@ -243,92 +283,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             StopPrivoxy()
             ProxyConfHelper.disableProxy()
         }
-    }
-
-    // MARK: - Hotkey Methods
-    func registerHotkey() -> Void {
-        registerEventHotKey(keyCode: UInt32(keyCodeP)) // to toggle PAC and Global Mode
-//        registerEventHotKey(keyCode: UInt32(keyCodeS)) // to toggle SS on or off
-        registerEventHandler()
-    }
-    
-    func registerEventHotKey(keyCode: UInt32) {
-        var gMyHotKeyID = EventHotKeyID()
-        gMyHotKeyID.signature = OSType(fourCharCodeFrom(string: "sxng"))
-        gMyHotKeyID.id = keyCode
-        
-        // Register hotkey.
-        RegisterEventHotKey(UInt32(keyCode),
-                            UInt32(modifierKeys),
-                            gMyHotKeyID,
-                            GetApplicationEventTarget(),
-                            0,
-                            &hotKeyRef)
-    }
-    
-    func registerEventHandler() {
-        var eventType = EventTypeSpec()
-        eventType.eventClass = OSType(kEventClassKeyboard)
-        eventType.eventKind = OSType(kEventHotKeyPressed)
-        
-        // Void pointer to `self`:
-        let context = Unmanaged.passUnretained(self).toOpaque()
-        
-        // Install handler.
-        InstallEventHandler(GetApplicationEventTarget(), {(nextHanlder, theEvent, userContext) -> OSStatus in
-            // Extract pointer to `self` from void pointer:
-            let mySelf = Unmanaged<AppDelegate>.fromOpaque(userContext!).takeUnretainedValue()
-            
-            var hotKeyId = EventHotKeyID()
-            GetEventParameter(theEvent, EventParamName(kEventParamDirectObject), EventParamType(typeEventHotKeyID), nil, MemoryLayout<EventHotKeyID>.size, nil, &hotKeyId)
-            
-            if hotKeyId.id == UInt32(mySelf.keyCodeP) {
-                // P key pressed
-                switch Globals.proxyType {
-                case .pac:
-                    Globals.proxyType = .global
-                    UserDefaults.standard.setValue("global", forKey: "ShadowsocksRunningMode")
-                    mySelf.isNameTextField.stringValue = "Global Mode"
-                    mySelf.updateRunningModeMenu()
-                    mySelf.applyConfig()
-                case .global:
-                    Globals.proxyType = .pac
-                    UserDefaults.standard.setValue("auto", forKey: "ShadowsocksRunningMode")
-                    mySelf.isNameTextField.stringValue = "Auto Mode"
-                    mySelf.updateRunningModeMenu()
-                    mySelf.applyConfig()
-                }
-            }
-            else if hotKeyId.id == UInt32(mySelf.keyCodeS) {
-                // S key pressed
-                var isOn = UserDefaults.standard.bool(forKey: "ShadowsocksOn")
-                isOn = !isOn
-                if isOn {
-                    mySelf.isNameTextField.stringValue = "Shadowsocks: On".localized
-                }
-                else {
-                    mySelf.isNameTextField.stringValue = "Shadowsocks: Off".localized
-                }
-
-                UserDefaults.standard.set(isOn, forKey: "ShadowsocksOn")
-                mySelf.updateMainMenu()
-                mySelf.applyConfig()
-            }
-        
-            mySelf.fadeInHud()
-            
-            return noErr
-        }, 1, &eventType, context, nil)
-    }
-    
-    
-    func fourCharCodeFrom(string: String) -> FourCharCode {
-        assert(string.characters.count == 4, "String length must be 4")
-        var result: FourCharCode = 0
-        for char in string.utf16 {
-            result = (result << 8) + FourCharCode(char)
-        }
-        return result
     }
 
     // MARK: - UI Methods
@@ -475,6 +429,19 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         proxyPreferencesWinCtrl.showWindow(self)
         NSApp.activate(ignoringOtherApps: true)
         proxyPreferencesWinCtrl.window?.makeKeyAndOrderFront(self)
+    }
+    
+    @IBAction func editShortcutsPreferences(_ sender: NSMenuItem) {
+        if shortcutsPreferencesWinCtrl != nil {
+            shortcutsPreferencesWinCtrl.close()
+        }
+        
+        shortcutsPreferencesWinCtrl = ShortcutsPreferencesWindowController(
+            windowNibName: "ShortcutsPreferencesWindowController")
+        
+        shortcutsPreferencesWinCtrl.showWindow(self)
+        NSApp.activate(ignoringOtherApps: true)
+        shortcutsPreferencesWinCtrl.window?.makeKeyAndOrderFront(self)
     }
     
     @IBAction func selectServer(_ sender: NSMenuItem) {

@@ -1,0 +1,47 @@
+﻿/* Cancel action button in recording state */
+"Cancel" = "取消";
+
+/* Tooltip for non-empty shortcut button */
+"Click to record new shortcut" = "點選以記錄新快捷鍵";
+
+/* Tooltip for hint button near the non-empty shortcut */
+"Delete shortcut" = "刪除快捷鍵";
+
+/* VoiceOver title */
+"keyboard shortcut" = "鍵盤快捷鍵";
+
+/* Alert button when shortcut is already used */
+"OK" = "好";
+
+/* Empty shortcut button in normal state */
+"Record Shortcut" = "記錄快捷鍵";
+
+/* VoiceOver: Shortcut cleared */
+"Shortcut cleared" = "快捷鍵已清除";
+
+/* VoiceOver: Shortcut set */
+"Shortcut set" = "快捷鍵已設定";
+
+/* Shortcut glyph name for SPACE key */
+"Space" = "空格鍵";
+
+/* Title for alert when shortcut is already used */
+"The key combination %@ cannot be used" = "按鍵組合“%@”無法使用";
+
+/* Message for alert when shortcut is already used by the system */
+"This combination cannot be used because it is already used by a system-wide keyboard shortcut.\nIf you really want to use this key combination, most shortcuts can be changed in the Keyboard & Mouse panel in System Preferences." = "當前按鍵組合無法使用，因為它已經用作其他系統全局快捷鍵。\n如果您真的想使用這個按鍵組合，大部分系統全局快捷鍵能在“系統偏好設定”裡的“鍵盤”和“滑鼠”面板中重設。";
+
+/* Message for alert when shortcut is already used */
+"This shortcut cannot be used because it is already used by the menu item ‘%@’." = "當前快捷鍵無法使用，因為它已用作選單項“%@”的快捷鍵。";
+
+/* VoiceOver shortcut help */
+"To record a new shortcut, click this button, and then type the new shortcut, or press delete to clear an existing shortcut." = "若要記錄新的快捷鍵，單擊此按鈕，然後鍵入新的快捷鍵，或者按“delete鍵”刪除已經存在的快捷鍵。";
+
+/* Non-empty shortcut button in recording state */
+"Type New Shortcut" = "鍵入新快捷鍵";
+
+/* Empty shortcut button in recording state */
+"Type Shortcut" = "鍵入快捷鍵";
+
+/* Cancel action button for non-empty shortcut in recording state */
+"Use Old Shortcut" = "還原快捷鍵";

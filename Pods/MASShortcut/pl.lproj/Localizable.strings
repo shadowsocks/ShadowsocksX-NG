@@ -1,0 +1,47 @@
+﻿/* Cancel action button in recording state */
+"Cancel" = "Anuluj";
+
+/* Tooltip for non-empty shortcut button */
+"Click to record new shortcut" = "Kliknij, by ustawić nowy skrót";
+
+/* Tooltip for hint button near the non-empty shortcut */
+"Delete shortcut" = "Usuń skrót";
+
+/* VoiceOver title */
+"keyboard shortcut" = "skrót klawiszowy";
+
+/* Alert button when shortcut is already used */
+"OK" = "OK";
+
+/* Empty shortcut button in normal state */
+"Record Shortcut" = "Utwórz skrót";
+
+/* VoiceOver: Shortcut cleared */
+"Shortcut cleared" = "Skrót usunięty";
+
+/* VoiceOver: Shortcut set */
+"Shortcut set" = "Skrót ustawiony";
+
+/* Shortcut glyph name for SPACE key */
+"Space" = "Spacja";
+
+/* Title for alert when shortcut is already used */
+"The key combination %@ cannot be used" = "Nie można użyć kombinacji klawiszy %@";
+
+/* Message for alert when shortcut is already used by the system */
+"This combination cannot be used because it is already used by a system-wide keyboard shortcut.\nIf you really want to use this key combination, most shortcuts can be changed in the Keyboard & Mouse panel in System Preferences." = "Nie można użyć tej kombinacji, ponieważ jest już zajęta przez skrót systemowy.\nMożesz to zmienić w panelu Klawiatura w Preferencjach systemowych.";
+
+/* Message for alert when shortcut is already used */
+"This shortcut cannot be used because it is already used by the menu item ‘%@’." = "Ten skrót nie może być użyty, ponieważ w menu ma już przypisaną funkcję ‘%@’.";
+
+/* VoiceOver shortcut help */
+"To record a new shortcut, click this button, and then type the new shortcut, or press delete to clear an existing shortcut." = "Aby ustawić nowy skrót, użyj tego przycisku, a następnie wpisz nowy skrót albo naciśnij klawisz delete, by usunąć istniejący skrót";
+
+/* Non-empty shortcut button in recording state */
+"Type New Shortcut" = "Wpisz nowy skrót";
+
+/* Empty shortcut button in recording state */
+"Type Shortcut" = "Wpisz skrót";
+
+/* Cancel action button for non-empty shortcut in recording state */
+"Use Old Shortcut" = "Użyj starego skrótu";
