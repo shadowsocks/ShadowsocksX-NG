@@ -44,6 +44,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     @IBOutlet var exportAllServerProfileItem: NSMenuItem!
     @IBOutlet var serversPreferencesMenuItem: NSMenuItem!
     
+    @IBOutlet weak var copyHttpProxyExportCmdLineMenuItem: NSMenuItem!
+    
     @IBOutlet weak var lanchAtLoginMenuItem: NSMenuItem!
 
     @IBOutlet weak var hudWindow: NSPanel!
@@ -84,7 +86,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             "ShadowsocksRunningMode": "auto",
             "LocalSocks5.ListenPort": NSNumber(value: 1086 as UInt16),
             "LocalSocks5.ListenAddress": "127.0.0.1",
-            "PacServer.ListenPort":NSNumber(value: 8090 as UInt16),
+            "PacServer.ListenPort":NSNumber(value: 1089 as UInt16),
             "LocalSocks5.Timeout": NSNumber(value: 60 as UInt),
             "LocalSocks5.EnableUDPRelay": NSNumber(value: false as Bool),
             "LocalSocks5.EnableVerboseMode": NSNumber(value: false as Bool),
@@ -140,6 +142,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                 (note) in
                 SyncPrivoxy()
                 self.applyConfig()
+                self.updateCopyHttpProxyExportMenu()
             }
         )
         notifyCenter.addObserver(forName: NSNotification.Name(rawValue: "NOTIFY_FOUND_SS_URL"), object: nil, queue: nil) {
@@ -195,6 +198,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             , forEventClass: AEEventClass(kInternetEventClass), andEventID: AEEventID(kAEGetURL))
         
         updateMainMenu()
+        updateCopyHttpProxyExportMenu()
         updateServersMenu()
         updateRunningModeMenu()
         updateLaunchAtLoginMenu()
@@ -244,7 +248,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     // MARK: - Hotkey Methods
     func registerHotkey() -> Void {
         registerEventHotKey(keyCode: UInt32(keyCodeP)) // to toggle PAC and Global Mode
-        registerEventHotKey(keyCode: UInt32(keyCodeS)) // to toggle SS on or off
+//        registerEventHotKey(keyCode: UInt32(keyCodeS)) // to toggle SS on or off
         registerEventHandler()
     }
     
@@ -284,7 +288,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                 case .pac:
                     Globals.proxyType = .global
                     UserDefaults.standard.setValue("global", forKey: "ShadowsocksRunningMode")
-                    mySelf.isNameTextField.stringValue = "Gobal Mode"
+                    mySelf.isNameTextField.stringValue = "Global Mode"
                     mySelf.updateRunningModeMenu()
                     mySelf.applyConfig()
                 case .global:
@@ -481,8 +485,29 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             spMgr.setActiveProfiledId(newProfile.uuid)
             updateServersMenu()
             SyncSSLocal()
+            applyConfig()
         }
         updateRunningModeMenu()
+    }
+    
+    @IBAction func copyExportCommand(_ sender: NSMenuItem) {
+        // Get the Http proxy config.
+        let defaults = UserDefaults.standard
+        let address = defaults.string(forKey: "LocalHTTP.ListenAddress")!
+        let port = defaults.integer(forKey: "LocalHTTP.ListenPort")
+        
+        // Format an export string.
+        let command = "export http_proxy=http://\(address):\(port);export https_proxy=http://\(address):\(port);"
+        
+        // Copy to paste board.
+        NSPasteboard.general().clearContents()
+        NSPasteboard.general().setString(command, forType: NSStringPboardType)
+        
+        // Give a system notification.
+        let notification = NSUserNotification()
+        notification.title = "Export Command Copied.".localized
+        NSUserNotificationCenter.default
+            .deliver(notification)
     }
     
     @IBAction func showLogs(_ sender: NSMenuItem) {
@@ -564,11 +589,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             let defaults = UserDefaults.standard
             let mode = defaults.string(forKey: "ShadowsocksRunningMode")
             if mode == "auto" {
-                statusItem.title = "Auto".localized
+                statusItem.title = "A"
             } else if mode == "global" {
-                statusItem.title = "Global".localized
+                statusItem.title = "G"
             } else if mode == "manual" {
-                statusItem.title = "Manual".localized
+                statusItem.title = "M"
             }
             let titleWidth = statusItem.title!.size(withAttributes: [NSFontAttributeName: statusItem.button!.font!]).width
             let imageWidth:CGFloat = AppDelegate.StatusItemIconWidth
@@ -592,6 +617,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             let image = NSImage(named: "menu_icon_disabled")
             statusItem.image = image
         }
+    }
+    
+    func updateCopyHttpProxyExportMenu() {
+        let defaults = UserDefaults.standard
+        let isOn = defaults.bool(forKey: "LocalHTTPOn")
+        copyHttpProxyExportCmdLineMenuItem.isHidden = !isOn
     }
     
     func updateServersMenu() {

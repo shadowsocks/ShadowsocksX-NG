@@ -56,7 +56,8 @@ class ServerProfile: NSObject, NSCopying {
             guard let decoded = String(data: data, encoding: String.Encoding.utf8) else {
                 return nil
             }
-            return "ss://\(decoded)"
+            let s = decoded.trimmingCharacters(in: CharacterSet(charactersIn: "\n"))
+            return "ss://\(s)"
         }
 
         guard let decodedUrl = decodeUrl(url: url) else {
@@ -101,6 +102,9 @@ class ServerProfile: NSObject, NSCopying {
         copy.password = self.password
         copy.remark = self.remark
         copy.ota = self.ota
+        
+        copy.enabledKcptun = self.enabledKcptun
+        copy.kcptunProfile = self.kcptunProfile.copy() as! KcptunProfile
         return copy;
     }
     

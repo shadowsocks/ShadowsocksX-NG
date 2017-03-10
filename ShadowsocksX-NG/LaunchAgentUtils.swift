@@ -9,7 +9,7 @@
 import Foundation
 
 let SS_LOCAL_VERSION = "2.5.6"
-let KCPTUN_CLIENT_VERSION = "20161222"
+let KCPTUN_CLIENT_VERSION = "20170117"
 let PRIVOXY_VERSION = "3.0.26.static"
 let APP_SUPPORT_DIR = "/Library/Application Support/ShadowsocksX-NG/"
 let LAUNCH_AGENT_DIR = "/Library/LaunchAgents/"
@@ -156,8 +156,19 @@ func SyncSSLocal() {
         
         let on = UserDefaults.standard.bool(forKey: "ShadowsocksOn")
         if on {
+            if changed {
+                StopSSLocal()
+                DispatchQueue.main.asyncAfter(
+                    deadline: DispatchTime.now() + DispatchTimeInterval.seconds(1),
+                    execute: {
+                        () in
+                        StartSSLocal()
+                })
+            } else {
+                StartSSLocal()
+            }
+        } else {
             StopSSLocal()
-            StartSSLocal()
         }
     } else {
         removeSSLocalConfFile()
@@ -291,13 +302,23 @@ func SyncPrivoxy() {
         
         let on = UserDefaults.standard.bool(forKey: "LocalHTTPOn")
         if on {
+            if changed {
+                StopPrivoxy()
+                DispatchQueue.main.asyncAfter(
+                    deadline: DispatchTime.now() + DispatchTimeInterval.seconds(1),
+                    execute: {
+                        () in
+                        StartPrivoxy()
+                })
+            } else {
+                StartPrivoxy()
+            }
+        } else {
             StopPrivoxy()
-            StartPrivoxy()
         }
-     else {
+    } else {
         removePrivoxyConfFile()
         StopPrivoxy()
-    }
     }
 }
 
@@ -429,10 +450,21 @@ func SyncKcptun() {
             
             let on = UserDefaults.standard.bool(forKey: "ShadowsocksOn")
             if on {
+                if changed {
+                    StopKcptun()
+                    DispatchQueue.main.asyncAfter(
+                        deadline: DispatchTime.now() + DispatchTimeInterval.seconds(1),
+                        execute: {
+                            () in
+                            StartKcptun()
+                    })
+                } else {
+                    StartKcptun()
+                }
+            } else {
                 StopKcptun()
-                StartKcptun()
-                return
             }
+            return
         }
     }
     StopKcptun()
