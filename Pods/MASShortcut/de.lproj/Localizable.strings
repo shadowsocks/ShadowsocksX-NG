@@ -1,0 +1,47 @@
+/* Cancel action button in recording state */
+"Cancel" = "Abbrechen";
+
+/* Tooltip for non-empty shortcut button */
+"Click to record new shortcut" = "Klicken um neuen Kurzbefehl aufzunehmen";
+
+/* Tooltip for hint button near the non-empty shortcut */
+"Delete shortcut" = "Kurzbefehl Löschen";
+
+/* VoiceOver title */
+"keyboard shortcut" = "Kurzbefehl";
+
+/* Alert button when shortcut is already used */
+"OK" = "OK";
+
+/* Empty shortcut button in normal state */
+"Record Shortcut" = "Kurzbefehl aufnehmen";
+
+/* VoiceOver: Shortcut cleared */
+"Shortcut cleared" = "Kurzbefehl gelöscht";
+
+/* VoiceOver: Shortcut set */
+"Shortcut set" = "Kurzbefehl gesetzt";
+
+/* Shortcut glyph name for SPACE key */
+"Space" = "Leertaste";
+
+/* Title for alert when shortcut is already used */
+"The key combination %@ cannot be used" = "Die Tastenkombination %@ kann nicht genutzt werden";
+
+/* Message for alert when shortcut is already used by the system */
+"This combination cannot be used because it is already used by a system-wide keyboard shortcut.\nIf you really want to use this key combination, most shortcuts can be changed in the Keyboard & Mouse panel in System Preferences." = "Diese Kombination kann nicht genutzt werden, weil sie bereits als systemweiter Kurzbefehl genutzt wird.\nFalls du diese Tastenkombination wirklich benutzen willst, können die meisten Kurzbefehle in den Tastatur Systemeinstellungen geändert werden.";
+
+/* Message for alert when shortcut is already used */
+"This shortcut cannot be used because it is already used by the menu item ‘%@’." = "Dieser Kurzbefehl kann nicht genutzt werden, weil er bereits vom Menüpunkt „%@“ genutzt wird.";
+
+/* VoiceOver shortcut help */
+"To record a new shortcut, click this button, and then type the new shortcut, or press delete to clear an existing shortcut." = "Drücke diesen Button, um einen neuen Kurzbefehl aufzunehmen. Tippe dann den neuen Kurzbefehl oder drücke Löschen, um den aktuellen Kurzbefehl zu löschen.";
+
+/* Non-empty shortcut button in recording state */
+"Type New Shortcut" = "Neuen eingeben";
+
+/* Empty shortcut button in recording state */
+"Type Shortcut" = "Kurzbefehl eingeben";
+
+/* Cancel action button for non-empty shortcut in recording state */
+"Use Old Shortcut" = "Alten nutzen";
