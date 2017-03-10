@@ -38,12 +38,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     @IBOutlet weak var showRunningModeMenuItem: NSMenuItem!
     
     @IBOutlet weak var serversMenuItem: NSMenuItem!
-    @IBOutlet var showQRCodeMenuItem: NSMenuItem!
-    @IBOutlet var scanQRCodeMenuItem: NSMenuItem!
-    @IBOutlet var showBunchJsonExampleFileItem: NSMenuItem!
-    @IBOutlet var importBunchJsonFileItem: NSMenuItem!
-    @IBOutlet var exportAllServerProfileItem: NSMenuItem!
-    @IBOutlet var serversPreferencesMenuItem: NSMenuItem!
+    @IBOutlet weak var showQRCodeMenuItem: NSMenuItem!
+    @IBOutlet weak var scanQRCodeMenuItem: NSMenuItem!
+    @IBOutlet weak var showBunchJsonExampleFileItem: NSMenuItem!
+    @IBOutlet weak var importBunchJsonFileItem: NSMenuItem!
+    @IBOutlet weak var exportAllServerProfileItem: NSMenuItem!
+    @IBOutlet weak var serversPreferencesMenuItem: NSMenuItem!
     
     @IBOutlet weak var copyHttpProxyExportCmdLineMenuItem: NSMenuItem!
     
