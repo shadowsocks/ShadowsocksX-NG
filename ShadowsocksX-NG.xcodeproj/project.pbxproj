@@ -39,6 +39,7 @@
 		9B5831EE1E72EBF9009D5B7D /* ShortcutsPreferencesWindowController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9B5831EC1E72EBF9009D5B7D /* ShortcutsPreferencesWindowController.xib */; };
 		9B5831F31E72FA63009D5B7D /* ShortcutsPreferencesWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9B5831F21E72FA63009D5B7D /* ShortcutsPreferencesWindowController.m */; };
 		9B5831F61E7302F8009D5B7D /* ShortcutsController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9B5831F51E7302F8009D5B7D /* ShortcutsController.m */; };
+		9B5831FB1E73098F009D5B7D /* README.md in Sources */ = {isa = PBXBuildFile; fileRef = 9B5831FA1E73098F009D5B7D /* README.md */; };
 		9B6BF9521E27B23F0061B9A7 /* LaunchHelper.app in CopyFiles */ = {isa = PBXBuildFile; fileRef = 9B6BF9501E27B1F20061B9A7 /* LaunchHelper.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		9B6BF9541E27B2570061B9A7 /* ServiceManagement.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B6BF9531E27B2570061B9A7 /* ServiceManagement.framework */; };
 		9B9CBCA61E25E1DB00FC61AA /* KcptunProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B9CBCA51E25E1DB00FC61AA /* KcptunProfile.swift */; };
@@ -179,6 +180,7 @@
 		9B5831F21E72FA63009D5B7D /* ShortcutsPreferencesWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ShortcutsPreferencesWindowController.m; sourceTree = "<group>"; };
 		9B5831F41E7302F8009D5B7D /* ShortcutsController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ShortcutsController.h; sourceTree = "<group>"; };
 		9B5831F51E7302F8009D5B7D /* ShortcutsController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ShortcutsController.m; sourceTree = "<group>"; };
+		9B5831FA1E73098F009D5B7D /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		9B6BF94B1E27B1F10061B9A7 /* LaunchHelper.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = LaunchHelper.xcodeproj; path = LaunchHelper/LaunchHelper.xcodeproj; sourceTree = "<group>"; };
 		9B6BF9531E27B2570061B9A7 /* ServiceManagement.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ServiceManagement.framework; path = System/Library/Frameworks/ServiceManagement.framework; sourceTree = SDKROOT; };
 		9B9CBCA51E25E1DB00FC61AA /* KcptunProfile.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KcptunProfile.swift; sourceTree = "<group>"; };
@@ -300,6 +302,7 @@
 		9B0BFFDC1D0460A70040E62B = {
 			isa = PBXGroup;
 			children = (
+				9B5831FA1E73098F009D5B7D /* README.md */,
 				9B6BF94B1E27B1F10061B9A7 /* LaunchHelper.xcodeproj */,
 				9B172A601D0ADA5B00B87B9A /* genstrings.py */,
 				9B0BFFE71D0460A70040E62B /* ShadowsocksX-NG */,
@@ -744,6 +747,7 @@
 				9BEEF0781D04FE8A00FC52B3 /* LaunchAgentUtils.swift in Sources */,
 				C6E28E921DA79380004F8330 /* HTTPPreferencesWindowController.swift in Sources */,
 				9B9CBCA61E25E1DB00FC61AA /* KcptunProfile.swift in Sources */,
+				9B5831FB1E73098F009D5B7D /* README.md in Sources */,
 				C8E42A6C1D4F270A0074C7EA /* UserRulesController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
