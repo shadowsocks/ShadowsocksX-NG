@@ -1,6 +1,6 @@
 # ShadowsocksX-NG
 
-Current version is 1.4
+Current version is 1.5
 
 [![Build Status](https://travis-ci.org/shadowsocks/ShadowsocksX-NG.svg?branch=develop)](https://travis-ci.org/shadowsocks/ShadowsocksX-NG)
 
@@ -25,7 +25,7 @@ Then I will rewrite the GUI code in Swift.
 ### Building
 
 - XCode 8.2.1+
-- cocoapod 1.0.1+
+- cocoapod 1.2+
 
 ## Download
 
@@ -51,6 +51,7 @@ From [here](https://github.com/shadowsocks/ShadowsocksX-NG/releases/)
 	- GFW List URL.
 - Manual specify network service profiles which would be configure the proxy.
 - Could reorder shadowsocks profiles by drag & drop in servers preferences panel.
+- Configurable global shortcuts for toggle running and switch proxy mode.
 
 ## Different from orignal ShadowsocksX
 
@@ -59,8 +60,6 @@ So after you quit the app, the ss-local maybe be still running.
 
 Added a manual mode which won't configure the system proxy settings.
 Then you could configure your apps to use socks5 proxy manual.
-
-Added global Keyboard shortcut <kbd>⌃</kbd> + <kbd>⌘</kbd> + <kbd>P</kbd> to switch between `global` mode and `auto` mode.
 
 ## Contributing 
 
