@@ -49,9 +49,6 @@
                     </connections>
                 </menuItem>
                 <menuItem isSeparatorItem="YES" id="LXP-yK-yQu"/>
-                <menuItem title="Switch By ⌃ + ⌘ + P" enabled="NO" id="f0u-mr-pez">
-                    <modifierMask key="keyEquivalentModifierMask"/>
-                </menuItem>
                 <menuItem title="Auto Mode By PAC" id="r07-Gu-aEz">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
@@ -225,7 +222,7 @@
         <window title="Window" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" hidesOnDeactivate="YES" oneShot="NO" showsToolbarButton="NO" visibleAtLaunch="NO" animationBehavior="default" id="QWV-F6-ac1" customClass="NSPanel">
             <windowStyleMask key="styleMask" closable="YES" miniaturizable="YES" resizable="YES" utility="YES"/>
             <rect key="contentRect" x="139" y="81" width="200" height="100"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1440" height="877"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1680" height="1027"/>
             <value key="minSize" type="size" width="200" height="100"/>
             <value key="maxSize" type="size" width="200" height="100"/>
             <view key="contentView" id="rai-SH-9tZ" userLabel="Panel View">
