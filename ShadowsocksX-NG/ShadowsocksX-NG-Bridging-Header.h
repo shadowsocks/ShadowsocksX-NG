@@ -6,7 +6,6 @@
 
 #import "LaunchAtLoginController.h"
 #import "SWBQRCodeWindowController.h"
-#import "ShortcutsPreferencesWindowController.h"
 #import "ShortcutsController.h"
 #import "Utils.h"
 #import "ProxyConfHelper.h"

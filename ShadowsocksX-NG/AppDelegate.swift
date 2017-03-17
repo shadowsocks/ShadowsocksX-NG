@@ -8,22 +8,16 @@
 
 import Cocoa
 import Carbon
+import RxCocoa
+import RxSwift
 
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDelegate {
     
     var qrcodeWinCtrl: SWBQRCodeWindowController!
     var preferencesWinCtrl: PreferencesWindowController!
-    var advPreferencesWinCtrl: AdvPreferencesWindowController!
-    var proxyPreferencesWinCtrl: ProxyPreferencesController!
     var editUserRulesWinCtrl: UserRulesController!
-    var httpPreferencesWinCtrl : HTTPPreferencesWindowController!
-    var shortcutsPreferencesWinCtrl: ShortcutsPreferencesWindowController!
-
-    let keyCodeP = kVK_ANSI_P
-    let keyCodeS = kVK_ANSI_S
-    let modifierKeys = cmdKey+controlKey
-    var hotKeyRef: EventHotKeyRef?
+    var allInOnePreferencesWinCtrl: PreferencesWinController!
 
     var launchAtLoginController: LaunchAtLoginController = LaunchAtLoginController()
     
@@ -35,7 +29,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     @IBOutlet weak var autoModeMenuItem: NSMenuItem!
     @IBOutlet weak var globalModeMenuItem: NSMenuItem!
     @IBOutlet weak var manualModeMenuItem: NSMenuItem!
-    @IBOutlet weak var showRunningModeMenuItem: NSMenuItem!
     
     @IBOutlet weak var serversMenuItem: NSMenuItem!
     @IBOutlet var showQRCodeMenuItem: NSMenuItem!
@@ -100,6 +93,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             "Kcptun.LocalHost": "127.0.0.1",
             "Kcptun.LocalPort": NSNumber(value: 8388),
             "Kcptun.Conn": NSNumber(value: 1),
+            "ShowRunningModeOnStatusBar": true,
             ])
         
         statusItem = NSStatusBar.system().statusItem(withLength: AppDelegate.StatusItemIconWidth)
@@ -109,13 +103,23 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         statusItem.menu = statusMenu
         
         
+        _ = defaults.rx.observe(Bool.self, "ShowRunningModeOnStatusBar")
+//            .distinctUntilChanged()
+            .subscribe(onNext: { value in
+                if let enabled = value {
+                    self.updateStatusItemUI(isShownnRunningMode: enabled)
+                }
+            })
+        
         let notifyCenter = NotificationCenter.default
-        notifyCenter.addObserver(forName: NSNotification.Name(rawValue: NOTIFY_ADV_PROXY_CONF_CHANGED), object: nil, queue: nil
-            , using: {
-                (note) in
+        
+        _ = notifyCenter.rx.notification(NOTIFY_CONF_CHANGED)
+            .subscribe(onNext: { noti in
+                SyncSSLocal()
                 self.applyConfig()
-            }
-        )
+                self.updateCopyHttpProxyExportMenu()
+            })
+        
         notifyCenter.addObserver(forName: NSNotification.Name(rawValue: NOTIFY_SERVER_PROFILES_CHANGED), object: nil, queue: nil
             , using: {
                 (note) in
@@ -131,106 +135,34 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                 SyncSSLocal()
             }
         )
-        notifyCenter.addObserver(forName: NSNotification.Name(rawValue: NOTIFY_ADV_CONF_CHANGED), object: nil, queue: nil
-            , using: {
-                (note) in
-                SyncSSLocal()
-                self.applyConfig()
-            }
-        )
-        notifyCenter.addObserver(forName: NSNotification.Name(rawValue: NOTIFY_HTTP_CONF_CHANGED), object: nil, queue: nil
-            , using: {
-                (note) in
-                SyncPrivoxy()
-                self.applyConfig()
-                self.updateCopyHttpProxyExportMenu()
-            }
-        )
-        notifyCenter.addObserver(forName: NSNotification.Name(rawValue: "NOTIFY_TOGGLE_RUNNING"), object: nil, queue: nil
-            , using: {
-                (note) in
-                var isOn = UserDefaults.standard.bool(forKey: "ShadowsocksOn")
-                isOn = !isOn
-                if isOn {
-                    self.isNameTextField.stringValue = "Shadowsocks: On".localized
-                }
-                else {
-                    self.isNameTextField.stringValue = "Shadowsocks: Off".localized
-                }
-
-                UserDefaults.standard.set(isOn, forKey: "ShadowsocksOn")
-                
-                self.updateMainMenu()
-                self.applyConfig()
-                self.fadeInHud()
-            }
-        )
-        notifyCenter.addObserver(forName: NSNotification.Name(rawValue: "NOTIFY_SWITCH_PROXY_MODE"), object: nil, queue: nil
-            , using: {
-                (note) in
-                
-                switch Globals.proxyType {
-                case .pac:
-                    Globals.proxyType = .global
-                    UserDefaults.standard.setValue("global", forKey: "ShadowsocksRunningMode")
+        _ = notifyCenter.rx.notification(NOTIFY_TOGGLE_RUNNING_SHORTCUT)
+            .subscribe(onNext: { noti in
+                self.doToggleRunning(showToast: true)
+            })
+        _ = notifyCenter.rx.notification(NOTIFY_SWITCH_PROXY_MODE_SHORTCUT)
+            .subscribe(onNext: { noti in
+                let mode = defaults.string(forKey: "ShadowsocksRunningMode")!
+                switch mode {
+                case "auto":
+                    defaults.setValue("global", forKey: "ShadowsocksRunningMode")
                     self.isNameTextField.stringValue = "Global Mode".localized
-                case .global:
-                    Globals.proxyType = .pac
-                    UserDefaults.standard.setValue("auto", forKey: "ShadowsocksRunningMode")
+                case "global":
+                    defaults.setValue("auto", forKey: "ShadowsocksRunningMode")
+                    self.isNameTextField.stringValue = "Auto Mode By PAC".localized
+                default:
+                    defaults.setValue("auto", forKey: "ShadowsocksRunningMode")
                     self.isNameTextField.stringValue = "Auto Mode By PAC".localized
                 }
                 
                 self.updateRunningModeMenu()
                 self.applyConfig()
                 self.fadeInHud()
-            }
-        )
-        notifyCenter.addObserver(forName: NSNotification.Name(rawValue: "NOTIFY_FOUND_SS_URL"), object: nil, queue: nil) {
-            (note: Notification) in
-            
-            let sendNotify = {
-                (title: String, subtitle: String, infoText: String) in
-                
-                let userNote = NSUserNotification()
-                userNote.title = title
-                userNote.subtitle = subtitle
-                userNote.informativeText = infoText
-                userNote.soundName = NSUserNotificationDefaultSoundName
-                
-                NSUserNotificationCenter.default
-                    .deliver(userNote);
-            }
-            
-            if let userInfo = (note as NSNotification).userInfo {
-                let urls: [URL] = userInfo["urls"] as! [URL]
-                
-                let mgr = ServerProfileManager.instance
-                var isChanged = false
-                
-                for url in urls {
-                    if let profile = ServerProfile(url: url) {
-                        mgr.profiles.append(profile)
-                        isChanged = true
-                        
-                        var subtitle: String = ""
-                        if userInfo["source"] as! String == "qrcode" {
-                            subtitle = "By scan QR Code".localized
-                        } else if userInfo["source"] as! String == "url" {
-                            subtitle = "By Handle SS URL".localized
-                        }
-                        
-                        sendNotify("Add Shadowsocks Server Profile".localized, subtitle, "Host: \(profile.serverHost)")
-                    }
-                }
-                
-                if isChanged {
-                    mgr.save()
-                    self.updateServersMenu()
-                } else {
-                    sendNotify("Not found valid qrcode of shadowsocks profile.", "", "")
-                }
-            }
-        }
+            })
+        
+        _ = notifyCenter.rx.notification(NOTIFY_FOUND_SS_URL)
+            .subscribe(onNext: { noti in
+                self.handleFoundSSURL(noti)
+            })
         
         // Handle ss url scheme
         NSAppleEventManager.shared().setEventHandler(self
@@ -241,7 +173,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         updateCopyHttpProxyExportMenu()
         updateServersMenu()
         updateRunningModeMenu()
-        updateLaunchAtLoginMenu()
         
         ProxyConfHelper.install()
         ProxyConfHelper.startMonitorPAC()
@@ -258,7 +189,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         StopKcptun()
         StopPrivoxy()
         ProxyConfHelper.disableProxy()
-        if let ref = hotKeyRef { UnregisterEventHotKey(ref) }
     }
 
     func applyConfig() {
@@ -287,14 +217,27 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
 
     // MARK: - UI Methods
     @IBAction func toggleRunning(_ sender: NSMenuItem) {
+        self.doToggleRunning(showToast: false)
+    }
+    
+    func doToggleRunning(showToast: Bool) {
         let defaults = UserDefaults.standard
-        var isOn = defaults.bool(forKey: "ShadowsocksOn")
+        var isOn = UserDefaults.standard.bool(forKey: "ShadowsocksOn")
         isOn = !isOn
         defaults.set(isOn, forKey: "ShadowsocksOn")
         
-        updateMainMenu()
+        self.updateMainMenu()
+        self.applyConfig()
         
-        applyConfig()
+        if showToast {
+            if isOn {
+                self.isNameTextField.stringValue = "Shadowsocks: On".localized
+            }
+            else {
+                self.isNameTextField.stringValue = "Shadowsocks: Off".localized
+            }
+            self.fadeInHud()
+        }
     }
     
     @IBAction func updateGFWList(_ sender: NSMenuItem) {
@@ -359,11 +302,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         ServerProfileManager.instance.exportConfigFile()
     }
 
-    @IBAction func toggleLaunghAtLogin(sender: NSMenuItem) {
-        launchAtLoginController.launchAtLogin = !launchAtLoginController.launchAtLogin;
-        updateLaunchAtLoginMenu()
-    }
-    
     @IBAction func selectPACMode(_ sender: NSMenuItem) {
         let defaults = UserDefaults.standard
         defaults.setValue("auto", forKey: "ShadowsocksRunningMode")
@@ -397,51 +335,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         ctrl.window?.makeKeyAndOrderFront(self)
     }
     
-    @IBAction func editAdvPreferences(_ sender: NSMenuItem) {
-        if advPreferencesWinCtrl != nil {
-            advPreferencesWinCtrl.close()
-        }
-        let ctrl = AdvPreferencesWindowController(windowNibName: "AdvPreferencesWindowController")
-        advPreferencesWinCtrl = ctrl
-        
-        ctrl.showWindow(self)
-        NSApp.activate(ignoringOtherApps: true)
-        ctrl.window?.makeKeyAndOrderFront(self)
-    }
-    
-    @IBAction func editHTTPPreferences(_ sender: NSMenuItem) {
-        if httpPreferencesWinCtrl != nil {
-            httpPreferencesWinCtrl.close()
-        }
-        let ctrl = HTTPPreferencesWindowController(windowNibName: "HTTPPreferencesWindowController")
-        httpPreferencesWinCtrl = ctrl
-        
-        ctrl.showWindow(self)
-        NSApp.activate(ignoringOtherApps: true)
-        ctrl.window?.makeKeyAndOrderFront(self)
-    }
-    
-    @IBAction func editProxyPreferences(_ sender: NSObject) {
-        if proxyPreferencesWinCtrl != nil {
-            proxyPreferencesWinCtrl.close()
-        }
-        proxyPreferencesWinCtrl = ProxyPreferencesController(windowNibName: "ProxyPreferencesController")
-        proxyPreferencesWinCtrl.showWindow(self)
-        NSApp.activate(ignoringOtherApps: true)
-        proxyPreferencesWinCtrl.window?.makeKeyAndOrderFront(self)
-    }
-    
-    @IBAction func editShortcutsPreferences(_ sender: NSMenuItem) {
-        if shortcutsPreferencesWinCtrl != nil {
-            shortcutsPreferencesWinCtrl.close()
+    @IBAction func showAllInOnePreferences(_ sender: NSMenuItem) {
+        if allInOnePreferencesWinCtrl != nil {
+            allInOnePreferencesWinCtrl.close()
         }
         
-        shortcutsPreferencesWinCtrl = ShortcutsPreferencesWindowController(
-            windowNibName: "ShortcutsPreferencesWindowController")
+        allInOnePreferencesWinCtrl = PreferencesWinController(windowNibName: "PreferencesWinController")
         
-        shortcutsPreferencesWinCtrl.showWindow(self)
+        allInOnePreferencesWinCtrl.showWindow(self)
         NSApp.activate(ignoringOtherApps: true)
-        shortcutsPreferencesWinCtrl.window?.makeKeyAndOrderFront(self)
+        allInOnePreferencesWinCtrl.window?.makeKeyAndOrderFront(self)
     }
     
     @IBAction func selectServer(_ sender: NSMenuItem) {
@@ -495,28 +398,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         NSApp.activate(ignoringOtherApps: true)
     }
     
-    @IBAction func showRunningMode(_ sender: NSMenuItem) {
-        sender.state = sender.state == 1 ? 0 : 1
-        let defaults = UserDefaults.standard
-        let isShown = (sender.state == 1)
-        defaults.set(isShown, forKey: "ShowRunningModeOnStatusBar")
-        updateStatusItemUI(isShownnRunningMode: isShown)
-    }
-    
-    func updateLaunchAtLoginMenu() {
-        if launchAtLoginController.launchAtLogin {
-            lanchAtLoginMenuItem.state = 1
-        } else {
-            lanchAtLoginMenuItem.state = 0
-        }
-    }
-    
     func updateRunningModeMenu() {
         let defaults = UserDefaults.standard
         let mode = defaults.string(forKey: "ShadowsocksRunningMode")
-        
-        showRunningModeMenuItem.title = "Show Running Mode On Status Bar".localized
-        showRunningModeMenuItem.state = defaults.bool(forKey: "ShowRunningModeOnStatusBar") ? 1 : 0
         
         var serverMenuText = "Servers".localized
 
@@ -641,6 +525,51 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                         "urls": [url],
                         "source": "url",
                         ])
+            }
+        }
+    }
+    
+    func handleFoundSSURL(_ note: Notification) {
+        let sendNotify = {
+            (title: String, subtitle: String, infoText: String) in
+            
+            let userNote = NSUserNotification()
+            userNote.title = title
+            userNote.subtitle = subtitle
+            userNote.informativeText = infoText
+            userNote.soundName = NSUserNotificationDefaultSoundName
+            
+            NSUserNotificationCenter.default
+                .deliver(userNote);
+        }
+        
+        if let userInfo = (note as NSNotification).userInfo {
+            let urls: [URL] = userInfo["urls"] as! [URL]
+            
+            let mgr = ServerProfileManager.instance
+            var isChanged = false
+            
+            for url in urls {
+                if let profile = ServerProfile(url: url) {
+                    mgr.profiles.append(profile)
+                    isChanged = true
+                    
+                    var subtitle: String = ""
+                    if userInfo["source"] as! String == "qrcode" {
+                        subtitle = "By scan QR Code".localized
+                    } else if userInfo["source"] as! String == "url" {
+                        subtitle = "By Handle SS URL".localized
+                    }
+                    
+                    sendNotify("Add Shadowsocks Server Profile".localized, subtitle, "Host: \(profile.serverHost)")
+                }
+            }
+            
+            if isChanged {
+                mgr.save()
+                self.updateServersMenu()
+            } else {
+                sendNotify("Not found valid qrcode of shadowsocks profile.", "", "")
             }
         }
     }

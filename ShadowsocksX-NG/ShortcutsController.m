@@ -10,20 +10,18 @@
 
 #import <MASShortcut/Shortcut.h>
 
-#import "ShortcutsPreferencesWindowController.h"
-
 
 @implementation ShortcutsController
 
 + (void)bindShortcuts {
     MASShortcutBinder* binder = [MASShortcutBinder sharedBinder];
     [binder
-     bindShortcutWithDefaultsKey:kGlobalShortcutToggleRunning
+     bindShortcutWithDefaultsKey: @"ToggleRunning"
      toAction:^{
          [[NSNotificationCenter defaultCenter] postNotificationName: @"NOTIFY_TOGGLE_RUNNING" object: nil];
      }];    
     [binder
-     bindShortcutWithDefaultsKey:kGlobalShortcutSwitchProxyMode
+     bindShortcutWithDefaultsKey: @"SwitchProxyMode"
      toAction:^{
          [[NSNotificationCenter defaultCenter] postNotificationName: @"NOTIFY_SWITCH_PROXY_MODE" object: nil];
      }];    

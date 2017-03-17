@@ -27,5 +27,6 @@
 
 @property(assign) BOOL launchAtLogin;
 
++ (instancetype) shared;
 
 @end

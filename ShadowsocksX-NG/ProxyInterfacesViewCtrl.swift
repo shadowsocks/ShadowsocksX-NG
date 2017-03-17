@@ -1,31 +1,27 @@
 //
-//  ProxyPreferencesController.swift
+//  ProxyInterfacesTableViewCtrl.swift
 //  ShadowsocksX-NG
 //
-//  Created by 邱宇舟 on 16/6/29.
-//  Copyright © 2016年 qiuyuzhou. All rights reserved.
+//  Created by 邱宇舟 on 2017/3/17.
+//  Copyright © 2017年 qiuyuzhou. All rights reserved.
 //
 
 import Cocoa
+import RxCocoa
+import RxSwift
 
-class ProxyPreferencesController: NSWindowController, NSTableViewDataSource, NSTableViewDelegate {
+class ProxyInterfacesViewCtrl: NSViewController, NSTableViewDataSource, NSTableViewDelegate {
     
     var networkServices: NSArray!
     var selectedNetworkServices: NSMutableSet!
     
-    var autoConfigureNetworkServices: Bool = true
+    @IBOutlet weak var tableView: NSTableView!
+    @IBOutlet weak var autoConfigCheckBox: NSButton!
     
-    @IBOutlet var autoConfigCheckBox: NSButton!
-    
-    @IBOutlet var tableView: NSTableView!
-
-    override func windowDidLoad() {
-        super.windowDidLoad()
-
-        // Implement this method to handle any initialization after your window controller's window has been loaded from its nib file.
-        let defaults = UserDefaults.standard
-        self.setValue(defaults.bool(forKey: "AutoConfigureNetworkServices"), forKey: "autoConfigureNetworkServices")
+    override func viewDidLoad() {
+        super.viewDidLoad()
         
+        let defaults = UserDefaults.standard
         if let services = defaults.array(forKey: "Proxy4NetworkServices") {
             selectedNetworkServices = NSMutableSet(array: services)
         } else {
@@ -35,26 +31,7 @@ class ProxyPreferencesController: NSWindowController, NSTableViewDataSource, NST
         networkServices = ProxyConfTool.networkServicesList() as NSArray!
         tableView.reloadData()
     }
-    
-    @IBAction func ok(_ sender: NSObject){
-        ProxyConfHelper.disableProxy()
-        
-        let defaults = UserDefaults.standard
-        defaults.setValue(selectedNetworkServices.allObjects, forKeyPath: "Proxy4NetworkServices")
-        defaults.set(autoConfigureNetworkServices, forKey: "AutoConfigureNetworkServices")
-        
-        defaults.synchronize()
-        
-        window?.performClose(self)
-        
-        NotificationCenter.default
-            .post(name: Notification.Name(rawValue: NOTIFY_ADV_PROXY_CONF_CHANGED), object: nil)
-    }
-    
-    @IBAction func cancel(_ sender: NSObject){
-        window?.performClose(self)
-    }
-    
+
     //--------------------------------------------------
     // For NSTableViewDataSource
     func numberOfRows(in tableView: NSTableView) -> Int {
