@@ -162,20 +162,6 @@
             </items>
             <point key="canvasLocation" x="-2367" y="-139"/>
         </menu>
-        <menu id="2oY-e9-q1Z">
-            <items>
-                <menuItem title="Item 1" id="oR3-cT-RTC">
-                    <modifierMask key="keyEquivalentModifierMask"/>
-                </menuItem>
-                <menuItem title="Item 2" id="lay-XB-0oV">
-                    <modifierMask key="keyEquivalentModifierMask"/>
-                </menuItem>
-                <menuItem title="Item 3" id="m00-ru-6Po">
-                    <modifierMask key="keyEquivalentModifierMask"/>
-                </menuItem>
-            </items>
-            <point key="canvasLocation" x="-2113" y="-132"/>
-        </menu>
         <window title="Window" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" hidesOnDeactivate="YES" oneShot="NO" showsToolbarButton="NO" visibleAtLaunch="NO" animationBehavior="default" id="QWV-F6-ac1" customClass="NSPanel">
             <windowStyleMask key="styleMask" closable="YES" miniaturizable="YES" resizable="YES" utility="YES"/>
             <rect key="contentRect" x="139" y="81" width="200" height="100"/>
