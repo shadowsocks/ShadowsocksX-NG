@@ -176,7 +176,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         
         ProxyConfHelper.install()
         ProxyConfHelper.startMonitorPAC()
-        SyncSSLocal()
         applyConfig()
 
         // Register global hotkey
@@ -192,14 +191,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     }
 
     func applyConfig() {
+        SyncSSLocal()
+        
         let defaults = UserDefaults.standard
         let isOn = defaults.bool(forKey: "ShadowsocksOn")
         let mode = defaults.string(forKey: "ShadowsocksRunningMode")
         
         if isOn {
-            StartSSLocal()
-            StartKcptun()
-            StartPrivoxy()
             if mode == "auto" {
                 ProxyConfHelper.enablePACProxy()
             } else if mode == "global" {
@@ -208,9 +206,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                 ProxyConfHelper.disableProxy()
             }
         } else {
-            StopSSLocal()
-            StopKcptun()
-            StopPrivoxy()
             ProxyConfHelper.disableProxy()
         }
     }
