@@ -180,4 +180,12 @@ class ServerProfile: NSObject {
         }
         return nil
     }
+    
+    func title() -> String {
+        if remark.isEmpty {
+            return "\(serverHost):\(serverPort)"
+        } else {
+            return "\(remark) (\(serverHost):\(serverPort))"
+        }
+    }
 }

@@ -306,6 +306,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                     }
                     self.qrcodeWinCtrl = SWBQRCodeWindowController(windowNibName: "SWBQRCodeWindowController")
                     self.qrcodeWinCtrl.qrCode = profile.URL()!.absoluteString
+                    self.qrcodeWinCtrl.title = profile.title()
                     DispatchQueue.main.async {
                         self.qrcodeWinCtrl.showWindow(self)
                         NSApp.activate(ignoringOtherApps: true)
@@ -593,17 +594,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         var i = 0
         for p in mgr.profiles {
             let item = NSMenuItem()
-            item.tag = i
-            if p.remark.isEmpty {
-                item.title = "\(p.serverHost):\(p.serverPort)"
-            } else {
-                item.title = "\(p.remark) (\(p.serverHost):\(p.serverPort))"
-            }
-
-            if let latency = p.latency{
-                item.title += "  - \(latency)ms"
-            }
-
+            item.tag = i //+ kProfileMenuItemIndexBase
+            item.title = p.title()
             if mgr.activeProfileId == p.uuid {
                 item.state = 1
             }
