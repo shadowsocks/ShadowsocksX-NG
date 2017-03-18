@@ -261,6 +261,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                 }
                 qrcodeWinCtrl = SWBQRCodeWindowController(windowNibName: "SWBQRCodeWindowController")
                 qrcodeWinCtrl.qrCode = profile.URL()!.absoluteString
+                qrcodeWinCtrl.title = profile.title()
                 qrcodeWinCtrl.showWindow(self)
                 NSApp.activate(ignoringOtherApps: true)
                 qrcodeWinCtrl.window?.makeKeyAndOrderFront(nil)
@@ -486,11 +487,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         for p in mgr.profiles {
             let item = NSMenuItem()
             item.tag = i + kProfileMenuItemIndexBase
-            if p.remark.isEmpty {
-                item.title = "\(p.serverHost):\(p.serverPort)"
-            } else {
-                item.title = "\(p.remark) (\(p.serverHost):\(p.serverPort))"
-            }
+            item.title = p.title()
             if mgr.activeProfileId == p.uuid {
                 item.state = 1
             }
