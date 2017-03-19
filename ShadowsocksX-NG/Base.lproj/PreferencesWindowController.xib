@@ -196,7 +196,7 @@
                                 </textField>
                                 <button translatesAutoresizingMaskIntoConstraints="NO" id="9CP-zt-WuH">
                                     <rect key="frame" x="109" y="267" width="192" height="18"/>
-                                    <buttonCell key="cell" type="check" title="Enable OTA" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="hRZ-Rp-I5e">
+                                    <buttonCell key="cell" type="check" title="Enable OTA (deprecated)" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="hRZ-Rp-I5e">
                                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                         <font key="font" metaFont="system"/>
                                     </buttonCell>
