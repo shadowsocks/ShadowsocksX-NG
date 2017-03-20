@@ -18,12 +18,12 @@
     [binder
      bindShortcutWithDefaultsKey: @"ToggleRunning"
      toAction:^{
-         [[NSNotificationCenter defaultCenter] postNotificationName: @"NOTIFY_TOGGLE_RUNNING" object: nil];
+         [[NSNotificationCenter defaultCenter] postNotificationName: @"NOTIFY_TOGGLE_RUNNING_SHORTCUT" object: nil];
      }];    
     [binder
      bindShortcutWithDefaultsKey: @"SwitchProxyMode"
      toAction:^{
-         [[NSNotificationCenter defaultCenter] postNotificationName: @"NOTIFY_SWITCH_PROXY_MODE" object: nil];
+         [[NSNotificationCenter defaultCenter] postNotificationName: @"NOTIFY_SWITCH_PROXY_MODE_SHORTCUT" object: nil];
      }];    
 }
 
