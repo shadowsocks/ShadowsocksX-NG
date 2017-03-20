@@ -262,12 +262,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         } else {
             errMsg = "No current server profile.".localized
         }
-        let userNote = NSUserNotification()
-        userNote.title = errMsg
-        userNote.soundName = NSUserNotificationDefaultSoundName
-        
-        NSUserNotificationCenter.default
-            .deliver(userNote);
+        if let msg = errMsg {
+            self.makeToast(msg)
+        }
     }
     
     @IBAction func scanQRCodeFromScreen(_ sender: NSMenuItem) {
@@ -358,11 +355,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         NSPasteboard.general().clearContents()
         NSPasteboard.general().setString(command, forType: NSStringPboardType)
         
-        // Give a system notification.
-        let notification = NSUserNotification()
-        notification.title = "Export Command Copied.".localized
-        NSUserNotificationCenter.default
-            .deliver(notification)
+        // Show a toast notification.
+        self.makeToast("Export Command Copied.".localized)
     }
     
     @IBAction func showLogs(_ sender: NSMenuItem) {
