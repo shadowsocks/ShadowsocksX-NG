@@ -3,7 +3,6 @@
     <dependencies>
         <deployment identifier="macosx"/>
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="11762"/>
-        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="NSApplication">
@@ -19,11 +18,8 @@
                 <outlet property="copyHttpProxyExportCmdLineMenuItem" destination="lg6-To-GZA" id="VTb-he-dg4"/>
                 <outlet property="exportAllServerProfileItem" destination="6k0-gn-DQv" id="W2x-96-ISj"/>
                 <outlet property="globalModeMenuItem" destination="Mw3-Jm-eXA" id="ar5-Yx-3ze"/>
-                <outlet property="hudWindow" destination="QWV-F6-ac1" id="K6D-a4-oqE"/>
                 <outlet property="importBunchJsonFileItem" destination="T9g-gy-gvv" id="vua-jg-YWe"/>
-                <outlet property="isNameTextField" destination="rUN-Nq-HDb" id="ayK-aM-rSa"/>
                 <outlet property="manualModeMenuItem" destination="8PR-gs-c5N" id="9qz-mU-5kt"/>
-                <outlet property="panelView" destination="rai-SH-9tZ" id="5aU-ld-rWb"/>
                 <outlet property="runningStatusMenuItem" destination="fzk-mE-CEV" id="Vwm-Rg-Ykn"/>
                 <outlet property="scanQRCodeMenuItem" destination="Qe6-bF-paT" id="XHa-pa-nCa"/>
                 <outlet property="serversMenuItem" destination="u5M-hQ-VSc" id="8gp-SY-Y4U"/>
@@ -162,28 +158,5 @@
             </items>
             <point key="canvasLocation" x="-2367" y="-139"/>
         </menu>
-        <window title="Window" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" hidesOnDeactivate="YES" oneShot="NO" showsToolbarButton="NO" visibleAtLaunch="NO" animationBehavior="default" id="QWV-F6-ac1" customClass="NSPanel">
-            <windowStyleMask key="styleMask" closable="YES" miniaturizable="YES" resizable="YES" utility="YES"/>
-            <rect key="contentRect" x="139" y="81" width="200" height="100"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1680" height="1027"/>
-            <value key="minSize" type="size" width="200" height="100"/>
-            <value key="maxSize" type="size" width="200" height="100"/>
-            <view key="contentView" id="rai-SH-9tZ" userLabel="Panel View">
-                <rect key="frame" x="0.0" y="0.0" width="200" height="100"/>
-                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                <subviews>
-                    <textField verticalHuggingPriority="750" fixedFrame="YES" preferredMaxLayoutWidth="162" translatesAutoresizingMaskIntoConstraints="NO" id="rUN-Nq-HDb" userLabel="Is Name">
-                        <rect key="frame" x="17" y="33" width="166" height="31"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
-                        <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="center" title="Label" usesSingleLineMode="YES" id="jcH-j9-Xl3">
-                            <font key="font" metaFont="system" size="24"/>
-                            <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                            <color key="backgroundColor" name="alternateSelectedControlColor" catalog="System" colorSpace="catalog"/>
-                        </textFieldCell>
-                    </textField>
-                </subviews>
-            </view>
-            <point key="canvasLocation" x="-2357" y="172"/>
-        </window>
     </objects>
 </document>

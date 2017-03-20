@@ -18,6 +18,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     var preferencesWinCtrl: PreferencesWindowController!
     var editUserRulesWinCtrl: UserRulesController!
     var allInOnePreferencesWinCtrl: PreferencesWinController!
+    var toastWindowCtrl: ToastWindowController!
 
     var launchAtLoginController: LaunchAtLoginController = LaunchAtLoginController()
     
@@ -46,22 +47,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     @IBOutlet weak var panelView: NSView!
     @IBOutlet weak var isNameTextField: NSTextField!
 
-    let kHudFadeInDuration: Double = 0.25
-    let kHudFadeOutDuration: Double = 0.5
-    let kHudDisplayDuration: Double = 2.0
-
-    let kHudAlphaValue: CGFloat = 0.75
-    let kHudCornerRadius: CGFloat = 18.0
-    let kHudHorizontalMargin: CGFloat = 30
-    let kHudHeight: CGFloat = 90.0
-    
     let kProfileMenuItemIndexBase = 100
 
-    var timerToFadeOut: Timer? = nil
-    var fadingOut: Bool = false
-
     var statusItem: NSStatusItem!
-    
     static let StatusItemIconWidth:CGFloat = 20
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
@@ -142,21 +130,23 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         _ = notifyCenter.rx.notification(NOTIFY_SWITCH_PROXY_MODE_SHORTCUT)
             .subscribe(onNext: { noti in
                 let mode = defaults.string(forKey: "ShadowsocksRunningMode")!
+                self.updateRunningModeMenu()
+                self.applyConfig()
+                
+                var toastMessage: String!;
                 switch mode {
                 case "auto":
                     defaults.setValue("global", forKey: "ShadowsocksRunningMode")
-                    self.isNameTextField.stringValue = "Global Mode".localized
+                    toastMessage = "Global Mode".localized
                 case "global":
                     defaults.setValue("auto", forKey: "ShadowsocksRunningMode")
-                    self.isNameTextField.stringValue = "Auto Mode By PAC".localized
+                    toastMessage = "Auto Mode By PAC".localized
                 default:
                     defaults.setValue("auto", forKey: "ShadowsocksRunningMode")
-                    self.isNameTextField.stringValue = "Auto Mode By PAC".localized
+                    toastMessage = "Auto Mode By PAC".localized
                 }
                 
-                self.updateRunningModeMenu()
-                self.applyConfig()
-                self.fadeInHud()
+                self.makeToast(toastMessage)
             })
         
         _ = notifyCenter.rx.notification(NOTIFY_FOUND_SS_URL)
@@ -226,12 +216,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         
         if showToast {
             if isOn {
-                self.isNameTextField.stringValue = "Shadowsocks: On".localized
+                self.makeToast("Shadowsocks: On".localized)
             }
             else {
-                self.isNameTextField.stringValue = "Shadowsocks: Off".localized
+                self.makeToast("Shadowsocks: Off".localized)
             }
-            self.fadeInHud()
         }
     }
     
@@ -573,95 +562,18 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         , shouldPresent notification: NSUserNotification) -> Bool {
         return true
     }
-}
-
-extension AppDelegate {
-    func fadeInHud() -> Void {
-        if timerToFadeOut != nil {
-            timerToFadeOut?.invalidate()
-            timerToFadeOut = nil
-        }
-
-        fadingOut = false
-
-        hudWindow.orderFrontRegardless()
-
-        CATransaction.begin()
-        CATransaction.setAnimationDuration(kHudFadeInDuration)
-        CATransaction.setCompletionBlock { self.didFadeIn() }
-        panelView.layer?.opacity = 1.0
-        CATransaction.commit()
-    }
-
-    func didFadeIn() -> Void {
-        timerToFadeOut = Timer.scheduledTimer(
-            timeInterval: kHudDisplayDuration,
-            target: self,
-            selector: #selector(fadeOutHud),
-            userInfo: nil,
-            repeats: false)
-    }
-
-    func fadeOutHud() -> Void {
-        fadingOut = true
-
-        CATransaction.begin()
-        CATransaction.setAnimationDuration(kHudFadeOutDuration)
-        CATransaction.setCompletionBlock { self.didFadeOut() }
-        panelView.layer?.opacity = 0.0
-        CATransaction.commit()
-    }
-
-    func didFadeOut() -> Void {
-        if fadingOut {
-            self.hudWindow.orderOut(nil)
-        }
-        fadingOut = false
-    }
-
-    func setupHud() -> Void {
-        isNameTextField.stringValue = "Shadowsocks: Off"
-        isNameTextField.sizeToFit()
-
-        var labelFrame: CGRect = isNameTextField.frame
-        var hudWindowFrame: CGRect = hudWindow.frame
-        hudWindowFrame.size.width = labelFrame.size.width + kHudHorizontalMargin * 2
-        hudWindowFrame.size.height = kHudHeight
-
-        let screenRect: NSRect = NSScreen.screens()![0].visibleFrame
-        hudWindowFrame.origin.x = (screenRect.size.width - hudWindowFrame.size.width) / 2
-        hudWindowFrame.origin.y = (screenRect.size.height - hudWindowFrame.size.height) / 2
-        hudWindow.setFrame(hudWindowFrame, display: true)
-
-        var viewFrame: NSRect = hudWindowFrame;
-        viewFrame.origin.x = 0
-        viewFrame.origin.y = 0
-        panelView.frame = viewFrame
-
-        labelFrame.origin.x = kHudHorizontalMargin
-        labelFrame.origin.y = (hudWindowFrame.size.height - labelFrame.size.height) / 2
-        isNameTextField.frame = labelFrame
-    }
-
-    func initUIComponent() -> Void {
-        hudWindow.isOpaque = false
-        hudWindow.backgroundColor = .clear
-        hudWindow.level = Int(CGWindowLevelForKey(.utilityWindow)) + 1000
-        hudWindow.styleMask = .borderless
-        hudWindow.hidesOnDeactivate = false
-        hudWindow.collectionBehavior = .canJoinAllSpaces
-
-        let viewLayer: CALayer = CALayer()
-        viewLayer.backgroundColor = CGColor.init(red: 0.05, green: 0.05, blue: 0.05, alpha: kHudAlphaValue)
-        viewLayer.cornerRadius = kHudCornerRadius
-        panelView.wantsLayer = true
-        panelView.layer = viewLayer
-        panelView.layer?.opacity = 0.0
-
-        setupHud()
-    }
     
-    override func awakeFromNib() {
-        initUIComponent()
+    
+    func makeToast(_ message: String) {
+        if toastWindowCtrl != nil {
+            toastWindowCtrl.close()
+        }
+        toastWindowCtrl = ToastWindowController(windowNibName: "ToastWindowController")
+        toastWindowCtrl.message = message
+        toastWindowCtrl.showWindow(self)
+        NSApp.activate(ignoringOtherApps: true)
+        toastWindowCtrl.window?.makeKeyAndOrderFront(self)
+        toastWindowCtrl.fadeInHud()
     }
 }
+
