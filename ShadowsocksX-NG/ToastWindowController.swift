@@ -15,9 +15,9 @@ class ToastWindowController: NSWindowController {
     @IBOutlet weak var titleTextField: NSTextField!
     @IBOutlet weak var panelView: NSView!
     
-    let kHudFadeInDuration: Double = 0.25
-    let kHudFadeOutDuration: Double = 0.25
-    let kHudDisplayDuration: Double = 1.0
+    let kHudFadeInDuration: Double = 0.35
+    let kHudFadeOutDuration: Double = 0.35
+    let kHudDisplayDuration: Double = 1.2
 
     let kHudAlphaValue: CGFloat = 0.75
     let kHudCornerRadius: CGFloat = 18.0
