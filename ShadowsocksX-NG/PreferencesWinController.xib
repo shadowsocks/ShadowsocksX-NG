@@ -464,7 +464,10 @@
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
                                         <button translatesAutoresizingMaskIntoConstraints="NO" id="x9X-2w-cOy">
-                                            <rect key="frame" x="18" y="234" width="262" height="18"/>
+                                            <rect key="frame" x="18" y="185" width="262" height="18"/>
+                                            <constraints>
+                                                <constraint firstAttribute="width" constant="258" id="MG5-cc-BIh"/>
+                                            </constraints>
                                             <buttonCell key="cell" type="check" title="Auto Configure" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="bu3-s5-bYM">
                                                 <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                                 <font key="font" metaFont="system"/>
@@ -474,19 +477,19 @@
                                             </connections>
                                         </button>
                                         <scrollView autohidesScrollers="YES" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dGc-zC-AYJ">
-                                            <rect key="frame" x="20" y="20" width="258" height="199"/>
+                                            <rect key="frame" x="20" y="20" width="440" height="154"/>
                                             <clipView key="contentView" id="9Wy-0J-wQ8">
-                                                <rect key="frame" x="1" y="1" width="256" height="197"/>
-                                                <autoresizingMask key="autoresizingMask"/>
+                                                <rect key="frame" x="1" y="1" width="438" height="152"/>
+                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                 <subviews>
                                                     <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" columnSelection="YES" multipleSelection="NO" autosaveColumns="NO" id="Vp3-dp-iqv">
-                                                        <rect key="frame" x="0.0" y="0.0" width="256" height="197"/>
+                                                        <rect key="frame" x="0.0" y="0.0" width="438" height="152"/>
                                                         <autoresizingMask key="autoresizingMask"/>
                                                         <size key="intercellSpacing" width="3" height="2"/>
                                                         <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                         <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
                                                         <tableColumns>
-                                                            <tableColumn width="253" minWidth="40" maxWidth="1000" id="4CL-dk-HUu">
+                                                            <tableColumn width="435" minWidth="40" maxWidth="1000" id="4CL-dk-HUu">
                                                                 <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border">
                                                                     <font key="font" metaFont="smallSystem"/>
                                                                     <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -511,6 +514,9 @@
                                                     </tableView>
                                                 </subviews>
                                             </clipView>
+                                            <constraints>
+                                                <constraint firstAttribute="width" constant="440" id="0eu-YD-CLG"/>
+                                            </constraints>
                                             <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="YES" id="FHm-ib-d94">
                                                 <rect key="frame" x="-7" y="-14" width="0.0" height="15"/>
                                                 <autoresizingMask key="autoresizingMask"/>
@@ -521,12 +527,11 @@
                                             </scroller>
                                         </scrollView>
                                         <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fMc-SG-EDy">
-                                            <rect key="frame" x="294" y="124" width="168" height="127"/>
+                                            <rect key="frame" x="18" y="209" width="444" height="41"/>
                                             <constraints>
-                                                <constraint firstAttribute="height" constant="127" id="7RX-Tv-NgE"/>
-                                                <constraint firstAttribute="width" constant="164" id="w3F-1W-4Xf"/>
+                                                <constraint firstAttribute="height" constant="41" id="uEL-3g-NyL"/>
                                             </constraints>
-                                            <textFieldCell key="cell" sendsActionOnEndEditing="YES" title="Proxy mode of which network interfaces would be controlled." id="t0I-6n-gnu">
+                                            <textFieldCell key="cell" sendsActionOnEndEditing="YES" title="Which network interfaces  proxy setting would be controlled by ShadowsocksX-NG" id="t0I-6n-gnu">
                                                 <font key="font" metaFont="system"/>
                                                 <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
@@ -534,15 +539,14 @@
                                         </textField>
                                     </subviews>
                                     <constraints>
-                                        <constraint firstAttribute="bottom" secondItem="dGc-zC-AYJ" secondAttribute="bottom" constant="20" symbolic="YES" id="08z-SE-Kyo"/>
-                                        <constraint firstItem="fMc-SG-EDy" firstAttribute="leading" secondItem="x9X-2w-cOy" secondAttribute="trailing" constant="18" id="HF3-TE-DEP"/>
-                                        <constraint firstAttribute="trailing" secondItem="fMc-SG-EDy" secondAttribute="trailing" constant="20" symbolic="YES" id="LHq-gI-4f5"/>
-                                        <constraint firstItem="x9X-2w-cOy" firstAttribute="top" secondItem="Ati-LQ-RB7" secondAttribute="top" constant="20" symbolic="YES" id="MjV-4U-Uvd"/>
-                                        <constraint firstItem="x9X-2w-cOy" firstAttribute="leading" secondItem="dGc-zC-AYJ" secondAttribute="leading" id="Prz-C0-ZQW"/>
-                                        <constraint firstItem="x9X-2w-cOy" firstAttribute="leading" secondItem="Ati-LQ-RB7" secondAttribute="leading" constant="20" symbolic="YES" id="W2K-E3-S0k"/>
-                                        <constraint firstItem="fMc-SG-EDy" firstAttribute="top" secondItem="Ati-LQ-RB7" secondAttribute="top" constant="19" id="bzT-Yv-aYZ"/>
-                                        <constraint firstItem="dGc-zC-AYJ" firstAttribute="top" secondItem="x9X-2w-cOy" secondAttribute="bottom" constant="17" id="jcx-J7-sYt"/>
-                                        <constraint firstItem="x9X-2w-cOy" firstAttribute="trailing" secondItem="dGc-zC-AYJ" secondAttribute="trailing" id="lPR-ex-Jc9"/>
+                                        <constraint firstItem="dGc-zC-AYJ" firstAttribute="trailing" secondItem="fMc-SG-EDy" secondAttribute="trailing" id="3Zz-40-KQq"/>
+                                        <constraint firstItem="dGc-zC-AYJ" firstAttribute="top" secondItem="x9X-2w-cOy" secondAttribute="bottom" constant="13" id="Vl7-m0-TAK"/>
+                                        <constraint firstItem="x9X-2w-cOy" firstAttribute="leading" secondItem="fMc-SG-EDy" secondAttribute="leading" id="XxO-Kg-0A0"/>
+                                        <constraint firstItem="x9X-2w-cOy" firstAttribute="top" secondItem="Ati-LQ-RB7" secondAttribute="top" constant="69" id="eQy-6U-sR6"/>
+                                        <constraint firstItem="x9X-2w-cOy" firstAttribute="top" secondItem="fMc-SG-EDy" secondAttribute="bottom" constant="8" symbolic="YES" id="hmT-Zp-1O2"/>
+                                        <constraint firstItem="dGc-zC-AYJ" firstAttribute="leading" secondItem="x9X-2w-cOy" secondAttribute="leading" id="jdE-no-Bqt"/>
+                                        <constraint firstAttribute="bottom" secondItem="dGc-zC-AYJ" secondAttribute="bottom" constant="20" symbolic="YES" id="lji-fA-re5"/>
+                                        <constraint firstItem="x9X-2w-cOy" firstAttribute="leading" secondItem="Ati-LQ-RB7" secondAttribute="leading" constant="20" symbolic="YES" id="vei-sy-j0Z"/>
                                     </constraints>
                                 </view>
                             </tabViewItem>
