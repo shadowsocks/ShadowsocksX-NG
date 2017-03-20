@@ -6,7 +6,7 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-import Foundation
+import class Foundation.NSNumber
 
 extension Int : KVORepresentable {
     public typealias KVOType = NSNumber

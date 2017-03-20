@@ -6,8 +6,6 @@
 //  Copyright © 2016 Krunoslav Zaher. All rights reserved.
 //
 
-import Foundation
-
 /// A collection of utility methods for common disposable operations.
 public struct Disposables {
     private init() {}

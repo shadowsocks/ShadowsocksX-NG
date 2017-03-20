@@ -6,8 +6,6 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-import Foundation
-
 /// Parametrization for virtual time used by `VirtualTimeScheduler`s.
 public protocol VirtualTimeConverterType {
     /// Virtual time unit used that represents ticks of virtual clock.

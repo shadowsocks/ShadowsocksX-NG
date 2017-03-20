@@ -6,7 +6,6 @@
 //  Copyright © 2016 Krunoslav Zaher. All rights reserved.
 //
 
-import Foundation
 import Dispatch
 #if !RX_NO_MODULE
     import RxSwift
@@ -22,7 +21,7 @@ Observer that enforces interface binding rules:
  In case event binding is attempted from non main dispatch queue, event binding will be dispatched async to main dispatch
  queue.
 */
-public class UIBindingObserver<UIElementType, Value> : ObserverType where UIElementType: AnyObject {
+public final class UIBindingObserver<UIElementType, Value> : ObserverType where UIElementType: AnyObject {
     public typealias E = Value
 
     weak var UIElement: UIElementType?

@@ -6,9 +6,7 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-import Foundation
-
-class JustScheduledSink<O: ObserverType> : Sink<O> {
+final class JustScheduledSink<O: ObserverType> : Sink<O> {
     typealias Parent = JustScheduled<O.E>
 
     private let _parent: Parent
@@ -24,13 +22,14 @@ class JustScheduledSink<O: ObserverType> : Sink<O> {
             self.forwardOn(.next(element))
             return scheduler.schedule(()) { _ in
                 self.forwardOn(.completed)
+                self.dispose()
                 return Disposables.create()
             }
         }
     }
 }
 
-class JustScheduled<Element> : Producer<Element> {
+final class JustScheduled<Element> : Producer<Element> {
     fileprivate let _scheduler: ImmediateSchedulerType
     fileprivate let _element: Element
 
@@ -46,7 +45,7 @@ class JustScheduled<Element> : Producer<Element> {
     }
 }
 
-class Just<Element> : Producer<Element> {
+final class Just<Element> : Producer<Element> {
     private let _element: Element
     
     init(element: Element) {

@@ -6,9 +6,7 @@
 //  Copyright © 2016 Krunoslav Zaher. All rights reserved.
 //
 
-import Foundation
-
-class ObservableOptionalScheduledSink<O: ObserverType> : Sink<O> {
+final class ObservableOptionalScheduledSink<O: ObserverType> : Sink<O> {
     typealias E = O.E
     typealias Parent = ObservableOptionalScheduled<E>
 
@@ -25,17 +23,19 @@ class ObservableOptionalScheduledSink<O: ObserverType> : Sink<O> {
                 self.forwardOn(.next(next))
                 return self._parent._scheduler.schedule(()) { _ in
                     self.forwardOn(.completed)
+                    self.dispose()
                     return Disposables.create()
                 }
             } else {
                 self.forwardOn(.completed)
+                self.dispose()
                 return Disposables.create()
             }
         }
     }
 }
 
-class ObservableOptionalScheduled<E> : Producer<E> {
+final class ObservableOptionalScheduled<E> : Producer<E> {
     fileprivate let _optional: E?
     fileprivate let _scheduler: ImmediateSchedulerType
 
@@ -51,7 +51,7 @@ class ObservableOptionalScheduled<E> : Producer<E> {
     }
 }
 
-class ObservableOptional<E>: Producer<E> {
+final class ObservableOptional<E>: Producer<E> {
     private let _optional: E?
     
     init(optional: E?) {

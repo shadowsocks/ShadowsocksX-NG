@@ -6,9 +6,7 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-import Foundation
-
-class RetryTriggerSink<S: Sequence, O: ObserverType, TriggerObservable: ObservableType, Error>
+final class RetryTriggerSink<S: Sequence, O: ObserverType, TriggerObservable: ObservableType, Error>
     : ObserverType where S.Iterator.Element : ObservableType, S.Iterator.Element.E == O.E {
     typealias E = TriggerObservable.E
     
@@ -35,17 +33,19 @@ class RetryTriggerSink<S: Sequence, O: ObserverType, TriggerObservable: Observab
     }
 }
 
-class RetryWhenSequenceSinkIter<S: Sequence, O: ObserverType, TriggerObservable: ObservableType, Error>
-    : SingleAssignmentDisposable
-    , ObserverType where S.Iterator.Element : ObservableType, S.Iterator.Element.E == O.E {
+final class RetryWhenSequenceSinkIter<S: Sequence, O: ObserverType, TriggerObservable: ObservableType, Error>
+    : ObserverType
+    , Disposable where S.Iterator.Element : ObservableType, S.Iterator.Element.E == O.E {
     typealias E = O.E
     typealias Parent = RetryWhenSequenceSink<S, O, TriggerObservable, Error>
 
     fileprivate let _parent: Parent
     fileprivate let _errorHandlerSubscription = SingleAssignmentDisposable()
+    fileprivate let _subscription: Disposable
 
-    init(parent: Parent) {
+    init(parent: Parent, subscription: Disposable) {
         _parent = parent
+        _subscription = subscription
     }
 
     func on(_ event: Event<E>) {
@@ -57,7 +57,7 @@ class RetryWhenSequenceSinkIter<S: Sequence, O: ObserverType, TriggerObservable:
 
             if let failedWith = error as? Error {
                 // dispose current subscription
-                super.dispose()
+                _subscription.dispose()
 
                 let errorHandlerSubscription = _parent._notifier.subscribe(RetryTriggerSink(parent: self))
                 _errorHandlerSubscription.setDisposable(errorHandlerSubscription)
@@ -73,18 +73,18 @@ class RetryWhenSequenceSinkIter<S: Sequence, O: ObserverType, TriggerObservable:
         }
     }
 
-    override func dispose() {
-        super.dispose()
+    final func dispose() {
+        _subscription.dispose()
         _errorHandlerSubscription.dispose()
     }
 }
 
-class RetryWhenSequenceSink<S: Sequence, O: ObserverType, TriggerObservable: ObservableType, Error>
+final class RetryWhenSequenceSink<S: Sequence, O: ObserverType, TriggerObservable: ObservableType, Error>
     : TailRecursiveSink<S, O> where S.Iterator.Element : ObservableType, S.Iterator.Element.E == O.E {
     typealias Element = O.E
     typealias Parent = RetryWhenSequence<S, TriggerObservable, Error>
     
-    let _lock = NSRecursiveLock()
+    let _lock = RecursiveLock()
     
     fileprivate let _parent: Parent
     
@@ -119,8 +119,9 @@ class RetryWhenSequenceSink<S: Sequence, O: ObserverType, TriggerObservable: Obs
     }
 
     override func subscribeToNext(_ source: Observable<E>) -> Disposable {
-        let iter = RetryWhenSequenceSinkIter(parent: self)
-        iter.setDisposable(source.subscribe(iter))
+        let subscription = SingleAssignmentDisposable()
+        let iter = RetryWhenSequenceSinkIter(parent: self, subscription: subscription)
+        subscription.setDisposable(source.subscribe(iter))
         return iter
     }
 
@@ -131,7 +132,7 @@ class RetryWhenSequenceSink<S: Sequence, O: ObserverType, TriggerObservable: Obs
     }
 }
 
-class RetryWhenSequence<S: Sequence, TriggerObservable: ObservableType, Error> : Producer<S.Iterator.Element.E> where S.Iterator.Element : ObservableType {
+final class RetryWhenSequence<S: Sequence, TriggerObservable: ObservableType, Error> : Producer<S.Iterator.Element.E> where S.Iterator.Element : ObservableType {
     typealias Element = S.Iterator.Element.E
     
     fileprivate let _sources: S

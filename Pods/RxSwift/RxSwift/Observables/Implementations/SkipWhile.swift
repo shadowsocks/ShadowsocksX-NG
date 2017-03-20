@@ -6,7 +6,7 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-class SkipWhileSink<O: ObserverType> : Sink<O>, ObserverType {
+final class SkipWhileSink<O: ObserverType> : Sink<O>, ObserverType {
 
     typealias Element = O.E
     typealias Parent = SkipWhile<Element>
@@ -42,7 +42,7 @@ class SkipWhileSink<O: ObserverType> : Sink<O>, ObserverType {
     }
 }
 
-class SkipWhileSinkWithIndex<O: ObserverType> : Sink<O>, ObserverType {
+final class SkipWhileSinkWithIndex<O: ObserverType> : Sink<O>, ObserverType {
 
     typealias Element = O.E
     typealias Parent = SkipWhile<Element>
@@ -80,7 +80,7 @@ class SkipWhileSinkWithIndex<O: ObserverType> : Sink<O>, ObserverType {
     }
 }
 
-class SkipWhile<Element>: Producer<Element> {
+final class SkipWhile<Element>: Producer<Element> {
     typealias Predicate = (Element) throws -> Bool
     typealias PredicateWithIndex = (Element, Int) throws -> Bool
 

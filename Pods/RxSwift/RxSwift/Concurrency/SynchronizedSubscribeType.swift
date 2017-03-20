@@ -6,8 +6,6 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-import Foundation
-
 protocol SynchronizedSubscribeType : class, ObservableType, Lock {
     func _synchronized_subscribe<O: ObserverType>(_ observer: O) -> Disposable where O.E == E
 }

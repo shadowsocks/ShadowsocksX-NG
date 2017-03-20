@@ -6,13 +6,11 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-import Foundation
-
 extension Disposable {
-    /// Adds `self` to `bag`.
+    /// Adds `self` to `bag`
     ///
     /// - parameter bag: `DisposeBag` to add `self` to.
-    public func addDisposableTo(_ bag: DisposeBag) {
+    public func disposed(by bag: DisposeBag) {
         bag.insert(self)
     }
 }

@@ -6,8 +6,6 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-import Foundation
-
 fileprivate enum ScheduleState {
     case initial
     case added(CompositeDisposable.DisposeKey)
@@ -15,11 +13,11 @@ fileprivate enum ScheduleState {
 }
 
 /// Type erased recursive scheduler.
-class AnyRecursiveScheduler<State> {
+final class AnyRecursiveScheduler<State> {
     
     typealias Action =  (State, AnyRecursiveScheduler<State>) -> Void
 
-    private let _lock = NSRecursiveLock()
+    private let _lock = RecursiveLock()
     
     // state
     private let _group = CompositeDisposable()
@@ -150,7 +148,7 @@ class AnyRecursiveScheduler<State> {
 }
 
 /// Type erased recursive scheduler.
-class RecursiveImmediateScheduler<State> {
+final class RecursiveImmediateScheduler<State> {
     typealias Action =  (_ state: State, _ recurse: (State) -> Void) -> Void
     
     private var _lock = SpinLock()

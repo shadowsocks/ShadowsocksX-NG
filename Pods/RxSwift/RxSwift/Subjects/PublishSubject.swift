@@ -6,32 +6,33 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-import Foundation
-
 /// Represents an object that is both an observable sequence as well as an observer.
 ///
 /// Each notification is broadcasted to all subscribed observers.
-final public class PublishSubject<Element>
+public final class PublishSubject<Element>
     : Observable<Element>
     , SubjectType
     , Cancelable
     , ObserverType
     , SynchronizedUnsubscribeType {
     public typealias SubjectObserverType = PublishSubject<Element>
-    
-    typealias DisposeKey = Bag<AnyObserver<Element>>.KeyType
+
+    typealias Observers = AnyObserver<Element>.s
+    typealias DisposeKey = Observers.KeyType
     
     /// Indicates whether the subject has any observers
     public var hasObservers: Bool {
-        _lock.lock(); defer { _lock.unlock() }
-        return _observers.count > 0
+        _lock.lock()
+        let count = _observers.count > 0
+        _lock.unlock()
+        return count
     }
     
-    private var _lock = NSRecursiveLock()
+    private let _lock = RecursiveLock()
     
     // state
     private var _isDisposed = false
-    private var _observers = Bag<AnyObserver<Element>>()
+    private var _observers = Observers()
     private var _stopped = false
     private var _stoppedEvent = nil as Event<Element>?
     
@@ -43,22 +44,24 @@ final public class PublishSubject<Element>
     /// Creates a subject.
     public override init() {
         super.init()
+        #if TRACE_RESOURCES
+            _ = Resources.incrementTotal()
+        #endif
     }
     
     /// Notifies all subscribed observers about next event.
     ///
     /// - parameter event: Event to send to the observers.
     public func on(_ event: Event<Element>) {
-        _synchronized_on(event).on(event)
+        dispatch(_synchronized_on(event), event)
     }
 
-    func _synchronized_on(_ event: Event<E>) -> Bag<AnyObserver<Element>> {
+    func _synchronized_on(_ event: Event<E>) -> Observers {
         _lock.lock(); defer { _lock.unlock() }
-
         switch event {
         case .next(_):
             if _isDisposed || _stopped {
-                return Bag()
+                return Observers()
             }
             
             return _observers
@@ -71,7 +74,7 @@ final public class PublishSubject<Element>
                 return observers
             }
 
-            return Bag()
+            return Observers()
         }
     }
     
@@ -82,8 +85,10 @@ final public class PublishSubject<Element>
     - returns: Disposable object that can be used to unsubscribe the observer from the subject.
     */
     public override func subscribe<O : ObserverType>(_ observer: O) -> Disposable where O.E == Element {
-        _lock.lock(); defer { _lock.unlock() }
-        return _synchronized_subscribe(observer)
+        _lock.lock()
+        let subscription = _synchronized_subscribe(observer)
+        _lock.unlock()
+        return subscription
     }
 
     func _synchronized_subscribe<O : ObserverType>(_ observer: O) -> Disposable where O.E == E {
@@ -97,13 +102,14 @@ final public class PublishSubject<Element>
             return Disposables.create()
         }
         
-        let key = _observers.insert(observer.asObserver())
+        let key = _observers.insert(observer.on)
         return SubscriptionDisposable(owner: self, key: key)
     }
 
     func synchronizedUnsubscribe(_ disposeKey: DisposeKey) {
-        _lock.lock(); defer { _lock.unlock() }
+        _lock.lock()
         _synchronized_unsubscribe(disposeKey)
+        _lock.unlock()
     }
 
     func _synchronized_unsubscribe(_ disposeKey: DisposeKey) {
@@ -117,8 +123,9 @@ final public class PublishSubject<Element>
     
     /// Unsubscribe all observers and release resources.
     public func dispose() {
-        _lock.lock(); defer { _lock.unlock() }
+        _lock.lock()
         _synchronized_dispose()
+        _lock.unlock()
     }
 
     final func _synchronized_dispose() {
@@ -126,4 +133,10 @@ final public class PublishSubject<Element>
         _observers.removeAll()
         _stoppedEvent = nil
     }
+
+    #if TRACE_RESOURCES
+        deinit {
+            _ = Resources.decrementTotal()
+        }
+    #endif
 }

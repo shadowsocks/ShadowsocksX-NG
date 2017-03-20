@@ -6,7 +6,8 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-import Foundation
+import struct Foundation.Date
+import class Foundation.DateFormatter
 
 let dateFormat = "yyyy-MM-dd HH:mm:ss.SSS"
 
@@ -14,7 +15,7 @@ func logEvent(_ identifier: String, dateFormat: DateFormatter, content: String) 
     print("\(dateFormat.string(from: Date())): \(identifier) -> \(content)")
 }
 
-class DebugSink<Source: ObservableType, O: ObserverType> : Sink<O>, ObserverType where O.E == Source.E {
+final class DebugSink<Source: ObservableType, O: ObserverType> : Sink<O>, ObserverType where O.E == Source.E {
     typealias Element = O.E
     typealias Parent = Debug<Source>
     
@@ -54,7 +55,7 @@ class DebugSink<Source: ObservableType, O: ObserverType> : Sink<O>, ObserverType
     }
 }
 
-class Debug<Source: ObservableType> : Producer<Source.E> {
+final class Debug<Source: ObservableType> : Producer<Source.E> {
     fileprivate let _identifier: String
     fileprivate let _trimOutput: Bool
     fileprivate let _source: Source

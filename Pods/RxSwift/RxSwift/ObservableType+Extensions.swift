@@ -6,8 +6,6 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-import Foundation
-
 extension ObservableType {
     /**
     Subscribes an event handler to an observable sequence.
@@ -113,7 +111,7 @@ extension ObservableType {
 
 extension ObservableType {
     /// All internal subscribe calls go through this method.
-    func subscribeSafe<O: ObserverType>(_ observer: O) -> Disposable where O.E == E {
+    fileprivate func subscribeSafe<O: ObserverType>(_ observer: O) -> Disposable where O.E == E {
         return self.asObservable().subscribe(observer)
     }
 }

@@ -6,8 +6,6 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-import Foundation
-
 enum TailRecursiveSinkCommand {
     case moveNext
     case dispose
@@ -64,7 +62,7 @@ class TailRecursiveSink<S: Sequence, O: ObserverType>
     }
 
     func extract(_ observable: Observable<E>) -> SequenceGenerator? {
-        abstractMethod()
+        rxAbstractMethod()
     }
 
     // should be done on gate locked
@@ -122,18 +120,18 @@ class TailRecursiveSink<S: Sequence, O: ObserverType>
             }
         } while next == nil
 
-        if next == nil  {
+        guard let existingNext = next else  {
             done()
             return
         }
 
         let disposable = SingleAssignmentDisposable()
         _subscription.disposable = disposable
-        disposable.setDisposable(subscribeToNext(next!))
+        disposable.setDisposable(subscribeToNext(existingNext))
     }
 
     func subscribeToNext(_ source: Observable<E>) -> Disposable {
-        abstractMethod()
+        rxAbstractMethod()
     }
 
     func disposeCommand() {

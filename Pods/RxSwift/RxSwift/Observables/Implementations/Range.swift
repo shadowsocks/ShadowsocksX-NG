@@ -6,9 +6,7 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-import Foundation
-
-class RangeProducer<E: SignedInteger> : Producer<E> {
+final class RangeProducer<E: SignedInteger> : Producer<E> {
     fileprivate let _start: E
     fileprivate let _count: E
     fileprivate let _scheduler: ImmediateSchedulerType
@@ -34,7 +32,7 @@ class RangeProducer<E: SignedInteger> : Producer<E> {
     }
 }
 
-class RangeSink<O: ObserverType> : Sink<O> where O.E: SignedInteger {
+final class RangeSink<O: ObserverType> : Sink<O> where O.E: SignedInteger {
     typealias Parent = RangeProducer<O.E>
     
     private let _parent: Parent

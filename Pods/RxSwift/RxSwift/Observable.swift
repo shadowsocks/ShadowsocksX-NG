@@ -6,8 +6,6 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-import Foundation
-
 /// A type-erased `ObservableType`. 
 ///
 /// It represents a push style sequence.
@@ -22,7 +20,7 @@ public class Observable<Element> : ObservableType {
     }
     
     public func subscribe<O: ObserverType>(_ observer: O) -> Disposable where O.E == E {
-        abstractMethod()
+        rxAbstractMethod()
     }
     
     public func asObservable() -> Observable<E> {

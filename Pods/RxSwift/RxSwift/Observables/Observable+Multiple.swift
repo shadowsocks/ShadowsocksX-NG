@@ -6,8 +6,6 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-import Foundation
-
 // MARK: combineLatest
 
 extension Observable {
@@ -23,6 +21,18 @@ extension Observable {
         where C.Iterator.Element: ObservableType {
         return CombineLatestCollectionType(sources: collection, resultSelector: resultSelector)
     }
+
+    /**
+     Merges the specified observable sequences into one observable sequence whenever any of the observable sequences produces an element.
+
+     - seealso: [combinelatest operator on reactivex.io](http://reactivex.io/documentation/operators/combinelatest.html)
+
+     - returns: An observable sequence containing the result of combining elements of the sources using the specified result selector function.
+     */
+    public static func combineLatest<C: Collection>(_ collection: C) -> Observable<[Element]>
+        where C.Iterator.Element: ObservableType, C.Iterator.Element.E == Element {
+        return CombineLatestCollectionType(sources: collection, resultSelector: { $0 })
+    }
 }
 
 // MARK: zip
@@ -37,9 +47,22 @@ extension Observable {
      - returns: An observable sequence containing the result of combining elements of the sources using the specified result selector function.
      */
     public static func zip<C: Collection>(_ collection: C, _ resultSelector: @escaping ([C.Iterator.Element.E]) throws -> Element) -> Observable<Element>
-    where C.Iterator.Element: ObservableType {
-        return ZipCollectionType(sources: collection, resultSelector: resultSelector)
+        where C.Iterator.Element: ObservableType {
+            return ZipCollectionType(sources: collection, resultSelector: resultSelector)
     }
+
+    /**
+     Merges the specified observable sequences into one observable sequence whenever all of the observable sequences have produced an element at a corresponding index.
+
+     - seealso: [zip operator on reactivex.io](http://reactivex.io/documentation/operators/zip.html)
+
+     - returns: An observable sequence containing the result of combining elements of the sources using the specified result selector function.
+     */
+    public static func zip<C: Collection>(_ collection: C) -> Observable<[Element]>
+        where C.Iterator.Element: ObservableType, C.Iterator.Element.E == Element {
+            return ZipCollectionType(sources: collection, resultSelector: { $0 })
+    }
+
 }
 
 // MARK: switch
@@ -59,6 +82,22 @@ extension ObservableType where E : ObservableConvertibleType {
     */
     public func switchLatest() -> Observable<E.E> {
         return Switch(source: asObservable())
+    }
+}
+
+// switchIfEmpty
+
+extension ObservableType {
+    /**
+     Returns the elements of the specified sequence or `switchTo` sequence if the sequence is empty.
+     
+     - seealso: [DefaultIfEmpty operator on reactivex.io](http://reactivex.io/documentation/operators/defaultifempty.html)
+
+     - parameter switchTo: Observable sequence being returned when source sequence is empty.
+     - returns: Observable sequence that contains elements from switchTo sequence if source is empty, otherwise returns source sequence elements.
+     */
+    public func ifEmpty(switchTo other: Observable<E>) -> Observable<E> {
+        return SwitchIfEmpty(source: asObservable(), ifEmpty: other)
     }
 }
 
@@ -115,6 +154,23 @@ extension Observable {
         where S.Iterator.Element == Observable<Element> {
             return Concat(sources: collection, count: collection.count.toIntMax())
     }
+
+    /**
+     Concatenates all observable sequences in the given collection, as long as the previous observable sequence terminated successfully.
+
+     This operator has tail recursive optimizations that will prevent stack overflow.
+
+     Optimizations will be performed in cases equivalent to following:
+
+     [1, [2, [3, .....].concat()].concat].concat()
+
+     - seealso: [concat operator on reactivex.io](http://reactivex.io/documentation/operators/concat.html)
+
+     - returns: An observable sequence that contains the elements of each given sequence, in sequential order.
+     */
+    public static func concat(_ sources: Observable<Element> ...) -> Observable<Element> {
+        return Concat(sources: sources, count: sources.count.toIntMax())
+    }
 }
 
 extension ObservableType where E : ObservableConvertibleType {
@@ -132,6 +188,44 @@ extension ObservableType where E : ObservableConvertibleType {
 }
 
 // MARK: merge
+
+extension Observable {
+    /**
+     Merges elements from all observable sequences from collection into a single observable sequence.
+
+     - seealso: [merge operator on reactivex.io](http://reactivex.io/documentation/operators/merge.html)
+
+     - parameter sources: Collection of observable sequences to merge.
+     - returns: The observable sequence that merges the elements of the observable sequences.
+     */
+    public static func merge<C: Collection>(_ sources: C) -> Observable<E> where C.Iterator.Element == Observable<E> {
+        return MergeArray(sources: Array(sources))
+    }
+
+    /**
+     Merges elements from all observable sequences from array into a single observable sequence.
+
+     - seealso: [merge operator on reactivex.io](http://reactivex.io/documentation/operators/merge.html)
+
+     - parameter sources: Array of observable sequences to merge.
+     - returns: The observable sequence that merges the elements of the observable sequences.
+     */
+    public static func merge(_ sources: [Observable<E>]) -> Observable<E> {
+        return MergeArray(sources: sources)
+    }
+
+    /**
+     Merges elements from all observable sequences into a single observable sequence.
+
+     - seealso: [merge operator on reactivex.io](http://reactivex.io/documentation/operators/merge.html)
+
+     - parameter sources: Collection of observable sequences to merge.
+     - returns: The observable sequence that merges the elements of the observable sequences.
+     */
+    public static func merge(_ sources: Observable<E>...) -> Observable<E> {
+        return MergeArray(sources: sources)
+    }
+}
 
 extension ObservableType where E : ObservableConvertibleType {
     

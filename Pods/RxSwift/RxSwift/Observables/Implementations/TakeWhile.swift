@@ -6,9 +6,7 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-import Foundation
-
-class TakeWhileSink<O: ObserverType>
+final class TakeWhileSink<O: ObserverType>
     : Sink<O>
     , ObserverType {
     typealias Element = O.E
@@ -52,7 +50,7 @@ class TakeWhileSink<O: ObserverType>
     
 }
 
-class TakeWhileSinkWithIndex<O: ObserverType>
+final class TakeWhileSinkWithIndex<O: ObserverType>
     : Sink<O>
     , ObserverType {
     typealias Element = O.E
@@ -98,7 +96,7 @@ class TakeWhileSinkWithIndex<O: ObserverType>
     
 }
 
-class TakeWhile<Element>: Producer<Element> {
+final class TakeWhile<Element>: Producer<Element> {
     typealias Predicate = (Element) throws -> Bool
     typealias PredicateWithIndex = (Element, Int) throws -> Bool
 

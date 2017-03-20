@@ -6,8 +6,6 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-import Foundation
-
 /// Represents a push style sequence.
 public protocol ObservableType : ObservableConvertibleType {
     /// Type of elements in sequence.

@@ -6,8 +6,6 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-import Foundation
-
 protocol SynchronizedDisposeType : class, Disposable, Lock {
     func _synchronized_dispose()
 }

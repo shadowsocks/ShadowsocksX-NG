@@ -6,8 +6,6 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-import Foundation
-
 // MARK: distinct until changed
 
 extension ObservableType where E: Equatable {
@@ -79,10 +77,11 @@ extension ObservableType {
      - parameter onError: Action to invoke upon errored termination of the observable sequence.
      - parameter onCompleted: Action to invoke upon graceful termination of the observable sequence.
      - parameter onSubscribe: Action to invoke before subscribing to source observable sequence.
+     - parameter onSubscribed: Action to invoke after subscribing to source observable sequence.
      - parameter onDispose: Action to invoke after subscription to source observable has been disposed for any reason. It can be either because sequence terminates for some reason or observer subscription being disposed.
     - returns: The source sequence with the side-effecting behavior applied.
      */
-    public func `do`(onNext: ((E) throws -> Void)? = nil, onError: ((Swift.Error) throws -> Void)? = nil, onCompleted: (() throws -> Void)? = nil, onSubscribe: (() -> ())? = nil, onDispose: (() -> ())? = nil)
+    public func `do`(onNext: ((E) throws -> Void)? = nil, onError: ((Swift.Error) throws -> Void)? = nil, onCompleted: (() throws -> Void)? = nil, onSubscribe: (() -> ())? = nil, onSubscribed: (() -> ())? = nil, onDispose: (() -> ())? = nil)
         -> Observable<E> {
             return Do(source: self.asObservable(), eventHandler: { e in
                 switch e {
@@ -93,7 +92,7 @@ extension ObservableType {
                 case .completed:
                     try onCompleted?()
                 }
-            }, onSubscribe: onSubscribe, onDispose: onDispose)
+            }, onSubscribe: onSubscribe, onSubscribed: onSubscribed, onDispose: onDispose)
     }
 }
 
@@ -194,5 +193,39 @@ extension ObservableType {
     public func scan<A>(_ seed: A, accumulator: @escaping (A, E) throws -> A)
         -> Observable<A> {
         return Scan(source: self.asObservable(), seed: seed, accumulator: accumulator)
+    }
+}
+
+// MARK: defaultIfEmpty
+
+extension ObservableType {
+    
+    /**
+     Emits elements from the source observable sequence, or a default element if the source observable sequence is empty.
+     
+     - seealso: [DefaultIfEmpty operator on reactivex.io](http://reactivex.io/documentation/operators/defaultifempty.html)
+     
+     - parameter default: Default element to be sent if the source does not emit any elements
+     - returns: An observable sequence which emits default element end completes in case the original sequence is empty
+     */
+    public func ifEmpty(default: E) -> Observable<E> {
+        return DefaultIfEmpty(source: self.asObservable(), default: `default`)
+    }
+}
+
+extension ObservableType {
+
+    /**
+     Skips elements and completes (or errors) when the receiver completes (or errors). Equivalent to filter that always returns false.
+
+     - seealso: [ignoreElements operator on reactivex.io](http://reactivex.io/documentation/operators/ignoreelements.html)
+
+     - returns: An observable sequence that skips all elements of the source sequence.
+     */
+    public func ignoreElements()
+        -> Observable<E> {
+        return filter { _ -> Bool in
+            return false
+        }
     }
 }

@@ -1,12 +1,14 @@
 //
-//  NSNotificationCenter+Rx.swift
+//  NotificationCenter+Rx.swift
 //  RxCocoa
 //
 //  Created by Krunoslav Zaher on 5/2/15.
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-import Foundation
+import class Foundation.NotificationCenter
+import struct Foundation.Notification
+
 #if !RX_NO_MODULE
 import RxSwift
 #endif

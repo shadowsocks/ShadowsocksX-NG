@@ -17,6 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 -(void)_setForwardToDelegate:(id __nullable)forwardToDelegate retainDelegate:(BOOL)retainDelegate;
 
 -(BOOL)hasWiredImplementationForSelector:(SEL)selector;
+-(BOOL)voidDelegateMethodsContain:(SEL)selector;
 
 -(void)_sentMessage:(SEL)selector withArguments:(NSArray*)arguments;
 -(void)_methodInvoked:(SEL)selector withArguments:(NSArray*)arguments;

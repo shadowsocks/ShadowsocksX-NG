@@ -6,8 +6,6 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-import Foundation
-
 struct PriorityQueue<Element> {
     private let _hasHigherPriority: (Element, Element) -> Bool
     private let _isEqual: (Element, Element) -> Bool

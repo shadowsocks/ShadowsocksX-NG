@@ -6,9 +6,7 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-import Foundation
-
-class AddRefSink<O: ObserverType> : Sink<O>, ObserverType {
+final class AddRefSink<O: ObserverType> : Sink<O>, ObserverType {
     typealias Element = O.E
     
     override init(observer: O, cancel: Cancelable) {
@@ -26,7 +24,7 @@ class AddRefSink<O: ObserverType> : Sink<O>, ObserverType {
     }
 }
 
-class AddRef<Element> : Producer<Element> {
+final class AddRef<Element> : Producer<Element> {
     typealias EventHandler = (Event<Element>) throws -> Void
     
     private let _source: Observable<Element>
@@ -40,7 +38,7 @@ class AddRef<Element> : Producer<Element> {
     override func run<O: ObserverType>(_ observer: O, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where O.E == Element {
         let releaseDisposable = _refCount.retain()
         let sink = AddRefSink(observer: observer, cancel: cancel)
-        let subscription = Disposables.create(releaseDisposable, _source.subscribeSafe(sink))
+        let subscription = Disposables.create(releaseDisposable, _source.subscribe(sink))
 
         return (sink: sink, subscription: subscription)
     }

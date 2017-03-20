@@ -6,7 +6,7 @@
 //  Copyright © 2016 Krunoslav Zaher. All rights reserved.
 //
 
-import Foundation
+import struct Foundation.IndexPath
 
 /// Data source with access to underlying sectioned model.
 public protocol SectionedViewDataSourceType {

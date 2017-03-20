@@ -6,8 +6,6 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-import Foundation
-
 /// Type that is KVO representable (KVO mechanism can be used to observe it).
 public protocol KVORepresentable {
     /// Associated KVO type.

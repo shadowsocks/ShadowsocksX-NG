@@ -7,20 +7,16 @@
 //
 
 #if os(Linux)
-    ////////////////////////////////////////////////////////////////////////////////
-    // This is not the greatest API in the world, this is just a tribute.
-    // !!! Proof of concept until libdispatch becomes operational. !!!
-    ////////////////////////////////////////////////////////////////////////////////
 
-    import Foundation
     import XCTest
     import Glibc
     import SwiftShims
+    import class Foundation.Thread
 
     final class AtomicInt {
         typealias IntegerLiteralType = Int
         fileprivate var value: Int32 = 0
-        fileprivate var _lock = NSRecursiveLock()
+        fileprivate var _lock = RecursiveLock()
 
         func lock() {
           _lock.lock()
@@ -46,6 +42,18 @@
     }
     func ==(lhs: AtomicInt, rhs: Int32) -> Bool {
         return lhs.value == rhs
+    }
+
+    func AtomicFlagSet(_ mask: UInt32, _ atomic: inout AtomicInt) -> Bool {
+        atomic.lock(); defer { atomic.unlock() }
+        return (atomic.value & Int32(mask)) != 0
+    }
+
+    func AtomicOr(_ mask: UInt32, _ atomic: inout AtomicInt) -> Int32 {
+        atomic.lock(); defer { atomic.unlock() }
+        let value = atomic.value
+        atomic.value |= Int32(mask)
+        return value
     }
 
     func AtomicIncrement(_ atomic: inout AtomicInt) -> Int32 {

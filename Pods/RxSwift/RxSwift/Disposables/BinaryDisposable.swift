@@ -6,8 +6,6 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-import Foundation
-
 /// Represents two disposable resources that are disposed together.
 private final class BinaryDisposable : DisposeBase, Cancelable {
 

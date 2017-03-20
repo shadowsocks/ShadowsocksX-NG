@@ -6,7 +6,7 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-import Foundation
+import struct Foundation.URLRequest
 
 /// Simple logging settings for RxCocoa library.
 public struct Logging {

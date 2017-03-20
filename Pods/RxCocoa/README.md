@@ -45,7 +45,7 @@ KVO observing, async operations and streams are all unified under [abstraction o
 
 ###### ... interact
 
-* All of this is great, but it would be nice to talk with other people using RxSwift and exchange experiences. <br />[![Slack channel](http://rxswift-slack.herokuapp.com/badge.svg)](http://slack.rxswift.org) [Join Slack Channel](http://rxswift-slack.herokuapp.com)
+* All of this is great, but it would be nice to talk with other people using RxSwift and exchange experiences. <br />[![Slack channel](http://rxswift-slack.herokuapp.com/badge.svg)](http://rxswift-slack.herokuapp.com/) [Join Slack Channel](http://rxswift-slack.herokuapp.com)
 * Report a problem using the library. [Open an Issue With Bug Template](.github/ISSUE_TEMPLATE.md)
 * Request a new feature. [Open an Issue With Feature Request Template](Documentation/NewFeatureRequestTemplate.md)
 
@@ -102,7 +102,7 @@ searchResults
         cell.textLabel?.text = repository.name
         cell.detailTextLabel?.text = repository.url
     }
-    .addDisposableTo(disposeBag)</pre></div></td>
+    .disposed(by: disposeBag)</pre></div></td>
   </tr>
 </table>
 
@@ -126,7 +126,7 @@ Open Rx.xcworkspace, choose `RxExample` and hit run. This method will build ever
 
 **Tested with `pod --version`: `1.1.1`**
 
-```
+```ruby
 # Podfile
 use_frameworks!
 
@@ -144,7 +144,7 @@ end
 
 Replace `YOUR_TARGET_NAME` and then, in the `Podfile` directory, type:
 
-```
+```bash
 $ pod install
 ```
 
@@ -158,7 +158,7 @@ Add this to `Cartfile`
 github "ReactiveX/RxSwift" ~> 3.0
 ```
 
-```
+```bash
 $ carthage update
 ```
 
@@ -168,7 +168,7 @@ $ carthage update
 
 Create a `Package.swift` file.
 
-```
+```swift
 import PackageDescription
 
 let package = Package(
@@ -180,7 +180,7 @@ let package = Package(
 )
 ```
 
-```
+```bash
 $ swift build
 ```
 
@@ -188,7 +188,7 @@ $ swift build
 
 * Add RxSwift as a submodule
 
-```
+```bash
 $ git submodule add git@github.com:ReactiveX/RxSwift.git
 ```
 

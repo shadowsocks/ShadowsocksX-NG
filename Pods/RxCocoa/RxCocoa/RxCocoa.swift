@@ -6,7 +6,8 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-import Foundation
+import class Foundation.NSNull
+
 #if !RX_NO_MODULE
 import RxSwift
 #endif
@@ -72,14 +73,22 @@ func bindingErrorToInterface(_ error: Swift.Error) {
 #endif
 }
 
-// MARK: Abstract methods
-
-func rxAbstractMethodWithMessage(_ message: String) -> Swift.Never  {
-    rxFatalError(message)
+/// Swift does not implement abstract methods. This method is used as a runtime check to ensure that methods which intended to be abstract (i.e., they should be implemented in subclasses) are not called directly on the superclass.
+func rxAbstractMethod(message: String = "Abstract method", file: StaticString = #file, line: UInt = #line) -> Swift.Never {
+    rxFatalError(message, file: file, line: line)
 }
 
-func rxAbstractMethod() -> Swift.Never  {
-    rxFatalError("Abstract method")
+func rxFatalError(_ lastMessage: @autoclosure () -> String, file: StaticString = #file, line: UInt = #line) -> Swift.Never  {
+    // The temptation to comment this line is great, but please don't, it's for your own good. The choice is yours.
+    fatalError(lastMessage(), file: file, line: line)
+}
+
+func rxFatalErrorInDebug(_ lastMessage: @autoclosure () -> String, file: StaticString = #file, line: UInt = #line) {
+    #if DEBUG
+        fatalError(lastMessage(), file: file, line: line)
+    #else
+        print("\(file):\(line): \(lastMessage())")
+    #endif
 }
 
 // MARK: casts or fatal error

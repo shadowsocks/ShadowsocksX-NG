@@ -6,8 +6,6 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-import Foundation
-
 struct SubscriptionDisposable<T: SynchronizedUnsubscribeType> : Disposable {
     private let _key: T.DisposeKey
     private weak var _owner: T?

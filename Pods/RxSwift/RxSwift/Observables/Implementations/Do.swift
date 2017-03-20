@@ -6,9 +6,7 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-import Foundation
-
-class DoSink<O: ObserverType> : Sink<O>, ObserverType {
+final class DoSink<O: ObserverType> : Sink<O>, ObserverType {
     typealias Element = O.E
     typealias Parent = Do<Element>
     
@@ -34,18 +32,20 @@ class DoSink<O: ObserverType> : Sink<O>, ObserverType {
     }
 }
 
-class Do<Element> : Producer<Element> {
+final class Do<Element> : Producer<Element> {
     typealias EventHandler = (Event<Element>) throws -> Void
     
     fileprivate let _source: Observable<Element>
     fileprivate let _eventHandler: EventHandler
     fileprivate let _onSubscribe: (() -> ())?
+    fileprivate let _onSubscribed: (() -> ())?
     fileprivate let _onDispose: (() -> ())?
     
-    init(source: Observable<Element>, eventHandler: @escaping EventHandler, onSubscribe: (() -> ())?, onDispose: (() -> ())?) {
+    init(source: Observable<Element>, eventHandler: @escaping EventHandler, onSubscribe: (() -> ())?, onSubscribed: (() -> ())?, onDispose: (() -> ())?) {
         _source = source
         _eventHandler = eventHandler
         _onSubscribe = onSubscribe
+        _onSubscribed = onSubscribed
         _onDispose = onDispose
     }
     
@@ -53,6 +53,7 @@ class Do<Element> : Producer<Element> {
         _onSubscribe?()
         let sink = DoSink(parent: self, observer: observer, cancel: cancel)
         let subscription = _source.subscribe(sink)
+        _onSubscribed?()
         let onDispose = _onDispose
         let allSubscriptions = Disposables.create {
             subscription.dispose()

@@ -6,7 +6,24 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-import Foundation
+import struct Foundation.URL
+import struct Foundation.URLRequest
+import struct Foundation.Data
+import struct Foundation.Date
+import struct Foundation.TimeInterval
+import class Foundation.HTTPURLResponse
+import class Foundation.URLSession
+import class Foundation.URLResponse
+import class Foundation.JSONSerialization
+import class Foundation.NSError
+import var Foundation.NSURLErrorCancelled
+import var Foundation.NSURLErrorDomain
+
+#if os(Linux)
+    // don't know why
+    import Foundation
+#endif
+
 #if !RX_NO_MODULE
 import RxSwift
 #endif
@@ -71,7 +88,7 @@ fileprivate func convertURLRequestToCurlCommand(_ request: URLRequest) -> String
     return returnValue
 }
 
-fileprivate func convertResponseToString(_ data: Data!, _ response: URLResponse!, _ error: NSError!, _ interval: TimeInterval) -> String {
+fileprivate func convertResponseToString(_ response: URLResponse?, _ error: NSError?, _ interval: TimeInterval) -> String {
     let ms = Int(interval * 1000)
 
     if let response = response as? HTTPURLResponse {
@@ -124,7 +141,7 @@ extension Reactive where Base: URLSession {
                 if Logging.URLRequests(request) {
                     let interval = Date().timeIntervalSince(d ?? Date())
                     print(convertURLRequestToCurlCommand(request))
-                    print(convertResponseToString(data, response, error as NSError!, interval))
+                    print(convertResponseToString(response, error.map { $0 as NSError }, interval))
                 }
                 
                 guard let response = response, let data = data else {
@@ -141,9 +158,7 @@ extension Reactive where Base: URLSession {
                 observer.on(.completed)
             }
 
-
-            let t = task
-            t.resume()
+            task.resume()
 
             return Disposables.create(with: task.cancel)
         }

@@ -6,9 +6,7 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-import Foundation
-
-class TimerSink<O: ObserverType> : Sink<O> where O.E : SignedInteger  {
+final class TimerSink<O: ObserverType> : Sink<O> where O.E : SignedInteger  {
     typealias Parent = Timer<O.E>
     
     private let _parent: Parent
@@ -26,7 +24,7 @@ class TimerSink<O: ObserverType> : Sink<O> where O.E : SignedInteger  {
     }
 }
 
-class TimerOneOffSink<O: ObserverType> : Sink<O> where O.E : SignedInteger {
+final class TimerOneOffSink<O: ObserverType> : Sink<O> where O.E : SignedInteger {
     typealias Parent = Timer<O.E>
     
     private let _parent: Parent
@@ -47,7 +45,7 @@ class TimerOneOffSink<O: ObserverType> : Sink<O> where O.E : SignedInteger {
     }
 }
 
-class Timer<E: SignedInteger>: Producer<E> {
+final class Timer<E: SignedInteger>: Producer<E> {
     fileprivate let _scheduler: SchedulerType
     fileprivate let _dueTime: RxTimeInterval
     fileprivate let _period: RxTimeInterval?

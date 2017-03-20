@@ -6,8 +6,6 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-import Foundation
-
 extension String {
     /// This is needed because on Linux Swift doesn't have `rangeOfString(..., options: .BackwardsSearch)`
     func lastIndexOf(_ character: Character) -> Index? {

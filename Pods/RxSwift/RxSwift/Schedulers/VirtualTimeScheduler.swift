@@ -6,8 +6,6 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-import Foundation
-
 /// Base class for virtual time schedulers using a priority queue for scheduled items.
 open class VirtualTimeScheduler<Converter: VirtualTimeConverterType>
     : SchedulerType {
@@ -234,7 +232,7 @@ extension VirtualTimeScheduler: CustomDebugStringConvertible {
     }
 }
 
-class VirtualSchedulerItem<Time>
+final class VirtualSchedulerItem<Time>
     : Disposable {
     typealias Action = () -> Disposable
     

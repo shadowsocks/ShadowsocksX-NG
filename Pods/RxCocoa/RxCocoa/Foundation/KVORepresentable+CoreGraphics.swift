@@ -8,11 +8,12 @@
 
 #if !os(Linux)
 
-import Foundation
 #if !RX_NO_MODULE
     import RxSwift
 #endif
-import CoreGraphics
+    import CoreGraphics
+
+    import class Foundation.NSValue
 
 #if arch(x86_64) || arch(arm64)
 let CGRectType = "{CGRect={CGPoint=dd}{CGSize=dd}}"

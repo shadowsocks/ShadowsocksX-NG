@@ -6,9 +6,7 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-import Foundation
-
-class WithLatestFromSink<FirstType, SecondType, O: ObserverType>
+final class WithLatestFromSink<FirstType, SecondType, O: ObserverType>
     : Sink<O>
     , ObserverType
     , LockOwnerType
@@ -19,7 +17,7 @@ class WithLatestFromSink<FirstType, SecondType, O: ObserverType>
     
     fileprivate let _parent: Parent
     
-    var _lock = NSRecursiveLock()
+    var _lock = RecursiveLock()
     fileprivate var _latest: SecondType?
 
     init(parent: Parent, observer: O, cancel: Cancelable) {
@@ -64,7 +62,7 @@ class WithLatestFromSink<FirstType, SecondType, O: ObserverType>
     }
 }
 
-class WithLatestFromSecond<FirstType, SecondType, O: ObserverType>
+final class WithLatestFromSecond<FirstType, SecondType, O: ObserverType>
     : ObserverType
     , LockOwnerType
     , SynchronizedOnType {
@@ -76,7 +74,7 @@ class WithLatestFromSecond<FirstType, SecondType, O: ObserverType>
     private let _parent: Parent
     private let _disposable: Disposable
 
-    var _lock: NSRecursiveLock {
+    var _lock: RecursiveLock {
         return _parent._lock
     }
 
@@ -102,7 +100,7 @@ class WithLatestFromSecond<FirstType, SecondType, O: ObserverType>
     }
 }
 
-class WithLatestFrom<FirstType, SecondType, ResultType>: Producer<ResultType> {
+final class WithLatestFrom<FirstType, SecondType, ResultType>: Producer<ResultType> {
     typealias ResultSelector = (FirstType, SecondType) throws -> ResultType
     
     fileprivate let _first: Observable<FirstType>

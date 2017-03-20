@@ -6,8 +6,6 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-import Foundation
-
 /// Represents a group of disposable resources that are disposed together.
 public final class CompositeDisposable : DisposeBase, Disposable, Cancelable {
     /// Key used to remove disposable from composite disposable

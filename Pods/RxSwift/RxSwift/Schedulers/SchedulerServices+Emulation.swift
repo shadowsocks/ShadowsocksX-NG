@@ -6,14 +6,12 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-import Foundation
-
 enum SchedulePeriodicRecursiveCommand {
     case tick
     case dispatchStart
 }
 
-class SchedulePeriodicRecursive<State> {
+final class SchedulePeriodicRecursive<State> {
     typealias RecursiveAction = (State) -> State
     typealias RecursiveScheduler = AnyRecursiveScheduler<SchedulePeriodicRecursiveCommand>
 

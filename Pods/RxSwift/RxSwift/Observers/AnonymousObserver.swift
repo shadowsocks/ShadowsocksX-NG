@@ -6,9 +6,7 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-import Foundation
-
-class AnonymousObserver<ElementType> : ObserverBase<ElementType> {
+final class AnonymousObserver<ElementType> : ObserverBase<ElementType> {
     typealias Element = ElementType
     
     typealias EventHandler = (Event<Element>) -> Void

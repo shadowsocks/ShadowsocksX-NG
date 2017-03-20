@@ -7,8 +7,6 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-import Foundation
-
 
 
 // 2
@@ -32,7 +30,25 @@ extension Observable {
     }
 }
 
-class ZipSink2_<E1, E2, O: ObserverType> : ZipSink<O> {
+extension ObservableType where E == Any {
+    /**
+    Merges the specified observable sequences into one observable sequence of tuples whenever all of the observable sequences have produced an element at a corresponding index.
+
+    - seealso: [zip operator on reactivex.io](http://reactivex.io/documentation/operators/zip.html)
+
+    - returns: An observable sequence containing the result of combining elements of the sources using the specified result selector function.
+    */
+    public static func zip<O1: ObservableType, O2: ObservableType>
+        (_ source1: O1, _ source2: O2)
+        -> Observable<(O1.E, O2.E)> {
+        return Zip2(
+            source1: source1.asObservable(), source2: source2.asObservable(),
+            resultSelector: { ($0, $1) }
+        )
+    }
+}
+
+final class ZipSink2_<E1, E2, O: ObserverType> : ZipSink<O> {
     typealias R = O.E
     typealias Parent = Zip2<E1, E2, R>
 
@@ -79,7 +95,7 @@ class ZipSink2_<E1, E2, O: ObserverType> : ZipSink<O> {
     }
 }
 
-class Zip2<E1, E2, R> : Producer<R> {
+final class Zip2<E1, E2, R> : Producer<R> {
     typealias ResultSelector = (E1, E2) throws -> R
 
     let source1: Observable<E1>
@@ -124,7 +140,25 @@ extension Observable {
     }
 }
 
-class ZipSink3_<E1, E2, E3, O: ObserverType> : ZipSink<O> {
+extension ObservableType where E == Any {
+    /**
+    Merges the specified observable sequences into one observable sequence of tuples whenever all of the observable sequences have produced an element at a corresponding index.
+
+    - seealso: [zip operator on reactivex.io](http://reactivex.io/documentation/operators/zip.html)
+
+    - returns: An observable sequence containing the result of combining elements of the sources using the specified result selector function.
+    */
+    public static func zip<O1: ObservableType, O2: ObservableType, O3: ObservableType>
+        (_ source1: O1, _ source2: O2, _ source3: O3)
+        -> Observable<(O1.E, O2.E, O3.E)> {
+        return Zip3(
+            source1: source1.asObservable(), source2: source2.asObservable(), source3: source3.asObservable(),
+            resultSelector: { ($0, $1, $2) }
+        )
+    }
+}
+
+final class ZipSink3_<E1, E2, E3, O: ObserverType> : ZipSink<O> {
     typealias R = O.E
     typealias Parent = Zip3<E1, E2, E3, R>
 
@@ -177,7 +211,7 @@ class ZipSink3_<E1, E2, E3, O: ObserverType> : ZipSink<O> {
     }
 }
 
-class Zip3<E1, E2, E3, R> : Producer<R> {
+final class Zip3<E1, E2, E3, R> : Producer<R> {
     typealias ResultSelector = (E1, E2, E3) throws -> R
 
     let source1: Observable<E1>
@@ -224,7 +258,25 @@ extension Observable {
     }
 }
 
-class ZipSink4_<E1, E2, E3, E4, O: ObserverType> : ZipSink<O> {
+extension ObservableType where E == Any {
+    /**
+    Merges the specified observable sequences into one observable sequence of tuples whenever all of the observable sequences have produced an element at a corresponding index.
+
+    - seealso: [zip operator on reactivex.io](http://reactivex.io/documentation/operators/zip.html)
+
+    - returns: An observable sequence containing the result of combining elements of the sources using the specified result selector function.
+    */
+    public static func zip<O1: ObservableType, O2: ObservableType, O3: ObservableType, O4: ObservableType>
+        (_ source1: O1, _ source2: O2, _ source3: O3, _ source4: O4)
+        -> Observable<(O1.E, O2.E, O3.E, O4.E)> {
+        return Zip4(
+            source1: source1.asObservable(), source2: source2.asObservable(), source3: source3.asObservable(), source4: source4.asObservable(),
+            resultSelector: { ($0, $1, $2, $3) }
+        )
+    }
+}
+
+final class ZipSink4_<E1, E2, E3, E4, O: ObserverType> : ZipSink<O> {
     typealias R = O.E
     typealias Parent = Zip4<E1, E2, E3, E4, R>
 
@@ -283,7 +335,7 @@ class ZipSink4_<E1, E2, E3, E4, O: ObserverType> : ZipSink<O> {
     }
 }
 
-class Zip4<E1, E2, E3, E4, R> : Producer<R> {
+final class Zip4<E1, E2, E3, E4, R> : Producer<R> {
     typealias ResultSelector = (E1, E2, E3, E4) throws -> R
 
     let source1: Observable<E1>
@@ -332,7 +384,25 @@ extension Observable {
     }
 }
 
-class ZipSink5_<E1, E2, E3, E4, E5, O: ObserverType> : ZipSink<O> {
+extension ObservableType where E == Any {
+    /**
+    Merges the specified observable sequences into one observable sequence of tuples whenever all of the observable sequences have produced an element at a corresponding index.
+
+    - seealso: [zip operator on reactivex.io](http://reactivex.io/documentation/operators/zip.html)
+
+    - returns: An observable sequence containing the result of combining elements of the sources using the specified result selector function.
+    */
+    public static func zip<O1: ObservableType, O2: ObservableType, O3: ObservableType, O4: ObservableType, O5: ObservableType>
+        (_ source1: O1, _ source2: O2, _ source3: O3, _ source4: O4, _ source5: O5)
+        -> Observable<(O1.E, O2.E, O3.E, O4.E, O5.E)> {
+        return Zip5(
+            source1: source1.asObservable(), source2: source2.asObservable(), source3: source3.asObservable(), source4: source4.asObservable(), source5: source5.asObservable(),
+            resultSelector: { ($0, $1, $2, $3, $4) }
+        )
+    }
+}
+
+final class ZipSink5_<E1, E2, E3, E4, E5, O: ObserverType> : ZipSink<O> {
     typealias R = O.E
     typealias Parent = Zip5<E1, E2, E3, E4, E5, R>
 
@@ -397,7 +467,7 @@ class ZipSink5_<E1, E2, E3, E4, E5, O: ObserverType> : ZipSink<O> {
     }
 }
 
-class Zip5<E1, E2, E3, E4, E5, R> : Producer<R> {
+final class Zip5<E1, E2, E3, E4, E5, R> : Producer<R> {
     typealias ResultSelector = (E1, E2, E3, E4, E5) throws -> R
 
     let source1: Observable<E1>
@@ -448,7 +518,25 @@ extension Observable {
     }
 }
 
-class ZipSink6_<E1, E2, E3, E4, E5, E6, O: ObserverType> : ZipSink<O> {
+extension ObservableType where E == Any {
+    /**
+    Merges the specified observable sequences into one observable sequence of tuples whenever all of the observable sequences have produced an element at a corresponding index.
+
+    - seealso: [zip operator on reactivex.io](http://reactivex.io/documentation/operators/zip.html)
+
+    - returns: An observable sequence containing the result of combining elements of the sources using the specified result selector function.
+    */
+    public static func zip<O1: ObservableType, O2: ObservableType, O3: ObservableType, O4: ObservableType, O5: ObservableType, O6: ObservableType>
+        (_ source1: O1, _ source2: O2, _ source3: O3, _ source4: O4, _ source5: O5, _ source6: O6)
+        -> Observable<(O1.E, O2.E, O3.E, O4.E, O5.E, O6.E)> {
+        return Zip6(
+            source1: source1.asObservable(), source2: source2.asObservable(), source3: source3.asObservable(), source4: source4.asObservable(), source5: source5.asObservable(), source6: source6.asObservable(),
+            resultSelector: { ($0, $1, $2, $3, $4, $5) }
+        )
+    }
+}
+
+final class ZipSink6_<E1, E2, E3, E4, E5, E6, O: ObserverType> : ZipSink<O> {
     typealias R = O.E
     typealias Parent = Zip6<E1, E2, E3, E4, E5, E6, R>
 
@@ -519,7 +607,7 @@ class ZipSink6_<E1, E2, E3, E4, E5, E6, O: ObserverType> : ZipSink<O> {
     }
 }
 
-class Zip6<E1, E2, E3, E4, E5, E6, R> : Producer<R> {
+final class Zip6<E1, E2, E3, E4, E5, E6, R> : Producer<R> {
     typealias ResultSelector = (E1, E2, E3, E4, E5, E6) throws -> R
 
     let source1: Observable<E1>
@@ -572,7 +660,25 @@ extension Observable {
     }
 }
 
-class ZipSink7_<E1, E2, E3, E4, E5, E6, E7, O: ObserverType> : ZipSink<O> {
+extension ObservableType where E == Any {
+    /**
+    Merges the specified observable sequences into one observable sequence of tuples whenever all of the observable sequences have produced an element at a corresponding index.
+
+    - seealso: [zip operator on reactivex.io](http://reactivex.io/documentation/operators/zip.html)
+
+    - returns: An observable sequence containing the result of combining elements of the sources using the specified result selector function.
+    */
+    public static func zip<O1: ObservableType, O2: ObservableType, O3: ObservableType, O4: ObservableType, O5: ObservableType, O6: ObservableType, O7: ObservableType>
+        (_ source1: O1, _ source2: O2, _ source3: O3, _ source4: O4, _ source5: O5, _ source6: O6, _ source7: O7)
+        -> Observable<(O1.E, O2.E, O3.E, O4.E, O5.E, O6.E, O7.E)> {
+        return Zip7(
+            source1: source1.asObservable(), source2: source2.asObservable(), source3: source3.asObservable(), source4: source4.asObservable(), source5: source5.asObservable(), source6: source6.asObservable(), source7: source7.asObservable(),
+            resultSelector: { ($0, $1, $2, $3, $4, $5, $6) }
+        )
+    }
+}
+
+final class ZipSink7_<E1, E2, E3, E4, E5, E6, E7, O: ObserverType> : ZipSink<O> {
     typealias R = O.E
     typealias Parent = Zip7<E1, E2, E3, E4, E5, E6, E7, R>
 
@@ -649,7 +755,7 @@ class ZipSink7_<E1, E2, E3, E4, E5, E6, E7, O: ObserverType> : ZipSink<O> {
     }
 }
 
-class Zip7<E1, E2, E3, E4, E5, E6, E7, R> : Producer<R> {
+final class Zip7<E1, E2, E3, E4, E5, E6, E7, R> : Producer<R> {
     typealias ResultSelector = (E1, E2, E3, E4, E5, E6, E7) throws -> R
 
     let source1: Observable<E1>
@@ -704,7 +810,25 @@ extension Observable {
     }
 }
 
-class ZipSink8_<E1, E2, E3, E4, E5, E6, E7, E8, O: ObserverType> : ZipSink<O> {
+extension ObservableType where E == Any {
+    /**
+    Merges the specified observable sequences into one observable sequence of tuples whenever all of the observable sequences have produced an element at a corresponding index.
+
+    - seealso: [zip operator on reactivex.io](http://reactivex.io/documentation/operators/zip.html)
+
+    - returns: An observable sequence containing the result of combining elements of the sources using the specified result selector function.
+    */
+    public static func zip<O1: ObservableType, O2: ObservableType, O3: ObservableType, O4: ObservableType, O5: ObservableType, O6: ObservableType, O7: ObservableType, O8: ObservableType>
+        (_ source1: O1, _ source2: O2, _ source3: O3, _ source4: O4, _ source5: O5, _ source6: O6, _ source7: O7, _ source8: O8)
+        -> Observable<(O1.E, O2.E, O3.E, O4.E, O5.E, O6.E, O7.E, O8.E)> {
+        return Zip8(
+            source1: source1.asObservable(), source2: source2.asObservable(), source3: source3.asObservable(), source4: source4.asObservable(), source5: source5.asObservable(), source6: source6.asObservable(), source7: source7.asObservable(), source8: source8.asObservable(),
+            resultSelector: { ($0, $1, $2, $3, $4, $5, $6, $7) }
+        )
+    }
+}
+
+final class ZipSink8_<E1, E2, E3, E4, E5, E6, E7, E8, O: ObserverType> : ZipSink<O> {
     typealias R = O.E
     typealias Parent = Zip8<E1, E2, E3, E4, E5, E6, E7, E8, R>
 
@@ -787,7 +911,7 @@ class ZipSink8_<E1, E2, E3, E4, E5, E6, E7, E8, O: ObserverType> : ZipSink<O> {
     }
 }
 
-class Zip8<E1, E2, E3, E4, E5, E6, E7, E8, R> : Producer<R> {
+final class Zip8<E1, E2, E3, E4, E5, E6, E7, E8, R> : Producer<R> {
     typealias ResultSelector = (E1, E2, E3, E4, E5, E6, E7, E8) throws -> R
 
     let source1: Observable<E1>

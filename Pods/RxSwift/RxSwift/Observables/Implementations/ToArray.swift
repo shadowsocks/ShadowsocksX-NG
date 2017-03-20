@@ -6,9 +6,7 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-import Foundation
-
-class ToArraySink<SourceType, O: ObserverType> : Sink<O>, ObserverType where O.E == [SourceType] {
+final class ToArraySink<SourceType, O: ObserverType> : Sink<O>, ObserverType where O.E == [SourceType] {
     typealias Parent = ToArray<SourceType>
     
     let _parent: Parent
@@ -35,7 +33,7 @@ class ToArraySink<SourceType, O: ObserverType> : Sink<O>, ObserverType where O.E
     }
 }
 
-class ToArray<SourceType> : Producer<[SourceType]> {
+final class ToArray<SourceType> : Producer<[SourceType]> {
     let _source: Observable<SourceType>
 
     init(source: Observable<SourceType>) {

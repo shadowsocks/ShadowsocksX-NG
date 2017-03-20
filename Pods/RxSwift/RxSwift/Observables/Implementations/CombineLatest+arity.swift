@@ -7,8 +7,6 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-import Foundation
-
 
 
 // 2
@@ -32,7 +30,25 @@ extension Observable {
     }
 }
 
-class CombineLatestSink2_<E1, E2, O: ObserverType> : CombineLatestSink<O> {
+extension ObservableType where E == Any {
+    /**
+    Merges the specified observable sequences into one observable sequence of tuples whenever any of the observable sequences produces an element.
+
+    - seealso: [combineLatest operator on reactivex.io](http://reactivex.io/documentation/operators/combinelatest.html)
+
+    - returns: An observable sequence containing the result of combining elements of the sources using the specified result selector function.
+    */
+    public static func combineLatest<O1: ObservableType, O2: ObservableType>
+        (_ source1: O1, _ source2: O2)
+            -> Observable<(O1.E, O2.E)> {
+        return CombineLatest2(
+            source1: source1.asObservable(), source2: source2.asObservable(),
+            resultSelector: { ($0, $1) }
+        )
+    }
+}
+
+final class CombineLatestSink2_<E1, E2, O: ObserverType> : CombineLatestSink<O> {
     typealias R = O.E
     typealias Parent = CombineLatest2<E1, E2, R>
 
@@ -67,7 +83,7 @@ class CombineLatestSink2_<E1, E2, O: ObserverType> : CombineLatestSink<O> {
     }
 }
 
-class CombineLatest2<E1, E2, R> : Producer<R> {
+final class CombineLatest2<E1, E2, R> : Producer<R> {
     typealias ResultSelector = (E1, E2) throws -> R
 
     let _source1: Observable<E1>
@@ -112,7 +128,25 @@ extension Observable {
     }
 }
 
-class CombineLatestSink3_<E1, E2, E3, O: ObserverType> : CombineLatestSink<O> {
+extension ObservableType where E == Any {
+    /**
+    Merges the specified observable sequences into one observable sequence of tuples whenever any of the observable sequences produces an element.
+
+    - seealso: [combineLatest operator on reactivex.io](http://reactivex.io/documentation/operators/combinelatest.html)
+
+    - returns: An observable sequence containing the result of combining elements of the sources using the specified result selector function.
+    */
+    public static func combineLatest<O1: ObservableType, O2: ObservableType, O3: ObservableType>
+        (_ source1: O1, _ source2: O2, _ source3: O3)
+            -> Observable<(O1.E, O2.E, O3.E)> {
+        return CombineLatest3(
+            source1: source1.asObservable(), source2: source2.asObservable(), source3: source3.asObservable(),
+            resultSelector: { ($0, $1, $2) }
+        )
+    }
+}
+
+final class CombineLatestSink3_<E1, E2, E3, O: ObserverType> : CombineLatestSink<O> {
     typealias R = O.E
     typealias Parent = CombineLatest3<E1, E2, E3, R>
 
@@ -152,7 +186,7 @@ class CombineLatestSink3_<E1, E2, E3, O: ObserverType> : CombineLatestSink<O> {
     }
 }
 
-class CombineLatest3<E1, E2, E3, R> : Producer<R> {
+final class CombineLatest3<E1, E2, E3, R> : Producer<R> {
     typealias ResultSelector = (E1, E2, E3) throws -> R
 
     let _source1: Observable<E1>
@@ -199,7 +233,25 @@ extension Observable {
     }
 }
 
-class CombineLatestSink4_<E1, E2, E3, E4, O: ObserverType> : CombineLatestSink<O> {
+extension ObservableType where E == Any {
+    /**
+    Merges the specified observable sequences into one observable sequence of tuples whenever any of the observable sequences produces an element.
+
+    - seealso: [combineLatest operator on reactivex.io](http://reactivex.io/documentation/operators/combinelatest.html)
+
+    - returns: An observable sequence containing the result of combining elements of the sources using the specified result selector function.
+    */
+    public static func combineLatest<O1: ObservableType, O2: ObservableType, O3: ObservableType, O4: ObservableType>
+        (_ source1: O1, _ source2: O2, _ source3: O3, _ source4: O4)
+            -> Observable<(O1.E, O2.E, O3.E, O4.E)> {
+        return CombineLatest4(
+            source1: source1.asObservable(), source2: source2.asObservable(), source3: source3.asObservable(), source4: source4.asObservable(),
+            resultSelector: { ($0, $1, $2, $3) }
+        )
+    }
+}
+
+final class CombineLatestSink4_<E1, E2, E3, E4, O: ObserverType> : CombineLatestSink<O> {
     typealias R = O.E
     typealias Parent = CombineLatest4<E1, E2, E3, E4, R>
 
@@ -244,7 +296,7 @@ class CombineLatestSink4_<E1, E2, E3, E4, O: ObserverType> : CombineLatestSink<O
     }
 }
 
-class CombineLatest4<E1, E2, E3, E4, R> : Producer<R> {
+final class CombineLatest4<E1, E2, E3, E4, R> : Producer<R> {
     typealias ResultSelector = (E1, E2, E3, E4) throws -> R
 
     let _source1: Observable<E1>
@@ -293,7 +345,25 @@ extension Observable {
     }
 }
 
-class CombineLatestSink5_<E1, E2, E3, E4, E5, O: ObserverType> : CombineLatestSink<O> {
+extension ObservableType where E == Any {
+    /**
+    Merges the specified observable sequences into one observable sequence of tuples whenever any of the observable sequences produces an element.
+
+    - seealso: [combineLatest operator on reactivex.io](http://reactivex.io/documentation/operators/combinelatest.html)
+
+    - returns: An observable sequence containing the result of combining elements of the sources using the specified result selector function.
+    */
+    public static func combineLatest<O1: ObservableType, O2: ObservableType, O3: ObservableType, O4: ObservableType, O5: ObservableType>
+        (_ source1: O1, _ source2: O2, _ source3: O3, _ source4: O4, _ source5: O5)
+            -> Observable<(O1.E, O2.E, O3.E, O4.E, O5.E)> {
+        return CombineLatest5(
+            source1: source1.asObservable(), source2: source2.asObservable(), source3: source3.asObservable(), source4: source4.asObservable(), source5: source5.asObservable(),
+            resultSelector: { ($0, $1, $2, $3, $4) }
+        )
+    }
+}
+
+final class CombineLatestSink5_<E1, E2, E3, E4, E5, O: ObserverType> : CombineLatestSink<O> {
     typealias R = O.E
     typealias Parent = CombineLatest5<E1, E2, E3, E4, E5, R>
 
@@ -343,7 +413,7 @@ class CombineLatestSink5_<E1, E2, E3, E4, E5, O: ObserverType> : CombineLatestSi
     }
 }
 
-class CombineLatest5<E1, E2, E3, E4, E5, R> : Producer<R> {
+final class CombineLatest5<E1, E2, E3, E4, E5, R> : Producer<R> {
     typealias ResultSelector = (E1, E2, E3, E4, E5) throws -> R
 
     let _source1: Observable<E1>
@@ -394,7 +464,25 @@ extension Observable {
     }
 }
 
-class CombineLatestSink6_<E1, E2, E3, E4, E5, E6, O: ObserverType> : CombineLatestSink<O> {
+extension ObservableType where E == Any {
+    /**
+    Merges the specified observable sequences into one observable sequence of tuples whenever any of the observable sequences produces an element.
+
+    - seealso: [combineLatest operator on reactivex.io](http://reactivex.io/documentation/operators/combinelatest.html)
+
+    - returns: An observable sequence containing the result of combining elements of the sources using the specified result selector function.
+    */
+    public static func combineLatest<O1: ObservableType, O2: ObservableType, O3: ObservableType, O4: ObservableType, O5: ObservableType, O6: ObservableType>
+        (_ source1: O1, _ source2: O2, _ source3: O3, _ source4: O4, _ source5: O5, _ source6: O6)
+            -> Observable<(O1.E, O2.E, O3.E, O4.E, O5.E, O6.E)> {
+        return CombineLatest6(
+            source1: source1.asObservable(), source2: source2.asObservable(), source3: source3.asObservable(), source4: source4.asObservable(), source5: source5.asObservable(), source6: source6.asObservable(),
+            resultSelector: { ($0, $1, $2, $3, $4, $5) }
+        )
+    }
+}
+
+final class CombineLatestSink6_<E1, E2, E3, E4, E5, E6, O: ObserverType> : CombineLatestSink<O> {
     typealias R = O.E
     typealias Parent = CombineLatest6<E1, E2, E3, E4, E5, E6, R>
 
@@ -449,7 +537,7 @@ class CombineLatestSink6_<E1, E2, E3, E4, E5, E6, O: ObserverType> : CombineLate
     }
 }
 
-class CombineLatest6<E1, E2, E3, E4, E5, E6, R> : Producer<R> {
+final class CombineLatest6<E1, E2, E3, E4, E5, E6, R> : Producer<R> {
     typealias ResultSelector = (E1, E2, E3, E4, E5, E6) throws -> R
 
     let _source1: Observable<E1>
@@ -502,7 +590,25 @@ extension Observable {
     }
 }
 
-class CombineLatestSink7_<E1, E2, E3, E4, E5, E6, E7, O: ObserverType> : CombineLatestSink<O> {
+extension ObservableType where E == Any {
+    /**
+    Merges the specified observable sequences into one observable sequence of tuples whenever any of the observable sequences produces an element.
+
+    - seealso: [combineLatest operator on reactivex.io](http://reactivex.io/documentation/operators/combinelatest.html)
+
+    - returns: An observable sequence containing the result of combining elements of the sources using the specified result selector function.
+    */
+    public static func combineLatest<O1: ObservableType, O2: ObservableType, O3: ObservableType, O4: ObservableType, O5: ObservableType, O6: ObservableType, O7: ObservableType>
+        (_ source1: O1, _ source2: O2, _ source3: O3, _ source4: O4, _ source5: O5, _ source6: O6, _ source7: O7)
+            -> Observable<(O1.E, O2.E, O3.E, O4.E, O5.E, O6.E, O7.E)> {
+        return CombineLatest7(
+            source1: source1.asObservable(), source2: source2.asObservable(), source3: source3.asObservable(), source4: source4.asObservable(), source5: source5.asObservable(), source6: source6.asObservable(), source7: source7.asObservable(),
+            resultSelector: { ($0, $1, $2, $3, $4, $5, $6) }
+        )
+    }
+}
+
+final class CombineLatestSink7_<E1, E2, E3, E4, E5, E6, E7, O: ObserverType> : CombineLatestSink<O> {
     typealias R = O.E
     typealias Parent = CombineLatest7<E1, E2, E3, E4, E5, E6, E7, R>
 
@@ -562,7 +668,7 @@ class CombineLatestSink7_<E1, E2, E3, E4, E5, E6, E7, O: ObserverType> : Combine
     }
 }
 
-class CombineLatest7<E1, E2, E3, E4, E5, E6, E7, R> : Producer<R> {
+final class CombineLatest7<E1, E2, E3, E4, E5, E6, E7, R> : Producer<R> {
     typealias ResultSelector = (E1, E2, E3, E4, E5, E6, E7) throws -> R
 
     let _source1: Observable<E1>
@@ -617,7 +723,25 @@ extension Observable {
     }
 }
 
-class CombineLatestSink8_<E1, E2, E3, E4, E5, E6, E7, E8, O: ObserverType> : CombineLatestSink<O> {
+extension ObservableType where E == Any {
+    /**
+    Merges the specified observable sequences into one observable sequence of tuples whenever any of the observable sequences produces an element.
+
+    - seealso: [combineLatest operator on reactivex.io](http://reactivex.io/documentation/operators/combinelatest.html)
+
+    - returns: An observable sequence containing the result of combining elements of the sources using the specified result selector function.
+    */
+    public static func combineLatest<O1: ObservableType, O2: ObservableType, O3: ObservableType, O4: ObservableType, O5: ObservableType, O6: ObservableType, O7: ObservableType, O8: ObservableType>
+        (_ source1: O1, _ source2: O2, _ source3: O3, _ source4: O4, _ source5: O5, _ source6: O6, _ source7: O7, _ source8: O8)
+            -> Observable<(O1.E, O2.E, O3.E, O4.E, O5.E, O6.E, O7.E, O8.E)> {
+        return CombineLatest8(
+            source1: source1.asObservable(), source2: source2.asObservable(), source3: source3.asObservable(), source4: source4.asObservable(), source5: source5.asObservable(), source6: source6.asObservable(), source7: source7.asObservable(), source8: source8.asObservable(),
+            resultSelector: { ($0, $1, $2, $3, $4, $5, $6, $7) }
+        )
+    }
+}
+
+final class CombineLatestSink8_<E1, E2, E3, E4, E5, E6, E7, E8, O: ObserverType> : CombineLatestSink<O> {
     typealias R = O.E
     typealias Parent = CombineLatest8<E1, E2, E3, E4, E5, E6, E7, E8, R>
 
@@ -682,7 +806,7 @@ class CombineLatestSink8_<E1, E2, E3, E4, E5, E6, E7, E8, O: ObserverType> : Com
     }
 }
 
-class CombineLatest8<E1, E2, E3, E4, E5, E6, E7, E8, R> : Producer<R> {
+final class CombineLatest8<E1, E2, E3, E4, E5, E6, E7, E8, R> : Producer<R> {
     typealias ResultSelector = (E1, E2, E3, E4, E5, E6, E7, E8) throws -> R
 
     let _source1: Observable<E1>

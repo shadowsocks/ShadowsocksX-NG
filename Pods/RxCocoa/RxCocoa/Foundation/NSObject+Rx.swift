@@ -312,7 +312,7 @@ extension Reactive where Base: AnyObject {
 #endif
 
 
-fileprivate class DeallocObservable {
+fileprivate final class DeallocObservable {
     let _subject = ReplaySubject<Void>.create(bufferSize:1)
 
     init() {
@@ -335,7 +335,7 @@ fileprivate protocol KVOObservableProtocol {
     var options: NSKeyValueObservingOptions { get }
 }
 
-fileprivate class KVOObserver
+fileprivate final class KVOObserver
     : _RXKVOObserver
     , Disposable {
     typealias Callback = (Any?) -> Void
@@ -363,7 +363,7 @@ fileprivate class KVOObserver
     }
 }
 
-fileprivate class KVOObservable<Element>
+fileprivate final class KVOObservable<Element>
     : ObservableType
     , KVOObservableProtocol {
     typealias E = Element?

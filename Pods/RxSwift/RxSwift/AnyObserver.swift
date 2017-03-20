@@ -6,8 +6,6 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-import Foundation
-
 /// A type-erased `ObserverType`.
 ///
 /// Forwards operations to an arbitrary underlying observer with the same `Element` type, hiding the specifics of the underlying observer type.
@@ -47,6 +45,11 @@ public struct AnyObserver<Element> : ObserverType {
     public func asObserver() -> AnyObserver<E> {
         return self
     }
+}
+
+extension AnyObserver {
+    /// Collection of `AnyObserver`s
+    typealias s = Bag<(Event<Element>) -> ()>
 }
 
 extension ObserverType {

@@ -6,9 +6,7 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-import Foundation
-
-class CombineLatestCollectionTypeSink<C: Collection, O: ObserverType>
+final class CombineLatestCollectionTypeSink<C: Collection, O: ObserverType>
     : Sink<O> where C.Iterator.Element : ObservableConvertibleType {
     typealias R = O.E
     typealias Parent = CombineLatestCollectionType<C, R>
@@ -16,7 +14,7 @@ class CombineLatestCollectionTypeSink<C: Collection, O: ObserverType>
     
     let _parent: Parent
     
-    let _lock = NSRecursiveLock()
+    let _lock = RecursiveLock()
 
     // state
     var _numberOfValues = 0
@@ -107,7 +105,7 @@ class CombineLatestCollectionTypeSink<C: Collection, O: ObserverType>
     }
 }
 
-class CombineLatestCollectionType<C: Collection, R> : Producer<R> where C.Iterator.Element : ObservableConvertibleType {
+final class CombineLatestCollectionType<C: Collection, R> : Producer<R> where C.Iterator.Element : ObservableConvertibleType {
     typealias ResultSelector = ([C.Iterator.Element.E]) throws -> R
     
     let _sources: C

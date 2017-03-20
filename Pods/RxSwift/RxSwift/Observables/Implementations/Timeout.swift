@@ -6,15 +6,13 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-import Foundation
-
-class TimeoutSink<O: ObserverType>: Sink<O>, LockOwnerType, ObserverType {
+final class TimeoutSink<O: ObserverType>: Sink<O>, LockOwnerType, ObserverType {
     typealias E = O.E
     typealias Parent = Timeout<E>
     
     private let _parent: Parent
     
-    let _lock = NSRecursiveLock()
+    let _lock = RecursiveLock()
 
     private let _timerD = SerialDisposable()
     private let _subscription = SerialDisposable()
@@ -33,7 +31,7 @@ class TimeoutSink<O: ObserverType>: Sink<O>, LockOwnerType, ObserverType {
         
         _createTimeoutTimer()
         
-        original.setDisposable(_parent._source.subscribeSafe(self))
+        original.setDisposable(_parent._source.subscribe(self))
         
         return Disposables.create(_subscription, _timerD)
     }
@@ -89,7 +87,7 @@ class TimeoutSink<O: ObserverType>: Sink<O>, LockOwnerType, ObserverType {
             }
             
             if timerWins {
-                self._subscription.disposable = self._parent._other.subscribeSafe(self.forwarder())
+                self._subscription.disposable = self._parent._other.subscribe(self.forwarder())
             }
             
             return Disposables.create()
@@ -100,7 +98,7 @@ class TimeoutSink<O: ObserverType>: Sink<O>, LockOwnerType, ObserverType {
 }
 
 
-class Timeout<Element> : Producer<Element> {
+final class Timeout<Element> : Producer<Element> {
     
     fileprivate let _source: Observable<Element>
     fileprivate let _dueTime: RxTimeInterval

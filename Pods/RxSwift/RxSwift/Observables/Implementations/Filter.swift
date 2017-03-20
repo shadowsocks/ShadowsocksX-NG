@@ -6,9 +6,7 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-import Foundation
-
-class FilterSink<O : ObserverType>: Sink<O>, ObserverType {
+final class FilterSink<O : ObserverType>: Sink<O>, ObserverType {
     typealias Predicate = (Element) throws -> Bool
     typealias Element = O.E
     
@@ -39,7 +37,7 @@ class FilterSink<O : ObserverType>: Sink<O>, ObserverType {
     }
 }
 
-class Filter<Element> : Producer<Element> {
+final class Filter<Element> : Producer<Element> {
     typealias Predicate = (Element) throws -> Bool
     
     private let _source: Observable<Element>

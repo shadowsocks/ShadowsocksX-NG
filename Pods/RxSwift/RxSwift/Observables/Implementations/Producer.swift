@@ -6,8 +6,6 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-import Foundation
-
 class Producer<Element> : Observable<Element> {
     override init() {
         super.init()
@@ -34,15 +32,11 @@ class Producer<Element> : Observable<Element> {
     }
     
     func run<O : ObserverType>(_ observer: O, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where O.E == Element {
-        abstractMethod()
+        rxAbstractMethod()
     }
 }
 
-fileprivate class SinkDisposer: Cancelable {
-    #if os(Linux)
-    fileprivate let _lock = SpinLock()
-    #endif
-
+fileprivate final class SinkDisposer: Cancelable {
     fileprivate enum DisposeState: UInt32 {
         case disposed = 1
         case sinkAndSubscriptionSet = 2
@@ -54,27 +48,19 @@ fileprivate class SinkDisposer: Cancelable {
         case sinkAndSubscriptionSet = 2
     }
     
-    private var _state: UInt32 = 0
+    private var _state: AtomicInt = 0
     private var _sink: Disposable? = nil
     private var _subscription: Disposable? = nil
 
     var isDisposed: Bool {
-        return (_state & DisposeState.disposed.rawValue) != 0
+        return AtomicFlagSet(DisposeState.disposed.rawValue, &_state)
     }
 
     func setSinkAndSubscription(sink: Disposable, subscription: Disposable) {
         _sink = sink
         _subscription = subscription
 
-        #if os(Linux)
-        _lock.lock()
-        let previousState = Int32(_state)
-        _state = _state | DisposeState.sinkAndSubscriptionSet.rawValue
-        // We know about `defer { _lock.unlock() }`, but this resolves Swift compiler bugs. Using `defer` here causes anomaly.
-        _lock.unlock()
-        #else
-        let previousState = OSAtomicOr32OrigBarrier(DisposeState.sinkAndSubscriptionSet.rawValue, &_state)
-        #endif
+        let previousState = AtomicOr(DisposeState.sinkAndSubscriptionSet.rawValue, &_state)
         if (previousState & DisposeStateInt32.sinkAndSubscriptionSet.rawValue) != 0 {
             rxFatalError("Sink and subscription were already set")
         }
@@ -88,15 +74,8 @@ fileprivate class SinkDisposer: Cancelable {
     }
     
     func dispose() {
-        #if os(Linux)
-        _lock.lock()
-        let previousState = Int32(_state)
-        _state = _state | DisposeState.disposed.rawValue
-        // We know about `defer { _lock.unlock() }`, but this resolves Swift compiler bugs. Using `defer` here causes anomaly.
-        _lock.unlock()
-        #else
-        let previousState = OSAtomicOr32OrigBarrier(DisposeState.disposed.rawValue, &_state)
-        #endif
+        let previousState = AtomicOr(DisposeState.disposed.rawValue, &_state)
+
         if (previousState & DisposeStateInt32.disposed.rawValue) != 0 {
             return
         }

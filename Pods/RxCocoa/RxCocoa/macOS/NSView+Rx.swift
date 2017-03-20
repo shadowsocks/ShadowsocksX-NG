@@ -8,7 +8,6 @@
 
 #if os(macOS)
 
-    import Foundation
     import Cocoa
     #if !RX_NO_MODULE
     import RxSwift

@@ -6,9 +6,7 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-import Foundation
-
-class RepeatElement<Element> : Producer<Element> {
+final class RepeatElement<Element> : Producer<Element> {
     fileprivate let _element: Element
     fileprivate let _scheduler: ImmediateSchedulerType
     
@@ -25,7 +23,7 @@ class RepeatElement<Element> : Producer<Element> {
     }
 }
 
-class RepeatElementSink<O: ObserverType> : Sink<O> {
+final class RepeatElementSink<O: ObserverType> : Sink<O> {
     typealias Parent = RepeatElement<O.E>
     
     private let _parent: Parent

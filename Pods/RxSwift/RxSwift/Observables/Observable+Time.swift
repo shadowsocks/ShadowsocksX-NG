@@ -6,8 +6,6 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-import Foundation
-
 // MARK: throttle
 extension ObservableType {
     
@@ -20,7 +18,7 @@ extension ObservableType {
     
     - parameter dueTime: Throttling duration for each element.
     - parameter latest: Should latest element received in a dueTime wide time window since last element emission be emitted.
-    - parameter scheduler: Scheduler to run the throttle timers and send events on.
+    - parameter scheduler: Scheduler to run the throttle timers on.
     - returns: The throttled sequence.
     */
     public func throttle(_ dueTime: RxTimeInterval, latest: Bool = true, scheduler: SchedulerType)
@@ -34,7 +32,7 @@ extension ObservableType {
     - seealso: [debounce operator on reactivex.io](http://reactivex.io/documentation/operators/debounce.html)
     
     - parameter dueTime: Throttling duration for each element.
-    - parameter scheduler: Scheduler to run the throttle timers and send events on.
+    - parameter scheduler: Scheduler to run the throttle timers on.
     - returns: The throttled sequence.
     */
     public func debounce(_ dueTime: RxTimeInterval, scheduler: SchedulerType)
@@ -145,25 +143,6 @@ extension ObservableType {
     }
 }
 
-// MARK: ignoreElements
-
-extension ObservableType {
-
-    /**
-     Skips elements and completes (or errors) when the receiver completes (or errors). Equivalent to filter that always returns false.
-
-     - seealso: [ignoreElements operator on reactivex.io](http://reactivex.io/documentation/operators/ignoreelements.html)
-
-     - returns: An observable sequence that skips all elements of the source sequence.
-     */
-    public func ignoreElements()
-        -> Observable<E> {
-            return filter { _ -> Bool in
-                return false
-            }
-    }
-}
-
 // MARK: delaySubscription
 
 extension ObservableType {
@@ -236,7 +215,7 @@ extension ObservableType {
      
      - parameter dueTime: Maximum duration between values before a timeout occurs.
      - parameter scheduler: Scheduler to run the timeout timer on.
-     - returns: An observable sequence with a TimeoutError in case of a timeout.
+     - returns: An observable sequence with a `RxError.timeout` in case of a timeout.
      */
     public func timeout(_ dueTime: RxTimeInterval, scheduler: SchedulerType)
         -> Observable<E> {

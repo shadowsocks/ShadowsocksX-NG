@@ -6,7 +6,8 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-import Foundation
+import struct Foundation.TimeInterval
+import struct Foundation.Date
 
 // Type that represents time interval in the context of RxSwift.
 public typealias RxTimeInterval = TimeInterval

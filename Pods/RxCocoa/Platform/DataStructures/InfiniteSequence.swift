@@ -6,8 +6,6 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-import Foundation
-
 /// Sequence that repeats `repeatedValue` infinite number of times.
 struct InfiniteSequence<E> : Sequence {
     typealias Element = E

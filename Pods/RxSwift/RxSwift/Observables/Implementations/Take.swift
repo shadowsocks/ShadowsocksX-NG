@@ -6,11 +6,9 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-import Foundation
-
 // count version
 
-class TakeCountSink<O: ObserverType> : Sink<O>, ObserverType {
+final class TakeCountSink<O: ObserverType> : Sink<O>, ObserverType {
     typealias E = O.E
     typealias Parent = TakeCount<E>
     
@@ -49,7 +47,7 @@ class TakeCountSink<O: ObserverType> : Sink<O>, ObserverType {
     
 }
 
-class TakeCount<Element>: Producer<Element> {
+final class TakeCount<Element>: Producer<Element> {
     fileprivate let _source: Observable<Element>
     fileprivate let _count: Int
     
@@ -70,7 +68,7 @@ class TakeCount<Element>: Producer<Element> {
 
 // time version
 
-class TakeTimeSink<ElementType, O: ObserverType>
+final class TakeTimeSink<ElementType, O: ObserverType>
     : Sink<O>
     , LockOwnerType
     , ObserverType
@@ -80,7 +78,7 @@ class TakeTimeSink<ElementType, O: ObserverType>
 
     fileprivate let _parent: Parent
     
-    let _lock = NSRecursiveLock()
+    let _lock = RecursiveLock()
     
     init(parent: Parent, observer: O, cancel: Cancelable) {
         _parent = parent
@@ -123,7 +121,7 @@ class TakeTimeSink<ElementType, O: ObserverType>
     }
 }
 
-class TakeTime<Element> : Producer<Element> {
+final class TakeTime<Element> : Producer<Element> {
     typealias TimeInterval = RxTimeInterval
     
     fileprivate let _source: Observable<Element>

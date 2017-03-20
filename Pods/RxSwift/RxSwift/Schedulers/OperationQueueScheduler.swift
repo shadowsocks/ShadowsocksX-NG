@@ -6,7 +6,9 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-import Foundation
+import class Foundation.OperationQueue
+import class Foundation.BlockOperation
+import Dispatch
 
 /// Abstracts the work that needs to be performed on a specific `NSOperationQueue`.
 ///

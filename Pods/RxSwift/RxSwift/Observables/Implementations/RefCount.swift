@@ -6,9 +6,7 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-import Foundation
-
-class RefCountSink<CO: ConnectableObservableType, O: ObserverType>
+final class RefCountSink<CO: ConnectableObservableType, O: ObserverType>
     : Sink<O>
     , ObserverType where CO.E == O.E {
     typealias Element = O.E
@@ -22,7 +20,7 @@ class RefCountSink<CO: ConnectableObservableType, O: ObserverType>
     }
     
     func run() -> Disposable {
-        let subscription = _parent._source.subscribeSafe(self)
+        let subscription = _parent._source.subscribe(self)
         
         _parent._lock.lock(); defer { _parent._lock.unlock() } // {
             if _parent._count == 0 {
@@ -38,8 +36,12 @@ class RefCountSink<CO: ConnectableObservableType, O: ObserverType>
             subscription.dispose()
             self._parent._lock.lock(); defer { self._parent._lock.unlock() } // {
                 if self._parent._count == 1 {
-                    self._parent._connectableSubscription!.dispose()
                     self._parent._count = 0
+                    guard let connectableSubscription = self._parent._connectableSubscription else {
+                        return
+                    }
+
+                    connectableSubscription.dispose()
                     self._parent._connectableSubscription = nil
                 }
                 else if self._parent._count > 1 {
@@ -63,8 +65,8 @@ class RefCountSink<CO: ConnectableObservableType, O: ObserverType>
     }
 }
 
-class RefCount<CO: ConnectableObservableType>: Producer<CO.E> {
-    fileprivate let _lock = NSRecursiveLock()
+final class RefCount<CO: ConnectableObservableType>: Producer<CO.E> {
+    fileprivate let _lock = RecursiveLock()
     
     // state
     fileprivate var _count = 0

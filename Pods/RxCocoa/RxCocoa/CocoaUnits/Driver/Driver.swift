@@ -6,7 +6,6 @@
 //  Copyright © 2016 Krunoslav Zaher. All rights reserved.
 //
 
-import Foundation
 #if !RX_NO_MODULE
     import RxSwift
 #endif
@@ -72,6 +71,8 @@ public func driveOnScheduler(_ scheduler: SchedulerType, action: () -> ()) {
 
 #if os(Linux)
     import Glibc
+#else
+    import func Foundation.arc4random
 #endif
 
 func _forceCompilerToStopDoingInsaneOptimizationsThatBreakCode(_ scheduler: SchedulerType) {

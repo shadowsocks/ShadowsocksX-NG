@@ -6,8 +6,6 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-import Foundation
-
 /// Represents disposable resource with state tracking.
 public protocol Cancelable : Disposable {
     /// Was resource disposed.

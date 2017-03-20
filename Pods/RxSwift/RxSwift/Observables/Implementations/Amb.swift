@@ -6,15 +6,13 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-import Foundation
-
 enum AmbState {
     case neither
     case left
     case right
 }
 
-class AmbObserver<O: ObserverType> : ObserverType {
+final class AmbObserver<O: ObserverType> : ObserverType {
     typealias Element = O.E
     typealias Parent = AmbSink<O>
     typealias This = AmbObserver<O>
@@ -48,14 +46,14 @@ class AmbObserver<O: ObserverType> : ObserverType {
     }
 }
 
-class AmbSink<O: ObserverType> : Sink<O> {
+final class AmbSink<O: ObserverType> : Sink<O> {
     typealias ElementType = O.E
     typealias Parent = Amb<ElementType>
     typealias AmbObserverType = AmbObserver<O>
 
     private let _parent: Parent
     
-    private let _lock = NSRecursiveLock()
+    private let _lock = RecursiveLock()
     // state
     private var _choice = AmbState.neither
     
@@ -71,8 +69,11 @@ class AmbSink<O: ObserverType> : Sink<O> {
         
         let forwardEvent = { (o: AmbObserverType, event: Event<ElementType>) -> Void in
             self.forwardOn(event)
+            if event.isStopEvent {
+                self.dispose()
+            }
         }
-        
+
         let decide = { (o: AmbObserverType, event: Event<ElementType>, me: AmbState, otherSubscription: Disposable) in
             self._lock.performLocked {
                 if self._choice == .neither {
@@ -106,7 +107,7 @@ class AmbSink<O: ObserverType> : Sink<O> {
     }
 }
 
-class Amb<Element>: Producer<Element> {
+final class Amb<Element>: Producer<Element> {
     fileprivate let _left: Observable<Element>
     fileprivate let _right: Observable<Element>
     

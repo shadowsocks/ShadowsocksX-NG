@@ -8,7 +8,6 @@
 
 #if !os(Linux)
 
-import Foundation
 #if !RX_NO_MODULE
     import RxSwift
     #if SWIFT_PACKAGE && !os(Linux)
@@ -16,16 +15,16 @@ import Foundation
     #endif
 #endif
 
-var delegateAssociatedTag: UInt8 = 0
-var dataSourceAssociatedTag: UInt8 = 0
+var delegateAssociatedTag: UnsafeRawPointer = UnsafeRawPointer(UnsafeMutablePointer<UInt8>.allocate(capacity: 1))
+var dataSourceAssociatedTag: UnsafeRawPointer = UnsafeRawPointer(UnsafeMutablePointer<UInt8>.allocate(capacity: 1))
 
 /// Base class for `DelegateProxyType` protocol.
 ///
 /// This implementation is not thread safe and can be used only from one thread (Main thread).
 open class DelegateProxy : _RXDelegateProxy {
 
-    private var sentMessageForSelector = [Selector: PublishSubject<[Any]>]()
-    private var methodInvokedForSelector = [Selector: PublishSubject<[Any]>]()
+    private var sentMessageForSelector = [Selector: MessageDispatcher]()
+    private var methodInvokedForSelector = [Selector: MessageDispatcher]()
 
     /// Parent object associated with delegate proxy.
     weak private(set) var parentObject: AnyObject?
@@ -86,17 +85,18 @@ open class DelegateProxy : _RXDelegateProxy {
     - returns: Observable sequence of arguments passed to `selector` method.
     */
     open func sentMessage(_ selector: Selector) -> Observable<[Any]> {
+        MainScheduler.ensureExecutingOnScheduler()
         checkSelectorIsObservable(selector)
 
         let subject = sentMessageForSelector[selector]
         
         if let subject = subject {
-            return subject
+            return subject.asObservable()
         }
         else {
-            let subject = PublishSubject<[Any]>()
+            let subject = MessageDispatcher(delegateProxy: self)
             sentMessageForSelector[selector] = subject
-            return subject
+            return subject.asObservable()
         }
     }
 
@@ -143,17 +143,18 @@ open class DelegateProxy : _RXDelegateProxy {
     - returns: Observable sequence of arguments passed to `selector` method.
      */
     open func methodInvoked(_ selector: Selector) -> Observable<[Any]> {
+        MainScheduler.ensureExecutingOnScheduler()
         checkSelectorIsObservable(selector)
 
         let subject = methodInvokedForSelector[selector]
 
         if let subject = subject {
-            return subject
+            return subject.asObservable()
         }
         else {
-            let subject = PublishSubject<[Any]>()
+            let subject = MessageDispatcher(delegateProxy: self)
             methodInvokedForSelector[selector] = subject
-            return subject
+            return subject.asObservable()
         }
     }
 
@@ -162,15 +163,10 @@ open class DelegateProxy : _RXDelegateProxy {
 
         if hasWiredImplementation(for: selector) {
             print("Delegate proxy is already implementing `\(selector)`, a more performant way of registering might exist.")
+            return
         }
 
-        // It's important to see if super class reponds to selector and not self,
-        // because super class (_RxDelegateProxy) returns all methods delegate proxy
-        // can respond to.
-        // Because of https://github.com/ReactiveX/RxSwift/issues/907 , and possibly
-        // some other reasons, subclasses could overrride `responds(to:)`, but it shouldn't matter
-        // for this case.
-        if !super.responds(to: selector) {
+        guard (self.forwardToDelegate()?.responds(to: selector) ?? false) || voidDelegateMethodsContain(selector) else {
             rxFatalError("This class doesn't respond to selector \(selector)")
         }
     }
@@ -189,7 +185,7 @@ open class DelegateProxy : _RXDelegateProxy {
     ///
     /// - returns: Associated object tag.
     open class func delegateAssociatedObjectTag() -> UnsafeRawPointer {
-        return _pointer(&delegateAssociatedTag)
+        return delegateAssociatedTag
     }
     
     /// Initializes new instance of delegate proxy.
@@ -224,7 +220,11 @@ open class DelegateProxy : _RXDelegateProxy {
     /// - parameter forwardToDelegate: Reference of delegate that receives all messages through `self`.
     /// - parameter retainDelegate: Should `self` retain `forwardToDelegate`.
     open func setForwardToDelegate(_ delegate: AnyObject?, retainDelegate: Bool) {
+        #if DEBUG // 4.0 all configurations
+            MainScheduler.ensureExecutingOnScheduler()
+        #endif
         self._setForward(toDelegate: delegate, retainDelegate: retainDelegate)
+        self.reset()
     }
    
     /// Returns reference of normal delegate that receives all forwarded messages
@@ -234,7 +234,36 @@ open class DelegateProxy : _RXDelegateProxy {
     open func forwardToDelegate() -> AnyObject? {
         return self._forwardToDelegate
     }
+
+    private func hasObservers(selector: Selector) -> Bool {
+        return (sentMessageForSelector[selector]?.hasObservers ?? false)
+            || (methodInvokedForSelector[selector]?.hasObservers ?? false)
+    }
     
+    override open func responds(to aSelector: Selector!) -> Bool {
+        return super.responds(to: aSelector)
+            || (self._forwardToDelegate?.responds(to: aSelector) ?? false)
+            || (self.voidDelegateMethodsContain(aSelector) && self.hasObservers(selector: aSelector))
+    }
+
+    internal func reset() {
+        guard let delegateProxySelf = self as? DelegateProxyType else {
+            rxFatalErrorInDebug("\(self) doesn't implement delegate proxy type.")
+            return
+        }
+        
+        guard let parentObject = self.parentObject else { return }
+
+        let selfType = type(of: delegateProxySelf)
+
+        let maybeCurrentDelegate = selfType.currentDelegateFor(parentObject)
+
+        if maybeCurrentDelegate === self {
+            selfType.setCurrentDelegate(nil, toObject: parentObject)
+            selfType.setCurrentDelegate(self, toObject: parentObject)
+        }
+    }
+
     deinit {
         for v in sentMessageForSelector.values {
             v.on(.completed)
@@ -246,13 +275,37 @@ open class DelegateProxy : _RXDelegateProxy {
         _ = Resources.decrementTotal()
 #endif
     }
-
-    // MARK: Pointer
-
-    class func _pointer(_ p: UnsafeRawPointer) -> UnsafeRawPointer {
-        return p
-    }
 }
 
-#endif
+fileprivate let mainScheduler = MainScheduler()
 
+fileprivate final class MessageDispatcher {
+    private let dispatcher: PublishSubject<[Any]>
+    private let result: Observable<[Any]>
+
+    init(delegateProxy _delegateProxy: DelegateProxy) {
+        weak var weakDelegateProxy = _delegateProxy
+
+        let dispatcher = PublishSubject<[Any]>()
+        self.dispatcher = dispatcher
+
+        self.result = dispatcher
+            .do(onSubscribed: { weakDelegateProxy?.reset() }, onDispose: { weakDelegateProxy?.reset() })
+            .share()
+            .subscribeOn(mainScheduler)
+    }
+
+    var on: (Event<[Any]>) -> () {
+        return self.dispatcher.on
+    }
+
+    var hasObservers: Bool {
+        return self.dispatcher.hasObservers
+    }
+
+    func asObservable() -> Observable<[Any]> {
+        return self.result
+    }
+}
+    
+#endif

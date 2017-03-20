@@ -6,9 +6,7 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-import Foundation
-
-class WindowTimeCountSink<Element, O: ObserverType>
+final class WindowTimeCountSink<Element, O: ObserverType>
     : Sink<O>
     , ObserverType
     , LockOwnerType
@@ -18,7 +16,7 @@ class WindowTimeCountSink<Element, O: ObserverType>
     
     private let _parent: Parent
     
-    let _lock = NSRecursiveLock()
+    let _lock = RecursiveLock()
     
     private var _subject = PublishSubject<Element>()
     private var _count = 0
@@ -42,7 +40,7 @@ class WindowTimeCountSink<Element, O: ObserverType>
         forwardOn(.next(AddRef(source: _subject, refCount: _refCountDisposable).asObservable()))
         createTimer(_windowId)
         
-        let _ = _groupDisposable.insert(_parent._source.subscribeSafe(self))
+        let _ = _groupDisposable.insert(_parent._source.subscribe(self))
         return _refCountDisposable
     }
     
@@ -132,7 +130,7 @@ class WindowTimeCountSink<Element, O: ObserverType>
     }
 }
 
-class WindowTimeCount<Element> : Producer<Observable<Element>> {
+final class WindowTimeCount<Element> : Producer<Observable<Element>> {
     
     fileprivate let _timeSpan: RxTimeInterval
     fileprivate let _count: Int
