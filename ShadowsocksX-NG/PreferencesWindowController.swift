@@ -51,24 +51,24 @@ class PreferencesWindowController: NSWindowController
         profileMgr = ServerProfileManager.instance
         
         methodTextField.addItems(withObjectValues: [
+            "rc4-md5",
+            "aes-128-gcm",
+            "aes-192-gcm",
+            "aes-256-gcm",
             "aes-128-cfb",
             "aes-192-cfb",
             "aes-256-cfb",
-            "des-cfb",
-            "bf-cfb",
+            "aes-128-ctr",
+            "aes-192-ctr",
+            "aes-256-ctr",
             "camellia-128-cfb",
             "camellia-192-cfb",
             "camellia-256-cfb",
-            "idea-cfb",
-            "cast5-cfb",
-            "rc2-cfb",
-            "rc4-md5",
-            "seed-cfb",
-            "chacha20",
-            "chacha20-ietf",
+            "bf-cfb",
+            "chacha20-ietf-poly1305",
             "salsa20",
-            "rc4",
-            "table",
+            "chacha20",
+            "chacha20-ietf"
             ])
         
         kcptunCryptComboBox.addItems(withObjectValues: [
