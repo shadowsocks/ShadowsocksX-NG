@@ -162,7 +162,9 @@ class ServerProfile: NSObject, NSCopying {
         conf["local_port"] = NSNumber(value: UInt16(defaults.integer(forKey: "LocalSocks5.ListenPort")) as UInt16)
         conf["local_address"] = defaults.string(forKey: "LocalSocks5.ListenAddress") as AnyObject?
         conf["timeout"] = NSNumber(value: UInt32(defaults.integer(forKey: "LocalSocks5.Timeout")) as UInt32)
-        conf["auth"] = NSNumber(value: ota as Bool)
+        if ota {
+            conf["auth"] = NSNumber(value: ota as Bool)
+        }
         
         if enabledKcptun {
             let localHost = defaults.string(forKey: "Kcptun.LocalHost")

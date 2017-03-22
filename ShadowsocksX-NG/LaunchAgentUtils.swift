@@ -8,7 +8,7 @@
 
 import Foundation
 
-let SS_LOCAL_VERSION = "2.5.6"
+let SS_LOCAL_VERSION = "3.0.5"
 let KCPTUN_CLIENT_VERSION = "20170117"
 let PRIVOXY_VERSION = "3.0.26.static"
 let APP_SUPPORT_DIR = "/Library/Application Support/ShadowsocksX-NG/"
@@ -31,7 +31,7 @@ func getFileSHA1Sum(_ filepath: String) -> String {
 //  MARK: sslocal
 
 func generateSSLocalLauchAgentPlist() -> Bool {
-    let sslocalPath = NSHomeDirectory() + APP_SUPPORT_DIR + "ss-local"
+    let sslocalPath = NSHomeDirectory() + APP_SUPPORT_DIR + "ss-local-latest/ss-local"
     let logFilePath = NSHomeDirectory() + "/Library/Logs/ss-local.log"
     let launchAgentDirPath = NSHomeDirectory() + LAUNCH_AGENT_DIR
     let plistFilepath = launchAgentDirPath + LAUNCH_AGENT_CONF_SSLOCAL_NAME
@@ -64,7 +64,7 @@ func generateSSLocalLauchAgentPlist() -> Bool {
         "StandardOutPath": logFilePath,
         "StandardErrorPath": logFilePath,
         "ProgramArguments": arguments,
-        "EnvironmentVariables": ["DYLD_LIBRARY_PATH": NSHomeDirectory() + APP_SUPPORT_DIR]
+        "EnvironmentVariables": ["DYLD_LIBRARY_PATH": NSHomeDirectory() + APP_SUPPORT_DIR + "ss-local-latest/"]
     ]
     dict.write(toFile: plistFilepath, atomically: true)
     let Sha1Sum = getFileSHA1Sum(plistFilepath)
@@ -103,9 +103,7 @@ func InstallSSLocal() {
     let fileMgr = FileManager.default
     let homeDir = NSHomeDirectory()
     let appSupportDir = homeDir+APP_SUPPORT_DIR
-    if !fileMgr.fileExists(atPath: appSupportDir + "ss-local-\(SS_LOCAL_VERSION)/ss-local")
-    || !fileMgr.fileExists(atPath: appSupportDir + "libcrypto.1.0.0.dylib")
-    || !fileMgr.fileExists(atPath: appSupportDir + "libpcre.1.dylib") {
+    if !fileMgr.fileExists(atPath: appSupportDir + "ss-local-\(SS_LOCAL_VERSION)/ss-local") {
         let bundle = Bundle.main
         let installerPath = bundle.path(forResource: "install_ss_local.sh", ofType: nil)
         let task = Process.launchedProcess(launchPath: installerPath!, arguments: [""])
