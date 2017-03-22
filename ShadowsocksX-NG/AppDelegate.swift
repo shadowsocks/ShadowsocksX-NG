@@ -130,8 +130,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         _ = notifyCenter.rx.notification(NOTIFY_SWITCH_PROXY_MODE_SHORTCUT)
             .subscribe(onNext: { noti in
                 let mode = defaults.string(forKey: "ShadowsocksRunningMode")!
-                self.updateRunningModeMenu()
-                self.applyConfig()
                 
                 var toastMessage: String!;
                 switch mode {
@@ -145,6 +143,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                     defaults.setValue("auto", forKey: "ShadowsocksRunningMode")
                     toastMessage = "Auto Mode By PAC".localized
                 }
+                
+                self.updateRunningModeMenu()
+                self.applyConfig()
                 
                 self.makeToast(toastMessage)
             })
