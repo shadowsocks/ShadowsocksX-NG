@@ -7,6 +7,8 @@
 //
 
 import Cocoa
+import RxCocoa
+import RxSwift
 
 class PreferencesWindowController: NSWindowController
     , NSTableViewDataSource, NSTableViewDelegate {
@@ -18,6 +20,7 @@ class PreferencesWindowController: NSWindowController
     
     @IBOutlet weak var hostTextField: NSTextField!
     @IBOutlet weak var portTextField: NSTextField!
+    @IBOutlet weak var kcptunPortTextField: NSTextField!
     @IBOutlet weak var methodTextField: NSComboBox!
     
     @IBOutlet weak var passwordTextField: NSTextField!
@@ -41,12 +44,15 @@ class PreferencesWindowController: NSWindowController
     var profileMgr: ServerProfileManager!
     
     var editingProfile: ServerProfile!
+    
+    var enabledKcptunSubDisosable: Disposable?
 
 
     override func windowDidLoad() {
         super.windowDidLoad()
 
         // Implement this method to handle any initialization after your window controller's window has been loaded from its nib file.
+        
         defaults = UserDefaults.standard
         profileMgr = ServerProfileManager.instance
         
@@ -202,8 +208,20 @@ class PreferencesWindowController: NSWindowController
     
     func bindProfile(_ index:Int) {
         NSLog("bind profile \(index)")
+        if let dis = enabledKcptunSubDisosable {
+            dis.dispose()
+            enabledKcptunSubDisosable = Optional.none
+        }
         if index >= 0 && index < profileMgr.profiles.count {
             editingProfile = profileMgr.profiles[index]
+            
+            
+            enabledKcptunSubDisosable = editingProfile.rx.observeWeakly(Bool.self, "enabledKcptun")
+                .subscribe(onNext: { v in
+                    if let enabled = v {
+                        self.portTextField.isEnabled = !enabled
+                    }
+            })
             
             hostTextField.bind("value", to: editingProfile, withKeyPath: "serverHost"
                 , options: [NSContinuouslyUpdatesValueBindingOption: true])
@@ -224,6 +242,9 @@ class PreferencesWindowController: NSWindowController
             // --------------------------------------------------
             // Kcptun
             kcptunCheckBoxBtn.bind("value", to: editingProfile, withKeyPath: "enabledKcptun"
+                , options: [NSContinuouslyUpdatesValueBindingOption: true])
+            
+            kcptunPortTextField.bind("value", to: editingProfile, withKeyPath: "serverPort"
                 , options: [NSContinuouslyUpdatesValueBindingOption: true])
             
             kcptunProfileBox.bind("Hidden", to: editingProfile, withKeyPath: "enabledKcptun"
