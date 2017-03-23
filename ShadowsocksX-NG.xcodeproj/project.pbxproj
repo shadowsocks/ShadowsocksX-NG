@@ -46,7 +46,6 @@
 		9B3FFF541D09E2D10019A709 /* proxy_conf_helper in Resources */ = {isa = PBXBuildFile; fileRef = 9B3FFF441D09CD3B0019A709 /* proxy_conf_helper */; };
 		9B5831F61E7302F8009D5B7D /* ShortcutsController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9B5831F51E7302F8009D5B7D /* ShortcutsController.m */; };
 		9B5831FF1E741969009D5B7D /* PreferencesWinController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B5831FD1E741969009D5B7D /* PreferencesWinController.swift */; };
-		9B5832001E741969009D5B7D /* PreferencesWinController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9B5831FE1E741969009D5B7D /* PreferencesWinController.xib */; };
 		9B5832031E741F8D009D5B7D /* command-512.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B5832021E741F8D009D5B7D /* command-512.png */; };
 		9B5832071E7421B2009D5B7D /* virtual-server-icon-3.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B5832061E7421B2009D5B7D /* virtual-server-icon-3.png */; };
 		9B58320B1E7422DB009D5B7D /* http.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B58320A1E7422DB009D5B7D /* http.png */; };
@@ -61,6 +60,7 @@
 		9B9CBCB41E26453C00FC61AA /* start_kcptun.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9B9CBCB01E2644DC00FC61AA /* start_kcptun.sh */; };
 		9B9CBCB51E26453C00FC61AA /* stop_kcptun.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9B9CBCB11E26450D00FC61AA /* stop_kcptun.sh */; };
 		9BA04B231D23D5A5005AAD7F /* ProxyConfTool.m in Sources */ = {isa = PBXBuildFile; fileRef = 9BA04B221D23D5A5005AAD7F /* ProxyConfTool.m */; };
+		9BAFE2E21E83ED7F00F71CCE /* PreferencesWinController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9BAFE2E41E83ED7F00F71CCE /* PreferencesWinController.xib */; };
 		9BB706A71D1B982300551F0E /* SWBApplication.m in Sources */ = {isa = PBXBuildFile; fileRef = 9BB706A51D1B982300551F0E /* SWBApplication.m */; };
 		9BC70EDC1D2E3E3100EDA4CA /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 9B172A6C1D0ADDDD00B87B9A /* Localizable.strings */; };
 		9BEEF0691D04D4D500FC52B3 /* install_ss_local.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9BEEF0651D04CB8500FC52B3 /* install_ss_local.sh */; };
@@ -188,7 +188,6 @@
 		9B5831F51E7302F8009D5B7D /* ShortcutsController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ShortcutsController.m; sourceTree = "<group>"; };
 		9B5831FA1E73098F009D5B7D /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		9B5831FD1E741969009D5B7D /* PreferencesWinController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreferencesWinController.swift; sourceTree = "<group>"; };
-		9B5831FE1E741969009D5B7D /* PreferencesWinController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = PreferencesWinController.xib; sourceTree = "<group>"; };
 		9B5832021E741F8D009D5B7D /* command-512.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "command-512.png"; sourceTree = "<group>"; };
 		9B5832061E7421B2009D5B7D /* virtual-server-icon-3.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "virtual-server-icon-3.png"; sourceTree = "<group>"; };
 		9B58320A1E7422DB009D5B7D /* http.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = http.png; sourceTree = "<group>"; };
@@ -204,6 +203,9 @@
 		9B9CBCB11E26450D00FC61AA /* stop_kcptun.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = stop_kcptun.sh; sourceTree = "<group>"; };
 		9BA04B211D23D5A5005AAD7F /* ProxyConfTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ProxyConfTool.h; sourceTree = "<group>"; };
 		9BA04B221D23D5A5005AAD7F /* ProxyConfTool.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ProxyConfTool.m; sourceTree = "<group>"; };
+		9BAFE2E31E83ED7F00F71CCE /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/PreferencesWinController.xib; sourceTree = "<group>"; };
+		9BAFE2E91E83EDDF00F71CCE /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/PreferencesWinController.strings"; sourceTree = "<group>"; };
+		9BAFE2EB1E83F91D00F71CCE /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/MainMenu.strings"; sourceTree = "<group>"; };
 		9BB706A51D1B982300551F0E /* SWBApplication.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SWBApplication.m; sourceTree = "<group>"; };
 		9BB706A61D1B982300551F0E /* SWBApplication.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SWBApplication.h; sourceTree = "<group>"; };
 		9BE8FBC11D0B71CF00CAFD01 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/PreferencesWindowController.strings"; sourceTree = "<group>"; };
@@ -220,7 +222,6 @@
 		C6D429911DA75988002A5711 /* start_privoxy.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = start_privoxy.sh; sourceTree = "<group>"; };
 		C6D429921DA75988002A5711 /* stop_privoxy.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = stop_privoxy.sh; sourceTree = "<group>"; };
 		C6D429981DA76FBC002A5711 /* privoxy.config.example */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = privoxy.config.example; sourceTree = "<group>"; };
-		C6E28E9B1DA79FB9004F8330 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/MainMenu.strings"; sourceTree = "<group>"; };
 		C8E42A6A1D4F270A0074C7EA /* UserRulesController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UserRulesController.swift; sourceTree = "<group>"; };
 		C8E42A6F1D4F2CAF0074C7EA /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/UserRulesController.xib; sourceTree = "<group>"; };
 		C8E42A721D4F2CB10074C7EA /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/UserRulesController.strings"; sourceTree = "<group>"; };
@@ -397,7 +398,7 @@
 				C8E42A6A1D4F270A0074C7EA /* UserRulesController.swift */,
 				C8E42A701D4F2CAF0074C7EA /* UserRulesController.xib */,
 				9B5831FD1E741969009D5B7D /* PreferencesWinController.swift */,
-				9B5831FE1E741969009D5B7D /* PreferencesWinController.xib */,
+				9BAFE2E41E83ED7F00F71CCE /* PreferencesWinController.xib */,
 				9B86459C1E7C2CAD00A84029 /* ProxyInterfacesViewCtrl.swift */,
 				9B3546701E802B1200B510B4 /* ToastWindowController.swift */,
 				9B3546711E802B1200B510B4 /* ToastWindowController.xib */,
@@ -592,7 +593,7 @@
 				9B3FFF341D08CEF70019A709 /* SWBQRCodeWindowController.xib in Resources */,
 				9B3FFF231D088E8D0019A709 /* abp.js in Resources */,
 				9B07EFAD1D048E880052D9DF /* menu_icon.png in Resources */,
-				9B5832001E741969009D5B7D /* PreferencesWinController.xib in Resources */,
+				9BAFE2E21E83ED7F00F71CCE /* PreferencesWinController.xib in Resources */,
 				9B0BFFEB1D0460A70040E62B /* Assets.xcassets in Resources */,
 				08FCA0FF1E24BE1A0070984F /* example-gui-config.json in Resources */,
 				9B3FFF271D0898EB0019A709 /* gfwlist.txt in Resources */,
@@ -806,7 +807,7 @@
 			isa = PBXVariantGroup;
 			children = (
 				9B0BFFED1D0460A70040E62B /* Base */,
-				C6E28E9B1DA79FB9004F8330 /* zh-Hans */,
+				9BAFE2EB1E83F91D00F71CCE /* zh-Hans */,
 			);
 			name = MainMenu.xib;
 			sourceTree = "<group>";
@@ -827,6 +828,15 @@
 				9BE8FBC11D0B71CF00CAFD01 /* zh-Hans */,
 			);
 			name = PreferencesWindowController.xib;
+			sourceTree = "<group>";
+		};
+		9BAFE2E41E83ED7F00F71CCE /* PreferencesWinController.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				9BAFE2E31E83ED7F00F71CCE /* Base */,
+				9BAFE2E91E83EDDF00F71CCE /* zh-Hans */,
+			);
+			name = PreferencesWinController.xib;
 			sourceTree = "<group>";
 		};
 		C8E42A701D4F2CAF0074C7EA /* UserRulesController.xib */ = {

@@ -1,0 +1,129 @@
+
+/* Class = "NSTextFieldCell"; title = "Seconds"; ObjectID = "4R2-UO-qs7"; */
+"4R2-UO-qs7.title" = "秒";
+
+/* Class = "NSTextFieldCell"; title = "HTTP Proxy Listen Address:"; ObjectID = "6W4-TY-Bw5"; */
+"6W4-TY-Bw5.title" = "HTTP代理监听地址:";
+
+/* Class = "NSButtonCell"; title = "Check"; ObjectID = "8Ku-VV-ZaY"; */
+"8Ku-VV-ZaY.title" = "Check";
+
+/* Class = "NSToolbarItem"; label = "Servers"; ObjectID = "8Nu-gG-5rY"; */
+"8Nu-gG-5rY.label" = "Servers";
+
+/* Class = "NSToolbarItem"; paletteLabel = "Servers"; ObjectID = "8Nu-gG-5rY"; */
+"8Nu-gG-5rY.paletteLabel" = "Servers";
+
+/* Class = "NSTextFieldCell"; title = "Local Socks5 Listen Port:"; ObjectID = "8fk-fw-Tsx"; */
+"8fk-fw-Tsx.title" = "本地Socks5监听端口:";
+
+/* Class = "NSTextFieldCell"; title = "Toggle Shadowsocks On/Off:"; ObjectID = "95S-ma-8Q7"; */
+"95S-ma-8Q7.title" = "开关 Shadowsocks:";
+
+/* Class = "NSTextFieldCell"; title = "Switch proxy mode:"; ObjectID = "BaL-cn-m8v"; */
+"BaL-cn-m8v.title" = "切换代理模式:";
+
+/* Class = "NSToolbarItem"; label = "Interfaces"; ObjectID = "Bdm-pj-Ckd"; */
+"Bdm-pj-Ckd.label" = "网络接口";
+
+/* Class = "NSToolbarItem"; paletteLabel = "Interfaces"; ObjectID = "Bdm-pj-Ckd"; */
+"Bdm-pj-Ckd.paletteLabel" = "网络接口";
+
+/* Class = "NSToolbarItem"; label = "Kcptun"; ObjectID = "CIc-BO-xjN"; */
+"CIc-BO-xjN.label" = "Kcptun";
+
+/* Class = "NSToolbarItem"; paletteLabel = "Kcptun"; ObjectID = "CIc-BO-xjN"; */
+"CIc-BO-xjN.paletteLabel" = "Kcptun";
+
+/* Class = "NSToolbarItem"; label = "HTTP"; ObjectID = "D0F-6S-Ztu"; */
+"D0F-6S-Ztu.label" = "HTTP";
+
+/* Class = "NSToolbarItem"; paletteLabel = "HTTP"; ObjectID = "D0F-6S-Ztu"; */
+"D0F-6S-Ztu.paletteLabel" = "HTTP";
+
+/* Class = "NSTabViewItem"; label = "Servers"; ObjectID = "Dsu-Ba-zYR"; */
+"Dsu-Ba-zYR.label" = "Servers";
+
+/* Class = "NSWindow"; title = "Preferences"; ObjectID = "F0z-JX-Cv5"; */
+"F0z-JX-Cv5.title" = "偏好设置";
+
+/* Class = "NSTabViewItem"; label = "HTTP"; ObjectID = "F5Q-Ce-JJN"; */
+"F5Q-Ce-JJN.label" = "HTTP";
+
+/* Class = "NSTextFieldCell"; title = "Num of Kcptun connections:"; ObjectID = "FSi-9j-QBe"; */
+"FSi-9j-QBe.title" = "Num of Kcptun connections:";
+
+/* Class = "NSTextFieldCell"; title = "Local PAC Server Listen Port:"; ObjectID = "IMQ-c4-gmc"; */
+"IMQ-c4-gmc.title" = "本地PAC服务器监听端口:";
+
+/* Class = "NSToolbarItem"; label = "General"; ObjectID = "Mp8-cF-kQ7"; */
+"Mp8-cF-kQ7.label" = "常规";
+
+/* Class = "NSToolbarItem"; paletteLabel = "General"; ObjectID = "Mp8-cF-kQ7"; */
+"Mp8-cF-kQ7.paletteLabel" = "常规";
+
+/* Class = "NSButtonCell"; title = "Enable Udp Replay"; ObjectID = "R3v-iN-zu8"; */
+"R3v-iN-zu8.title" = "启用 UDP 中继";
+
+/* Class = "NSTextFieldCell"; title = "HTTP Proxy Listen Port:"; ObjectID = "Ww9-j9-WYR"; */
+"Ww9-j9-WYR.title" = "HTTP代理监听端口:";
+
+/* Class = "NSButtonCell"; title = "Launch At Login"; ObjectID = "XJx-j4-bBr"; */
+"XJx-j4-bBr.title" = "开机启动";
+
+/* Class = "NSButtonCell"; title = "Auto Configure"; ObjectID = "bu3-s5-bYM"; */
+"bu3-s5-bYM.title" = "自动配置";
+
+/* Class = "NSButtonCell"; title = "Enable Verbose Mode"; ObjectID = "cIS-Wb-Rzg"; */
+"cIS-Wb-Rzg.title" = "Enable Verbose Mode";
+
+/* Class = "NSTabViewItem"; label = "Interfaces"; ObjectID = "eDR-CZ-P4p"; */
+"eDR-CZ-P4p.label" = "网络接口";
+
+/* Class = "NSTextFieldCell"; title = "Local Kcptun Listen Address:"; ObjectID = "ejW-7L-9bP"; */
+"ejW-7L-9bP.title" = "Kcptun 本地监听地址:";
+
+/* Class = "NSTabViewItem"; label = "Shortcuts"; ObjectID = "gpA-k4-fiw"; */
+"gpA-k4-fiw.label" = "快捷键";
+
+/* Class = "NSTextFieldCell"; title = "Local Socks5 Listen Address:"; ObjectID = "jkc-e3-4O0"; */
+"jkc-e3-4O0.title" = "本地Socks5监听地址:";
+
+/* Class = "NSButtonCell"; title = "HTTP Proxy Enable"; ObjectID = "jr6-x7-WJD"; */
+"jr6-x7-WJD.title" = "开启HTTP代理服务器";
+
+/* Class = "NSTabViewItem"; label = "Advanced"; ObjectID = "ksf-9b-qoz"; */
+"ksf-9b-qoz.label" = "高级";
+
+/* Class = "NSToolbarItem"; label = "Advanced"; ObjectID = "kuN-wm-bl5"; */
+"kuN-wm-bl5.label" = "高级";
+
+/* Class = "NSToolbarItem"; paletteLabel = "Advanced"; ObjectID = "kuN-wm-bl5"; */
+"kuN-wm-bl5.paletteLabel" = "高级";
+
+/* Class = "NSToolbarItem"; label = "Shortcuts"; ObjectID = "kzb-T5-CPp"; */
+"kzb-T5-CPp.label" = "快捷键";
+
+/* Class = "NSToolbarItem"; paletteLabel = "Shortcuts"; ObjectID = "kzb-T5-CPp"; */
+"kzb-T5-CPp.paletteLabel" = "快捷键";
+
+/* Class = "NSTabViewItem"; label = "Kcptun"; ObjectID = "n2m-5k-0Ws"; */
+"n2m-5k-0Ws.label" = "Kcptun";
+
+/* Class = "NSTextFieldCell"; title = "Local Kcptun Listen Port:"; ObjectID = "pdk-mh-FAj"; */
+"pdk-mh-FAj.title" = "Kcptun 本地监听端口:";
+
+/* Class = "NSTextFieldCell"; title = "Timeout:"; ObjectID = "sQ9-bj-V0I"; */
+"sQ9-bj-V0I.title" = "超时:";
+
+/* Class = "NSTextFieldCell"; title = "Which network interfaces  proxy setting would be controlled by ShadowsocksX-NG"; ObjectID = "t0I-6n-gnu"; */
+"t0I-6n-gnu.title" = "Which network interfaces  proxy setting would be controlled by ShadowsocksX-NG";
+
+/* Class = "NSTextFieldCell"; title = "GFW List URL:"; ObjectID = "v7a-wf-aEm"; */
+"v7a-wf-aEm.title" = "GFW List URL:";
+
+/* Class = "NSButtonCell"; title = "Show Running Proxy Mode In Status Bar"; ObjectID = "wXO-Qz-yDg"; */
+"wXO-Qz-yDg.title" = "在状态栏显示当前代理模式";
+
+/* Class = "NSTabViewItem"; label = "General"; ObjectID = "xbG-eW-Prj"; */
+"xbG-eW-Prj.label" = "常规";

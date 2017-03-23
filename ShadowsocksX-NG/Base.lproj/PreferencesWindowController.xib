@@ -521,7 +521,7 @@ Gw
         </numberFormatter>
         <menu showsStateColumn="NO" id="QmU-th-vjP">
             <items>
-                <menuItem title="Duplicate" id="bl9-lq-u9V">
+                <menuItem title="Clone" id="bl9-lq-u9V">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
                         <action selector="duplicate:" target="-2" id="dEb-Dt-yBW"/>
