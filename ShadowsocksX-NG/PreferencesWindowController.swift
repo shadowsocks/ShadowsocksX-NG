@@ -36,6 +36,7 @@ class PreferencesWindowController: NSWindowController
     @IBOutlet weak var kcptunDatashardTextField: NSTextField!
     @IBOutlet weak var kcptunParityshardTextField: NSTextField!
     @IBOutlet weak var kcptunMTUTextField: NSTextField!
+    @IBOutlet weak var kcptunArgumentsTextField: NSTextField!
     
     @IBOutlet weak var removeButton: NSButton!
     let tableViewDragType: String = "ss.server.profile.data"
@@ -267,6 +268,9 @@ class PreferencesWindowController: NSWindowController
                 , options: [NSContinuouslyUpdatesValueBindingOption: true])
             
             kcptunMTUTextField.bind("value", to: editingProfile, withKeyPath: "kcptunProfile.mtu"
+                , options: [NSContinuouslyUpdatesValueBindingOption: true])
+            
+            kcptunArgumentsTextField.bind("value", to: editingProfile, withKeyPath: "kcptunProfile.arguments"
                 , options: [NSContinuouslyUpdatesValueBindingOption: true])
             
         } else {

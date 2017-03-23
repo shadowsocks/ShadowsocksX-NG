@@ -337,7 +337,19 @@ func generateKcptunLauchAgentPlist() -> Bool {
     
     let oldSha1Sum = getFileSHA1Sum(plistFilepath)
     
-    let arguments = [sslocalPath, "-c", "kcptun-config.json"]
+    var arguments = [sslocalPath, "-c", "kcptun-config.json"]
+    
+    let mgr = ServerProfileManager.instance
+    if let profile = mgr.getActiveProfile() {
+        if profile.enabledKcptun {
+            let otherArgumentsLine = profile.kcptunProfile.arguments.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+            if !otherArgumentsLine.isEmpty {
+                // TOFIX: Don't support space between quotation marks
+                let otherArguments = otherArgumentsLine.components(separatedBy: " ")
+                arguments.append(contentsOf: otherArguments.filter { !$0.isEmpty })
+            }
+        }
+    }
     
     // For a complete listing of the keys, see the launchd.plist manual page.
     let dict: NSMutableDictionary = [
