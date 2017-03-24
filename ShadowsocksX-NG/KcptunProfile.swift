@@ -19,7 +19,10 @@ class KcptunProfile: NSObject, NSCopying {
     var datashard: uint = 10
     var parityshard: uint = 3
     var mtu: uint = 1350
+<<<<<<< HEAD
+=======
     var arguments: String = ""
+>>>>>>> ad0c3d53e870ac68e8d947545d8c00c7849523e5
     
     
     public func copy(with zone: NSZone? = nil) -> Any {
@@ -43,7 +46,10 @@ class KcptunProfile: NSObject, NSCopying {
                                          "datashard": NSNumber(value: self.datashard),
                                          "parityshard": NSNumber(value: self.parityshard),
                                          "mtu": NSNumber(value: self.mtu),
+<<<<<<< HEAD
+=======
                                          "arguments": self.arguments as AnyObject,
+>>>>>>> ad0c3d53e870ac68e8d947545d8c00c7849523e5
                                          ]
         return conf
     }
@@ -59,9 +65,12 @@ class KcptunProfile: NSObject, NSCopying {
         if let v = data["mtu"] as? NSNumber {
             profile.mtu = uint(v.uintValue)
         }
+<<<<<<< HEAD
+=======
         if let arguments = data["arguments"] as? String {
             profile.arguments = arguments
         }
+>>>>>>> ad0c3d53e870ac68e8d947545d8c00c7849523e5
         
         return profile
     }
@@ -95,7 +104,10 @@ class KcptunProfile: NSObject, NSCopying {
             URLQueryItem(name: "parityshard", value: "\(parityshard)"),
             URLQueryItem(name: "nocomp", value: nocomp.description),
             URLQueryItem(name: "mtu", value: "\(mtu)"),
+<<<<<<< HEAD
+=======
             URLQueryItem(name: "argumetns", value: arguments),
+>>>>>>> ad0c3d53e870ac68e8d947545d8c00c7849523e5
         ]
     }
     
@@ -138,10 +150,13 @@ class KcptunProfile: NSObject, NSCopying {
                         mtu = vv
                     }
                 }
+<<<<<<< HEAD
+=======
             case "arguments":
                 if let v = item.value {
                     arguments = v
                 }
+>>>>>>> ad0c3d53e870ac68e8d947545d8c00c7849523e5
             default:
                 continue
             }

@@ -107,7 +107,11 @@
                     </connections>
                 </menuItem>
                 <menuItem isSeparatorItem="YES" id="vwY-hQ-ZIz"/>
+<<<<<<< HEAD
+                <menuItem title="Preferences ..." keyEquivalent="," id="4CS-qD-zW5">
+=======
                 <menuItem title="Preferences..." keyEquivalent="," id="4CS-qD-zW5">
+>>>>>>> ad0c3d53e870ac68e8d947545d8c00c7849523e5
                     <connections>
                         <action selector="showAllInOnePreferences:" target="Voe-Tx-rLC" id="2of-nZ-atc"/>
                     </connections>
