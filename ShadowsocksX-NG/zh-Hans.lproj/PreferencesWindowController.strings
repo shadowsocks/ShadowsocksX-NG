@@ -35,5 +35,10 @@
 /* Class = "NSButtonCell"; title = "OK"; ObjectID = "zPE-oD-PwK"; */
 "zPE-oD-PwK.title" = "确定";
 
+<<<<<<< HEAD
 /* Class = "NSMenuItem"; title = "Duplicate"; ObjectID = "bl9-lq-u9V"; */
 "bl9-lq-u9V.title" = "复制";
+=======
+/* Class = "NSMenuItem"; title = "Clone"; ObjectID = "bl9-lq-u9V"; */
+"bl9-lq-u9V.title" = "克隆";
+>>>>>>> ad0c3d53e870ac68e8d947545d8c00c7849523e5

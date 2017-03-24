@@ -8,8 +8,13 @@
 
 import Foundation
 
+<<<<<<< HEAD
 let SS_LOCAL_VERSION = "2.5.6"
 let KCPTUN_CLIENT_VERSION = "20170117"
+=======
+let SS_LOCAL_VERSION = "3.0.5"
+let KCPTUN_CLIENT_VERSION = "20170322"
+>>>>>>> ad0c3d53e870ac68e8d947545d8c00c7849523e5
 let PRIVOXY_VERSION = "3.0.26.static"
 let APP_SUPPORT_DIR = "/Library/Application Support/ShadowsocksX-NG/"
 let LAUNCH_AGENT_DIR = "/Library/LaunchAgents/"
@@ -31,7 +36,11 @@ func getFileSHA1Sum(_ filepath: String) -> String {
 //  MARK: sslocal
 
 func generateSSLocalLauchAgentPlist() -> Bool {
+<<<<<<< HEAD
     let sslocalPath = NSHomeDirectory() + APP_SUPPORT_DIR + "ss-local"
+=======
+    let sslocalPath = NSHomeDirectory() + APP_SUPPORT_DIR + "ss-local-latest/ss-local"
+>>>>>>> ad0c3d53e870ac68e8d947545d8c00c7849523e5
     let logFilePath = NSHomeDirectory() + "/Library/Logs/ss-local.log"
     let launchAgentDirPath = NSHomeDirectory() + LAUNCH_AGENT_DIR
     let plistFilepath = launchAgentDirPath + LAUNCH_AGENT_CONF_SSLOCAL_NAME
@@ -64,7 +73,11 @@ func generateSSLocalLauchAgentPlist() -> Bool {
         "StandardOutPath": logFilePath,
         "StandardErrorPath": logFilePath,
         "ProgramArguments": arguments,
+<<<<<<< HEAD
         "EnvironmentVariables": ["DYLD_LIBRARY_PATH": NSHomeDirectory() + APP_SUPPORT_DIR]
+=======
+        "EnvironmentVariables": ["DYLD_LIBRARY_PATH": NSHomeDirectory() + APP_SUPPORT_DIR + "ss-local-latest/"]
+>>>>>>> ad0c3d53e870ac68e8d947545d8c00c7849523e5
     ]
     dict.write(toFile: plistFilepath, atomically: true)
     let Sha1Sum = getFileSHA1Sum(plistFilepath)
@@ -103,9 +116,13 @@ func InstallSSLocal() {
     let fileMgr = FileManager.default
     let homeDir = NSHomeDirectory()
     let appSupportDir = homeDir+APP_SUPPORT_DIR
+<<<<<<< HEAD
     if !fileMgr.fileExists(atPath: appSupportDir + "ss-local-\(SS_LOCAL_VERSION)/ss-local")
     || !fileMgr.fileExists(atPath: appSupportDir + "libcrypto.1.0.0.dylib")
     || !fileMgr.fileExists(atPath: appSupportDir + "libpcre.1.dylib") {
+=======
+    if !fileMgr.fileExists(atPath: appSupportDir + "ss-local-\(SS_LOCAL_VERSION)/ss-local") {
+>>>>>>> ad0c3d53e870ac68e8d947545d8c00c7849523e5
         let bundle = Bundle.main
         let installerPath = bundle.path(forResource: "install_ss_local.sh", ofType: nil)
         let task = Process.launchedProcess(launchPath: installerPath!, arguments: [""])
@@ -339,7 +356,23 @@ func generateKcptunLauchAgentPlist() -> Bool {
     
     let oldSha1Sum = getFileSHA1Sum(plistFilepath)
     
+<<<<<<< HEAD
     let arguments = [sslocalPath, "-c", "kcptun-config.json"]
+=======
+    var arguments = [sslocalPath, "-c", "kcptun-config.json"]
+    
+    let mgr = ServerProfileManager.instance
+    if let profile = mgr.getActiveProfile() {
+        if profile.enabledKcptun {
+            let otherArgumentsLine = profile.kcptunProfile.arguments.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+            if !otherArgumentsLine.isEmpty {
+                // TOFIX: Don't support space between quotation marks
+                let otherArguments = otherArgumentsLine.components(separatedBy: " ")
+                arguments.append(contentsOf: otherArguments.filter { !$0.isEmpty })
+            }
+        }
+    }
+>>>>>>> ad0c3d53e870ac68e8d947545d8c00c7849523e5
     
     // For a complete listing of the keys, see the launchd.plist manual page.
     let dict: NSMutableDictionary = [
