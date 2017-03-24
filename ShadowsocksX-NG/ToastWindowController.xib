@@ -18,9 +18,8 @@
         <window title="Window" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" hidesOnDeactivate="YES" oneShot="NO" showsToolbarButton="NO" visibleAtLaunch="NO" animationBehavior="default" id="kRK-Pd-y69" customClass="NSPanel">
             <windowStyleMask key="styleMask" closable="YES" miniaturizable="YES" resizable="YES" utility="YES"/>
             <rect key="contentRect" x="139" y="81" width="300" height="100"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1680" height="1027"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1920" height="1057"/>
             <value key="minSize" type="size" width="200" height="100"/>
-            <value key="maxSize" type="size" width="200" height="100"/>
             <view key="contentView" id="KRY-zc-8By" userLabel="Panel View">
                 <rect key="frame" x="0.0" y="0.0" width="300" height="100"/>
                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
