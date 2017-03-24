@@ -95,7 +95,7 @@ class KcptunProfile: NSObject, NSCopying {
             URLQueryItem(name: "parityshard", value: "\(parityshard)"),
             URLQueryItem(name: "nocomp", value: nocomp.description),
             URLQueryItem(name: "mtu", value: "\(mtu)"),
-            URLQueryItem(name: "argumetns", value: arguments),
+            URLQueryItem(name: "arguments", value: arguments),
         ]
     }
     
