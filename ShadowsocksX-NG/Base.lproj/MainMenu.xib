@@ -43,7 +43,7 @@
                     </connections>
                 </menuItem>
                 <menuItem isSeparatorItem="YES" id="LXP-yK-yQu"/>
-                <menuItem title="Auto Mode By PAC" id="r07-Gu-aEz">
+                <menuItem title="Proxy Auto Configure Mode" id="r07-Gu-aEz">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
                         <action selector="selectPACMode:" target="Voe-Tx-rLC" id="l36-cd-xl7"/>
