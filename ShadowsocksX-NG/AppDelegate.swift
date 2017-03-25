@@ -80,7 +80,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             "Kcptun.LocalHost": "127.0.0.1",
             "Kcptun.LocalPort": NSNumber(value: 8388),
             "Kcptun.Conn": NSNumber(value: 1),
-            "ShowRunningModeOnStatusBar": false,
             ])
         
         statusItem = NSStatusBar.system().statusItem(withLength: AppDelegate.StatusItemIconWidth)
@@ -89,14 +88,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         statusItem.image = image
         statusItem.menu = statusMenu
         
-        
-        _ = defaults.rx.observe(Bool.self, "ShowRunningModeOnStatusBar")
-//            .distinctUntilChanged()
-            .subscribe(onNext: { value in
-                if let enabled = value {
-                    self.updateStatusItemUI(isShownnRunningMode: enabled)
-                }
-            })
         
         let notifyCenter = NotificationCenter.default
         
@@ -410,8 +401,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             globalModeMenuItem.state = 0
             manualModeMenuItem.state = 1
         }
-        let isShown = defaults.bool(forKey: "ShowRunningModeOnStatusBar")
-        updateStatusItemUI(isShownnRunningMode: isShown)
         updateStatusMenuImage()
     }
     
@@ -433,26 +422,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             }
         } else {
             statusItem.image = NSImage(named: "menu_icon_disabled")
-        }
-    }
-    
-    func updateStatusItemUI(isShownnRunningMode: Bool) {
-        if isShownnRunningMode {
-            let defaults = UserDefaults.standard
-            let mode = defaults.string(forKey: "ShadowsocksRunningMode")
-            if mode == "auto" {
-                statusItem.title = "A"
-            } else if mode == "global" {
-                statusItem.title = "G"
-            } else if mode == "manual" {
-                statusItem.title = "M"
-            }
-            let titleWidth = statusItem.title!.size(withAttributes: [NSFontAttributeName: statusItem.button!.font!]).width
-            let imageWidth:CGFloat = AppDelegate.StatusItemIconWidth
-            statusItem.length = titleWidth + imageWidth + 2
-        } else {
-            statusItem.length = AppDelegate.StatusItemIconWidth
-            
         }
     }
     

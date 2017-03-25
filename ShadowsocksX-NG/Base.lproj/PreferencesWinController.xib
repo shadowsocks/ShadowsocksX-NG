@@ -19,7 +19,7 @@
             <windowStyleMask key="styleMask" titled="YES" closable="YES"/>
             <windowPositionMask key="initialPositionMask" topStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="609" y="533" width="480" height="270"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1680" height="1027"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1920" height="1057"/>
             <view key="contentView" wantsLayer="YES" id="se5-gp-TjO">
                 <rect key="frame" x="0.0" y="0.0" width="480" height="270"/>
                 <autoresizingMask key="autoresizingMask"/>
@@ -33,6 +33,37 @@
                                     <rect key="frame" x="0.0" y="0.0" width="480" height="270"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
+                                        <customView translatesAutoresizingMaskIntoConstraints="NO" id="3eT-fn-moA" customClass="MASShortcutView">
+                                            <rect key="frame" x="240" y="173" width="163" height="19"/>
+                                            <userDefinedRuntimeAttributes>
+                                                <userDefinedRuntimeAttribute type="string" keyPath="associatedUserDefaultsKey" value="SwitchProxyMode"/>
+                                            </userDefinedRuntimeAttributes>
+                                        </customView>
+                                        <customView translatesAutoresizingMaskIntoConstraints="NO" id="pbX-DJ-7mU" customClass="MASShortcutView">
+                                            <rect key="frame" x="240" y="200" width="163" height="19"/>
+                                            <userDefinedRuntimeAttributes>
+                                                <userDefinedRuntimeAttribute type="string" keyPath="associatedUserDefaultsKey" value="ToggleRunning"/>
+                                            </userDefinedRuntimeAttributes>
+                                        </customView>
+                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" translatesAutoresizingMaskIntoConstraints="NO" id="q90-qj-BXy">
+                                            <rect key="frame" x="18" y="174" width="216" height="17"/>
+                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="left" title="Switch proxy mode:" id="BaL-cn-m8v">
+                                                <font key="font" metaFont="system"/>
+                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hbS-Ox-rTR">
+                                            <rect key="frame" x="18" y="201" width="216" height="17"/>
+                                            <constraints>
+                                                <constraint firstAttribute="width" constant="212" id="Ewo-CD-V6x"/>
+                                            </constraints>
+                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="left" title="Toggle Shadowsocks On/Off:" id="95S-ma-8Q7">
+                                                <font key="font" metaFont="system"/>
+                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
                                         <button translatesAutoresizingMaskIntoConstraints="NO" id="Q6E-ur-aIL">
                                             <rect key="frame" x="18" y="234" width="120" height="18"/>
                                             <buttonCell key="cell" type="check" title="Launch At Login" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="XJx-j4-bBr">
@@ -43,20 +74,10 @@
                                                 <binding destination="YAC-3k-qMR" name="value" keyPath="launchAtLogin" id="lF3-G5-F0w"/>
                                             </connections>
                                         </button>
-                                        <button translatesAutoresizingMaskIntoConstraints="NO" id="oI8-ye-kyt">
-                                            <rect key="frame" x="18" y="204" width="265" height="18"/>
-                                            <buttonCell key="cell" type="check" title="Show Running Proxy Mode In Status Bar" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="wXO-Qz-yDg">
-                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                                                <font key="font" metaFont="system"/>
-                                            </buttonCell>
-                                            <connections>
-                                                <binding destination="uQz-5y-ZL2" name="value" keyPath="values.ShowRunningModeOnStatusBar" id="Ba7-pB-dlD"/>
-                                            </connections>
-                                        </button>
                                         <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Jbe-9l-xF4">
-                                            <rect key="frame" x="18" y="165" width="192" height="17"/>
+                                            <rect key="frame" x="18" y="140" width="192" height="17"/>
                                             <constraints>
-                                                <constraint firstAttribute="width" constant="188" id="O19-ow-J2E"/>
+                                                <constraint firstAttribute="width" constant="188" id="5Cq-Td-EoH"/>
                                             </constraints>
                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="left" title="GFW List URL:" id="v7a-wf-aEm">
                                                 <font key="font" metaFont="system"/>
@@ -65,9 +86,9 @@
                                             </textFieldCell>
                                         </textField>
                                         <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="71I-66-7Vm">
-                                            <rect key="frame" x="20" y="112" width="440" height="45"/>
+                                            <rect key="frame" x="20" y="87" width="440" height="45"/>
                                             <constraints>
-                                                <constraint firstAttribute="height" constant="45" id="h4c-V0-L4X"/>
+                                                <constraint firstAttribute="height" constant="45" id="oOW-6u-Nlx"/>
                                             </constraints>
                                             <textFieldCell key="cell" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" drawsBackground="YES" id="YqN-0f-ODA">
                                                 <font key="font" metaFont="system"/>
@@ -84,15 +105,26 @@
                                         </textField>
                                     </subviews>
                                     <constraints>
-                                        <constraint firstItem="71I-66-7Vm" firstAttribute="top" secondItem="Jbe-9l-xF4" secondAttribute="bottom" constant="8" symbolic="YES" id="2WE-UP-2z6"/>
-                                        <constraint firstItem="Jbe-9l-xF4" firstAttribute="leading" secondItem="71I-66-7Vm" secondAttribute="leading" id="BiR-FL-V4Z"/>
-                                        <constraint firstItem="oI8-ye-kyt" firstAttribute="top" secondItem="Q6E-ur-aIL" secondAttribute="bottom" constant="16" id="L2Q-NE-joq"/>
-                                        <constraint firstItem="Q6E-ur-aIL" firstAttribute="leading" secondItem="78E-rb-Ecu" secondAttribute="leading" constant="20" symbolic="YES" id="VBW-pa-frq"/>
-                                        <constraint firstItem="71I-66-7Vm" firstAttribute="centerY" secondItem="78E-rb-Ecu" secondAttribute="centerY" id="WNa-6p-XbG"/>
-                                        <constraint firstItem="Jbe-9l-xF4" firstAttribute="leading" secondItem="oI8-ye-kyt" secondAttribute="leading" id="aVD-J5-1ii"/>
-                                        <constraint firstAttribute="trailing" secondItem="71I-66-7Vm" secondAttribute="trailing" constant="20" symbolic="YES" id="cvT-wO-98l"/>
-                                        <constraint firstItem="Q6E-ur-aIL" firstAttribute="leading" secondItem="oI8-ye-kyt" secondAttribute="leading" id="dIj-cv-xuB"/>
-                                        <constraint firstItem="Q6E-ur-aIL" firstAttribute="top" secondItem="78E-rb-Ecu" secondAttribute="top" constant="20" symbolic="YES" id="dYm-8k-t7L"/>
+                                        <constraint firstAttribute="trailing" secondItem="pbX-DJ-7mU" secondAttribute="trailing" constant="77" id="4Se-ok-ccg"/>
+                                        <constraint firstItem="hbS-Ox-rTR" firstAttribute="leading" secondItem="q90-qj-BXy" secondAttribute="leading" id="64j-c6-Ecw"/>
+                                        <constraint firstItem="Jbe-9l-xF4" firstAttribute="top" secondItem="q90-qj-BXy" secondAttribute="bottom" constant="17" id="A2C-Cv-c5i"/>
+                                        <constraint firstItem="hbS-Ox-rTR" firstAttribute="centerY" secondItem="pbX-DJ-7mU" secondAttribute="centerY" id="Fct-0K-t62"/>
+                                        <constraint firstItem="3eT-fn-moA" firstAttribute="top" secondItem="pbX-DJ-7mU" secondAttribute="bottom" constant="8" symbolic="YES" id="GwZ-E4-Gjo"/>
+                                        <constraint firstItem="q90-qj-BXy" firstAttribute="centerY" secondItem="3eT-fn-moA" secondAttribute="centerY" id="HyC-Vk-1Nb"/>
+                                        <constraint firstItem="Q6E-ur-aIL" firstAttribute="leading" secondItem="hbS-Ox-rTR" secondAttribute="leading" id="JEz-l4-fri"/>
+                                        <constraint firstItem="q90-qj-BXy" firstAttribute="leading" secondItem="Jbe-9l-xF4" secondAttribute="leading" id="JdS-Vb-AuL"/>
+                                        <constraint firstItem="Q6E-ur-aIL" firstAttribute="leading" secondItem="78E-rb-Ecu" secondAttribute="leading" constant="20" symbolic="YES" id="KDO-G0-opX"/>
+                                        <constraint firstItem="hbS-Ox-rTR" firstAttribute="top" secondItem="Q6E-ur-aIL" secondAttribute="bottom" constant="18" id="Mi1-JN-5LI"/>
+                                        <constraint firstItem="pbX-DJ-7mU" firstAttribute="trailing" secondItem="3eT-fn-moA" secondAttribute="trailing" id="OAQ-iu-3aA"/>
+                                        <constraint firstItem="71I-66-7Vm" firstAttribute="top" secondItem="Jbe-9l-xF4" secondAttribute="bottom" constant="8" symbolic="YES" id="PZz-Bz-ixY"/>
+                                        <constraint firstItem="71I-66-7Vm" firstAttribute="top" secondItem="3eT-fn-moA" secondAttribute="bottom" constant="41" id="ZOr-kR-trl"/>
+                                        <constraint firstItem="pbX-DJ-7mU" firstAttribute="leading" secondItem="3eT-fn-moA" secondAttribute="leading" id="eNA-aZ-B1T"/>
+                                        <constraint firstItem="3eT-fn-moA" firstAttribute="leading" secondItem="q90-qj-BXy" secondAttribute="trailing" constant="8" symbolic="YES" id="hbZ-MF-RaP"/>
+                                        <constraint firstItem="pbX-DJ-7mU" firstAttribute="leading" secondItem="hbS-Ox-rTR" secondAttribute="trailing" constant="8" symbolic="YES" id="iWV-YD-FAE"/>
+                                        <constraint firstItem="Q6E-ur-aIL" firstAttribute="top" secondItem="78E-rb-Ecu" secondAttribute="top" constant="20" symbolic="YES" id="mkj-KM-reT"/>
+                                        <constraint firstItem="Jbe-9l-xF4" firstAttribute="leading" secondItem="71I-66-7Vm" secondAttribute="leading" id="oqm-z1-lEF"/>
+                                        <constraint firstAttribute="trailing" secondItem="71I-66-7Vm" secondAttribute="trailing" constant="20" symbolic="YES" id="qtj-7T-bwM"/>
+                                        <constraint firstItem="q90-qj-BXy" firstAttribute="top" secondItem="hbS-Ox-rTR" secondAttribute="bottom" constant="10" id="xEd-cY-wG5"/>
                                     </constraints>
                                 </view>
                             </tabViewItem>
@@ -463,7 +495,7 @@
                                             <rect key="frame" x="20" y="20" width="440" height="154"/>
                                             <clipView key="contentView" id="9Wy-0J-wQ8">
                                                 <rect key="frame" x="1" y="1" width="438" height="152"/>
-                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                <autoresizingMask key="autoresizingMask"/>
                                                 <subviews>
                                                     <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" columnSelection="YES" multipleSelection="NO" autosaveColumns="NO" id="Vp3-dp-iqv">
                                                         <rect key="frame" x="0.0" y="0.0" width="438" height="152"/>
@@ -533,68 +565,14 @@
                                     </constraints>
                                 </view>
                             </tabViewItem>
-                            <tabViewItem label="Shortcuts" identifier="shortcuts" id="gpA-k4-fiw">
-                                <view key="view" id="B6N-zy-SRg">
-                                    <rect key="frame" x="0.0" y="0.0" width="480" height="270"/>
-                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                    <subviews>
-                                        <customView translatesAutoresizingMaskIntoConstraints="NO" id="3eT-fn-moA" customClass="MASShortcutView">
-                                            <rect key="frame" x="240" y="204" width="163" height="19"/>
-                                            <userDefinedRuntimeAttributes>
-                                                <userDefinedRuntimeAttribute type="string" keyPath="associatedUserDefaultsKey" value="SwitchProxyMode"/>
-                                            </userDefinedRuntimeAttributes>
-                                        </customView>
-                                        <customView translatesAutoresizingMaskIntoConstraints="NO" id="pbX-DJ-7mU" customClass="MASShortcutView">
-                                            <rect key="frame" x="240" y="231" width="163" height="19"/>
-                                            <userDefinedRuntimeAttributes>
-                                                <userDefinedRuntimeAttribute type="string" keyPath="associatedUserDefaultsKey" value="ToggleRunning"/>
-                                            </userDefinedRuntimeAttributes>
-                                        </customView>
-                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" translatesAutoresizingMaskIntoConstraints="NO" id="q90-qj-BXy">
-                                            <rect key="frame" x="30" y="205" width="204" height="17"/>
-                                            <constraints>
-                                                <constraint firstAttribute="width" constant="200" id="gbR-yw-vz9"/>
-                                            </constraints>
-                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Switch proxy mode:" id="BaL-cn-m8v">
-                                                <font key="font" metaFont="system"/>
-                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                                            </textFieldCell>
-                                        </textField>
-                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hbS-Ox-rTR">
-                                            <rect key="frame" x="18" y="233" width="216" height="17"/>
-                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="right" title="Toggle Shadowsocks On/Off:" id="95S-ma-8Q7">
-                                                <font key="font" metaFont="system"/>
-                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                                            </textFieldCell>
-                                        </textField>
-                                    </subviews>
-                                    <constraints>
-                                        <constraint firstItem="pbX-DJ-7mU" firstAttribute="trailing" secondItem="3eT-fn-moA" secondAttribute="trailing" id="2ju-jN-JWT"/>
-                                        <constraint firstItem="hbS-Ox-rTR" firstAttribute="leading" secondItem="B6N-zy-SRg" secondAttribute="leading" constant="20" symbolic="YES" id="5qb-sa-H6O"/>
-                                        <constraint firstItem="q90-qj-BXy" firstAttribute="leading" secondItem="B6N-zy-SRg" secondAttribute="leading" constant="32" id="HBA-Ch-FoI"/>
-                                        <constraint firstItem="hbS-Ox-rTR" firstAttribute="top" secondItem="B6N-zy-SRg" secondAttribute="top" constant="20" symbolic="YES" id="HPL-dr-aV7"/>
-                                        <constraint firstItem="3eT-fn-moA" firstAttribute="top" secondItem="B6N-zy-SRg" secondAttribute="top" constant="47" id="I65-QH-LP2"/>
-                                        <constraint firstItem="3eT-fn-moA" firstAttribute="leading" secondItem="q90-qj-BXy" secondAttribute="trailing" constant="8" symbolic="YES" id="N2k-40-7GT"/>
-                                        <constraint firstItem="hbS-Ox-rTR" firstAttribute="top" secondItem="pbX-DJ-7mU" secondAttribute="top" id="Pn3-Sd-qyO"/>
-                                        <constraint firstItem="q90-qj-BXy" firstAttribute="top" secondItem="hbS-Ox-rTR" secondAttribute="bottom" constant="11" id="XUl-Ic-Lqi"/>
-                                        <constraint firstItem="3eT-fn-moA" firstAttribute="top" secondItem="pbX-DJ-7mU" secondAttribute="bottom" constant="8" symbolic="YES" id="b5q-tC-PRf"/>
-                                        <constraint firstItem="q90-qj-BXy" firstAttribute="centerY" secondItem="3eT-fn-moA" secondAttribute="centerY" id="cqe-h2-eJ1"/>
-                                        <constraint firstAttribute="trailing" secondItem="pbX-DJ-7mU" secondAttribute="trailing" constant="77" id="iNX-Gy-TNd"/>
-                                        <constraint firstItem="pbX-DJ-7mU" firstAttribute="leading" secondItem="3eT-fn-moA" secondAttribute="leading" id="mPI-lq-sbb"/>
-                                        <constraint firstItem="pbX-DJ-7mU" firstAttribute="leading" secondItem="hbS-Ox-rTR" secondAttribute="trailing" constant="8" symbolic="YES" id="nS9-dm-V6d"/>
-                                    </constraints>
-                                </view>
-                            </tabViewItem>
                         </tabViewItems>
                     </tabView>
                 </subviews>
                 <constraints>
-                    <constraint firstItem="h22-uy-K1x" firstAttribute="leading" secondItem="se5-gp-TjO" secondAttribute="leading" id="0QH-tN-yRQ"/>
-                    <constraint firstAttribute="bottom" secondItem="h22-uy-K1x" secondAttribute="bottom" id="gl3-hq-ori"/>
-                    <constraint firstAttribute="trailing" secondItem="h22-uy-K1x" secondAttribute="trailing" id="xuy-k3-WXX"/>
-                    <constraint firstItem="h22-uy-K1x" firstAttribute="top" secondItem="se5-gp-TjO" secondAttribute="top" id="yaf-oE-t8j"/>
+                    <constraint firstItem="h22-uy-K1x" firstAttribute="leading" secondItem="se5-gp-TjO" secondAttribute="leading" id="76k-gw-tyI"/>
+                    <constraint firstAttribute="bottom" secondItem="h22-uy-K1x" secondAttribute="bottom" id="BpV-NE-BCZ"/>
+                    <constraint firstAttribute="trailing" secondItem="h22-uy-K1x" secondAttribute="trailing" id="l10-oc-wKy"/>
+                    <constraint firstItem="h22-uy-K1x" firstAttribute="top" secondItem="se5-gp-TjO" secondAttribute="top" id="psz-CY-qiq"/>
                 </constraints>
             </view>
             <toolbar key="toolbar" implicitIdentifier="8C4EF182-55FF-4325-A88F-2B007115CF4C" autosavesConfiguration="NO" allowsUserCustomization="NO" displayMode="iconAndLabel" sizeMode="regular" id="D9u-IW-4jN">
@@ -626,11 +604,6 @@
                             <action selector="toolbarActionWithSender:" target="-2" id="X6O-F1-Axw"/>
                         </connections>
                     </toolbarItem>
-                    <toolbarItem implicitItemIdentifier="D89D546C-0FED-46F9-AB50-6D504E105419" explicitItemIdentifier="shortcuts" label="Shortcuts" paletteLabel="Shortcuts" tag="-1" image="command-512" selectable="YES" id="kzb-T5-CPp">
-                        <connections>
-                            <action selector="toolbarActionWithSender:" target="-2" id="02b-iE-ZWw"/>
-                        </connections>
-                    </toolbarItem>
                 </allowedToolbarItems>
                 <defaultToolbarItems>
                     <toolbarItem reference="Mp8-cF-kQ7"/>
@@ -638,7 +611,6 @@
                     <toolbarItem reference="D0F-6S-Ztu"/>
                     <toolbarItem reference="CIc-BO-xjN"/>
                     <toolbarItem reference="Bdm-pj-Ckd"/>
-                    <toolbarItem reference="kzb-T5-CPp"/>
                     <toolbarItem reference="hy4-IW-j13"/>
                 </defaultToolbarItems>
             </toolbar>
@@ -671,7 +643,6 @@
         <image name="NSAdvanced" width="32" height="32"/>
         <image name="NSNetwork" width="32" height="32"/>
         <image name="NSPreferencesGeneral" width="32" height="32"/>
-        <image name="command-512" width="512" height="512"/>
         <image name="http" width="512" height="512"/>
         <image name="kcptun_1" width="136" height="136"/>
     </resources>
