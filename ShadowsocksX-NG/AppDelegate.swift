@@ -20,8 +20,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     var allInOnePreferencesWinCtrl: PreferencesWinController!
     var toastWindowCtrl: ToastWindowController!
 
-    var launchAtLoginController: LaunchAtLoginController = LaunchAtLoginController()
-    
     @IBOutlet weak var window: NSWindow!
     @IBOutlet weak var statusMenu: NSMenu!
     
@@ -53,7 +51,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     static let StatusItemIconWidth:CGFloat = 20
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
-        // Insert code here to initialize your application
+        
+        _ = LaunchAtLoginController()// Ensure set when launch
         
         NSUserNotificationCenter.default.delegate = self
         
