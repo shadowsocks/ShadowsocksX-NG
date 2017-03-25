@@ -53,6 +53,12 @@
 		9B6BF9521E27B23F0061B9A7 /* LaunchHelper.app in CopyFiles */ = {isa = PBXBuildFile; fileRef = 9B6BF9501E27B1F20061B9A7 /* LaunchHelper.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		9B6BF9541E27B2570061B9A7 /* ServiceManagement.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B6BF9531E27B2570061B9A7 /* ServiceManagement.framework */; };
 		9B86459D1E7C2CAD00A84029 /* ProxyInterfacesViewCtrl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B86459C1E7C2CAD00A84029 /* ProxyInterfacesViewCtrl.swift */; };
+		9B938D991E864B38005F5636 /* menu_g_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B938D931E864B38005F5636 /* menu_g_icon.png */; };
+		9B938D9A1E864B38005F5636 /* menu_g_icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B938D941E864B38005F5636 /* menu_g_icon@2x.png */; };
+		9B938D9B1E864B38005F5636 /* menu_m_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B938D951E864B38005F5636 /* menu_m_icon.png */; };
+		9B938D9C1E864B38005F5636 /* menu_m_icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B938D961E864B38005F5636 /* menu_m_icon@2x.png */; };
+		9B938D9D1E864B38005F5636 /* menu_p_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B938D971E864B38005F5636 /* menu_p_icon.png */; };
+		9B938D9E1E864B38005F5636 /* menu_p_icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B938D981E864B38005F5636 /* menu_p_icon@2x.png */; };
 		9B9CBCA61E25E1DB00FC61AA /* KcptunProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B9CBCA51E25E1DB00FC61AA /* KcptunProfile.swift */; };
 		9B9CBCA81E26312E00FC61AA /* install_kcptun.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9B9CBCA71E26310E00FC61AA /* install_kcptun.sh */; };
 		9B9CBCAA1E2633CB00FC61AA /* kcptun_client in Resources */ = {isa = PBXBuildFile; fileRef = 9B9CBCA91E2633CB00FC61AA /* kcptun_client */; };
@@ -195,6 +201,12 @@
 		9B6BF94B1E27B1F10061B9A7 /* LaunchHelper.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = LaunchHelper.xcodeproj; path = LaunchHelper/LaunchHelper.xcodeproj; sourceTree = "<group>"; };
 		9B6BF9531E27B2570061B9A7 /* ServiceManagement.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ServiceManagement.framework; path = System/Library/Frameworks/ServiceManagement.framework; sourceTree = SDKROOT; };
 		9B86459C1E7C2CAD00A84029 /* ProxyInterfacesViewCtrl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ProxyInterfacesViewCtrl.swift; sourceTree = "<group>"; };
+		9B938D931E864B38005F5636 /* menu_g_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = menu_g_icon.png; sourceTree = "<group>"; };
+		9B938D941E864B38005F5636 /* menu_g_icon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "menu_g_icon@2x.png"; sourceTree = "<group>"; };
+		9B938D951E864B38005F5636 /* menu_m_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = menu_m_icon.png; sourceTree = "<group>"; };
+		9B938D961E864B38005F5636 /* menu_m_icon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "menu_m_icon@2x.png"; sourceTree = "<group>"; };
+		9B938D971E864B38005F5636 /* menu_p_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = menu_p_icon.png; sourceTree = "<group>"; };
+		9B938D981E864B38005F5636 /* menu_p_icon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "menu_p_icon@2x.png"; sourceTree = "<group>"; };
 		9B9CBCA51E25E1DB00FC61AA /* KcptunProfile.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KcptunProfile.swift; sourceTree = "<group>"; };
 		9B9CBCA71E26310E00FC61AA /* install_kcptun.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = install_kcptun.sh; sourceTree = "<group>"; };
 		9B9CBCA91E2633CB00FC61AA /* kcptun_client */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = kcptun_client; sourceTree = "<group>"; };
@@ -282,6 +294,12 @@
 		9B07EFB01D048E900052D9DF /* Support Files */ = {
 			isa = PBXGroup;
 			children = (
+				9B938D931E864B38005F5636 /* menu_g_icon.png */,
+				9B938D941E864B38005F5636 /* menu_g_icon@2x.png */,
+				9B938D951E864B38005F5636 /* menu_m_icon.png */,
+				9B938D961E864B38005F5636 /* menu_m_icon@2x.png */,
+				9B938D971E864B38005F5636 /* menu_p_icon.png */,
+				9B938D981E864B38005F5636 /* menu_p_icon@2x.png */,
 				9B3F7BF71E82BF2D00C68B75 /* libev.4.dylib */,
 				9B3F7BF81E82BF2D00C68B75 /* libmbedcrypto.2.4.2.dylib */,
 				9B3F7BF91E82BF2E00C68B75 /* libsodium.18.dylib */,
@@ -573,6 +591,8 @@
 				9B3F7C021E82BF5B00C68B75 /* libudns.0.dylib in Resources */,
 				9B9CBCB41E26453C00FC61AA /* start_kcptun.sh in Resources */,
 				9B9CBCB51E26453C00FC61AA /* stop_kcptun.sh in Resources */,
+				9B938D9A1E864B38005F5636 /* menu_g_icon@2x.png in Resources */,
+				9B938D9E1E864B38005F5636 /* menu_p_icon@2x.png in Resources */,
 				9B9CBCAF1E263B1600FC61AA /* libpcre.1.dylib in Resources */,
 				9B9CBCA81E26312E00FC61AA /* install_kcptun.sh in Resources */,
 				9B5832031E741F8D009D5B7D /* command-512.png in Resources */,
@@ -586,6 +606,7 @@
 				C8E42A6E1D4F2CAF0074C7EA /* UserRulesController.xib in Resources */,
 				9BEEF06A1D04D4D500FC52B3 /* start_ss_local.sh in Resources */,
 				9B5832111E742632009D5B7D /* kcptun_1.png in Resources */,
+				9B938D9C1E864B38005F5636 /* menu_m_icon@2x.png in Resources */,
 				9B3546731E802B1200B510B4 /* ToastWindowController.xib in Resources */,
 				C6D429941DA75988002A5711 /* privoxy in Resources */,
 				C6D429991DA76FBC002A5711 /* privoxy.config.example in Resources */,
@@ -596,6 +617,8 @@
 				9BAFE2E21E83ED7F00F71CCE /* PreferencesWinController.xib in Resources */,
 				9B0BFFEB1D0460A70040E62B /* Assets.xcassets in Resources */,
 				08FCA0FF1E24BE1A0070984F /* example-gui-config.json in Resources */,
+				9B938D9D1E864B38005F5636 /* menu_p_icon.png in Resources */,
+				9B938D9B1E864B38005F5636 /* menu_m_icon.png in Resources */,
 				9B3FFF271D0898EB0019A709 /* gfwlist.txt in Resources */,
 				C6D429931DA75988002A5711 /* install_privoxy.sh in Resources */,
 				9B58320B1E7422DB009D5B7D /* http.png in Resources */,
@@ -607,6 +630,7 @@
 				9B07EFA71D048BBB0052D9DF /* ss-local in Resources */,
 				9B07EFAF1D048E880052D9DF /* menu_icon_disabled@2x.png in Resources */,
 				9B07EFAE1D048E880052D9DF /* menu_icon_disabled.png in Resources */,
+				9B938D991E864B38005F5636 /* menu_g_icon.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

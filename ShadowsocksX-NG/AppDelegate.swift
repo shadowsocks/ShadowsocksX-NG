@@ -80,7 +80,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             "Kcptun.LocalHost": "127.0.0.1",
             "Kcptun.LocalPort": NSNumber(value: 8388),
             "Kcptun.Conn": NSNumber(value: 1),
-            "ShowRunningModeOnStatusBar": true,
+            "ShowRunningModeOnStatusBar": false,
             ])
         
         statusItem = NSStatusBar.system().statusItem(withLength: AppDelegate.StatusItemIconWidth)
@@ -412,6 +412,28 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         }
         let isShown = defaults.bool(forKey: "ShowRunningModeOnStatusBar")
         updateStatusItemUI(isShownnRunningMode: isShown)
+        updateStatusMenuImage()
+    }
+    
+    func updateStatusMenuImage() {
+        let defaults = UserDefaults.standard
+        let mode = defaults.string(forKey: "ShadowsocksRunningMode")
+        let isOn = defaults.bool(forKey: "ShadowsocksOn")
+        if isOn {
+            if let m = mode {
+                switch m {
+                    case "auto":
+                        statusItem.image = NSImage(named: "menu_p_icon")
+                    case "global":
+                        statusItem.image = NSImage(named: "menu_g_icon")
+                    case "manual":
+                        statusItem.image = NSImage(named: "menu_m_icon")
+                default: break
+                }
+            }
+        } else {
+            statusItem.image = NSImage(named: "menu_icon_disabled")
+        }
     }
     
     func updateStatusItemUI(isShownnRunningMode: Bool) {
@@ -430,6 +452,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             statusItem.length = titleWidth + imageWidth + 2
         } else {
             statusItem.length = AppDelegate.StatusItemIconWidth
+            
         }
     }
     
@@ -447,6 +470,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             let image = NSImage(named: "menu_icon_disabled")
             statusItem.image = image
         }
+        updateStatusMenuImage()
     }
     
     func updateCopyHttpProxyExportMenu() {
