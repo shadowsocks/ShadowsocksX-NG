@@ -73,7 +73,7 @@ class ServerProfile: NSObject, NSCopying {
 
         self.serverHost = host
         self.serverPort = UInt16(port)
-        self.method = method
+        self.method = method.lowercased()
         self.password = password
 
         remark = parsedUrl.queryItems?
