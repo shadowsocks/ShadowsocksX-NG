@@ -21,10 +21,6 @@
 		9B2491B41D0ACC3A003BBECC /* PreferencesWindowController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9B2491B61D0ACC3A003BBECC /* PreferencesWindowController.xib */; };
 		9B3546721E802B1200B510B4 /* ToastWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B3546701E802B1200B510B4 /* ToastWindowController.swift */; };
 		9B3546731E802B1200B510B4 /* ToastWindowController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9B3546711E802B1200B510B4 /* ToastWindowController.xib */; };
-		9B3F7BFB1E82BF2E00C68B75 /* libev.4.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B3F7BF71E82BF2D00C68B75 /* libev.4.dylib */; };
-		9B3F7BFC1E82BF2E00C68B75 /* libmbedcrypto.2.4.2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B3F7BF81E82BF2D00C68B75 /* libmbedcrypto.2.4.2.dylib */; };
-		9B3F7BFD1E82BF2E00C68B75 /* libsodium.18.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B3F7BF91E82BF2E00C68B75 /* libsodium.18.dylib */; };
-		9B3F7BFE1E82BF2E00C68B75 /* libudns.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B3F7BFA1E82BF2E00C68B75 /* libudns.0.dylib */; };
 		9B3F7BFF1E82BF5B00C68B75 /* libev.4.dylib in Resources */ = {isa = PBXBuildFile; fileRef = 9B3F7BF71E82BF2D00C68B75 /* libev.4.dylib */; };
 		9B3F7C001E82BF5B00C68B75 /* libmbedcrypto.2.4.2.dylib in Resources */ = {isa = PBXBuildFile; fileRef = 9B3F7BF81E82BF2D00C68B75 /* libmbedcrypto.2.4.2.dylib */; };
 		9B3F7C011E82BF5B00C68B75 /* libsodium.18.dylib in Resources */ = {isa = PBXBuildFile; fileRef = 9B3F7BF91E82BF2E00C68B75 /* libsodium.18.dylib */; };
@@ -247,13 +243,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9B3F7BFE1E82BF2E00C68B75 /* libudns.0.dylib in Frameworks */,
-				9B3F7BFC1E82BF2E00C68B75 /* libmbedcrypto.2.4.2.dylib in Frameworks */,
-				9B3F7BFD1E82BF2E00C68B75 /* libsodium.18.dylib in Frameworks */,
 				9B6BF9541E27B2570061B9A7 /* ServiceManagement.framework in Frameworks */,
 				9B3FFF3E1D08D9910019A709 /* SystemConfiguration.framework in Frameworks */,
 				258E511BA910B0521B24DAB8 /* Pods_ShadowsocksX_NG.framework in Frameworks */,
-				9B3F7BFB1E82BF2E00C68B75 /* libev.4.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
