@@ -22,6 +22,7 @@ ln -s "$TargetDir" "$LatestTargetDir"
 
 cp -f libev.4.dylib "$TargetDir"
 cp -f libmbedcrypto.2.4.2.dylib "$TargetDir"
+ln -s  "$TargetDir/libmbedcrypto.2.4.2.dylib" "$TargetDir/libmbedcrypto.0.dylib"
 cp -f libpcre.1.dylib "$TargetDir"
 cp -f libsodium.18.dylib "$TargetDir"
 cp -f libudns.0.dylib "$TargetDir"
