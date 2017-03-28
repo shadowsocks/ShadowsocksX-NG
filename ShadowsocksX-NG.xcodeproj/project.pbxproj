@@ -46,7 +46,6 @@
 		9B5832071E7421B2009D5B7D /* virtual-server-icon-3.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B5832061E7421B2009D5B7D /* virtual-server-icon-3.png */; };
 		9B58320B1E7422DB009D5B7D /* http.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B58320A1E7422DB009D5B7D /* http.png */; };
 		9B5832111E742632009D5B7D /* kcptun_1.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B5832101E742632009D5B7D /* kcptun_1.png */; };
-		9B6BF9521E27B23F0061B9A7 /* LaunchHelper.app in CopyFiles */ = {isa = PBXBuildFile; fileRef = 9B6BF9501E27B1F20061B9A7 /* LaunchHelper.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		9B6BF9541E27B2570061B9A7 /* ServiceManagement.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B6BF9531E27B2570061B9A7 /* ServiceManagement.framework */; };
 		9B86459D1E7C2CAD00A84029 /* ProxyInterfacesViewCtrl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B86459C1E7C2CAD00A84029 /* ProxyInterfacesViewCtrl.swift */; };
 		9B938D991E864B38005F5636 /* menu_g_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B938D931E864B38005F5636 /* menu_g_icon.png */; };
@@ -61,6 +60,7 @@
 		9B9CBCAF1E263B1600FC61AA /* libpcre.1.dylib in Resources */ = {isa = PBXBuildFile; fileRef = 9B9CBCAD1E263A6600FC61AA /* libpcre.1.dylib */; };
 		9B9CBCB41E26453C00FC61AA /* start_kcptun.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9B9CBCB01E2644DC00FC61AA /* start_kcptun.sh */; };
 		9B9CBCB51E26453C00FC61AA /* stop_kcptun.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9B9CBCB11E26450D00FC61AA /* stop_kcptun.sh */; };
+		9B9F13A71E8A28B300DE4794 /* LaunchHelper.app in CopyFiles */ = {isa = PBXBuildFile; fileRef = 9B9F13A61E8A282D00DE4794 /* LaunchHelper.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		9BA04B231D23D5A5005AAD7F /* ProxyConfTool.m in Sources */ = {isa = PBXBuildFile; fileRef = 9BA04B221D23D5A5005AAD7F /* ProxyConfTool.m */; };
 		9BAFE2E21E83ED7F00F71CCE /* PreferencesWinController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9BAFE2E41E83ED7F00F71CCE /* PreferencesWinController.xib */; };
 		9BB706A71D1B982300551F0E /* SWBApplication.m in Sources */ = {isa = PBXBuildFile; fileRef = 9BB706A51D1B982300551F0E /* SWBApplication.m */; };
@@ -99,11 +99,11 @@
 			remoteGlobalIDString = 9B3FFF431D09CD3B0019A709;
 			remoteInfo = proxy_conf_helper;
 		};
-		9B6BF94F1E27B1F20061B9A7 /* PBXContainerItemProxy */ = {
+		9B9F13A51E8A282D00DE4794 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 9B6BF94B1E27B1F10061B9A7 /* LaunchHelper.xcodeproj */;
+			containerPortal = 9B9F13A11E8A282C00DE4794 /* LaunchHelper.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 9B6BF93B1E27B1F10061B9A7;
+			remoteGlobalIDString = 9B9F138D1E8A282C00DE4794;
 			remoteInfo = LaunchHelper;
 		};
 /* End PBXContainerItemProxy section */
@@ -124,7 +124,7 @@
 			dstPath = Contents/Library/LoginItems;
 			dstSubfolderSpec = 1;
 			files = (
-				9B6BF9521E27B23F0061B9A7 /* LaunchHelper.app in CopyFiles */,
+				9B9F13A71E8A28B300DE4794 /* LaunchHelper.app in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -194,7 +194,6 @@
 		9B5832061E7421B2009D5B7D /* virtual-server-icon-3.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "virtual-server-icon-3.png"; sourceTree = "<group>"; };
 		9B58320A1E7422DB009D5B7D /* http.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = http.png; sourceTree = "<group>"; };
 		9B5832101E742632009D5B7D /* kcptun_1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = kcptun_1.png; sourceTree = "<group>"; };
-		9B6BF94B1E27B1F10061B9A7 /* LaunchHelper.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = LaunchHelper.xcodeproj; path = LaunchHelper/LaunchHelper.xcodeproj; sourceTree = "<group>"; };
 		9B6BF9531E27B2570061B9A7 /* ServiceManagement.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ServiceManagement.framework; path = System/Library/Frameworks/ServiceManagement.framework; sourceTree = SDKROOT; };
 		9B86459C1E7C2CAD00A84029 /* ProxyInterfacesViewCtrl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ProxyInterfacesViewCtrl.swift; sourceTree = "<group>"; };
 		9B938D931E864B38005F5636 /* menu_g_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = menu_g_icon.png; sourceTree = "<group>"; };
@@ -209,6 +208,7 @@
 		9B9CBCAD1E263A6600FC61AA /* libpcre.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libpcre.1.dylib; sourceTree = "<group>"; };
 		9B9CBCB01E2644DC00FC61AA /* start_kcptun.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = start_kcptun.sh; sourceTree = "<group>"; };
 		9B9CBCB11E26450D00FC61AA /* stop_kcptun.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = stop_kcptun.sh; sourceTree = "<group>"; };
+		9B9F13A11E8A282C00DE4794 /* LaunchHelper.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = LaunchHelper.xcodeproj; path = LaunchHelper/LaunchHelper.xcodeproj; sourceTree = "<group>"; };
 		9BA04B211D23D5A5005AAD7F /* ProxyConfTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ProxyConfTool.h; sourceTree = "<group>"; };
 		9BA04B221D23D5A5005AAD7F /* ProxyConfTool.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ProxyConfTool.m; sourceTree = "<group>"; };
 		9BAFE2E31E83ED7F00F71CCE /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/PreferencesWinController.xib; sourceTree = "<group>"; };
@@ -332,8 +332,8 @@
 			isa = PBXGroup;
 			children = (
 				9B5831FA1E73098F009D5B7D /* README.md */,
-				9B6BF94B1E27B1F10061B9A7 /* LaunchHelper.xcodeproj */,
 				9B172A601D0ADA5B00B87B9A /* genstrings.py */,
+				9B9F13A11E8A282C00DE4794 /* LaunchHelper.xcodeproj */,
 				9B0BFFE71D0460A70040E62B /* ShadowsocksX-NG */,
 				9B0BFFF71D0460A70040E62B /* ShadowsocksX-NGTests */,
 				9B3FFF451D09CD3B0019A709 /* proxy_conf_helper */,
@@ -424,10 +424,10 @@
 			path = proxy_conf_helper;
 			sourceTree = "<group>";
 		};
-		9B6BF94C1E27B1F10061B9A7 /* Products */ = {
+		9B9F13A21E8A282C00DE4794 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				9B6BF9501E27B1F20061B9A7 /* LaunchHelper.app */,
+				9B9F13A61E8A282D00DE4794 /* LaunchHelper.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -549,8 +549,8 @@
 			projectDirPath = "";
 			projectReferences = (
 				{
-					ProductGroup = 9B6BF94C1E27B1F10061B9A7 /* Products */;
-					ProjectRef = 9B6BF94B1E27B1F10061B9A7 /* LaunchHelper.xcodeproj */;
+					ProductGroup = 9B9F13A21E8A282C00DE4794 /* Products */;
+					ProjectRef = 9B9F13A11E8A282C00DE4794 /* LaunchHelper.xcodeproj */;
 				},
 			);
 			projectRoot = "";
@@ -563,11 +563,11 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		9B6BF9501E27B1F20061B9A7 /* LaunchHelper.app */ = {
+		9B9F13A61E8A282D00DE4794 /* LaunchHelper.app */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.application;
 			path = LaunchHelper.app;
-			remoteRef = 9B6BF94F1E27B1F20061B9A7 /* PBXContainerItemProxy */;
+			remoteRef = 9B9F13A51E8A282D00DE4794 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */
