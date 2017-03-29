@@ -24,7 +24,7 @@ Then I will rewrite the GUI code in Swift.
 
 ### Building
 
-- XCode 8.2.1+
+- XCode 8.3+
 - cocoapod 1.2+
 
 ## Download
@@ -33,7 +33,7 @@ From [here](https://github.com/shadowsocks/ShadowsocksX-NG/releases/)
 
 ## Features
 
-- Use ss-local from shadowsocks-libev 2.5.6
+- Use ss-local from shadowsocks-libev 3.0.5
 - Could Update PAC by download GFW List from GitHub.
 - Show QRCode for current server profile.
 - Scan QRCode from screen.
@@ -41,7 +41,7 @@ From [here](https://github.com/shadowsocks/ShadowsocksX-NG/releases/)
 - User rules for PAC.
 - Support OTA
 - HTTP Proxy by [privoxy](http://www.privoxy.org/)
-- Over [kcptun](https://github.com/xtaci/kcptun)
+- Over [kcptun](https://github.com/xtaci/kcptun). Version 20170322
 - Export/Import configure file.
 - An advanced preferences panel to configure:
 	- Local socks5 listen address.

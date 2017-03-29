@@ -83,8 +83,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             ])
         
         statusItem = NSStatusBar.system().statusItem(withLength: AppDelegate.StatusItemIconWidth)
-        let image = NSImage(named: "menu_icon")
-        image?.isTemplate = true
+        let image : NSImage = NSImage(named: "menu_icon")!
+        image.isTemplate = true
         statusItem.image = image
         statusItem.menu = statusMenu
         
@@ -419,9 +419,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                         statusItem.image = NSImage(named: "menu_m_icon")
                 default: break
                 }
+                statusItem.image?.isTemplate = true
             }
         } else {
             statusItem.image = NSImage(named: "menu_icon_disabled")
+            statusItem.image?.isTemplate = true
         }
     }
     
@@ -439,6 +441,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             let image = NSImage(named: "menu_icon_disabled")
             statusItem.image = image
         }
+        statusItem.image?.isTemplate = true
+        
         updateStatusMenuImage()
     }
     
