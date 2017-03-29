@@ -20,6 +20,8 @@ class KcptunProfile: NSObject, NSCopying {
     var parityshard: uint = 3
     var mtu: uint = 1350
     var arguments: String = ""
+    var sndwnd: uint = 128  // 128 is default, but 256 is good
+    var rcvwnd: uint = 512  // 512 is default, but 2048 is good
     
     
     public func copy(with zone: NSZone? = nil) -> Any {
@@ -82,6 +84,8 @@ class KcptunProfile: NSObject, NSCopying {
                                          "parityshard": NSNumber(value: self.parityshard),
                                          "mtu": NSNumber(value: self.mtu),
                                          "conn": NSNumber(value: connNum),
+                                         "rcvwnd": NSNumber(value: rcvwnd),
+                                         "sndwnd": NSNumber(value: sndwnd),
                                          ]
         return conf
     }
