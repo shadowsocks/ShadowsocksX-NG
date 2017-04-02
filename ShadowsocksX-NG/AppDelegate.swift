@@ -547,49 +547,45 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     }
     
     func updateStatusItemUI() {
+        var image = NSImage()
         let defaults = UserDefaults.standard
         let mode = defaults.string(forKey: "ShadowsocksRunningMode")
         if mode == "auto" {
-            statusItem?.title = "Auto".localized
+            image = NSImage(named: "menu_icon_pac")!
+            //statusItem?.title = "Auto".localized
         } else if mode == "global" {
-            statusItem?.title = "Global".localized
+            //statusItem?.title = "Global".localized
+            image = NSImage(named: "menu_icon_global")!
         } else if mode == "manual" {
-            statusItem?.title = "Manual".localized
+            image = NSImage(named: "menu_icon_manual")!
+            //statusItem?.title = "Manual".localized
         }
         let titleWidth:CGFloat = 0//statusItem?.title!.size(withAttributes: [NSFontAttributeName: statusItem?.button!.font!]).width//这里不包含IP白名单模式等等，需要重新调整//PS还是给上游加上白名单模式？
         let imageWidth:CGFloat = 22
         statusItem?.length = titleWidth + imageWidth
+        image.isTemplate = true
+        statusItem!.image = image
     }
     
     func updateMainMenu() {
         let defaults = UserDefaults.standard
         let isOn = defaults.bool(forKey: "ShadowsocksOn")
+        var image = NSImage()
         if isOn {
             runningStatusMenuItem.title = "Shadowsocks: On".localized
             toggleRunningMenuItem.title = "Turn Shadowsocks Off".localized
-            var image = NSImage(named: "menu_icon")
-            image?.isTemplate = true
-//            if SystemThemeChangeHelper.isCurrentDark() {
-//                image = NSImage(named: "menu_icon_dark_mode")
-//            }
-            
-//            statusItemView.setIcon(image!)
-            statusItem!.image = image
+            image = NSImage(named: "menu_icon")!
         } else {
             runningStatusMenuItem.title = "Shadowsocks: Off".localized
             toggleRunningMenuItem.title = "Turn Shadowsocks On".localized
-            var image = NSImage(named: "menu_icon_disabled")
-//            if SystemThemeChangeHelper.isCurrentDark() {
-//                image = NSImage(named: "menu_icon_disabled_dark_mode")
-//            }
-            image?.isTemplate = true
-            statusItem!.image = image
-//            statusItemView.setIcon(image!)
+            image = NSImage(named: "menu_icon_disabled")!
         }
-        
+        image.isTemplate = true
+        statusItem!.image = image
         ShowNetworkSpeedItem.state          = defaults.bool(forKey: "enable_showSpeed") ? 1 : 0
         connectAtLaunchMenuItem.state       = defaults.bool(forKey: "ConnectAtLaunch")  ? 1 : 0
         checkUpdateAtLaunchMenuItem.state   = defaults.bool(forKey: "AutoCheckUpdate")  ? 1 : 0
+        updateStatusItemUI()
     }
     
     func updateServersMenu() {
