@@ -15,7 +15,7 @@ class ServerProfile: NSObject, NSCopying {
 
     var serverHost: String = ""
     var serverPort: uint16 = 8379
-    var method:String = "aes-128-cfb"
+    var method:String = "aes-128-gcm"
     var password:String = ""
     var remark:String = ""
     var ota: Bool = false // onetime authentication
