@@ -501,46 +501,28 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         }
 
         serversMenuItem.title = serverMenuText
-
+        autoModeMenuItem.state = 0
+        globalModeMenuItem.state = 0
+        manualModeMenuItem.state = 0
+        whiteListModeMenuItem.state = 0
+        whiteListDomainMenuItem.state = 0
+        whiteListIPMenuItem.state = 0
         if mode == "auto" {
             proxyMenuItem.title = "Proxy - Auto By PAC".localized
             autoModeMenuItem.state = 1
-            globalModeMenuItem.state = 0
-            manualModeMenuItem.state = 0
-            whiteListModeMenuItem.state = 0
-            whiteListDomainMenuItem.state = 0
-            whiteListIPMenuItem.state = 0
         } else if mode == "global" {
             proxyMenuItem.title = "Proxy - Global".localized
-            autoModeMenuItem.state = 0
             globalModeMenuItem.state = 1
-            manualModeMenuItem.state = 0
-            whiteListModeMenuItem.state = 0
-            whiteListDomainMenuItem.state = 0
-            whiteListIPMenuItem.state = 0
         } else if mode == "manual" {
             proxyMenuItem.title = "Proxy - Manual".localized
-            autoModeMenuItem.state = 0
-            globalModeMenuItem.state = 0
             manualModeMenuItem.state = 1
-            whiteListModeMenuItem.state = 0
-            whiteListDomainMenuItem.state = 0
-            whiteListIPMenuItem.state = 0
         } else if mode == "whiteListDomain" {
             proxyMenuItem.title = "Proxy - White List Domain".localized
-            autoModeMenuItem.state = 0
-            globalModeMenuItem.state = 0
-            manualModeMenuItem.state = 0
             whiteListModeMenuItem.state = 1
             whiteListDomainMenuItem.state = 1
-            whiteListIPMenuItem.state = 0
         } else if mode == "whiteListIP" {
             proxyMenuItem.title = "Proxy - White List IP".localized
-            autoModeMenuItem.state = 0
-            globalModeMenuItem.state = 0
-            manualModeMenuItem.state = 0
             whiteListModeMenuItem.state = 1
-            whiteListDomainMenuItem.state = 0
             whiteListIPMenuItem.state = 1
         }
         updateStatusItemUI()
@@ -550,6 +532,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         var image = NSImage()
         let defaults = UserDefaults.standard
         let mode = defaults.string(forKey: "ShadowsocksRunningMode")
+        if !defaults.bool(forKey: "ShadowsocksOn") {
+            return
+        }
         if mode == "auto" {
             image = NSImage(named: "menu_icon_pac")!
             //statusItem?.title = "Auto".localized
