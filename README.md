@@ -63,7 +63,7 @@ Then you could configure your apps to use socks5 proxy manual.
 
 ## Contributing 
 
-[![gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/ShadowsocksX-NG/Lobby)
+[![gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/ShadowsocksX-NG/Lobby)
 
 Contributions must be available on a separately named branch based on the latest version of the main branch develop.
 
