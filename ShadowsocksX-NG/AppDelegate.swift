@@ -562,8 +562,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         toastWindowCtrl = ToastWindowController(windowNibName: "ToastWindowController")
         toastWindowCtrl.message = message
         toastWindowCtrl.showWindow(self)
-        NSApp.activate(ignoringOtherApps: true)
-        toastWindowCtrl.window?.makeKeyAndOrderFront(self)
+        //NSApp.activate(ignoringOtherApps: true)
+        //toastWindowCtrl.window?.makeKeyAndOrderFront(self)
         toastWindowCtrl.fadeInHud()
     }
 }
