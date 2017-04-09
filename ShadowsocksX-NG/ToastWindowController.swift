@@ -34,10 +34,11 @@ class ToastWindowController: NSWindowController {
         if let win = self.window {
             win.isOpaque = false
             win.backgroundColor = .clear
-            win.level = Int(CGWindowLevelForKey(.utilityWindow)) + 1000
             win.styleMask = .borderless
             win.hidesOnDeactivate = false
             win.collectionBehavior = .canJoinAllSpaces
+            win.level = Int(CGWindowLevelForKey(.floatingWindow))
+            win.orderFrontRegardless()
         }
 
         let viewLayer: CALayer = CALayer()
@@ -83,8 +84,6 @@ class ToastWindowController: NSWindowController {
 
         fadingOut = false
 
-        self.window?.orderFrontRegardless()
-
         CATransaction.begin()
         CATransaction.setAnimationDuration(kHudFadeInDuration)
         CATransaction.setCompletionBlock { self.didFadeIn() }
@@ -113,7 +112,7 @@ class ToastWindowController: NSWindowController {
 
     func didFadeOut() -> Void {
         if fadingOut {
-            self.window?.orderOut(nil)
+            self.window?.orderOut(self)
         }
         fadingOut = false
     }
