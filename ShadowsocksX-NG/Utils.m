@@ -88,6 +88,15 @@ NSString* decode64(NSString* str){
     return decodeStr;
 }
 
+NSString* encode64(NSString* str){
+    NSData *data = [str dataUsingEncoding:NSUTF8StringEncoding];
+    NSString *stringBase64 = [data base64EncodedStringWithOptions: NSDataBase64EncodingEndLineWithCarriageReturn];
+    stringBase64 = [stringBase64 stringByReplacingOccurrencesOfString:@"+" withString:@"-"];
+    stringBase64 = [stringBase64 stringByReplacingOccurrencesOfString:@"/" withString:@"_"];
+    stringBase64 = [stringBase64 stringByReplacingOccurrencesOfString:@"=" withString:@""];
+    return stringBase64;
+}
+
 // 解析SS URL，如果成功则返回一个与ServerProfile类兼容的dict
 // 或SSR URL，ServerProfile类已经默认添加SSR参数，默认放空，如果URL为SSR://则改变解析方法
 // ss:// + base64(method:password@domain:port)
@@ -242,3 +251,7 @@ NSDictionary<NSString *, id>* ParseSSURL(NSURL* url) {
     }
     return nil;
 }
+
+//NSDictionary<NSString *, id>* ParseSSRURL(NSURL* url) {
+//    
+//}

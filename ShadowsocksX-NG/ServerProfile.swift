@@ -168,23 +168,14 @@ class ServerProfile: NSObject {
             let firstParts = "\(serverHost):\(serverPort):\(ssrProtocol):\(method):\(ssrObfs):"
             let secondParts = "\(password)"
             // ssr:// + base64(abc.xyz:12345:auth_sha1_v2:rc4-md5:tls1.2_ticket_auth:{base64(password)}/?obfsparam={base64(混淆参数(网址))}&protoparam={base64(混淆协议)}&remarks={base64(节点名称)}&group={base64(分组名)})
-            let base64PasswordString = secondParts.data(using: String.Encoding.utf8)?
-                .base64EncodedString(options: NSData.Base64EncodingOptions())
-            
-            let base64ssrObfsParamString = ssrObfsParam.data(using: String.Encoding.utf8)?
-                .base64EncodedString(options: NSData.Base64EncodingOptions())
-            
-            let base64ssrProtocolParamString = ssrProtocolParam.data(using: String.Encoding.utf8)?
-                .base64EncodedString(options: NSData.Base64EncodingOptions())
-          
-            let base64RemarkString = remark.data(using: String.Encoding.utf8)?
-                .base64EncodedString(options: NSData.Base64EncodingOptions())
-            
-            let base64GroupString = ssrGroup.data(using: String.Encoding.utf8)?.base64EncodedString(options:  NSData.Base64EncodingOptions())
+            let base64PasswordString = encode64(secondParts)
+            let base64ssrObfsParamString = encode64(ssrObfsParam)
+            let base64ssrProtocolParamString = encode64(ssrProtocolParam)
+            let base64RemarkString = encode64(remark)
+            let base64GroupString = encode64(ssrGroup)
             
             var s = firstParts + base64PasswordString! + "/?" + "obfsparam=" + base64ssrObfsParamString! + "&protoparam=" + base64ssrProtocolParamString! + "&remarks=" + base64RemarkString! + "&group=" + base64GroupString!
-            s = (s.data(using: String.Encoding.utf8)?
-                .base64EncodedString(options: NSData.Base64EncodingOptions()))!
+            s = encode64(s)
             return Foundation.URL(string: "ssr://\(s)")
         }
         return nil
