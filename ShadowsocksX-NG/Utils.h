@@ -15,9 +15,9 @@ NSString* decode64(NSString* str);
 
 NSString* encode64(NSString* str);
 
-NSDictionary<NSString *, id>* ParseSSURL(NSURL* url);
+NSDictionary<NSString*, id>* ParseSSURL(NSURL* url);
 
-static NSDictionary<NSString *, id>* ParseSSRURL(NSURL* url);
+static NSDictionary<NSString*, id>* ParseSSRURL(NSURL* url);
 
 static NSDictionary<NSString*, id>* parseSSRLastParam(NSString* lastParam);
 

@@ -101,7 +101,7 @@ NSString* encode64(NSString* str){
 // 解析SS URL，如果成功则返回一个与ServerProfile类兼容的dict
 // 或SSR URL，ServerProfile类已经默认添加SSR参数，默认放空，如果URL为SSR://则改变解析方法
 // ss:// + base64(method:password@domain:port)
-NSDictionary<NSString *, id>* ParseSSURL(NSURL* url) {
+NSDictionary<NSString*, id>* ParseSSURL(NSURL* url) {
     if (!url.host) {
         return nil;
     }
@@ -166,7 +166,7 @@ NSDictionary<NSString *, id>* ParseSSURL(NSURL* url) {
     return nil;
 }
 
-static NSDictionary<NSString *, id>* ParseSSRURL(NSURL* url) {
+static NSDictionary<NSString*, id>* ParseSSRURL(NSURL* url) {
     NSString *urlString = [url absoluteString];
     NSString *firstParam;
     NSString *lastParam;
