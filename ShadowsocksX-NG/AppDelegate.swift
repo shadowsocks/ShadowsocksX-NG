@@ -300,15 +300,18 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         if let profile = ServerProfileManager.instance.getActiveProfile() {
             if profile.isValid() {
                 // Show window
-                if qrcodeWinCtrl != nil{
-                    qrcodeWinCtrl.close()
+                DispatchQueue.global().async {
+                    if self.qrcodeWinCtrl != nil{
+                        self.qrcodeWinCtrl.close()
+                    }
+                    self.qrcodeWinCtrl = SWBQRCodeWindowController(windowNibName: "SWBQRCodeWindowController")
+                    self.qrcodeWinCtrl.qrCode = profile.URL()!.absoluteString
+                    DispatchQueue.main.async {
+                        self.qrcodeWinCtrl.showWindow(self)
+                        NSApp.activate(ignoringOtherApps: true)
+                        self.qrcodeWinCtrl.window?.makeKeyAndOrderFront(nil)
+                    }
                 }
-                qrcodeWinCtrl = SWBQRCodeWindowController(windowNibName: "SWBQRCodeWindowController")
-                qrcodeWinCtrl.qrCode = profile.URL()!.absoluteString
-                qrcodeWinCtrl.showWindow(self)
-                NSApp.activate(ignoringOtherApps: true)
-                qrcodeWinCtrl.window?.makeKeyAndOrderFront(nil)
-                
                 return
             } else {
                 errMsg = "Current server profile is not valid.".localized
