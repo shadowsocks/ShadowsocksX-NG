@@ -17,4 +17,8 @@ NSString* encode64(NSString* str);
 
 NSDictionary<NSString *, id>* ParseSSURL(NSURL* url);
 
+static NSDictionary<NSString *, id>* ParseSSRURL(NSURL* url);
+
+static NSDictionary<NSString*, id>* parseSSRLastParam(NSString* lastParam);
+
 #endif /* QRCodeUtils_h */

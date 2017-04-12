@@ -8,6 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import <CoreImage/CoreImage.h>
+#import "Utils.h"
 
 void ScanQRCodeOnScreen() {
     /* displays[] Quartz display ID's */
@@ -159,82 +160,84 @@ NSDictionary<NSString *, id>* ParseSSURL(NSURL* url) {
         }
 
     }else if ([urlString hasPrefix:@"ssr://"]){
-        // ssr:// + base64(abc.xyz:12345:auth_sha1_v2:rc4-md5:tls1.2_ticket_auth:{base64(password)}/?obfsparam={base64(混淆参数(网址))}&protoparam={base64(混淆协议)}&remarks={base64(节点名称)}&group={base64(分组名)})
+        NSDictionary<NSString *, id> *ssrObj = ParseSSRURL(url);
+        return ssrObj;
+    }
+    return nil;
+}
 
-
-        urlString = [urlString stringByReplacingOccurrencesOfString:@"ssr://" withString:@"" options:NSAnchoredSearch range:NSMakeRange(0, urlString.length)];
-//        NSData *data = [[NSData alloc] initWithBase64EncodedString:urlString options:0];
-        NSString *decodedString = decode64(urlString);//[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-        if ([decodedString isEqual: @""]) {
-            [[NSNotificationCenter defaultCenter]
-             postNotificationName:@"NOTIFY_INVALIDE_QR"
-             object:nil
-             userInfo: @{ @"urls": @"配置二维码无效!",
-                          @"source": @"qrcode"
-                          }
-             ];
-        }else{
-            NSRange paramSplit = [decodedString rangeOfString:@"?"];
-            NSString *firstParam = [decodedString substringToIndex:paramSplit.location-1];
-            NSString *lastParam = [decodedString substringFromIndex:paramSplit.location];
-            lastParam = [lastParam substringFromIndex:1];
-            
-            NSArray *lastParamArray = [lastParam componentsSeparatedByString:@"&"];
-            NSMutableDictionary *parserLastParamDict = [[NSMutableDictionary alloc]init];
-            for (int i=0; i<lastParamArray.count; i++) {
-                NSString *toSplitString = lastParamArray[i];
-                NSRange lastParamSplit = [toSplitString rangeOfString:@"="];
-                if (lastParamSplit.location != NSNotFound) {
-                    NSString *key = [toSplitString substringToIndex:lastParamSplit.location];
-                    NSString *value = decode64([toSplitString substringFromIndex:lastParamSplit.location+1]);
-                    // [[NSString alloc] initWithData:[[NSData alloc] initWithBase64EncodedString:[[[toSplitString stringByReplacingOccurrencesOfString:@"-" withString:@"+"] stringByReplacingOccurrencesOfString:@"_" withString:@"/"]substringFromIndex:lastParamSplit.location+1] options:0]encoding:NSUTF8StringEncoding];
-                    //                            NSString *value =  [toSplitString substringFromIndex:lastParamSplit.location+1];
-                    [parserLastParamDict setValue: value forKey: key];
-                }
+static NSDictionary<NSString *, id>* ParseSSRURL(NSURL* url) {
+    NSString *urlString = [url absoluteString];
+    NSString *firstParam;
+    NSString *lastParam;
+    //if ([urlString hasPrefix:@"ssr://"]){
+    // ssr:// + base64(abc.xyz:12345:auth_sha1_v2:rc4-md5:tls1.2_ticket_auth:{base64(password)}/?obfsparam={base64(混淆参数(网址))}&protoparam={base64(混淆协议)}&remarks={base64(节点名称)}&group={base64(分组名)})
+    
+    urlString = [urlString stringByReplacingOccurrencesOfString:@"ssr://" withString:@"" options:NSAnchoredSearch range:NSMakeRange(0, urlString.length)];
+    NSString *decodedString = decode64(urlString);
+    NSLog(@"%@", decodedString);
+    if ([decodedString isEqual: @""]) {
+        [[NSNotificationCenter defaultCenter]
+         postNotificationName:@"NOTIFY_INVALIDE_QR"
+         object:nil
+         userInfo: @{ @"urls": @"配置二维码无效!",
+                      @"source": @"qrcode"
+                      }
+         ];
+    }else{
+        NSRange paramSplit = [decodedString rangeOfString:@"?"];
+        NSLog(@"%lu", (unsigned long)paramSplit.location);
+        
+        if (paramSplit.length == 0){
+            firstParam = decodedString;
+        } else {
+            firstParam = [decodedString substringToIndex:paramSplit.location-1];
+            lastParam = [decodedString substringFromIndex:paramSplit.location];
+        }
+   
+        NSDictionary *parserLastParamDict = parseSSRLastParam(lastParam);
+        
+        //后面已经parser完成，接下来需要解析到profile里面
+        //abc.xyz:12345:auth_sha1_v2:rc4-md5:tls1.2_ticket_auth:{base64(password)}
+        NSRange range = [firstParam rangeOfString:@":"];
+        NSString *ip = [firstParam substringToIndex:range.location];//第一个参数是域名
+        
+        firstParam = [firstParam substringFromIndex:range.location + range.length];
+        range = [firstParam rangeOfString:@":"];
+        NSString *port = [firstParam substringToIndex:range.location];//第二个参数是端口
+        
+        firstParam = [firstParam substringFromIndex:range.location + range.length];
+        range = [firstParam rangeOfString:@":"];
+        NSString *ssrProtocol = [firstParam substringToIndex:range.location];//第三个参数是协议
+        
+        firstParam = [firstParam substringFromIndex:range.location + range.length];
+        range = [firstParam rangeOfString:@":"];
+        NSString *encryption = [firstParam substringToIndex:range.location];//第四个参数是加密
+        
+        firstParam = [firstParam substringFromIndex:range.location + range.length];
+        range = [firstParam rangeOfString:@":"];
+        NSString *ssrObfs = [firstParam substringToIndex:range.location];//第五个参数是混淆协议
+        
+        firstParam = [firstParam substringFromIndex:range.location + range.length];
+        //                    range = [firstParam rangeOfString:@":"];
+        NSString *password = decode64(firstParam);// [[NSString alloc] initWithData:[[NSData alloc] initWithBase64EncodedString:firstParam options:0]encoding:NSUTF8StringEncoding];//第五个参数是base64密码
+        
+        NSString *ssrObfsParam = @"";
+        NSString *remarks = @"";
+        NSString *ssrProtocolParam = @"";
+        NSString *ssrGroup = @"";
+        for (NSString *key in parserLastParamDict) {
+            //                NSLog(@"key: %@ value: %@", key, parserLastParamDict[key]);
+            if ([key  isEqual: @"obfsparam"]) {
+                ssrObfsParam = parserLastParamDict[key];
+            } else if ([key  isEqual: @"remarks"]) {
+                remarks = parserLastParamDict[key];
+            } else if([key isEqual:@"protoparam"]){
+                ssrProtocolParam = parserLastParamDict[key];
+            } else if([key isEqual:@"group"]){
+                ssrGroup = parserLastParamDict[key];
             }
-//            NSLog(@"parserLastParamDict is %@",parserLastParamDict);
-            
-            //后面已经parser完成，接下来需要解析到profile里面
-            //abc.xyz:12345:auth_sha1_v2:rc4-md5:tls1.2_ticket_auth:{base64(password)}
-            NSRange range = [firstParam rangeOfString:@":"];
-            NSString *ip = [firstParam substringToIndex:range.location];//第一个参数是域名
-            
-            firstParam = [firstParam substringFromIndex:range.location + range.length];
-            range = [firstParam rangeOfString:@":"];
-            NSString *port = [firstParam substringToIndex:range.location];//第二个参数是端口
-            
-            firstParam = [firstParam substringFromIndex:range.location + range.length];
-            range = [firstParam rangeOfString:@":"];
-            NSString *ssrProtocol = [firstParam substringToIndex:range.location];//第三个参数是协议
-            
-            firstParam = [firstParam substringFromIndex:range.location + range.length];
-            range = [firstParam rangeOfString:@":"];
-            NSString *encryption = [firstParam substringToIndex:range.location];//第四个参数是加密
-            
-            firstParam = [firstParam substringFromIndex:range.location + range.length];
-            range = [firstParam rangeOfString:@":"];
-            NSString *ssrObfs = [firstParam substringToIndex:range.location];//第五个参数是混淆协议
-            
-            firstParam = [firstParam substringFromIndex:range.location + range.length];
-            //                    range = [firstParam rangeOfString:@":"];
-            NSString *password = decode64(firstParam);// [[NSString alloc] initWithData:[[NSData alloc] initWithBase64EncodedString:firstParam options:0]encoding:NSUTF8StringEncoding];//第五个参数是base64密码
-            
-            NSString *ssrObfsParam = @"";
-            NSString *remarks = @"";
-            NSString *ssrProtocolParam = @"";
-            NSString *ssrGroup = @"";
-            for (NSString *key in parserLastParamDict) {
-//                NSLog(@"key: %@ value: %@", key, parserLastParamDict[key]);
-                if ([key  isEqual: @"obfsparam"]) {
-                    ssrObfsParam = parserLastParamDict[key];
-                } else if ([key  isEqual: @"remarks"]) {
-                    remarks = parserLastParamDict[key];
-                } else if([key isEqual:@"protoparam"]){
-                    ssrProtocolParam = parserLastParamDict[key];
-                } else if([key isEqual:@"group"]){
-                    ssrGroup = parserLastParamDict[key];
-                }
-            }
+        }
         
         return @{@"ServerHost":ip,
                  @"ServerPort": @([port integerValue]),
@@ -247,11 +250,26 @@ NSDictionary<NSString *, id>* ParseSSURL(NSURL* url) {
                  @"Remark":remarks,
                  @"ssrGroup":ssrGroup,
                  };
-        }
     }
+    //}
     return nil;
 }
 
-//NSDictionary<NSString *, id>* ParseSSRURL(NSURL* url) {
-//    
-//}
+static NSDictionary<NSString*, id>* parseSSRLastParam(NSString* lastParam){
+    NSMutableDictionary *parserLastParamDict = [[NSMutableDictionary alloc]init];
+    if(lastParam.length == 0){
+        return nil;
+    }
+    lastParam = [lastParam substringFromIndex:1];
+    NSArray *lastParamArray = [lastParam componentsSeparatedByString:@"&"];
+    for (int i=0; i<lastParamArray.count; i++) {
+        NSString *toSplitString = lastParamArray[i];
+        NSRange lastParamSplit = [toSplitString rangeOfString:@"="];
+        if (lastParamSplit.location != NSNotFound) {
+            NSString *key = [toSplitString substringToIndex:lastParamSplit.location];
+            NSString *value = decode64([toSplitString substringFromIndex:lastParamSplit.location+1]);
+            [parserLastParamDict setValue: value forKey: key];
+        }
+    }
+    return parserLastParamDict;
+}
