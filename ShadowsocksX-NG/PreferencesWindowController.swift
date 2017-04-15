@@ -131,12 +131,14 @@ class PreferencesWindowController: NSWindowController
     
     @IBAction func removeProfile(_ sender: NSButton) {
         let index = Int(profilesTableView.selectedRowIndexes.first!)
+        var deleteCount = 0
         if index >= 0 {
             profilesTableView.beginUpdates()
-            for (_, _) in profilesTableView.selectedRowIndexes.enumerated() {
+            for (_, toDeleteIndex) in profilesTableView.selectedRowIndexes.enumerated() {
                 print(profileMgr.profiles.count)
-                profileMgr.profiles.remove(at: index)
-                profilesTableView.removeRows(at: IndexSet(integer: index), withAnimation: .effectFade)
+                profileMgr.profiles.remove(at: toDeleteIndex - deleteCount)
+                profilesTableView.removeRows(at: IndexSet(integer: toDeleteIndex - deleteCount), withAnimation: .effectFade)
+                deleteCount += 1
             }
             profilesTableView.endUpdates()
         }
