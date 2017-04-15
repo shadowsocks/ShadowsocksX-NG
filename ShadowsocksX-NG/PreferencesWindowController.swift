@@ -128,8 +128,8 @@ class PreferencesWindowController: NSWindowController
             }
             profilesTableView.endUpdates()
         }
-        self.profilesTableView.scrollRowToVisible(index)
-        self.profilesTableView.selectRowIndexes(IndexSet(integer: index), byExtendingSelection: false)
+        self.profilesTableView.scrollRowToVisible(index-1)
+        self.profilesTableView.selectRowIndexes(IndexSet(integer: index-1), byExtendingSelection: false)
         updateProfileBoxVisible()
     }
     
