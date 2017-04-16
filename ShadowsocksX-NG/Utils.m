@@ -98,10 +98,24 @@ NSString* encode64(NSString* str){
     return stringBase64;
 }
 
+NSDictionary<NSString*, id>* ParseAppURLSchemes(NSURL* url){
+    if(!url.host){
+        return nil;
+    }
+    NSString *urlString = [url absoluteString];
+    if ([urlString hasPrefix:@"ss://"]) {
+        return ParseSSURL(url);
+    }
+    if ([urlString hasPrefix:@"ssr://"]) {
+        return ParseSSRURL(url);
+    }
+    return nil;
+}
+
 // 解析SS URL，如果成功则返回一个与ServerProfile类兼容的dict
 // 或SSR URL，ServerProfile类已经默认添加SSR参数，默认放空，如果URL为SSR://则改变解析方法
 // ss:// + base64(method:password@domain:port)
-NSDictionary<NSString*, id>* ParseSSURL(NSURL* url) {
+static NSDictionary<NSString*, id>* ParseSSURL(NSURL* url) {
     if (!url.host) {
         return nil;
     }
@@ -159,9 +173,6 @@ NSDictionary<NSString*, id>* ParseSSURL(NSURL* url) {
                      };
         }
 
-    }else if ([urlString hasPrefix:@"ssr://"]){
-        NSDictionary<NSString *, id> *ssrObj = ParseSSRURL(url);
-        return ssrObj;
     }
     return nil;
 }

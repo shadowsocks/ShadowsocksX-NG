@@ -143,7 +143,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                 var isChanged = false
                 
                 for url in urls {
-                    let profielDict = ParseSSURL(url)
+                    let profielDict = ParseAppURLSchemes(url)//ParseSSURL(url)
                     if let profielDict = profielDict {
                         let profile = ServerProfile.fromDictionary(profielDict as [String : AnyObject])
                         mgr.profiles.append(profile)
