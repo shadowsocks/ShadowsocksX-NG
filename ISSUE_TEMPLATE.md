@@ -1,7 +1,7 @@
 **System and Shadowsocksx-NG version:**
 
-- macOS 10.12.4 beta (16E144f)
-- Shadowsocksx-NG 1.4
+- macOS 10.??.?? (16E????)
+- Shadowsocksx-NG 1.?
 
 **Expected behavior:**
 

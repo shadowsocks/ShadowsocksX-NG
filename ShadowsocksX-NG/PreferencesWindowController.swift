@@ -7,6 +7,8 @@
 //
 
 import Cocoa
+import RxCocoa
+import RxSwift
 
 class PreferencesWindowController: NSWindowController
     , NSTableViewDataSource, NSTableViewDelegate {
@@ -18,6 +20,7 @@ class PreferencesWindowController: NSWindowController
     
     @IBOutlet weak var hostTextField: NSTextField!
     @IBOutlet weak var portTextField: NSTextField!
+    @IBOutlet weak var kcptunPortTextField: NSTextField!
     @IBOutlet weak var methodTextField: NSComboBox!
     
     @IBOutlet weak var passwordTextField: NSTextField!
@@ -33,6 +36,7 @@ class PreferencesWindowController: NSWindowController
     @IBOutlet weak var kcptunDatashardTextField: NSTextField!
     @IBOutlet weak var kcptunParityshardTextField: NSTextField!
     @IBOutlet weak var kcptunMTUTextField: NSTextField!
+    @IBOutlet weak var kcptunArgumentsTextField: NSTextField!
     
     @IBOutlet weak var removeButton: NSButton!
     let tableViewDragType: String = "ss.server.profile.data"
@@ -41,34 +45,37 @@ class PreferencesWindowController: NSWindowController
     var profileMgr: ServerProfileManager!
     
     var editingProfile: ServerProfile!
+    
+    var enabledKcptunSubDisosable: Disposable?
 
 
     override func windowDidLoad() {
         super.windowDidLoad()
 
         // Implement this method to handle any initialization after your window controller's window has been loaded from its nib file.
+        
         defaults = UserDefaults.standard
         profileMgr = ServerProfileManager.instance
         
         methodTextField.addItems(withObjectValues: [
+            "aes-128-gcm",
+            "aes-192-gcm",
+            "aes-256-gcm",
             "aes-128-cfb",
             "aes-192-cfb",
             "aes-256-cfb",
-            "des-cfb",
-            "bf-cfb",
+            "aes-128-ctr",
+            "aes-192-ctr",
+            "aes-256-ctr",
             "camellia-128-cfb",
             "camellia-192-cfb",
             "camellia-256-cfb",
-            "idea-cfb",
-            "cast5-cfb",
-            "rc2-cfb",
-            "rc4-md5",
-            "seed-cfb",
+            "bf-cfb",
+            "chacha20-ietf-poly1305",
+            "salsa20",
             "chacha20",
             "chacha20-ietf",
-            "salsa20",
-            "rc4",
-            "table",
+            "rc4-md5",
             ])
         
         kcptunCryptComboBox.addItems(withObjectValues: [
@@ -145,7 +152,7 @@ class PreferencesWindowController: NSWindowController
 
         
         NotificationCenter.default
-            .post(name: Notification.Name(rawValue: NOTIFY_SERVER_PROFILES_CHANGED), object: nil)
+            .post(name: NOTIFY_SERVER_PROFILES_CHANGED, object: nil)
     }
     
     @IBAction func cancel(_ sender: NSButton) {
@@ -202,8 +209,20 @@ class PreferencesWindowController: NSWindowController
     
     func bindProfile(_ index:Int) {
         NSLog("bind profile \(index)")
+        if let dis = enabledKcptunSubDisosable {
+            dis.dispose()
+            enabledKcptunSubDisosable = Optional.none
+        }
         if index >= 0 && index < profileMgr.profiles.count {
             editingProfile = profileMgr.profiles[index]
+            
+            
+            enabledKcptunSubDisosable = editingProfile.rx.observeWeakly(Bool.self, "enabledKcptun")
+                .subscribe(onNext: { v in
+                    if let enabled = v {
+                        self.portTextField.isEnabled = !enabled
+                    }
+            })
             
             hostTextField.bind("value", to: editingProfile, withKeyPath: "serverHost"
                 , options: [NSContinuouslyUpdatesValueBindingOption: true])
@@ -226,6 +245,9 @@ class PreferencesWindowController: NSWindowController
             kcptunCheckBoxBtn.bind("value", to: editingProfile, withKeyPath: "enabledKcptun"
                 , options: [NSContinuouslyUpdatesValueBindingOption: true])
             
+            kcptunPortTextField.bind("value", to: editingProfile, withKeyPath: "serverPort"
+                , options: [NSContinuouslyUpdatesValueBindingOption: true])
+            
             kcptunProfileBox.bind("Hidden", to: editingProfile, withKeyPath: "enabledKcptun"
                 , options: [NSContinuouslyUpdatesValueBindingOption: false,
                             NSValueTransformerNameBindingOption: NSValueTransformerName.negateBooleanTransformerName])
@@ -246,6 +268,9 @@ class PreferencesWindowController: NSWindowController
                 , options: [NSContinuouslyUpdatesValueBindingOption: true])
             
             kcptunMTUTextField.bind("value", to: editingProfile, withKeyPath: "kcptunProfile.mtu"
+                , options: [NSContinuouslyUpdatesValueBindingOption: true])
+            
+            kcptunArgumentsTextField.bind("value", to: editingProfile, withKeyPath: "kcptunProfile.arguments"
                 , options: [NSContinuouslyUpdatesValueBindingOption: true])
             
         } else {

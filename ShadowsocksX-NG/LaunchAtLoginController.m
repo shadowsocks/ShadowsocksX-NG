@@ -44,23 +44,40 @@
 {
     self = [super init];
     if (self) {
-        _enabled = [[NSUserDefaults standardUserDefaults] boolForKey: @"LaunchAtLogin"];
+        _enabled = NO;
+        BOOL enabled = [[NSUserDefaults standardUserDefaults] boolForKey: @"LaunchAtLogin"];
+        [self setLaunchAtLogin:enabled];
     }
     return self;
 }
-
+    
 - (void) dealloc
 {
 }
 
++ (instancetype) shared {
+    static LaunchAtLoginController* ctrl = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        ctrl = [[self alloc]init];
+    });
+    return ctrl;
+}
+
 - (void) setLaunchAtLogin: (BOOL) enabled
 {
+    static NSString* bundleID = @"com.qiuyuzhou.ShadowsocksX-NG.LaunchHelper";
+    
     if (SMLoginItemSetEnabled(
-                              (__bridge CFStringRef)@"com.qiuyuzhou.ShadowsocksX-NG.LaunchHelper"
+                              (__bridge CFStringRef)bundleID
                               , enabled)) {
         _enabled = enabled;
         NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
         [defaults setBool: enabled forKey: @"LaunchAtLogin"];
+        
+        NSLog(@"Call SMLoginItemSetEnabled with [%hhd] success", enabled);
+    } else {
+        NSLog(@"Call SMLoginItemSetEnabled with [%hhd] failed", enabled);
     }
 }
 

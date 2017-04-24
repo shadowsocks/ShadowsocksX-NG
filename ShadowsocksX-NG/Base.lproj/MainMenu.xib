@@ -3,7 +3,6 @@
     <dependencies>
         <deployment identifier="macosx"/>
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="11762"/>
-        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="NSApplication">
@@ -19,19 +18,14 @@
                 <outlet property="copyHttpProxyExportCmdLineMenuItem" destination="lg6-To-GZA" id="VTb-he-dg4"/>
                 <outlet property="exportAllServerProfileItem" destination="6k0-gn-DQv" id="W2x-96-ISj"/>
                 <outlet property="globalModeMenuItem" destination="Mw3-Jm-eXA" id="ar5-Yx-3ze"/>
-                <outlet property="hudWindow" destination="QWV-F6-ac1" id="K6D-a4-oqE"/>
                 <outlet property="importBunchJsonFileItem" destination="T9g-gy-gvv" id="vua-jg-YWe"/>
-                <outlet property="isNameTextField" destination="rUN-Nq-HDb" id="ayK-aM-rSa"/>
-                <outlet property="lanchAtLoginMenuItem" destination="eUq-p7-ICK" id="q3D-7x-0db"/>
                 <outlet property="manualModeMenuItem" destination="8PR-gs-c5N" id="9qz-mU-5kt"/>
-                <outlet property="panelView" destination="rai-SH-9tZ" id="5aU-ld-rWb"/>
                 <outlet property="runningStatusMenuItem" destination="fzk-mE-CEV" id="Vwm-Rg-Ykn"/>
                 <outlet property="scanQRCodeMenuItem" destination="Qe6-bF-paT" id="XHa-pa-nCa"/>
                 <outlet property="serversMenuItem" destination="u5M-hQ-VSc" id="8gp-SY-Y4U"/>
                 <outlet property="serversPreferencesMenuItem" destination="M5r-E7-44f" id="voe-SX-k6a"/>
                 <outlet property="showBunchJsonExampleFileItem" destination="pdy-JE-50Q" id="xcZ-ep-mON"/>
                 <outlet property="showQRCodeMenuItem" destination="R6A-96-Zcb" id="XHz-pz-nCz"/>
-                <outlet property="showRunningModeMenuItem" destination="CCV-hX-fVA" id="AU2-hH-w8F"/>
                 <outlet property="statusMenu" destination="Hob-KD-bx9" id="clA-ZW-0pT"/>
                 <outlet property="toggleRunningMenuItem" destination="GSu-Tf-StS" id="XHw-pU-nCa"/>
             </connections>
@@ -49,10 +43,7 @@
                     </connections>
                 </menuItem>
                 <menuItem isSeparatorItem="YES" id="LXP-yK-yQu"/>
-                <menuItem title="Switch By ⌃ + ⌘ + P" enabled="NO" id="f0u-mr-pez">
-                    <modifierMask key="keyEquivalentModifierMask"/>
-                </menuItem>
-                <menuItem title="Auto Mode By PAC" id="r07-Gu-aEz">
+                <menuItem title="Proxy Auto Configure Mode" id="r07-Gu-aEz">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
                         <action selector="selectPACMode:" target="Voe-Tx-rLC" id="l36-cd-xl7"/>
@@ -103,13 +94,6 @@
                         </items>
                     </menu>
                 </menuItem>
-                <menuItem isSeparatorItem="YES" id="vwY-hQ-ZIz"/>
-                <menuItem title="Copy HTTP Proxy Shell Export Line" id="lg6-To-GZA">
-                    <modifierMask key="keyEquivalentModifierMask"/>
-                    <connections>
-                        <action selector="copyExportCommand:" target="Voe-Tx-rLC" id="2U4-3M-sAK"/>
-                    </connections>
-                </menuItem>
                 <menuItem title="Scan QR Code From Screen ..." id="Qe6-bF-paT">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
@@ -122,57 +106,29 @@
                         <action selector="showQRCodeForCurrentServer:" target="Voe-Tx-rLC" id="t45-Zk-cai"/>
                     </connections>
                 </menuItem>
-                <menuItem isSeparatorItem="YES" id="u7F-RD-aTA"/>
-                <menuItem title="Preferences" id="iVn-LD-Ynd">
+                <menuItem isSeparatorItem="YES" id="vwY-hQ-ZIz"/>
+                <menuItem title="Preferences..." keyEquivalent="," id="4CS-qD-zW5">
+                    <connections>
+                        <action selector="showAllInOnePreferences:" target="Voe-Tx-rLC" id="2of-nZ-atc"/>
+                    </connections>
+                </menuItem>
+                <menuItem title="Copy HTTP Proxy Shell Export Line" id="lg6-To-GZA">
                     <modifierMask key="keyEquivalentModifierMask"/>
-                    <menu key="submenu" title="Preferences" id="kXL-sZ-jT9">
-                        <items>
-                            <menuItem title="Update PAC from GFW List" id="TFc-Ec-duM">
-                                <modifierMask key="keyEquivalentModifierMask"/>
-                                <connections>
-                                    <action selector="updateGFWList:" target="Voe-Tx-rLC" id="Ztt-PS-F3T"/>
-                                </connections>
-                            </menuItem>
-                            <menuItem title="Edit User Rules For PAC..." id="rms-p0-CvB">
-                                <modifierMask key="keyEquivalentModifierMask"/>
-                                <connections>
-                                    <action selector="editUserRulesForPAC:" target="Voe-Tx-rLC" id="ZtK-2d-Pcl"/>
-                                </connections>
-                            </menuItem>
-                            <menuItem isSeparatorItem="YES" id="bMX-qn-Qwi"/>
-                            <menuItem title="Advanced Preferences ..." id="bZ3-fy-34d">
-                                <modifierMask key="keyEquivalentModifierMask"/>
-                                <connections>
-                                    <action selector="editAdvPreferences:" target="Voe-Tx-rLC" id="mEF-XS-HJE"/>
-                                </connections>
-                            </menuItem>
-                            <menuItem title="HTTP Proxy Preferences ..." id="uEp-Gz-cu0">
-                                <modifierMask key="keyEquivalentModifierMask"/>
-                                <connections>
-                                    <action selector="editHTTPPreferences:" target="Voe-Tx-rLC" id="tkC-e3-PH9"/>
-                                </connections>
-                            </menuItem>
-                            <menuItem title="Advanced PAC Proxy Preferences..." id="sbx-yz-3lO">
-                                <modifierMask key="keyEquivalentModifierMask"/>
-                                <connections>
-                                    <action selector="editProxyPreferences:" target="Voe-Tx-rLC" id="Jji-Ea-Sy8"/>
-                                </connections>
-                            </menuItem>
-                            <menuItem isSeparatorItem="YES" id="ZrT-7B-OmN"/>
-                            <menuItem title="Launch At Login" id="eUq-p7-ICK">
-                                <modifierMask key="keyEquivalentModifierMask"/>
-                                <connections>
-                                    <action selector="toggleLaunghAtLoginWithSender:" target="Voe-Tx-rLC" id="eFB-1Q-AOT"/>
-                                </connections>
-                            </menuItem>
-                            <menuItem title="Show Running Mode In Status Bar" id="CCV-hX-fVA">
-                                <modifierMask key="keyEquivalentModifierMask"/>
-                                <connections>
-                                    <action selector="showRunningMode:" target="Voe-Tx-rLC" id="PxO-ut-PEx"/>
-                                </connections>
-                            </menuItem>
-                        </items>
-                    </menu>
+                    <connections>
+                        <action selector="copyExportCommand:" target="Voe-Tx-rLC" id="2U4-3M-sAK"/>
+                    </connections>
+                </menuItem>
+                <menuItem title="Update PAC from GFW List" id="TFc-Ec-duM">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <connections>
+                        <action selector="updateGFWList:" target="Voe-Tx-rLC" id="Ztt-PS-F3T"/>
+                    </connections>
+                </menuItem>
+                <menuItem title="Edit User Rules For PAC..." id="rms-p0-CvB">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <connections>
+                        <action selector="editUserRulesForPAC:" target="Voe-Tx-rLC" id="ZtK-2d-Pcl"/>
+                    </connections>
                 </menuItem>
                 <menuItem isSeparatorItem="YES" id="DTJ-NF-Wxr"/>
                 <menuItem title="Show Logs..." id="Jfy-sf-Fhl">
@@ -202,42 +158,5 @@
             </items>
             <point key="canvasLocation" x="-2367" y="-139"/>
         </menu>
-        <menu id="2oY-e9-q1Z">
-            <items>
-                <menuItem title="Item 1" id="oR3-cT-RTC">
-                    <modifierMask key="keyEquivalentModifierMask"/>
-                </menuItem>
-                <menuItem title="Item 2" id="lay-XB-0oV">
-                    <modifierMask key="keyEquivalentModifierMask"/>
-                </menuItem>
-                <menuItem title="Item 3" id="m00-ru-6Po">
-                    <modifierMask key="keyEquivalentModifierMask"/>
-                </menuItem>
-            </items>
-            <point key="canvasLocation" x="-2113" y="-132"/>
-        </menu>
-        <window title="Window" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" hidesOnDeactivate="YES" oneShot="NO" showsToolbarButton="NO" visibleAtLaunch="NO" animationBehavior="default" id="QWV-F6-ac1" customClass="NSPanel">
-            <windowStyleMask key="styleMask" closable="YES" miniaturizable="YES" resizable="YES" utility="YES"/>
-            <rect key="contentRect" x="139" y="81" width="200" height="100"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1920" height="1057"/>
-            <value key="minSize" type="size" width="200" height="100"/>
-            <value key="maxSize" type="size" width="200" height="100"/>
-            <view key="contentView" id="rai-SH-9tZ" userLabel="Panel View">
-                <rect key="frame" x="0.0" y="0.0" width="200" height="100"/>
-                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                <subviews>
-                    <textField verticalHuggingPriority="750" fixedFrame="YES" preferredMaxLayoutWidth="162" translatesAutoresizingMaskIntoConstraints="NO" id="rUN-Nq-HDb" userLabel="Is Name">
-                        <rect key="frame" x="17" y="33" width="166" height="31"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
-                        <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="center" title="Label" usesSingleLineMode="YES" id="jcH-j9-Xl3">
-                            <font key="font" metaFont="system" size="24"/>
-                            <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                            <color key="backgroundColor" name="alternateSelectedControlColor" catalog="System" colorSpace="catalog"/>
-                        </textFieldCell>
-                    </textField>
-                </subviews>
-            </view>
-            <point key="canvasLocation" x="-2357" y="172"/>
-        </window>
     </objects>
 </document>

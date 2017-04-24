@@ -1,4 +1,7 @@
 
+/* Class = "NSMenuItem"; title = "Preferences..."; ObjectID = "4CS-qD-zW5"; */
+"4CS-qD-zW5.title" = "偏好设置...";
+
 /* Class = "NSMenuItem"; title = "应用用户自定规则到 PAC"; ObjectID = "6qf-cg-HXc"; */
 "6qf-cg-HXc.title" = "应用用户自定规则到 PAC";
 

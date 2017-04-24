@@ -19,6 +19,7 @@ class KcptunProfile: NSObject, NSCopying {
     var datashard: uint = 10
     var parityshard: uint = 3
     var mtu: uint = 1350
+    var arguments: String = ""
     
     
     public func copy(with zone: NSZone? = nil) -> Any {
@@ -42,6 +43,7 @@ class KcptunProfile: NSObject, NSCopying {
                                          "datashard": NSNumber(value: self.datashard),
                                          "parityshard": NSNumber(value: self.parityshard),
                                          "mtu": NSNumber(value: self.mtu),
+                                         "arguments": self.arguments as AnyObject,
                                          ]
         return conf
     }
@@ -56,6 +58,9 @@ class KcptunProfile: NSObject, NSCopying {
         profile.parityshard = uint((data["parityshard"] as! NSNumber).uintValue)
         if let v = data["mtu"] as? NSNumber {
             profile.mtu = uint(v.uintValue)
+        }
+        if let arguments = data["arguments"] as? String {
+            profile.arguments = arguments
         }
         
         return profile
@@ -90,6 +95,7 @@ class KcptunProfile: NSObject, NSCopying {
             URLQueryItem(name: "parityshard", value: "\(parityshard)"),
             URLQueryItem(name: "nocomp", value: nocomp.description),
             URLQueryItem(name: "mtu", value: "\(mtu)"),
+            URLQueryItem(name: "arguments", value: arguments),
         ]
     }
     
@@ -131,6 +137,10 @@ class KcptunProfile: NSObject, NSCopying {
                     if let vv = uint(v) {
                         mtu = vv
                     }
+                }
+            case "arguments":
+                if let v = item.value {
+                    arguments = v
                 }
             default:
                 continue

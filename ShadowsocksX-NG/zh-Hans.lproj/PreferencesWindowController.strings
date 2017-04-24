@@ -15,7 +15,7 @@
 "MiN-VE-FtC.title" = "备注:";
 
 /* Class = "NSButtonCell"; title = "Enable OTA"; ObjectID = "hRZ-Rp-I5e"; */
-"hRZ-Rp-I5e.title" = "启用 OTA";
+"hRZ-Rp-I5e.title" = "启用 OTA (被废弃)";
 
 /* Class = "NSButtonCell"; title = "Cacnel"; ObjectID = "j03-9E-uHW"; */
 "j03-9E-uHW.title" = "取消";
@@ -35,5 +35,5 @@
 /* Class = "NSButtonCell"; title = "OK"; ObjectID = "zPE-oD-PwK"; */
 "zPE-oD-PwK.title" = "确定";
 
-/* Class = "NSMenuItem"; title = "Duplicate"; ObjectID = "bl9-lq-u9V"; */
-"bl9-lq-u9V.title" = "复制";
+/* Class = "NSMenuItem"; title = "Clone"; ObjectID = "bl9-lq-u9V"; */
+"bl9-lq-u9V.title" = "克隆";

@@ -15,7 +15,7 @@ class ServerProfile: NSObject, NSCopying {
 
     var serverHost: String = ""
     var serverPort: uint16 = 8379
-    var method:String = "aes-128-cfb"
+    var method:String = "aes-128-gcm"
     var password:String = ""
     var remark:String = ""
     var ota: Bool = false // onetime authentication
@@ -73,7 +73,7 @@ class ServerProfile: NSObject, NSCopying {
 
         self.serverHost = host
         self.serverPort = UInt16(port)
-        self.method = method
+        self.method = method.lowercased()
         self.password = password
 
         remark = parsedUrl.queryItems?
@@ -162,7 +162,9 @@ class ServerProfile: NSObject, NSCopying {
         conf["local_port"] = NSNumber(value: UInt16(defaults.integer(forKey: "LocalSocks5.ListenPort")) as UInt16)
         conf["local_address"] = defaults.string(forKey: "LocalSocks5.ListenAddress") as AnyObject?
         conf["timeout"] = NSNumber(value: UInt32(defaults.integer(forKey: "LocalSocks5.Timeout")) as UInt32)
-        conf["auth"] = NSNumber(value: ota as Bool)
+        if ota {
+            conf["auth"] = NSNumber(value: ota as Bool)
+        }
         
         if enabledKcptun {
             let localHost = defaults.string(forKey: "Kcptun.LocalHost")
@@ -251,5 +253,13 @@ class ServerProfile: NSObject, NSCopying {
             return Foundation.URL(string: "ss://\(s)")
         }
         return nil
+    }
+    
+    func title() -> String {
+        if remark.isEmpty {
+            return "\(serverHost):\(serverPort)"
+        } else {
+            return "\(remark) (\(serverHost):\(serverPort))"
+        }
     }
 }
