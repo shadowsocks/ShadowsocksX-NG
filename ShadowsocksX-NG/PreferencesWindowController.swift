@@ -168,23 +168,16 @@ class PreferencesWindowController: NSWindowController
     }
     
     @IBAction func duplicate(_ sender: Any) {
-        var copyCount = 0
-        for (_, toDuplicateIndex) in profilesTableView.selectedRowIndexes.enumerated() {
-            print(profileMgr.profiles.count)
-            let profile = profileMgr.profiles[toDuplicateIndex + copyCount]
-            let duplicateProfile = profile.copy() as! ServerProfile
-            duplicateProfile.uuid = UUID().uuidString
-            profileMgr.profiles.insert(duplicateProfile, at:toDuplicateIndex + copyCount)
-            
-            profilesTableView.beginUpdates()
-            let index = IndexSet(integer: toDuplicateIndex + copyCount)
-            profilesTableView.insertRows(at: index, withAnimation: .effectFade)
-            self.profilesTableView.scrollRowToVisible(toDuplicateIndex + copyCount)
-            self.profilesTableView.selectRowIndexes(index, byExtendingSelection: false)
-            profilesTableView.endUpdates()
-            
-            copyCount += 1
-        }
+        let profile = profileMgr.profiles[profilesTableView.clickedRow]
+        let duplicateProfile = profile.copy() as! ServerProfile
+        duplicateProfile.uuid = UUID().uuidString
+        profileMgr.profiles.insert(duplicateProfile, at: profilesTableView.clickedRow+1)
+        profilesTableView.beginUpdates()
+        let index = IndexSet(integer: profileMgr.profiles.count-1)
+        profilesTableView.insertRows(at: index, withAnimation: .effectFade)
+        self.profilesTableView.scrollRowToVisible(profilesTableView.clickedRow+1)
+        self.profilesTableView.selectRowIndexes(index, byExtendingSelection: false)
+        profilesTableView.endUpdates()
         updateProfileBoxVisible()
     }
     
