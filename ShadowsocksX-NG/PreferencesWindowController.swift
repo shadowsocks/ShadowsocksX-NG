@@ -371,6 +371,11 @@ class PreferencesWindowController: NSWindowController
     func tableViewSelectionDidChange(_ notification: Notification) {
         if profilesTableView.selectedRow >= 0 {
             bindProfile(profilesTableView.selectedRow)
+            if (profilesTableView.selectedRowIndexes.count > 1){
+                duplicateProfileButton.isEnabled = false
+            } else {
+                duplicateProfileButton.isEnabled = true
+            }
         } else {
             if !profileMgr.profiles.isEmpty {
                 let index = IndexSet(integer: profileMgr.profiles.count - 1)
