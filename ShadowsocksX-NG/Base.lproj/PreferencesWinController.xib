@@ -190,7 +190,7 @@
                                         </textField>
                                         <button translatesAutoresizingMaskIntoConstraints="NO" id="tGd-pe-2xJ">
                                             <rect key="frame" x="240" y="108" width="222" height="18"/>
-                                            <buttonCell key="cell" type="check" title="Enable Udp Replay" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="R3v-iN-zu8">
+                                            <buttonCell key="cell" type="check" title="Enable UDP Relay" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="R3v-iN-zu8">
                                                 <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                                 <font key="font" metaFont="system"/>
                                             </buttonCell>
