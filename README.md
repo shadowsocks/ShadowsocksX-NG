@@ -39,7 +39,7 @@ From [here](https://github.com/shadowsocks/ShadowsocksX-NG/releases/)
 - Scan QRCode from screen.
 - Auto launch at login.
 - User rules for PAC.
-- Support OTA
+- Support for [AEAD Ciphers](https://shadowsocks.org/en/spec/AEAD-Ciphers.html)
 - HTTP Proxy by [privoxy](http://www.privoxy.org/)
 - Over [kcptun](https://github.com/xtaci/kcptun). Version 20170322
 - Export/Import configure file.
@@ -63,7 +63,7 @@ Then you could configure your apps to use socks5 proxy manual.
 
 ## Contributing 
 
-[![gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/ShadowsocksX-NG/Lobby)
+[![gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/ShadowsocksX-NG/Lobby)
 
 Contributions must be available on a separately named branch based on the latest version of the main branch develop.
 

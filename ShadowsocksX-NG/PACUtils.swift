@@ -77,7 +77,7 @@ func GeneratePACFile() -> Bool {
                 let userRuleStr = try String(contentsOfFile: PACUserRuleFilePath, encoding: String.Encoding.utf8)
                 let userRuleLines = userRuleStr.components(separatedBy: CharacterSet.newlines)
                 
-                lines += userRuleLines
+                lines = userRuleLines + lines
             } catch {
                 NSLog("Not found user-rule.txt")
             }
