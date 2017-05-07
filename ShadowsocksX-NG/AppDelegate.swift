@@ -515,6 +515,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         globalModeMenuItem.state = 0
         manualModeMenuItem.state = 0
         whiteListModeMenuItem.state = 0
+        ACLBackChinaMenuItem.state = 0
+        ACLAutoModeMenuItem.state = 0
+        ACLModeMenuItem.state = 0
         if mode == "auto" {
             autoModeMenuItem.state = 1
         } else if mode == "global" {
@@ -522,10 +525,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         } else if mode == "manual" {
             manualModeMenuItem.state = 1
         } else if mode == "whiteList" {
-            ACLModeMenuItem.state = 0
-            whiteListModeMenuItem.state = 0
-            ACLBackChinaMenuItem.state = 0
-            ACLAutoModeMenuItem.state = 0
             let aclMode = defaults.string(forKey: "ACLFileName")!
             switch aclMode {
             case "backchn.acl":
