@@ -15,9 +15,10 @@ let PACRulesDirPath = NSHomeDirectory() + "/.ShadowsocksX-NG/"
 let PACUserRuleFilePath = PACRulesDirPath + "user-rule.txt"
 let PACFilePath = PACRulesDirPath + "gfwlist.js"
 let GFWListFilePath = PACRulesDirPath + "gfwlist.txt"
-let WhiteListDomainPACFilePath = PACRulesDirPath + "whitelist.pac"
-let WhiteListIPPACFilePath = PACRulesDirPath + "whiteiplist.pac"
 
+let ACLWhiteListFilePath = PACRulesDirPath + "chn.acl"
+let ACLBackCHNFilePath = PACRulesDirPath + "backchn.acl"
+let ACLGFWListFilePath = PACRulesDirPath + "gfwlist.acl"
 
 // Because of LocalSocks5.ListenPort may be changed
 func SyncPac() {
@@ -35,7 +36,7 @@ func SyncPac() {
         needGenerate = true
     }
     
-    if !fileMgr.fileExists(atPath: WhiteListDomainPACFilePath) && !fileMgr.fileExists(atPath: WhiteListIPPACFilePath) {
+    if !fileMgr.fileExists(atPath: ACLWhiteListFilePath) && !fileMgr.fileExists(atPath: ACLBackCHNFilePath) {
         needGenerate = true
     }
     
@@ -71,17 +72,23 @@ func GeneratePACFile() -> Bool {
         try! fileMgr.copyItem(atPath: src!, toPath: PACUserRuleFilePath)
     }
     
-    // If whitelist.pac is not exsited, copy from bundle
-    if !fileMgr.fileExists(atPath: WhiteListDomainPACFilePath) {
-        let src = Bundle.main.path(forResource: "whitelist", ofType: "pac")
-        try! fileMgr.copyItem(atPath: src!, toPath: WhiteListDomainPACFilePath)
+    // If chn.acl is not exsited, copy from bundle
+    if !fileMgr.fileExists(atPath: ACLWhiteListFilePath) {
+        let src = Bundle.main.path(forResource: "chn", ofType: "acl")
+        try! fileMgr.copyItem(atPath: src!, toPath: ACLWhiteListFilePath)
     }
     
-    // If whitelistip.pac is not exsited, copy from bundle
-    if !fileMgr.fileExists(atPath: WhiteListIPPACFilePath) {
-        let src = Bundle.main.path(forResource: "whiteiplist", ofType: "pac")
-        try! fileMgr.copyItem(atPath: src!, toPath: WhiteListIPPACFilePath)
+    // If backchn is not exsited, copy from bundle
+    if !fileMgr.fileExists(atPath: ACLBackCHNFilePath) {
+        let src = Bundle.main.path(forResource: "backchn", ofType: "acl")
+        try! fileMgr.copyItem(atPath: src!, toPath: ACLBackCHNFilePath)
 
+    }
+    // If chn.acl
+    if !fileMgr.fileExists(atPath: ACLGFWListFilePath) {
+        let src = Bundle.main.path(forResource: "gfwlist", ofType: "acl")
+        try! fileMgr.copyItem(atPath: src!, toPath: ACLGFWListFilePath)
+        
     }
     
     let socks5Port = UserDefaults.standard.integer(forKey: "LocalSocks5.ListenPort")
@@ -157,9 +164,9 @@ func GeneratePACFile() -> Bool {
                 }
                 
                 try
-                    DomainPACStr.data(using: String.Encoding.utf8)?.write(to: URL(fileURLWithPath: WhiteListDomainPACFilePath), options: .atomic)
+                    DomainPACStr.data(using: String.Encoding.utf8)?.write(to: URL(fileURLWithPath: ACLWhiteListFilePath), options: .atomic)
                 try
-                    IPPACStr.data(using: String.Encoding.utf8)?.write(to: URL(fileURLWithPath: WhiteListIPPACFilePath), options: .atomic)
+                    IPPACStr.data(using: String.Encoding.utf8)?.write(to: URL(fileURLWithPath: ACLBackCHNFilePath), options: .atomic)
                 
                 return true
             } catch {
@@ -228,7 +235,7 @@ func UpdatePACFromWhiteList(){
             if response.result.isSuccess {
                 if let v = response.result.value {
                     do {
-                        try v.write(toFile: WhiteListDomainPACFilePath, atomically: true, encoding: String.Encoding.utf8)
+                        try v.write(toFile: ACLWhiteListFilePath, atomically: true, encoding: String.Encoding.utf8)
                         if GeneratePACFile() {
                             // Popup a user notification
                             let notification = NSUserNotification()
@@ -256,7 +263,7 @@ func UpdatePACFromWhiteList(){
             if response.result.isSuccess {
                 if let v = response.result.value {
                     do {
-                        try v.write(toFile:WhiteListIPPACFilePath, atomically: true, encoding: String.Encoding.utf8)
+                        try v.write(toFile:ACLBackCHNFilePath, atomically: true, encoding: String.Encoding.utf8)
                         if GeneratePACFile() {
                             // Popup a user notification
                             let notification = NSUserNotification()

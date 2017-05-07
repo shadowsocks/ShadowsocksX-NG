@@ -82,7 +82,7 @@
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <menu key="submenu" title="ACL Mode" id="tEB-59-fCx">
                         <items>
-                            <menuItem title="Auto" id="sDG-YV-yuQ">
+                            <menuItem title="ACL Auto" id="sDG-YV-yuQ">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
                                     <action selector="selectACLAutoMode:" target="Voe-Tx-rLC" id="0PY-wQ-9KI"/>

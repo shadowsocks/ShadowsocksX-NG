@@ -33,7 +33,8 @@ func generateSSLocalLauchAgentPlist() -> Bool {
     let logFilePath = NSHomeDirectory() + "/Library/Logs/ss-local.log"
     let launchAgentDirPath = NSHomeDirectory() + LAUNCH_AGENT_DIR
     let plistFilepath = launchAgentDirPath + LAUNCH_AGENT_CONF_SSLOCAL_NAME
-    var ACLPath = ""
+    var ACLFileName = ""
+    
     // Ensure launch agent directory is existed.
     let fileMgr = FileManager.default
     if !fileMgr.fileExists(atPath: launchAgentDirPath) {
@@ -45,7 +46,7 @@ func generateSSLocalLauchAgentPlist() -> Bool {
     let defaults = UserDefaults.standard
     let enableUdpRelay = defaults.bool(forKey: "LocalSocks5.EnableUDPRelay")
     let enableVerboseMode = defaults.bool(forKey: "LocalSocks5.EnableVerboseMode")
-    let enabelWhiteListMode = defaults.value(forKey: "ShadowsocksRunningMode") as! String
+    let enabelWhiteListMode = defaults.string(forKey: "ShadowsocksRunningMode")
     
     var arguments = [sslocalPath, "-c", "ss-local-config.json"]
     if enableUdpRelay {
@@ -54,8 +55,9 @@ func generateSSLocalLauchAgentPlist() -> Bool {
     if enableVerboseMode {
         arguments.append("-v")
     }
-    if String(describing: enabelWhiteListMode) == "whiteList" {
-        ACLPath = defaults.value(forKey: "ACLPath") as! String
+    if enabelWhiteListMode == "whiteList" {
+        ACLFileName = defaults.string(forKey: "ACLFileName")!
+        let ACLPath = NSHomeDirectory() + "/.ShadowsocksX-NG/" + ACLFileName
         arguments.append("--acl")
         arguments.append(ACLPath)
     }

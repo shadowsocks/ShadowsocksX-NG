@@ -88,7 +88,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             "LocalHTTPOn": true,
             "LocalHTTP.FollowGlobal": true,
             "AutoCheckUpdate": false,
-            "ACLPath": "chn.acl"
+            "ACLFileName": "chn.acl"
         ])
 
         setUpMenu(defaults.bool(forKey: "enable_showSpeed"))
@@ -238,7 +238,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                 ProxyConfHelper.disableProxy("hi")
             } else if mode == "whiteList" {
                 ProxyConfHelper.disableProxy("hi")
-                ProxyConfHelper.enableGlobalProxy()//新白名单基于GlobalMode
+                ProxyConfHelper.enableWhiteListProxy()//新白名单基于GlobalMode
             }
         } else {
             StopSSLocal()
@@ -367,21 +367,21 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     @IBAction func selectACLAutoMode(_ sender: NSMenuItem) {
         let defaults = UserDefaults.standard
         defaults.setValue("whiteList", forKey: "ShadowsocksRunningMode")
-        defaults.setValue("gfw.acl", forKey: "ACLPath")
+        defaults.setValue("gfw.acl", forKey: "ACLFileName")
         updateRunningModeMenu()
         applyConfig()
     }
     @IBAction func selectACLBackCHNMode(_ sender: NSMenuItem) {
         let defaults = UserDefaults.standard
         defaults.setValue("whiteList", forKey: "ShadowsocksRunningMode")
-        defaults.setValue("backchn.acl", forKey: "ACLPath")
+        defaults.setValue("backchn.acl", forKey: "ACLFileName")
         updateRunningModeMenu()
         applyConfig()
     }
     @IBAction func selectWhiteListMode(_ sender: NSMenuItem) {
         let defaults = UserDefaults.standard
         defaults.setValue("whiteList", forKey: "ShadowsocksRunningMode")
-        defaults.setValue("chn.acl", forKey: "ACLPath")
+        defaults.setValue("chn.acl", forKey: "ACLFileName")
         updateRunningModeMenu()
         applyConfig()
     }
@@ -526,15 +526,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             whiteListModeMenuItem.state = 0
             ACLBackChinaMenuItem.state = 0
             ACLAutoModeMenuItem.state = 0
-            let aclMode = defaults.value(forKey: "ACLPath") as! String
+            let aclMode = defaults.string(forKey: "ACLFileName")!
             switch aclMode {
             case "backchn.acl":
                 ACLModeMenuItem.state = 1
                 ACLBackChinaMenuItem.state = 1
+                ACLModeMenuItem.title = "Proxy Back China".localized
                 break
             case "gfw.acl":
                 ACLModeMenuItem.state = 1
                 ACLAutoModeMenuItem.state = 1
+                ACLModeMenuItem.title = "ACL Auto".localized
                 break
             default:
                 whiteListModeMenuItem.state = 1

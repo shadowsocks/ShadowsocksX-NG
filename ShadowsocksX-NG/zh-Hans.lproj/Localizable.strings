@@ -68,6 +68,19 @@
 
 "Turn Shadowsocks On" = "打开 Shadowsocks";
 
+
+"Check Updates" = "检查更新";
+
+"Check Updates At Launch" = "打开时检查更新";
+
+"Proxy Back China" = "代理大陆IP";
+
+"ACL Mode" = "ACL模式";
+
+"ACL Mode" = "ACL模式";
+
+"ACL Auto" = "ACL自动";
+
 /*
  * ./ShadowsocksX-NG/PreferencesWindowController.swift
  */
