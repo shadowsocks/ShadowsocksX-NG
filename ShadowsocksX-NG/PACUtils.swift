@@ -19,6 +19,8 @@ let GFWListFilePath = PACRulesDirPath + "gfwlist.txt"
 let ACLWhiteListFilePath = PACRulesDirPath + "chn.acl"
 let ACLBackCHNFilePath = PACRulesDirPath + "backchn.acl"
 let ACLGFWListFilePath = PACRulesDirPath + "gfwlist.acl"
+let WhiteListDomainPACFilePath = PACRulesDirPath + "whitelist.pac"
+let WhiteListIPPACFilePath = PACRulesDirPath + "whiteiplist.pac"
 
 // Because of LocalSocks5.ListenPort may be changed
 func SyncPac() {
@@ -164,9 +166,9 @@ func GeneratePACFile() -> Bool {
                 }
                 
                 try
-                    DomainPACStr.data(using: String.Encoding.utf8)?.write(to: URL(fileURLWithPath: ACLWhiteListFilePath), options: .atomic)
+                    DomainPACStr.data(using: String.Encoding.utf8)?.write(to: URL(fileURLWithPath: WhiteListDomainPACFilePath), options: .atomic)
                 try
-                    IPPACStr.data(using: String.Encoding.utf8)?.write(to: URL(fileURLWithPath: ACLBackCHNFilePath), options: .atomic)
+                    IPPACStr.data(using: String.Encoding.utf8)?.write(to: URL(fileURLWithPath: WhiteListIPPACFilePath), options: .atomic)
                 
                 return true
             } catch {
@@ -235,7 +237,7 @@ func UpdatePACFromWhiteList(){
             if response.result.isSuccess {
                 if let v = response.result.value {
                     do {
-                        try v.write(toFile: ACLWhiteListFilePath, atomically: true, encoding: String.Encoding.utf8)
+                        try v.write(toFile: WhiteListDomainPACFilePath, atomically: true, encoding: String.Encoding.utf8)
                         if GeneratePACFile() {
                             // Popup a user notification
                             let notification = NSUserNotification()
@@ -263,7 +265,7 @@ func UpdatePACFromWhiteList(){
             if response.result.isSuccess {
                 if let v = response.result.value {
                     do {
-                        try v.write(toFile:ACLBackCHNFilePath, atomically: true, encoding: String.Encoding.utf8)
+                        try v.write(toFile: WhiteListIPPACFilePath, atomically: true, encoding: String.Encoding.utf8)
                         if GeneratePACFile() {
                             // Popup a user notification
                             let notification = NSUserNotification()
