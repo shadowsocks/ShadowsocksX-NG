@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="11762" systemVersion="16E144f" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="12120" systemVersion="16F71b" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="11762"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="12120"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="NSApplication">
@@ -35,8 +35,6 @@
                 <outlet property="showQRCodeMenuItem" destination="R6A-96-Zcb" id="XHz-pz-nCz"/>
                 <outlet property="statusMenu" destination="Hob-KD-bx9" id="clA-ZW-0pT"/>
                 <outlet property="toggleRunningMenuItem" destination="GSu-Tf-StS" id="XHw-pU-nCa"/>
-                <outlet property="whiteListDomainMenuItem" destination="L27-aH-Wwl" id="h4b-aF-lyt"/>
-                <outlet property="whiteListIPMenuItem" destination="Xbu-Kq-BSR" id="D9i-Xg-6Gc"/>
                 <outlet property="whiteListModeMenuItem" destination="RvZ-Zn-29U" id="2v5-Bd-EDj"/>
             </connections>
         </customObject>
@@ -53,48 +51,34 @@
                     </connections>
                 </menuItem>
                 <menuItem isSeparatorItem="YES" id="LXP-yK-yQu"/>
-                <menuItem title="Proxy" id="diI-fB-Rss">
+                <menuItem title="Auto Mode By PAC" id="r07-Gu-aEz">
                     <modifierMask key="keyEquivalentModifierMask"/>
-                    <menu key="submenu" title="Proxy" id="YZp-bf-L40">
+                    <connections>
+                        <action selector="selectPACMode:" target="Voe-Tx-rLC" id="l36-cd-xl7"/>
+                    </connections>
+                </menuItem>
+                <menuItem title="White List Mode" id="RvZ-Zn-29U">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <connections>
+                        <action selector="selectWhiteListMode:" target="Voe-Tx-rLC" id="2Q1-PG-9Yu"/>
+                    </connections>
+                </menuItem>
+                <menuItem title="Global Mode" id="Mw3-Jm-eXA">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <connections>
+                        <action selector="selectGlobalMode:" target="Voe-Tx-rLC" id="7QH-HB-B2e"/>
+                    </connections>
+                </menuItem>
+                <menuItem title="Manual Mode" id="8PR-gs-c5N">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <connections>
+                        <action selector="selectManualMode:" target="Voe-Tx-rLC" id="Xxb-28-6fi"/>
+                    </connections>
+                </menuItem>
+                <menuItem title="Proxy Settings" id="diI-fB-Rss">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <menu key="submenu" title="Proxy Settings" id="YZp-bf-L40">
                         <items>
-                            <menuItem title="Auto Mode By PAC" id="r07-Gu-aEz">
-                                <modifierMask key="keyEquivalentModifierMask"/>
-                                <connections>
-                                    <action selector="selectPACMode:" target="Voe-Tx-rLC" id="l36-cd-xl7"/>
-                                </connections>
-                            </menuItem>
-                            <menuItem title="Global Mode" id="Mw3-Jm-eXA">
-                                <modifierMask key="keyEquivalentModifierMask"/>
-                                <connections>
-                                    <action selector="selectGlobalMode:" target="Voe-Tx-rLC" id="7QH-HB-B2e"/>
-                                </connections>
-                            </menuItem>
-                            <menuItem title="Manual Mode" id="8PR-gs-c5N">
-                                <modifierMask key="keyEquivalentModifierMask"/>
-                                <connections>
-                                    <action selector="selectManualMode:" target="Voe-Tx-rLC" id="Xxb-28-6fi"/>
-                                </connections>
-                            </menuItem>
-                            <menuItem title="White List Mode" id="RvZ-Zn-29U">
-                                <modifierMask key="keyEquivalentModifierMask"/>
-                                <menu key="submenu" title="White List Mode" id="nAe-c2-Q79">
-                                    <items>
-                                        <menuItem title="White List Domain" id="L27-aH-Wwl">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
-                                            <connections>
-                                                <action selector="selectWhiteDomainListMode:" target="Voe-Tx-rLC" id="Oge-mM-TtL"/>
-                                            </connections>
-                                        </menuItem>
-                                        <menuItem title="White List IP" id="Xbu-Kq-BSR">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
-                                            <connections>
-                                                <action selector="selectWhiteIPListMode:" target="Voe-Tx-rLC" id="Ahq-h9-jJP"/>
-                                            </connections>
-                                        </menuItem>
-                                    </items>
-                                </menu>
-                            </menuItem>
-                            <menuItem isSeparatorItem="YES" id="V92-VH-Agn"/>
                             <menuItem title="Update PAC from GFW List" id="TFc-Ec-duM">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
@@ -123,6 +107,7 @@
                         </items>
                     </menu>
                 </menuItem>
+                <menuItem isSeparatorItem="YES" id="WcX-Th-4eP"/>
                 <menuItem title="Servers" id="u5M-hQ-VSc">
                     <modifierMask key="keyEquivalentModifierMask" shift="YES"/>
                     <menu key="submenu" title="Servers" id="9Y1-db-3HK">

@@ -33,8 +33,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     @IBOutlet weak var globalModeMenuItem: NSMenuItem!
     @IBOutlet weak var manualModeMenuItem: NSMenuItem!
     @IBOutlet weak var whiteListModeMenuItem: NSMenuItem!
-    @IBOutlet weak var whiteListDomainMenuItem: NSMenuItem!
-    @IBOutlet weak var whiteListIPMenuItem: NSMenuItem!
+//    @IBOutlet weak var whiteListMenuItem: NSMenuItem!
+//    @IBOutlet weak var whiteListIPMenuItem: NSMenuItem!
     
     @IBOutlet weak var serversMenuItem: NSMenuItem!
     @IBOutlet var pingserverMenuItem: NSMenuItem!
@@ -86,7 +86,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             "LocalHTTP.ListenPort": NSNumber(value: 1087 as UInt16),
             "LocalHTTPOn": true,
             "LocalHTTP.FollowGlobal": true,
-            "AutoCheckUpdate": false
+            "AutoCheckUpdate": false,
+            "ACLPath": "chn.acl"
         ])
 
         setUpMenu(defaults.bool(forKey: "enable_showSpeed"))
@@ -234,12 +235,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             } else if mode == "manual" {
                 ProxyConfHelper.disableProxy("hi")
                 ProxyConfHelper.disableProxy("hi")
-            } else if mode == "whiteListDomain" {
+            } else if mode == "whiteList" {
                 ProxyConfHelper.disableProxy("hi")
-                ProxyConfHelper.enableWhiteDomainListProxy()
-            } else if mode == "whiteListIP" {
-                ProxyConfHelper.disableProxy("hi")
-                ProxyConfHelper.enableWhiteIPListProxy()
+                ProxyConfHelper.enableGlobalProxy()//新白名单基于GlobalMode
             }
         } else {
             StopSSLocal()
@@ -365,17 +363,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         updateRunningModeMenu()
         applyConfig()
     }
+    @IBAction func selectACLAutoMode(_ sender: NSMenuItem) {
     
-    @IBAction func selectWhiteDomainListMode(_ sender: NSMenuItem) {
-        let defaults = UserDefaults.standard
-        defaults.setValue("whiteListDomain", forKey: "ShadowsocksRunningMode")
-        updateRunningModeMenu()
-        applyConfig()
     }
-    
-    @IBAction func selectWhiteIPListMode(_ sender: NSMenuItem) {
+    @IBAction func selectACLWhiteListMode(_ sender: NSMenuItem) {
+        
+    }
+    @IBAction func selectWhiteListMode(_ sender: NSMenuItem) {
         let defaults = UserDefaults.standard
-        defaults.setValue("whiteListIP", forKey: "ShadowsocksRunningMode")
+        defaults.setValue("whiteList", forKey: "ShadowsocksRunningMode")
+        defaults.setValue("ACLPath", forKey: "chn.acl")
         updateRunningModeMenu()
         applyConfig()
     }
@@ -509,8 +506,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         globalModeMenuItem.state = 0
         manualModeMenuItem.state = 0
         whiteListModeMenuItem.state = 0
-        whiteListDomainMenuItem.state = 0
-        whiteListIPMenuItem.state = 0
         if mode == "auto" {
             proxyMenuItem.title = "Proxy - Auto By PAC".localized
             autoModeMenuItem.state = 1
@@ -520,14 +515,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         } else if mode == "manual" {
             proxyMenuItem.title = "Proxy - Manual".localized
             manualModeMenuItem.state = 1
-        } else if mode == "whiteListDomain" {
-            proxyMenuItem.title = "Proxy - White List Domain".localized
+        } else if mode == "whiteList" {
+            proxyMenuItem.title = "Proxy - White List".localized
             whiteListModeMenuItem.state = 1
-            whiteListDomainMenuItem.state = 1
-        } else if mode == "whiteListIP" {
-            proxyMenuItem.title = "Proxy - White List IP".localized
-            whiteListModeMenuItem.state = 1
-            whiteListIPMenuItem.state = 1
         }
         updateStatusItemUI()
     }
@@ -548,7 +538,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         } else if mode == "manual" {
             image = NSImage(named: "menu_icon_manual")!
             //statusItem?.title = "Manual".localized
-        } else if mode == "whiteListDomain" || mode == "whiteListIP" {
+        } else if mode == "whiteList" {
             image = NSImage(named: "menu_icon_white")!
         }
         let titleWidth:CGFloat = 0//statusItem?.title!.size(withAttributes: [NSFontAttributeName: statusItem?.button!.font!]).width//这里不包含IP白名单模式等等，需要重新调整//PS还是给上游加上白名单模式？

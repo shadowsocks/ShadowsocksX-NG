@@ -8,7 +8,7 @@
 
 import Foundation
 
-let SS_LOCAL_VERSION = "2.5.6.4.static"
+let SS_LOCAL_VERSION = "2.5.6.5.static"
 let PRIVOXY_VERSION = "3.0.26.static"
 let APP_SUPPORT_DIR = "/Library/Application Support/ShadowsocksX-NG/"
 let LAUNCH_AGENT_DIR = "/Library/LaunchAgents/"
@@ -33,7 +33,7 @@ func generateSSLocalLauchAgentPlist() -> Bool {
     let logFilePath = NSHomeDirectory() + "/Library/Logs/ss-local.log"
     let launchAgentDirPath = NSHomeDirectory() + LAUNCH_AGENT_DIR
     let plistFilepath = launchAgentDirPath + LAUNCH_AGENT_CONF_SSLOCAL_NAME
-    
+    var ACLPath = ""
     // Ensure launch agent directory is existed.
     let fileMgr = FileManager.default
     if !fileMgr.fileExists(atPath: launchAgentDirPath) {
@@ -45,6 +45,8 @@ func generateSSLocalLauchAgentPlist() -> Bool {
     let defaults = UserDefaults.standard
     let enableUdpRelay = defaults.bool(forKey: "LocalSocks5.EnableUDPRelay")
     let enableVerboseMode = defaults.bool(forKey: "LocalSocks5.EnableVerboseMode")
+    let enabelWhiteListMode = defaults.value(forKey: "ShadowsocksRunningMode") as! String
+    print(enabelWhiteListMode )
     
     var arguments = [sslocalPath, "-c", "ss-local-config.json"]
     if enableUdpRelay {
@@ -52,6 +54,11 @@ func generateSSLocalLauchAgentPlist() -> Bool {
     }
     if enableVerboseMode {
         arguments.append("-v")
+    }
+    if String(describing: enabelWhiteListMode) == "whiteList" {
+        ACLPath = defaults.value(forKey: "ACLPath") as! String
+        arguments.append("--acl")
+        arguments.append(ACLPath)
     }
     
     // For a complete listing of the keys, see the launchd.plist manual page.
@@ -161,8 +168,9 @@ func SyncSSLocal() {
     changed = changed || generateSSLocalLauchAgentPlist()
     let mgr = ServerProfileManager.instance
     if mgr.activeProfileId != nil {
-        changed = changed || writeSSLocalConfFile((mgr.getActiveProfile()?.toJsonConfig())!)
-        
+        if mgr.getActiveProfile() != nil {
+            changed = changed || writeSSLocalConfFile((mgr.getActiveProfile()?.toJsonConfig())!)
+        }
         let on = UserDefaults.standard.bool(forKey: "ShadowsocksOn")
         if on {
             StartSSLocal()

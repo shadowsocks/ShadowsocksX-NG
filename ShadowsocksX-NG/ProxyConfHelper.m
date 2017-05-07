@@ -146,26 +146,23 @@ GCDWebServer *webServer = nil;
     [self stopPACServer];
 }
 
-+ (void)enableWhiteDomainListProxy {
-//    NSString* urlString = [NSString stringWithFormat:@"%@/.ShadowsocksX-NG/whitelist.pac", NSHomeDirectory()];
-//    NSURL* url = [NSURL fileURLWithPath:urlString];
-    NSString *PACURLString = [self startPACServer: @"whitelist.pac"];//hi 可以切换成定制pac文件路径来达成使用定制文件路径
-    NSURL* url = [NSURL URLWithString: PACURLString];
-    NSMutableArray* args = [@[@"--mode", @"auto", @"--pac-url", [url absoluteString]]mutableCopy];
++ (void)enableWhiteListProxy {
+    // 基于全局socks5代理下使用ACL文件来进行白名单代理 不需要使用pac文件
+    NSUInteger port = [[NSUserDefaults standardUserDefaults]integerForKey:@"LocalSocks5.ListenPort"];
+    
+    NSMutableArray* args = [@[@"--mode", @"global", @"--port"
+                              , [NSString stringWithFormat:@"%lu", (unsigned long)port]]mutableCopy];
+    
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"LocalHTTPOn"] && [[NSUserDefaults standardUserDefaults] boolForKey:@"LocalHTTP.FollowGlobal"]) {
+        NSUInteger privoxyPort = [[NSUserDefaults standardUserDefaults]integerForKey:@"LocalHTTP.ListenPort"];
+        
+        [args addObject:@"--privoxy-port"];
+        [args addObject:[NSString stringWithFormat:@"%lu", (unsigned long)privoxyPort]];
+    }
     
     [self addArguments4ManualSpecifyNetworkServices:args];
     [self callHelper:args];
-}
-
-+ (void)enableWhiteIPListProxy {
-//    NSString* urlString = [NSString stringWithFormat:@"%@/.ShadowsocksX-NG/whiteiplist.pac", NSHomeDirectory()];
-//    NSURL* url = [NSURL fileURLWithPath:urlString];
-    NSString *PACURLString = [self startPACServer: @"whiteiplist.pac"];//hi 可以切换成定制pac文件路径来达成使用定制文件路径
-    NSURL* url = [NSURL URLWithString: PACURLString];
-    NSMutableArray* args = [@[@"--mode", @"auto", @"--pac-url", [url absoluteString]]mutableCopy];
-    
-    [self addArguments4ManualSpecifyNetworkServices:args];
-    [self callHelper:args];
+    [self stopPACServer];
 }
 
 + (void)disableProxy:(NSString*) PACFilePath {

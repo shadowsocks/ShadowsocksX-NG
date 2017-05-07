@@ -17,6 +17,7 @@
 		088EC3991D5F5BA300E40791 /* whiteiplist.pac in Resources */ = {isa = PBXBuildFile; fileRef = 088EC3981D5F5BA300E40791 /* whiteiplist.pac */; };
 		08BDBB481E2361BD00C4BBC2 /* VersionChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08BDBB471E2361BD00C4BBC2 /* VersionChecker.swift */; };
 		08CF21461E2A730E008F235D /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = 08CF21451E2A730E008F235D /* LICENSE */; };
+		08F162BE1EBEDF0100C52869 /* chn.acl in Resources */ = {isa = PBXBuildFile; fileRef = 08F162BD1EBEDF0100C52869 /* chn.acl */; };
 		08FFAC621E437F6E00BDF137 /* PingTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08FFAC611E437F6E00BDF137 /* PingTest.swift */; };
 		258E511BA910B0521B24DAB8 /* Pods_ShadowsocksX_NG.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 283ED1A8E9B711AC65670031 /* Pods_ShadowsocksX_NG.framework */; };
 		9B07EFA71D048BBB0052D9DF /* ss-local in Resources */ = {isa = PBXBuildFile; fileRef = 9B07EFA61D048BBB0052D9DF /* ss-local */; };
@@ -117,6 +118,7 @@
 		08AF56C01D6AFA7C00DC4F46 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/PreferencesWindowController.strings"; sourceTree = "<group>"; };
 		08BDBB471E2361BD00C4BBC2 /* VersionChecker.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VersionChecker.swift; sourceTree = "<group>"; };
 		08CF21451E2A730E008F235D /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE; sourceTree = SOURCE_ROOT; };
+		08F162BD1EBEDF0100C52869 /* chn.acl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = chn.acl; sourceTree = "<group>"; };
 		08FFAC611E437F6E00BDF137 /* PingTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PingTest.swift; sourceTree = "<group>"; };
 		19083CFCED87354F006967FF /* Pods_ShadowsocksX_NGUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ShadowsocksX_NGUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		1E7783AEDB4A3BDDC9FF16AC /* libPods-proxy_conf_helper.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-proxy_conf_helper.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -269,6 +271,7 @@
 				9B3FFF4B1D09D8F70019A709 /* install_helper.sh */,
 				0880CE3F1D6FE6D900BD39E2 /* example-gui-config.json */,
 				9B3FFF281D08A1DF0019A709 /* user-rule.txt */,
+				08F162BD1EBEDF0100C52869 /* chn.acl */,
 				088EC3961D5F5B8600E40791 /* whitelist.pac */,
 				088EC3981D5F5BA300E40791 /* whiteiplist.pac */,
 				9B3FFF261D0898EB0019A709 /* gfwlist.txt */,
@@ -539,6 +542,7 @@
 				9B2491B71D0ACC3E003BBECC /* AdvPreferencesWindowController.xib in Resources */,
 				9B3FFF271D0898EB0019A709 /* gfwlist.txt in Resources */,
 				C6D429931DA75988002A5711 /* install_privoxy.sh in Resources */,
+				08F162BE1EBEDF0100C52869 /* chn.acl in Resources */,
 				9BC70EDC1D2E3E3100EDA4CA /* Localizable.strings in Resources */,
 				088EC3971D5F5B8600E40791 /* whitelist.pac in Resources */,
 				9B0BFFEE1D0460A70040E62B /* MainMenu.xib in Resources */,
