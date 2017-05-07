@@ -57,7 +57,7 @@
 "bZ3-fy-34d.title" = "高级设置...";
 
 /* Class = "NSMenuItem"; title = "Proxy"; ObjectID = "diI-fB-Rss"; */
-"diI-fB-Rss.title" = "代理";
+"diI-fB-Rss.title" = "代理设置";
 
 /* Class = "NSMenuItem"; title = "Launch At Login"; ObjectID = "eUq-p7-ICK"; */
 "eUq-p7-ICK.title" = "登录时自动启动";
@@ -104,3 +104,12 @@
 "wyZ-4G-qg9.title" = "检查更新";
 
 "3nJ-zQ-Agj.title" = "打开时检查更新";
+
+"lam-el-r4I.title" = "代理大陆IP";
+
+"tEB-59-fCx.title" = "ACL模式";
+
+"Yub-b0-bni.title" = "ACL模式";
+
+"sDG-YV-yuQ.title" = "ACL自动";
+
