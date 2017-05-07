@@ -540,6 +540,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                 whiteListModeMenuItem.state = 1
             }
         }
+        SyncSSLocal()
         updateStatusItemUI()
     }
     
