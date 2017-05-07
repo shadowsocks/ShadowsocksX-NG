@@ -367,7 +367,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     @IBAction func selectACLAutoMode(_ sender: NSMenuItem) {
         let defaults = UserDefaults.standard
         defaults.setValue("whiteList", forKey: "ShadowsocksRunningMode")
-        defaults.setValue("gfw.acl", forKey: "ACLFileName")
+        defaults.setValue("gfwlist.acl", forKey: "ACLFileName")
         updateRunningModeMenu()
         applyConfig()
     }
@@ -533,7 +533,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                 ACLBackChinaMenuItem.state = 1
                 ACLModeMenuItem.title = "Proxy Back China".localized
                 break
-            case "gfw.acl":
+            case "gfwlist.acl":
                 ACLModeMenuItem.state = 1
                 ACLAutoModeMenuItem.state = 1
                 ACLModeMenuItem.title = "ACL Auto".localized
