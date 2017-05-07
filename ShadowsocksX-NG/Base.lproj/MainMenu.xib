@@ -14,6 +14,9 @@
         <customObject id="-3" userLabel="Application" customClass="NSObject"/>
         <customObject id="Voe-Tx-rLC" customClass="AppDelegate" customModule="ShadowsocksX_NG" customModuleProvider="target">
             <connections>
+                <outlet property="ACLAutoModeMenuItem" destination="sDG-YV-yuQ" id="kIE-Ua-zvx"/>
+                <outlet property="ACLBackChinaMenuItem" destination="lam-el-r4I" id="O41-Lr-e0h"/>
+                <outlet property="ACLModeMenuItem" destination="Yub-b0-bni" id="e0w-Td-aE9"/>
                 <outlet property="RunningStatusMenuItem" destination="fzk-mE-CEV" id="R4x-gK-Qcw"/>
                 <outlet property="ShowNetworkSpeedItem" destination="a3h-uQ-DuO" id="OLq-K8-rEO"/>
                 <outlet property="autoModeMenuItem" destination="r07-Gu-aEz" id="9aH-pQ-Rgi"/>
@@ -74,6 +77,25 @@
                     <connections>
                         <action selector="selectManualMode:" target="Voe-Tx-rLC" id="Xxb-28-6fi"/>
                     </connections>
+                </menuItem>
+                <menuItem title="ACL Mode" id="Yub-b0-bni">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <menu key="submenu" title="ACL Mode" id="tEB-59-fCx">
+                        <items>
+                            <menuItem title="Auto" id="sDG-YV-yuQ">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="selectACLAutoMode:" target="Voe-Tx-rLC" id="0PY-wQ-9KI"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Proxy Back China" state="on" id="lam-el-r4I">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="selectACLBackCHNMode:" target="Voe-Tx-rLC" id="ZK2-2R-g2C"/>
+                                </connections>
+                            </menuItem>
+                        </items>
+                    </menu>
                 </menuItem>
                 <menuItem title="Proxy Settings" id="diI-fB-Rss">
                     <modifierMask key="keyEquivalentModifierMask"/>

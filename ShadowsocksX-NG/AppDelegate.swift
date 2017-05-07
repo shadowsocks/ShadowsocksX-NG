@@ -33,8 +33,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     @IBOutlet weak var globalModeMenuItem: NSMenuItem!
     @IBOutlet weak var manualModeMenuItem: NSMenuItem!
     @IBOutlet weak var whiteListModeMenuItem: NSMenuItem!
-//    @IBOutlet weak var whiteListMenuItem: NSMenuItem!
-//    @IBOutlet weak var whiteListIPMenuItem: NSMenuItem!
+    @IBOutlet weak var ACLModeMenuItem: NSMenuItem!
+    @IBOutlet weak var ACLAutoModeMenuItem: NSMenuItem!
+    @IBOutlet weak var ACLBackChinaMenuItem: NSMenuItem!
     
     @IBOutlet weak var serversMenuItem: NSMenuItem!
     @IBOutlet var pingserverMenuItem: NSMenuItem!
@@ -364,15 +365,23 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         applyConfig()
     }
     @IBAction func selectACLAutoMode(_ sender: NSMenuItem) {
-    
+        let defaults = UserDefaults.standard
+        defaults.setValue("whiteList", forKey: "ShadowsocksRunningMode")
+        defaults.setValue("gfw.acl", forKey: "ACLPath")
+        updateRunningModeMenu()
+        applyConfig()
     }
-    @IBAction func selectACLWhiteListMode(_ sender: NSMenuItem) {
-        
+    @IBAction func selectACLBackCHNMode(_ sender: NSMenuItem) {
+        let defaults = UserDefaults.standard
+        defaults.setValue("whiteList", forKey: "ShadowsocksRunningMode")
+        defaults.setValue("backchn.acl", forKey: "ACLPath")
+        updateRunningModeMenu()
+        applyConfig()
     }
     @IBAction func selectWhiteListMode(_ sender: NSMenuItem) {
         let defaults = UserDefaults.standard
         defaults.setValue("whiteList", forKey: "ShadowsocksRunningMode")
-        defaults.setValue("ACLPath", forKey: "chn.acl")
+        defaults.setValue("chn.acl", forKey: "ACLPath")
         updateRunningModeMenu()
         applyConfig()
     }
@@ -507,17 +516,29 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         manualModeMenuItem.state = 0
         whiteListModeMenuItem.state = 0
         if mode == "auto" {
-            proxyMenuItem.title = "Proxy - Auto By PAC".localized
             autoModeMenuItem.state = 1
         } else if mode == "global" {
-            proxyMenuItem.title = "Proxy - Global".localized
             globalModeMenuItem.state = 1
         } else if mode == "manual" {
-            proxyMenuItem.title = "Proxy - Manual".localized
             manualModeMenuItem.state = 1
         } else if mode == "whiteList" {
-            proxyMenuItem.title = "Proxy - White List".localized
-            whiteListModeMenuItem.state = 1
+            ACLModeMenuItem.state = 0
+            whiteListModeMenuItem.state = 0
+            ACLBackChinaMenuItem.state = 0
+            ACLAutoModeMenuItem.state = 0
+            let aclMode = defaults.value(forKey: "ACLPath") as! String
+            switch aclMode {
+            case "backchn.acl":
+                ACLModeMenuItem.state = 1
+                ACLBackChinaMenuItem.state = 1
+                break
+            case "gfw.acl":
+                ACLModeMenuItem.state = 1
+                ACLAutoModeMenuItem.state = 1
+                break
+            default:
+                whiteListModeMenuItem.state = 1
+            }
         }
         updateStatusItemUI()
     }
