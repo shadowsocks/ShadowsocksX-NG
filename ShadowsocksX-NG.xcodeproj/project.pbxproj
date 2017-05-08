@@ -73,7 +73,6 @@
 		9BEEF0751D04EF3E00FC52B3 /* PreferencesWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BEEF0731D04EF3E00FC52B3 /* PreferencesWindowController.swift */; };
 		9BEEF0781D04FE8A00FC52B3 /* LaunchAgentUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BEEF0771D04FE8A00FC52B3 /* LaunchAgentUtils.swift */; };
 		C6D429931DA75988002A5711 /* install_privoxy.sh in Resources */ = {isa = PBXBuildFile; fileRef = C6D4298E1DA75988002A5711 /* install_privoxy.sh */; };
-		C6D429941DA75988002A5711 /* privoxy in Resources */ = {isa = PBXBuildFile; fileRef = C6D4298F1DA75988002A5711 /* privoxy */; };
 		C6D429961DA75988002A5711 /* start_privoxy.sh in Resources */ = {isa = PBXBuildFile; fileRef = C6D429911DA75988002A5711 /* start_privoxy.sh */; };
 		C6D429971DA75988002A5711 /* stop_privoxy.sh in Resources */ = {isa = PBXBuildFile; fileRef = C6D429921DA75988002A5711 /* stop_privoxy.sh */; };
 		C6D429991DA76FBC002A5711 /* privoxy.config.example in Resources */ = {isa = PBXBuildFile; fileRef = C6D429981DA76FBC002A5711 /* privoxy.config.example */; };
@@ -600,7 +599,6 @@
 				9B5832111E742632009D5B7D /* kcptun_1.png in Resources */,
 				9B938D9C1E864B38005F5636 /* menu_m_icon@2x.png in Resources */,
 				9B3546731E802B1200B510B4 /* ToastWindowController.xib in Resources */,
-				C6D429941DA75988002A5711 /* privoxy in Resources */,
 				C6D429991DA76FBC002A5711 /* privoxy.config.example in Resources */,
 				9BEEF06B1D04D4D500FC52B3 /* stop_ss_local.sh in Resources */,
 				9B3FFF341D08CEF70019A709 /* SWBQRCodeWindowController.xib in Resources */,
