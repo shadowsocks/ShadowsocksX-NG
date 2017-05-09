@@ -562,7 +562,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             image = NSImage(named: "menu_icon_manual")!
             //statusItem?.title = "Manual".localized
         } else if mode == "whiteList" {
-            image = NSImage(named: "menu_icon_white")!
+            if defaults.string(forKey: "ACLFileName")! == "chn.acl" {
+                image = NSImage(named: "menu_icon_white")!
+            } else {
+                image = NSImage(named: "menu_icon_acl")!
+            }
         }
         let titleWidth:CGFloat = 0//statusItem?.title!.size(withAttributes: [NSFontAttributeName: statusItem?.button!.font!]).width//这里不包含IP白名单模式等等，需要重新调整//PS还是给上游加上白名单模式？
         let imageWidth:CGFloat = 22
