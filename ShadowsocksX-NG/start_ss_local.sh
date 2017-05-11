@@ -7,3 +7,4 @@
 #  Copyright © 2016年 qiuyuzhou. All rights reserved.
 
 launchctl load "$HOME/Library/LaunchAgents/com.qiuyuzhou.shadowsocksX-NG.local.plist"
+launchctl start com.qiuyuzhou.shadowsocksX-NG.local

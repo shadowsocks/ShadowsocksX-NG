@@ -7,3 +7,4 @@
 #  Copyright © 2016年 zhfish. All rights reserved.
 
 launchctl load "$HOME/Library/LaunchAgents/com.qiuyuzhou.shadowsocksX-NG.http.plist"
+launchctl start com.qiuyuzhou.shadowsocksX-NG.http
