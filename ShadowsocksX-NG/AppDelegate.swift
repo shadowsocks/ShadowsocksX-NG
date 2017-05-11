@@ -369,6 +369,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         defaults.setValue("whiteList", forKey: "ShadowsocksRunningMode")
         defaults.setValue("gfwlist.acl", forKey: "ACLFileName")
         updateRunningModeMenu()
+        SyncSSLocal()
         applyConfig()
     }
     @IBAction func selectACLBackCHNMode(_ sender: NSMenuItem) {
@@ -376,6 +377,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         defaults.setValue("whiteList", forKey: "ShadowsocksRunningMode")
         defaults.setValue("backchn.acl", forKey: "ACLFileName")
         updateRunningModeMenu()
+        SyncSSLocal()
         applyConfig()
     }
     @IBAction func selectWhiteListMode(_ sender: NSMenuItem) {
@@ -383,6 +385,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         defaults.setValue("whiteList", forKey: "ShadowsocksRunningMode")
         defaults.setValue("chn.acl", forKey: "ACLFileName")
         updateRunningModeMenu()
+        SyncSSLocal()
         applyConfig()
     }
 
@@ -541,7 +544,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                 whiteListModeMenuItem.state = 1
             }
         }
-        SyncSSLocal()
         updateStatusItemUI()
     }
     
