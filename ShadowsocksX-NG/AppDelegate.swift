@@ -508,7 +508,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                     serverMenuText = p.serverHost
                 }
                 if let latency = p.latency{
-                    serverMenuText += "  - \(latency)ms"
+                    serverMenuText += "  - \(latency) ms"
                 }
             }
         }
@@ -615,6 +615,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             let item = NSMenuItem()
             item.tag = i //+ kProfileMenuItemIndexBase
             item.title = p.title()
+            if let latency = p.latency{
+                item.title += "  - \(latency) ms"
+            }
             if mgr.activeProfileId == p.uuid {
                 item.state = 1
             }
