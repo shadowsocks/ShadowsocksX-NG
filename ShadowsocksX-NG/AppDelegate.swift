@@ -80,8 +80,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             "LocalSocks5.EnableUDPRelay": NSNumber(value: false as Bool),
             "LocalSocks5.EnableVerboseMode": NSNumber(value: false as Bool),
             "GFWListURL": "https://raw.githubusercontent.com/gfwlist/gfwlist/master/gfwlist.txt",
-            "WhiteListURL": "https://raw.githubusercontent.com/breakwa11/gfw_whitelist/master/whitelist.pac",
-            "WhiteListIPURL": "https://raw.githubusercontent.com/breakwa11/gfw_whitelist/master/whiteiplist.pac",
+            "ACLWhiteListURL": "https://raw.githubusercontent.com/shadowsocksr/shadowsocksr-libev/master/acl/chn.acl",
+            "ACLAutoListURL": "https://raw.githubusercontent.com/shadowsocksr/shadowsocksr-libev/master/acl/gfwlist.acl",
+            "ACLProxyBackCHNURL":"https://raw.githubusercontent.com/shadowsocksr/ShadowsocksX-NG/develop/ShadowsocksX-NG/backchn.acl",
             "AutoConfigureNetworkServices": NSNumber(value: true as Bool),
             "LocalHTTP.ListenAddress": "127.0.0.1",
             "LocalHTTP.ListenPort": NSNumber(value: 1087 as UInt16),
@@ -266,7 +267,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     }
     
     @IBAction func updateWhiteList(_ sender: NSMenuItem) {
-        UpdatePACFromWhiteList()
+        UpdateACL()
     }
     
     @IBAction func editUserRulesForPAC(_ sender: NSMenuItem) {

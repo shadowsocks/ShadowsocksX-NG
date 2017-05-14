@@ -19,8 +19,6 @@ let GFWListFilePath = PACRulesDirPath + "gfwlist.txt"
 let ACLWhiteListFilePath = PACRulesDirPath + "chn.acl"
 let ACLBackCHNFilePath = PACRulesDirPath + "backchn.acl"
 let ACLGFWListFilePath = PACRulesDirPath + "gfwlist.acl"
-let WhiteListDomainPACFilePath = PACRulesDirPath + "whitelist.pac"
-let WhiteListIPPACFilePath = PACRulesDirPath + "whiteiplist.pac"
 
 // Because of LocalSocks5.ListenPort may be changed
 func SyncPac() {
@@ -144,32 +142,6 @@ func GeneratePACFile() -> Bool {
                 try result.data(using: String.Encoding.utf8)?
                     .write(to: URL(fileURLWithPath: PACFilePath), options: .atomic)
                 
-                // Setup Pac for White List
-                let DomainSrc = Bundle.main.path(forResource: "whitelist", ofType: "pac")
-                let IPSrc = Bundle.main.path(forResource: "whiteiplist", ofType: "pac")
-                let DomainPacFile = try? Data(contentsOf: URL(fileURLWithPath: DomainSrc!))
-                let IPPACFile = try? Data(contentsOf: URL(fileURLWithPath: IPSrc!))
-                var DomainPACStr = String(data: DomainPacFile!,encoding: String.Encoding.utf8)!
-                var IPPACStr = String(data: IPPACFile!,encoding: String.Encoding.utf8)!
-                if(DomainPACStr.range(of: "SOCKS ") == nil) {
-                    DomainPACStr = DomainPACStr.replacingOccurrences(of: "SOCKS5 127.0.0.1:1080;", with: "SOCKS5 127.0.0.1:\(socks5Port);SOCKS 127.0.0.1:\(socks5Port);")
-                }else{
-                    DomainPACStr = DomainPACStr.replacingOccurrences(of: "SOCKS 127.0.0.1:1080;", with: "SOCKS 127.0.0.1:\(socks5Port);")
-                    DomainPACStr = DomainPACStr.replacingOccurrences(of: "SOCKS5 127.0.0.1:1080;", with: "SOCKS5 127.0.0.1:\(socks5Port);")
-                }
-                
-                if(IPPACStr.range(of: "SOCKS ") == nil) {
-                    IPPACStr = IPPACStr.replacingOccurrences(of: "SOCKS5 127.0.0.1:1080;", with: "SOCKS5 127.0.0.1:\(socks5Port);SOCKS 127.0.0.1:\(socks5Port);")
-                }else{
-                    IPPACStr = IPPACStr.replacingOccurrences(of: "SOCKS 127.0.0.1:1080;", with: "SOCKS 127.0.0.1:\(socks5Port);")
-                    IPPACStr = IPPACStr.replacingOccurrences(of: "SOCKS5 127.0.0.1:1080;", with: "SOCKS5 127.0.0.1:\(socks5Port);")
-                }
-                
-                try
-                    DomainPACStr.data(using: String.Encoding.utf8)?.write(to: URL(fileURLWithPath: WhiteListDomainPACFilePath), options: .atomic)
-                try
-                    IPPACStr.data(using: String.Encoding.utf8)?.write(to: URL(fileURLWithPath: WhiteListIPPACFilePath), options: .atomic)
-                
                 return true
             } catch {
                 
@@ -221,7 +193,7 @@ func UpdatePACFromGFWList() {
         }
 }
 
-func UpdatePACFromWhiteList(){
+func UpdateACL(){
     if !FileManager.default.fileExists(atPath: PACRulesDirPath) {
         do {
             try FileManager.default.createDirectory(atPath: PACRulesDirPath
@@ -230,14 +202,14 @@ func UpdatePACFromWhiteList(){
         }
     }
     
-    let url = UserDefaults.standard.string(forKey: "WhiteListURL")
+    let url = UserDefaults.standard.string(forKey: "ACLWhiteListURL")
     Alamofire.request(url!)// request(.GET, url!)
         .responseString {
             response in
             if response.result.isSuccess {
                 if let v = response.result.value {
                     do {
-                        try v.write(toFile: WhiteListDomainPACFilePath, atomically: true, encoding: String.Encoding.utf8)
+                        try v.write(toFile: ACLWhiteListFilePath, atomically: true, encoding: String.Encoding.utf8)
                         if GeneratePACFile() {
                             // Popup a user notification
                             let notification = NSUserNotification()
@@ -258,14 +230,14 @@ func UpdatePACFromWhiteList(){
             }
     }
     
-    let IPURL = UserDefaults.standard.string(forKey: "WhiteListIPURL")
+    let IPURL = UserDefaults.standard.string(forKey: "ACLAutoListURL")
     Alamofire.request(IPURL!)
         .responseString {
             response in
             if response.result.isSuccess {
                 if let v = response.result.value {
                     do {
-                        try v.write(toFile: WhiteListIPPACFilePath, atomically: true, encoding: String.Encoding.utf8)
+                        try v.write(toFile: ACLGFWListFilePath, atomically: true, encoding: String.Encoding.utf8)
                         if GeneratePACFile() {
                             // Popup a user notification
                             let notification = NSUserNotification()
