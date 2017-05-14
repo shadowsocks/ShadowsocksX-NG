@@ -1,8 +1,8 @@
 # ShadowsocksX-NG-R
 
-Current version is 1.3.9-R8
+Current version is 1.4.0-R8
 
-Continuesly release under 1.3.9-R8-buildVersion
+Continuesly release under 1.4.0-R8-buildVersion
 
 [![Build Status](https://travis-ci.org/shadowsocksr/ShadowsocksX-NG.svg?branches=develop)](https://travis-ci.org/shadowsocksr/ShadowsocksX-NG)
 
@@ -47,23 +47,25 @@ Then I rewrite the GUI code by swift.
 - Ability to check update from GitHub.
 - White domain list & white IP list
 - Use ss-local from shadowsocks-libev 2.5.6
-- Ability to update PAC by download GFW List from GitHub.
-- Ability to update white list from GutHub.
+- Ability to update PAC by download GFW List from GitHub. (You can even customize your list)
+- Ability to update ACL white list from GutHub. (You can even customize your list)
 - Show QRCode for current server profile.
 - Scan QRCode from screen.
+- Import config.json to config all your servers (SSR-C# password protect not supported yet)
 - Auto launch at login.
 - User rules for PAC.
-- Support OTA
+- Support for OTA is removed
 - An advance preferences panel to configure:
   - Local socks5 listen address.
   - Local socks5 listen port.
   - Local socks5 timeout.
   - If enable UDP relay.
   - GFW List url.
-  - White List url.
-  - Auto update PAC list & white list.
+  - ACL White List url.
+  - ACL GFW list and proxy bach CHN list.
 - Manual spesify network service profiles which would be configure the proxy.
 - Could reorder shadowsocks profiles by drag & drop in servers preferences panel.
+- Auto check update (unable to auto download)
 
 ## Different from orignal ShadowsocksX
 
@@ -84,7 +86,7 @@ ref: [GitFlow](http://nvie.com/posts/a-successful-git-branching-model/)
 - [x] Embed the http proxy server [privoxy](http://www.privoxy.org/), [get it](https://homebrew.bintray.com/bottles/privoxy-3.0.26.sierra.bottle.tar.gz).
 
 
-- [ ] ACL mode support [Shadowsocks ACL](https://github.com/shadowsocksr/shadowsocksr-libev/tree/master/acl)
+- [x] ACL mode support [Shadowsocks ACL](https://github.com/shadowsocksr/shadowsocksr-libev/tree/master/acl)
 
 ## Know Issue
 Solved [Issue 1.]() Auto PAC & White list is not working on macOS 10.12 Serria because system proxy not allow [file:///](file:///) protocol.
