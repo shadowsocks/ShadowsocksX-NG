@@ -48,6 +48,7 @@ class PreferencesWindowController: NSWindowController
         profileMgr = ServerProfileManager.instance
         
         methodTextField.addItems(withObjectValues: [
+            "none",
             "table",
             "rc4",
             "rc4-md5-6",
@@ -69,7 +70,7 @@ class PreferencesWindowController: NSWindowController
             "seed-cfb",
             "salsa20",
             "chacha20",
-            "chacha20-ietf"
+            "chacha20-ietf",
             ])
         ProtocolTextField.addItems(withObjectValues: [
             "origin",
