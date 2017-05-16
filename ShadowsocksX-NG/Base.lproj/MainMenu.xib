@@ -101,13 +101,13 @@
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <menu key="submenu" title="Proxy Settings" id="YZp-bf-L40">
                         <items>
-                            <menuItem title="Update PAC from GFW List" id="TFc-Ec-duM">
+                            <menuItem title="Update PAC file" id="TFc-Ec-duM">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
                                     <action selector="updateGFWList:" target="Voe-Tx-rLC" id="Ztt-PS-F3T"/>
                                 </connections>
                             </menuItem>
-                            <menuItem title="Update All Wihte List" id="gde-ZE-086">
+                            <menuItem title="Update ACL file" id="gde-ZE-086">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
                                     <action selector="updateWhiteList:" target="Voe-Tx-rLC" id="2Iv-M4-k9C"/>
