@@ -48,6 +48,7 @@ class PreferencesWindowController: NSWindowController
         profileMgr = ServerProfileManager.instance
         
         methodTextField.addItems(withObjectValues: [
+            "none",
             "table",
             "rc4",
             "rc4-md5-6",
@@ -69,7 +70,7 @@ class PreferencesWindowController: NSWindowController
             "seed-cfb",
             "salsa20",
             "chacha20",
-            "chacha20-ietf"
+            "chacha20-ietf",
             ])
         ProtocolTextField.addItems(withObjectValues: [
             "origin",
@@ -79,6 +80,7 @@ class PreferencesWindowController: NSWindowController
             "auth_sha1_v4",
             "auth_aes128_sha1",
             "auth_aes128_md5",
+            "auth_chain_a",
             ])
         ObfsTextField.addItems(withObjectValues: [
             "plain",
