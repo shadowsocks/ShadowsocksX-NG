@@ -46,7 +46,7 @@ Then I rewrite the GUI code by swift.
 - SSR features!
 - Ability to check update from GitHub.
 - White domain list & white IP list
-- Use ss-local from shadowsocks-libev 2.5.6
+- Use ss-local from shadowsocksr-libev 2.5.6
 - Ability to update PAC by download GFW List from GitHub. (You can even customize your list)
 - Ability to update ACL white list from GutHub. (You can even customize your list)
 - Show QRCode for current server profile.
