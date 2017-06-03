@@ -8,6 +8,7 @@
 
 
 import Foundation
+
 fileprivate func < <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
   switch (lhs, rhs) {
   case let (l?, r?):
@@ -22,116 +23,198 @@ fileprivate func < <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
 
 public typealias SimplePingClientCallback = (String?)->()
 
-open class SimplePingClient: NSObject {
-    static let singletonPC = SimplePingClient()
-
-    fileprivate var resultCallback: SimplePingClientCallback?
-    fileprivate var pingClinet: SimplePing?
-    fileprivate var dateReference: Date?
-
-    open static func pingHostname(_ hostname: String, andResultCallback callback: SimplePingClientCallback?) {
-        singletonPC.pingHostname(hostname, andResultCallback: callback)
-    }
-
-    open func pingHostname(_ hostname: String, andResultCallback callback: SimplePingClientCallback?) {
-        resultCallback = callback
-        pingClinet = SimplePing(hostName: hostname)
-        pingClinet?.delegate = self
-        pingClinet?.start()
-    }
-}
-
-extension SimplePingClient: SimplePingDelegate {
-    public func simplePing(_ pinger: SimplePing, didStartWithAddress address: Data) {
-        pinger.send(with: nil)
-
-
-    }
-
-    @nonobjc public func simplePing(_ pinger: SimplePing, didFailWithError error: NSError) {
-        resultCallback?(nil)
-    }
-
-    public func simplePing(_ pinger: SimplePing, didSendPacket packet: Data, sequenceNumber: UInt16) {
-        dateReference = Date()
-    }
-
-    @nonobjc public func simplePing(_ pinger: SimplePing, didFailToSendPacket packet: Data, sequenceNumber: UInt16, error: NSError) {
-        pinger.stop()
-        resultCallback?(nil)
-    }
-
-    public func simplePing(_ pinger: SimplePing, didReceiveUnexpectedPacket packet: Data) {
-        pinger.stop()
-        resultCallback?(nil)
-    }
-
-    public func simplePing(_ pinger: SimplePing, didReceivePingResponsePacket packet: Data, sequenceNumber: UInt16 ){
-        pinger.stop()
-
-        guard let dateReference = dateReference else{return }
-
-        //timeIntervalSinceDate returns seconds, so we convert to milis
-        let latency = Date().timeIntervalSince(dateReference) * 1000
-        resultCallback?(String(format: "%.f", latency))
-    }
-}
-
 
 
 
 class PingServers:NSObject{
     static let instance = PingServers()
-
+    
     let SerMgr = ServerProfileManager.instance
     var fastest:String?
     var fastest_id : Int=0
-
-    func ping(_ i:Int=0){
-        if i == 0{
-            fastest_id = 0
-            fastest = nil
+    
+    //    func ping(_ i:Int=0){
+    //        if i == 0{
+    //            fastest_id = 0
+    //            fastest = nil
+    //        }
+    //
+    //        if i >= SerMgr.profiles.count{
+    //            DispatchQueue.main.async {
+    //                // do the UI update HERE
+    //                let notice = NSUserNotification()
+    //                notice.title = "Ping测试完成！"
+    //                notice.subtitle = "最快的是\(self.SerMgr.profiles[self.fastest_id].remark) \(self.SerMgr.profiles[self.fastest_id].serverHost) \(self.SerMgr.profiles[self.fastest_id].latency!)ms"
+    //                NSUserNotificationCenter.default.deliver(notice)
+    //            }
+    //            return
+    //        }
+    //        let host = self.SerMgr.profiles[i].serverHost
+    //        SimplePingClient.pingHostname(host) { latency in
+    //            DispatchQueue.global().async {
+    //            print("[Ping Result]-\(host) latency is \(latency ?? "fail")")
+    //            self.SerMgr.profiles[i].latency = latency ?? "fail"
+    //
+    //            if latency != nil {
+    //                if self.fastest == nil{
+    //                    self.fastest = latency
+    //                    self.fastest_id = i
+    //                }else{
+    //                    if Int(latency!) < Int(self.fastest!) {
+    //                        self.fastest = latency
+    //                        self.fastest_id = i
+    //                    }
+    //                }
+    //                DispatchQueue.main.async {
+    //                    // do the UI update HERE
+    //                    (NSApplication.shared().delegate as! AppDelegate).updateServersMenu()
+    //                    (NSApplication.shared().delegate as! AppDelegate).updateRunningModeMenu()
+    //                }
+    //            }
+    //            }
+    //            self.ping(i+1)
+    //        }
+    //    }
+    
+    func runCommand(cmd : String, args : String...) -> (output: [String], error: [String], exitCode: Int32) {
+        
+        var output : [String] = []
+        var error : [String] = []
+        
+        let task = Process()
+        task.launchPath = cmd
+        task.arguments = args
+        
+        let outpipe = Pipe()
+        task.standardOutput = outpipe
+        let errpipe = Pipe()
+        task.standardError = errpipe
+        
+        task.launch()
+        
+        let outdata = outpipe.fileHandleForReading.readDataToEndOfFile()
+        if var string = String(data: outdata, encoding: .utf8) {
+            string = string.trimmingCharacters(in: .newlines)
+            output = string.components(separatedBy: "\n")
         }
-
-        if i >= SerMgr.profiles.count{
-            DispatchQueue.main.async {
-                // do the UI update HERE
-                let notice = NSUserNotification()
-                notice.title = "Ping测试完成！"
-                notice.subtitle = "最快的是\(self.SerMgr.profiles[self.fastest_id].remark) \(self.SerMgr.profiles[self.fastest_id].serverHost) \(self.SerMgr.profiles[self.fastest_id].latency!)ms"
-                NSUserNotificationCenter.default.deliver(notice)
+        
+        let errdata = errpipe.fileHandleForReading.readDataToEndOfFile()
+        if var string = String(data: errdata, encoding: .utf8) {
+            string = string.trimmingCharacters(in: .newlines)
+            error = string.components(separatedBy: "\n")
+        }
+        
+        task.waitUntilExit()
+        let status = task.terminationStatus
+        
+        return (output, error, status)
+    }
+    
+    func getlatencyFromString(result:String) -> Double?{
+        var res = result
+        if !result.contains("round-trip min/avg/max/stddev =") {
+            return nil
+        }
+        res.removeSubrange(res.range(of: "round-trip min/avg/max/stddev = ")!)
+        res = String(res.characters.dropLast(3))
+        res = res.components(separatedBy: "/")[1]
+        let latency = Double(res)
+        return latency
+    }
+    
+    func pingSingleHost(host:String,completionHandler:@escaping (Double?) -> Void){
+        DispatchQueue.global(qos: .userInteractive).async {
+            if let outputString = self.runCommand(cmd: "/sbin/ping", args: "-c","1","-t","1.5",host).output.last{
+                completionHandler(self.getlatencyFromString(result: outputString))
             }
-            return
         }
-        let host = self.SerMgr.profiles[i].serverHost
-        SimplePingClient.pingHostname(host) { latency in
-            DispatchQueue.global().async {
-            print("[Ping Result]-\(host) latency is \(latency ?? "fail")")
-            self.SerMgr.profiles[i].latency = latency ?? "fail"
-            
-            if latency != nil {
-                if self.fastest == nil{
-                    self.fastest = latency
-                    self.fastest_id = i
-                }else{
-                    if Int(latency!) < Int(self.fastest!) {
-                        self.fastest = latency
-                        self.fastest_id = i
+    }
+    
+    
+    func ping(_ i:Int=0){
+        
+        var result:[Double] = []
+        
+        for k in 0..<SerMgr.profiles.count {
+            let host = self.SerMgr.profiles[k].serverHost
+            pingSingleHost(host: host, completionHandler: {
+                if let latency = $0{
+                    self.SerMgr.profiles[k].latency = String(latency)
+                    result.append(latency)
+                    DispatchQueue.main.async {
+                        // do the UI update HERE
+                        (NSApplication.shared().delegate as! AppDelegate).updateServersMenu()
+                        (NSApplication.shared().delegate as! AppDelegate).updateRunningModeMenu()
                     }
                 }
+                else{
+                    self.SerMgr.profiles[k].latency = "fail"
+                }
+                
+            })
+        }
+        //        after two seconds ,time out
+        delay(1.6){
+            
+            if let min = result.min(){
+                
+                self.fastest = String(min)
+                self.fastest_id  = result.index(of: min)!
                 DispatchQueue.main.async {
                     // do the UI update HERE
-                    (NSApplication.shared().delegate as! AppDelegate).updateServersMenu()
-                    (NSApplication.shared().delegate as! AppDelegate).updateRunningModeMenu()
+                    let notice = NSUserNotification()
+                    notice.title = "Ping测试完成！"
+                    print(self.SerMgr.profiles[self.fastest_id])
+                    notice.subtitle = "最快的是\(self.SerMgr.profiles[self.fastest_id].remark) \(self.SerMgr.profiles[self.fastest_id].serverHost) \(self.SerMgr.profiles[self.fastest_id].latency!)ms"
+                    
+                    NSUserNotificationCenter.default.deliver(notice)
                 }
+                
             }
-            }
-            self.ping(i+1)
         }
+        
+        
     }
 }
 
 
+typealias Task = (_ cancel : Bool) -> Void
 
+@discardableResult func delay(_ time: TimeInterval, task: @escaping ()->()) ->  Task? {
+    
+    func dispatch_later(block: @escaping ()->()) {
+        let t = DispatchTime.now() + time
+        DispatchQueue.main.asyncAfter(deadline: t, execute: block)
+    }
+    
+    
+    
+    var closure: (()->Void)? = task
+    var result: Task?
+    
+    let delayedClosure: Task = {
+        cancel in
+        if let internalClosure = closure {
+            if (cancel == false) {
+                DispatchQueue.main.async(execute: internalClosure)
+            }
+        }
+        closure = nil
+        result = nil
+    }
+    
+    result = delayedClosure
+    
+    dispatch_later {
+        if let delayedClosure = result {
+            delayedClosure(false)
+        }
+    }
+    
+    return result;
+    
+}
 
-
+func cancel(_ task: Task?) {
+    task?(true)
+}
