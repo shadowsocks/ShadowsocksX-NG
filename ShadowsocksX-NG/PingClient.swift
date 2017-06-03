@@ -133,38 +133,37 @@ class PingServers:NSObject{
     
     func ping(_ i:Int=0){
         
-        var result:[Double] = []
+        var result:[(Int,Double)] = []
         
         for k in 0..<SerMgr.profiles.count {
             let host = self.SerMgr.profiles[k].serverHost
             pingSingleHost(host: host, completionHandler: {
                 if let latency = $0{
                     self.SerMgr.profiles[k].latency = String(latency)
-                    result.append(latency)
+                    
+                    synchronized(lock: result as AnyObject){
+                        result.append(k,latency)
+                    }
                     DispatchQueue.main.async {
                         // do the UI update HERE
                         (NSApplication.shared().delegate as! AppDelegate).updateServersMenu()
                         (NSApplication.shared().delegate as! AppDelegate).updateRunningModeMenu()
                     }
                 }
-                else{
-                    self.SerMgr.profiles[k].latency = "fail"
-                }
+                
                 
             })
         }
         //        after two seconds ,time out
-        delay(1.6){
-            
-            if let min = result.min(){
-                
-                self.fastest = String(min)
-                self.fastest_id  = result.index(of: min)!
-                DispatchQueue.main.async {
-                    // do the UI update HERE
+        delay(3){
+            DispatchQueue.main.async {
+                // do the UI update HERE
+                if let min = result.min(by: {$0.1 < $1.1}){
+                    self.fastest = String(describing: min.1)
+                    self.fastest_id  = min.0
+
                     let notice = NSUserNotification()
                     notice.title = "Ping测试完成！"
-                    print(self.SerMgr.profiles[self.fastest_id])
                     notice.subtitle = "最快的是\(self.SerMgr.profiles[self.fastest_id].remark) \(self.SerMgr.profiles[self.fastest_id].serverHost) \(self.SerMgr.profiles[self.fastest_id].latency!)ms"
                     
                     NSUserNotificationCenter.default.deliver(notice)
@@ -215,6 +214,11 @@ typealias Task = (_ cancel : Bool) -> Void
     
 }
 
+func synchronized(lock: AnyObject, closure: () -> ()) {
+    objc_sync_enter(lock)
+    closure()
+    objc_sync_exit(lock)
+}
 func cancel(_ task: Task?) {
     task?(true)
 }
