@@ -131,7 +131,10 @@ class PingServers:NSObject{
     }
     
     
+
     func ping(_ i:Int=0){
+        
+        neverSpeedTestBefore = false
         
         var result:[(Int,Double)] = []
         
@@ -150,6 +153,7 @@ class PingServers:NSObject{
                         (NSApplication.shared().delegate as! AppDelegate).updateRunningModeMenu()
                     }
                 }
+                
                 
                 
             })
@@ -222,3 +226,5 @@ func synchronized(lock: AnyObject, closure: () -> ()) {
 func cancel(_ task: Task?) {
     task?(true)
 }
+
+var neverSpeedTestBefore:Bool = true

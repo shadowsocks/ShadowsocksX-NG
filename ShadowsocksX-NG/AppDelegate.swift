@@ -512,7 +512,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                     serverMenuText += "  - \(latency) ms"
                 }
                 else{
-                    serverMenuText += "  - failed"
+                    if !neverSpeedTestBefore {
+                        serverMenuText += "  - failed"
+                    }
                 }
             }
         }
@@ -622,7 +624,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             if let latency = p.latency{
                 item.title += "  - \(latency) ms"
             }else{
-                item.title += "  - failed"
+                if !neverSpeedTestBefore {
+                    item.title += "  - failed"
+                }
             }
             if mgr.activeProfileId == p.uuid {
                 item.state = 1
