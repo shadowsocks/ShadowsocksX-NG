@@ -348,21 +348,27 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     @IBAction func selectPACMode(_ sender: NSMenuItem) {
         let defaults = UserDefaults.standard
         defaults.setValue("auto", forKey: "ShadowsocksRunningMode")
+        defaults.setValue("", forKey: "ACLFileName")
         updateRunningModeMenu()
+        SyncSSLocal()
         applyConfig()
     }
     
     @IBAction func selectGlobalMode(_ sender: NSMenuItem) {
         let defaults = UserDefaults.standard
         defaults.setValue("global", forKey: "ShadowsocksRunningMode")
+        defaults.setValue("", forKey: "ACLFileName")
         updateRunningModeMenu()
+        SyncSSLocal()
         applyConfig()
     }
     
     @IBAction func selectManualMode(_ sender: NSMenuItem) {
         let defaults = UserDefaults.standard
         defaults.setValue("manual", forKey: "ShadowsocksRunningMode")
+        defaults.setValue("", forKey: "ACLFileName")
         updateRunningModeMenu()
+        SyncSSLocal()
         applyConfig()
     }
     @IBAction func selectACLAutoMode(_ sender: NSMenuItem) {
