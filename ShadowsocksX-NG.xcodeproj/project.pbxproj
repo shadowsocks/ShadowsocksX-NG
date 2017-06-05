@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		083BF8331D82731900831C68 /* SimplePing.m in Sources */ = {isa = PBXBuildFile; fileRef = 083BF8321D82731900831C68 /* SimplePing.m */; };
 		083BF8361D82742200831C68 /* NetWorkMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 083BF8341D82742200831C68 /* NetWorkMonitor.swift */; };
 		083BF8371D82742200831C68 /* PingClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 083BF8351D82742200831C68 /* PingClient.swift */; };
 		083BF8391D82759600831C68 /* StatusItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 083BF8381D82759600831C68 /* StatusItemView.swift */; };
@@ -20,7 +19,6 @@
 		08F162BE1EBEDF0100C52869 /* chn.acl in Resources */ = {isa = PBXBuildFile; fileRef = 08F162BD1EBEDF0100C52869 /* chn.acl */; };
 		08F162C01EBEE6F800C52869 /* backchn.acl in Resources */ = {isa = PBXBuildFile; fileRef = 08F162BF1EBEE6F800C52869 /* backchn.acl */; };
 		08F162C21EBEEC0F00C52869 /* gfwlist.acl in Resources */ = {isa = PBXBuildFile; fileRef = 08F162C11EBEEC0F00C52869 /* gfwlist.acl */; };
-		08FFAC621E437F6E00BDF137 /* PingTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08FFAC611E437F6E00BDF137 /* PingTest.swift */; };
 		258E511BA910B0521B24DAB8 /* Pods_ShadowsocksX_NG.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 283ED1A8E9B711AC65670031 /* Pods_ShadowsocksX_NG.framework */; };
 		9B07EFA71D048BBB0052D9DF /* ss-local in Resources */ = {isa = PBXBuildFile; fileRef = 9B07EFA61D048BBB0052D9DF /* ss-local */; };
 		9B07EFAC1D048E880052D9DF /* menu_icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B07EFA81D048E880052D9DF /* menu_icon@2x.png */; };
@@ -107,8 +105,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		083BF8311D82731900831C68 /* SimplePing.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SimplePing.h; sourceTree = "<group>"; };
-		083BF8321D82731900831C68 /* SimplePing.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SimplePing.m; sourceTree = "<group>"; };
 		083BF8341D82742200831C68 /* NetWorkMonitor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NetWorkMonitor.swift; sourceTree = "<group>"; };
 		083BF8351D82742200831C68 /* PingClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PingClient.swift; sourceTree = "<group>"; };
 		083BF8381D82759600831C68 /* StatusItemView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StatusItemView.swift; sourceTree = "<group>"; };
@@ -123,7 +119,6 @@
 		08F162BD1EBEDF0100C52869 /* chn.acl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = chn.acl; sourceTree = "<group>"; };
 		08F162BF1EBEE6F800C52869 /* backchn.acl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = backchn.acl; sourceTree = "<group>"; };
 		08F162C11EBEEC0F00C52869 /* gfwlist.acl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = gfwlist.acl; sourceTree = "<group>"; };
-		08FFAC611E437F6E00BDF137 /* PingTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PingTest.swift; sourceTree = "<group>"; };
 		19083CFCED87354F006967FF /* Pods_ShadowsocksX_NGUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ShadowsocksX_NGUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		1E7783AEDB4A3BDDC9FF16AC /* libPods-proxy_conf_helper.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-proxy_conf_helper.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		283ED1A8E9B711AC65670031 /* Pods_ShadowsocksX_NG.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ShadowsocksX_NG.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -237,15 +232,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		083BF8301D82731900831C68 /* SimplePing */ = {
-			isa = PBXGroup;
-			children = (
-				083BF8311D82731900831C68 /* SimplePing.h */,
-				083BF8321D82731900831C68 /* SimplePing.m */,
-			);
-			path = SimplePing;
-			sourceTree = "<group>";
-		};
 		33F4F299F89330966F4526E4 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
@@ -322,7 +308,6 @@
 		9B0BFFE71D0460A70040E62B /* ShadowsocksX-NG */ = {
 			isa = PBXGroup;
 			children = (
-				083BF8301D82731900831C68 /* SimplePing */,
 				9BB706A51D1B982300551F0E /* SWBApplication.m */,
 				9BB706A61D1B982300551F0E /* SWBApplication.h */,
 				9B3FFF511D09DBA20019A709 /* ShadowsocksX-NG-Bridging-Header.h */,
@@ -344,7 +329,6 @@
 				9B3FFF201D08826E0019A709 /* PACUtils.swift */,
 				083BF8341D82742200831C68 /* NetWorkMonitor.swift */,
 				083BF8351D82742200831C68 /* PingClient.swift */,
-				08FFAC611E437F6E00BDF137 /* PingTest.swift */,
 				9B3FFF131D0705810019A709 /* Notifications.swift */,
 				9B3FFF1D1D0732660019A709 /* Utils.m */,
 				9B3FFF1F1D0734060019A709 /* Utils.h */,
@@ -483,7 +467,6 @@
 				TargetAttributes = {
 					9B0BFFE41D0460A70040E62B = {
 						CreatedOnToolsVersion = 7.3.1;
-						DevelopmentTeam = 2E8Q4BTFR2;
 						LastSwiftMigration = 0800;
 						ProvisioningStyle = Automatic;
 					};
@@ -709,8 +692,6 @@
 				08BDBB481E2361BD00C4BBC2 /* VersionChecker.swift in Sources */,
 				083BF8371D82742200831C68 /* PingClient.swift in Sources */,
 				083BF8361D82742200831C68 /* NetWorkMonitor.swift in Sources */,
-				08FFAC621E437F6E00BDF137 /* PingTest.swift in Sources */,
-				083BF8331D82731900831C68 /* SimplePing.m in Sources */,
 				9B3FFF211D08826E0019A709 /* PACUtils.swift in Sources */,
 				9BA04B261D24044D005AAD7F /* ProxyPreferencesController.swift in Sources */,
 				9B3FFF141D0705810019A709 /* Notifications.swift in Sources */,
@@ -927,7 +908,6 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = 2E8Q4BTFR2;
 				HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/libcork/include/",
 					"$(SRCROOT)/libipset/include/",
@@ -958,7 +938,6 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = 2E8Q4BTFR2;
 				HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/libcork/include/",
 					"$(SRCROOT)/libipset/include/",
