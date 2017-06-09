@@ -220,11 +220,7 @@ typealias Task = (_ cancel : Bool) -> Void
     
 }
 
-func synchronized(lock: AnyObject, closure: () -> ()) {
-    objc_sync_enter(lock)
-    closure()
-    objc_sync_exit(lock)
-}
+
 func cancel(_ task: Task?) {
     task?(true)
 }
