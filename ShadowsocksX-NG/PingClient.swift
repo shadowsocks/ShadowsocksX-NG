@@ -144,23 +144,25 @@ class PingServers:NSObject{
                 if let latency = $0{
                     self.SerMgr.profiles[k].latency = String(latency)
                     
-                    synchronized(lock: result as AnyObject){
-                        result.append(k,latency)
-                    }
-                    DispatchQueue.main.async {
-                        // do the UI update HERE
-                        (NSApplication.shared().delegate as! AppDelegate).updateServersMenu()
-                        (NSApplication.shared().delegate as! AppDelegate).updateRunningModeMenu()
-                    }
                 }
-                
-                
-                
             })
         }
         //        after two seconds ,time out
         delay(3){
             DispatchQueue.main.async {
+                
+                for k in 0..<self.SerMgr.profiles.count {
+                    if let late = self.SerMgr.profiles[k].latency{
+                        if let latency = Double(late){
+                            result.append((k,latency))
+                        }
+                    }
+                }
+                
+                
+                (NSApplication.shared().delegate as! AppDelegate).updateServersMenu()
+                (NSApplication.shared().delegate as! AppDelegate).updateRunningModeMenu()
+                
                 // do the UI update HERE
                 if let min = result.min(by: {$0.1 < $1.1}){
                     self.fastest = String(describing: min.1)
