@@ -104,6 +104,7 @@ func GeneratePACFile() -> Bool {
                 let userRuleLines = userRuleStr.components(separatedBy: CharacterSet.newlines)
                 
                 lines = userRuleLines + lines
+                ACLFromUserRule(userRuleLines: userRuleLines)
             } catch {
                 NSLog("Not found user-rule.txt")
             }
@@ -192,7 +193,45 @@ func UpdatePACFromGFWList() {
             }
         }
 }
+func ACLFromUserRule(userRuleLines:[String]){
+    do {
+        var AutoACL = try String(contentsOfFile: ACLGFWListFilePath, encoding: String.Encoding.utf8)
+        var WhiteACL = try String(contentsOfFile: ACLWhiteListFilePath, encoding: String.Encoding.utf8)
+        let rule = userRuleLines.filter({ (s: String) -> Bool in
+            if s.isEmpty {
+                return false
+            }
+            let c = s[s.startIndex]
+            if c == "!" || c == "[" {
+                return false
+            }
+            return true
+        })
+        rule.forEach({ (s: String) -> Void in
+            // add the @@ to whitelist and other to GFWList
+            if (s.hasPrefix("@@")){
+                let str = s.replacingOccurrences(of: "@@", with: "").components(separatedBy: ".").joined(separator:"\\.").replacingOccurrences(of: "*\\.", with: "^(.*\\.)?")
+                if (!WhiteACL.contains(str)){
+                    WhiteACL += (str + "$\n")
 
+                }
+            }
+            if (s.hasPrefix("||")){
+                let str = s.replacingOccurrences(of: "||", with: "").components(separatedBy: ".").joined(separator:"\\.").replacingOccurrences(of: "*\\.", with: "^(.*\\.)?")
+                if (!AutoACL.contains(str)){
+                    AutoACL += (str + "$\n")
+                }
+            }
+        })
+        // write file back to ACL
+        try WhiteACL.data(using: String.Encoding.utf8)?
+            .write(to: URL(fileURLWithPath: ACLWhiteListFilePath), options: .atomic)
+        try AutoACL.data(using: String.Encoding.utf8)?
+            .write(to: URL(fileURLWithPath: ACLGFWListFilePath), options: .atomic)
+    } catch {
+        
+    }
+}
 func UpdateACL(){
     if !FileManager.default.fileExists(atPath: PACRulesDirPath) {
         do {
