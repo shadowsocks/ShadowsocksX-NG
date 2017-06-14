@@ -19,6 +19,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     var proxyPreferencesWinCtrl: ProxyPreferencesController!
     var editUserRulesWinCtrl: UserRulesController!
     var httpPreferencesWinCtrl : HTTPPreferencesWindowController!
+    var subscribePreferenceWinCtrl: SubscribePreferenceWindowController!
     
     var launchAtLoginController: LaunchAtLoginController = LaunchAtLoginController()
     
@@ -56,6 +57,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     var statusItemView:StatusItemView!
     var statusItem: NSStatusItem?
     var speedMonitor:NetWorkMonitor?
+    var globalSubscribeFeed: Subscribe!
 
     // MARK: Application function
 
@@ -89,7 +91,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             "LocalHTTPOn": true,
             "LocalHTTP.FollowGlobal": true,
             "AutoCheckUpdate": false,
-            "ACLFileName": "chn.acl"
+            "ACLFileName": "chn.acl",
+            "SubscribeFeed": ""
         ])
 
         setUpMenu(defaults.bool(forKey: "enable_showSpeed"))
@@ -277,6 +280,18 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         let ctrl = UserRulesController(windowNibName: "UserRulesController")
         editUserRulesWinCtrl = ctrl
 
+        ctrl.showWindow(self)
+        NSApp.activate(ignoringOtherApps: true)
+        ctrl.window?.makeKeyAndOrderFront(self)
+    }
+    
+    @IBAction func editSubscribeFeed(_ sender: NSMenuItem) {
+        if subscribePreferenceWinCtrl != nil {
+            subscribePreferenceWinCtrl.close()
+        }
+        let ctrl = SubscribePreferenceWindowController(windowNibName: "SubscribePreferenceWindowController")
+        subscribePreferenceWinCtrl = ctrl
+        
         ctrl.showWindow(self)
         NSApp.activate(ignoringOtherApps: true)
         ctrl.window?.makeKeyAndOrderFront(self)

@@ -11,6 +11,9 @@
 		083BF8371D82742200831C68 /* PingClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 083BF8351D82742200831C68 /* PingClient.swift */; };
 		083BF8391D82759600831C68 /* StatusItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 083BF8381D82759600831C68 /* StatusItemView.swift */; };
 		083BF83B1D8275A800831C68 /* SystemThemeChangeHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 083BF83A1D8275A800831C68 /* SystemThemeChangeHelper.swift */; };
+		0877D6541EF1E65600126865 /* Subscribe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0877D6531EF1E65600126865 /* Subscribe.swift */; };
+		0877D6571EF1E82400126865 /* SubscribePreferenceWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0877D6551EF1E82400126865 /* SubscribePreferenceWindowController.swift */; };
+		0877D6581EF1E82400126865 /* SubscribePreferenceWindowController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0877D6561EF1E82400126865 /* SubscribePreferenceWindowController.xib */; };
 		0880CE401D6FE6D900BD39E2 /* example-gui-config.json in Resources */ = {isa = PBXBuildFile; fileRef = 0880CE3F1D6FE6D900BD39E2 /* example-gui-config.json */; };
 		088EC3971D5F5B8600E40791 /* whitelist.pac in Resources */ = {isa = PBXBuildFile; fileRef = 088EC3961D5F5B8600E40791 /* whitelist.pac */; };
 		088EC3991D5F5BA300E40791 /* whiteiplist.pac in Resources */ = {isa = PBXBuildFile; fileRef = 088EC3981D5F5BA300E40791 /* whiteiplist.pac */; };
@@ -110,6 +113,9 @@
 		083BF8381D82759600831C68 /* StatusItemView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StatusItemView.swift; sourceTree = "<group>"; };
 		083BF83A1D8275A800831C68 /* SystemThemeChangeHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SystemThemeChangeHelper.swift; sourceTree = "<group>"; };
 		085641E91D7188C400116B27 /* Base */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Base; path = Base.lproj/Localizable.strings; sourceTree = "<group>"; };
+		0877D6531EF1E65600126865 /* Subscribe.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Subscribe.swift; sourceTree = "<group>"; };
+		0877D6551EF1E82400126865 /* SubscribePreferenceWindowController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SubscribePreferenceWindowController.swift; sourceTree = "<group>"; };
+		0877D6561EF1E82400126865 /* SubscribePreferenceWindowController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = SubscribePreferenceWindowController.xib; sourceTree = "<group>"; };
 		0880CE3F1D6FE6D900BD39E2 /* example-gui-config.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "example-gui-config.json"; sourceTree = "<group>"; };
 		088EC3961D5F5B8600E40791 /* whitelist.pac */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = whitelist.pac; sourceTree = "<group>"; };
 		088EC3981D5F5BA300E40791 /* whiteiplist.pac */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = whiteiplist.pac; sourceTree = "<group>"; };
@@ -320,6 +326,7 @@
 				9B0BFFEC1D0460A70040E62B /* MainMenu.xib */,
 				9B0BFFEF1D0460A70040E62B /* Info.plist */,
 				9BEEF06D1D04DCE400FC52B3 /* ServerProfile.swift */,
+				0877D6531EF1E65600126865 /* Subscribe.swift */,
 				9BEEF06F1D04DDB100FC52B3 /* ServerProfileManager.swift */,
 				08BDBB471E2361BD00C4BBC2 /* VersionChecker.swift */,
 				083BF8381D82759600831C68 /* StatusItemView.swift */,
@@ -355,6 +362,8 @@
 			children = (
 				9B3FFF331D08CEF70019A709 /* SWBQRCodeWindowController.xib */,
 				9B3FFF301D08CEE40019A709 /* SWBQRCodeWindowController.h */,
+				0877D6551EF1E82400126865 /* SubscribePreferenceWindowController.swift */,
+				0877D6561EF1E82400126865 /* SubscribePreferenceWindowController.xib */,
 				9B3FFF311D08CEE40019A709 /* SWBQRCodeWindowController.m */,
 				9BEEF0731D04EF3E00FC52B3 /* PreferencesWindowController.swift */,
 				9B2491B61D0ACC3A003BBECC /* PreferencesWindowController.xib */,
@@ -467,6 +476,7 @@
 				TargetAttributes = {
 					9B0BFFE41D0460A70040E62B = {
 						CreatedOnToolsVersion = 7.3.1;
+						DevelopmentTeam = 2E8Q4BTFR2;
 						LastSwiftMigration = 0800;
 						ProvisioningStyle = Automatic;
 					};
@@ -512,6 +522,7 @@
 				C6E28E951DA79705004F8330 /* HTTPPreferencesWindowController.xib in Resources */,
 				9BEEF0691D04D4D500FC52B3 /* install_ss_local.sh in Resources */,
 				9B0D55461D2CC85400A4A8E2 /* ProxyPreferencesController.xib in Resources */,
+				0877D6581EF1E82400126865 /* SubscribePreferenceWindowController.xib in Resources */,
 				9B2491B41D0ACC3A003BBECC /* PreferencesWindowController.xib in Resources */,
 				9B3FFF291D08A1DF0019A709 /* user-rule.txt in Resources */,
 				C6D429971DA75988002A5711 /* stop_privoxy.sh in Resources */,
@@ -696,6 +707,8 @@
 				9BA04B261D24044D005AAD7F /* ProxyPreferencesController.swift in Sources */,
 				9B3FFF141D0705810019A709 /* Notifications.swift in Sources */,
 				9BEEF0701D04DDB100FC52B3 /* ServerProfileManager.swift in Sources */,
+				0877D6571EF1E82400126865 /* SubscribePreferenceWindowController.swift in Sources */,
+				0877D6541EF1E65600126865 /* Subscribe.swift in Sources */,
 				9BEEF07B1D05631500FC52B3 /* AdvPreferencesWindowController.swift in Sources */,
 				083BF8391D82759600831C68 /* StatusItemView.swift in Sources */,
 				9BEEF06E1D04DCE400FC52B3 /* ServerProfile.swift in Sources */,
@@ -908,6 +921,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = 2E8Q4BTFR2;
 				HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/libcork/include/",
 					"$(SRCROOT)/libipset/include/",
@@ -938,6 +952,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = 2E8Q4BTFR2;
 				HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/libcork/include/",
 					"$(SRCROOT)/libipset/include/",
