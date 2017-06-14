@@ -730,11 +730,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
 
     func handleURLEvent(_ event: NSAppleEventDescriptor, withReplyEvent replyEvent: NSAppleEventDescriptor) {
         if let urlString = event.paramDescriptor(forKeyword: AEKeyword(keyDirectObject))?.stringValue {
-            if let url = URL(string: urlString) {
+            if URL(string: urlString) != nil {
                 NotificationCenter.default.post(
                     name: Notification.Name(rawValue: "NOTIFY_FOUND_SS_URL"), object: nil
                     , userInfo: [
-                        "urls": [url],
+                        "urls": splitProfile(url: urlString, max: 5).map({ (item: String) -> URL in
+                            return URL(string: item)!
+                        }),
                         "source": "url",
                     ])
             }
