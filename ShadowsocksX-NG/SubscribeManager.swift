@@ -12,26 +12,23 @@ class SubscribeManager:NSObject{
     static let instance:SubscribeManager = SubscribeManager()
     
     var subscribes:[Subscribe]
+    let defaults = UserDefaults.standard
     
     fileprivate override init() {
-        subscribes = [Subscribe]()
-        
-        let defaults = UserDefaults.standard
-        if let _profiles = defaults.array(forKey: "Subscribe") {
-            for _profile in _profiles {
-                let profile = Subscribe(initUrlString: (_profile as AnyObject).url)
-                subscribes.append(profile)
-
-            }
-        }
+        subscribes = defaults.array(forKey: "Subscribe") as! [Subscribe]
     }
     func addSubscribe(oneSubscribe: Subscribe) -> Bool {
         subscribes.append(oneSubscribe)
-        let defaults = UserDefaults.standard
         defaults.set(subscribes, forKey: "Subscribe")
         return true
     }
-    func deleteSubscribe(oneSubscribe: Subscribe) -> Bool {
+    func deleteSubscribe(toDeleteSubscribe: Subscribe) -> Bool {
+        subscribes.enumerated().forEach({ (index, oneSubscribe) -> Void in
+            if(oneSubscribe.getFeed() == toDeleteSubscribe.getFeed()){
+                subscribes.remove(at: index)
+            }
+        })
+        defaults.set(subscribes, forKey: "Subscribe")
         return true
     }
 }
