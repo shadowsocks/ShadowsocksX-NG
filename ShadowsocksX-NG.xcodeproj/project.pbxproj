@@ -11,6 +11,7 @@
 		083BF8371D82742200831C68 /* PingClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 083BF8351D82742200831C68 /* PingClient.swift */; };
 		083BF8391D82759600831C68 /* StatusItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 083BF8381D82759600831C68 /* StatusItemView.swift */; };
 		083BF83B1D8275A800831C68 /* SystemThemeChangeHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 083BF83A1D8275A800831C68 /* SystemThemeChangeHelper.swift */; };
+		08635C771EF750FA00F1D25E /* SubscribeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08635C761EF750FA00F1D25E /* SubscribeManager.swift */; };
 		0877D6541EF1E65600126865 /* Subscribe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0877D6531EF1E65600126865 /* Subscribe.swift */; };
 		0877D6571EF1E82400126865 /* SubscribePreferenceWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0877D6551EF1E82400126865 /* SubscribePreferenceWindowController.swift */; };
 		0877D6581EF1E82400126865 /* SubscribePreferenceWindowController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0877D6561EF1E82400126865 /* SubscribePreferenceWindowController.xib */; };
@@ -113,6 +114,7 @@
 		083BF8381D82759600831C68 /* StatusItemView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StatusItemView.swift; sourceTree = "<group>"; };
 		083BF83A1D8275A800831C68 /* SystemThemeChangeHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SystemThemeChangeHelper.swift; sourceTree = "<group>"; };
 		085641E91D7188C400116B27 /* Base */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Base; path = Base.lproj/Localizable.strings; sourceTree = "<group>"; };
+		08635C761EF750FA00F1D25E /* SubscribeManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SubscribeManager.swift; sourceTree = "<group>"; };
 		0877D6531EF1E65600126865 /* Subscribe.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Subscribe.swift; sourceTree = "<group>"; };
 		0877D6551EF1E82400126865 /* SubscribePreferenceWindowController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SubscribePreferenceWindowController.swift; sourceTree = "<group>"; };
 		0877D6561EF1E82400126865 /* SubscribePreferenceWindowController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = SubscribePreferenceWindowController.xib; sourceTree = "<group>"; };
@@ -326,8 +328,9 @@
 				9B0BFFEC1D0460A70040E62B /* MainMenu.xib */,
 				9B0BFFEF1D0460A70040E62B /* Info.plist */,
 				9BEEF06D1D04DCE400FC52B3 /* ServerProfile.swift */,
-				0877D6531EF1E65600126865 /* Subscribe.swift */,
 				9BEEF06F1D04DDB100FC52B3 /* ServerProfileManager.swift */,
+				0877D6531EF1E65600126865 /* Subscribe.swift */,
+				08635C761EF750FA00F1D25E /* SubscribeManager.swift */,
 				08BDBB471E2361BD00C4BBC2 /* VersionChecker.swift */,
 				083BF8381D82759600831C68 /* StatusItemView.swift */,
 				083BF83A1D8275A800831C68 /* SystemThemeChangeHelper.swift */,
@@ -362,9 +365,9 @@
 			children = (
 				9B3FFF331D08CEF70019A709 /* SWBQRCodeWindowController.xib */,
 				9B3FFF301D08CEE40019A709 /* SWBQRCodeWindowController.h */,
+				9B3FFF311D08CEE40019A709 /* SWBQRCodeWindowController.m */,
 				0877D6551EF1E82400126865 /* SubscribePreferenceWindowController.swift */,
 				0877D6561EF1E82400126865 /* SubscribePreferenceWindowController.xib */,
-				9B3FFF311D08CEE40019A709 /* SWBQRCodeWindowController.m */,
 				9BEEF0731D04EF3E00FC52B3 /* PreferencesWindowController.swift */,
 				9B2491B61D0ACC3A003BBECC /* PreferencesWindowController.xib */,
 				9BEEF0791D05631500FC52B3 /* AdvPreferencesWindowController.swift */,
@@ -707,6 +710,7 @@
 				9BA04B261D24044D005AAD7F /* ProxyPreferencesController.swift in Sources */,
 				9B3FFF141D0705810019A709 /* Notifications.swift in Sources */,
 				9BEEF0701D04DDB100FC52B3 /* ServerProfileManager.swift in Sources */,
+				08635C771EF750FA00F1D25E /* SubscribeManager.swift in Sources */,
 				0877D6571EF1E82400126865 /* SubscribePreferenceWindowController.swift in Sources */,
 				0877D6541EF1E65600126865 /* Subscribe.swift in Sources */,
 				9BEEF07B1D05631500FC52B3 /* AdvPreferencesWindowController.swift in Sources */,
