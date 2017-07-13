@@ -9,7 +9,11 @@
         <customObject id="-2" userLabel="File's Owner" customClass="SubscribePreferenceWindowController" customModule="ShadowsocksX_NG" customModuleProvider="target">
             <connections>
                 <outlet property="FeedLabel" destination="uYX-0C-bOD" id="odZ-Tm-7SC"/>
+                <outlet property="FeedTextField" destination="p1W-Md-Wfw" id="zh0-1b-0zw"/>
+                <outlet property="GroupTextField" destination="MrH-Ft-1tn" id="txD-SB-Kpr"/>
+                <outlet property="MaxCountTextField" destination="vQO-bq-Igs" id="feo-Jx-AXK"/>
                 <outlet property="OKButton" destination="rC3-mg-tMh" id="RK5-lm-9qc"/>
+                <outlet property="TokenTextField" destination="hnP-yo-KBb" id="aDw-vO-ZID"/>
                 <outlet property="window" destination="F0z-JX-Cv5" id="gIp-Ho-8D9"/>
             </connections>
         </customObject>
@@ -33,16 +37,16 @@
                         </textFieldCell>
                     </textField>
                     <scrollView horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="05M-8P-vtL">
-                        <rect key="frame" x="20" y="124" width="124" height="101"/>
+                        <rect key="frame" x="20" y="86" width="124" height="139"/>
                         <clipView key="contentView" id="g4O-N9-54h">
-                            <rect key="frame" x="1" y="1" width="122" height="99"/>
+                            <rect key="frame" x="1" y="1" width="122" height="137"/>
                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                             <subviews>
                                 <textView importsGraphics="NO" usesFontPanel="YES" findStyle="panel" continuousSpellChecking="YES" allowsUndo="YES" usesRuler="YES" allowsNonContiguousLayout="YES" quoteSubstitution="YES" dashSubstitution="YES" spellingCorrection="YES" smartInsertDelete="YES" id="sqe-fs-fHA">
-                                    <rect key="frame" x="0.0" y="0.0" width="122" height="99"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="122" height="137"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                    <size key="minSize" width="122" height="99"/>
+                                    <size key="minSize" width="122" height="137"/>
                                     <size key="maxSize" width="463" height="10000000"/>
                                     <color key="insertionPointColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                 </textView>
@@ -54,7 +58,7 @@
                             <autoresizingMask key="autoresizingMask"/>
                         </scroller>
                         <scroller key="verticalScroller" verticalHuggingPriority="750" doubleValue="1" horizontal="NO" id="bib-Nw-Xom">
-                            <rect key="frame" x="107" y="1" width="16" height="99"/>
+                            <rect key="frame" x="107" y="1" width="16" height="137"/>
                             <autoresizingMask key="autoresizingMask"/>
                         </scroller>
                     </scrollView>
@@ -83,7 +87,7 @@
                         </textFieldCell>
                     </textField>
                     <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="nzj-fK-Vip">
-                        <rect key="frame" x="20" y="105" width="20" height="20"/>
+                        <rect key="frame" x="20" y="20" width="20" height="20"/>
                         <constraints>
                             <constraint firstAttribute="width" constant="20" id="CfY-uG-c0X"/>
                             <constraint firstAttribute="height" constant="18" id="Lkb-PM-8fV"/>
@@ -94,7 +98,7 @@
                         </buttonCell>
                     </button>
                     <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="jSv-em-0Gp">
-                        <rect key="frame" x="40" y="105" width="20" height="20"/>
+                        <rect key="frame" x="40" y="20" width="20" height="20"/>
                         <constraints>
                             <constraint firstAttribute="width" constant="20" id="aEO-oC-a3N"/>
                         </constraints>
@@ -127,8 +131,26 @@
                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                     </textField>
+                    <textField verticalHuggingPriority="750" fixedFrame="YES" allowsCharacterPickerTouchBarItem="NO" translatesAutoresizingMaskIntoConstraints="NO" id="vQO-bq-Igs">
+                        <rect key="frame" x="236" y="86" width="224" height="22"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="3kt-n3-uTF">
+                            <font key="font" metaFont="system"/>
+                            <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" allowsCharacterPickerTouchBarItem="NO" translatesAutoresizingMaskIntoConstraints="NO" id="XLx-TZ-soe">
+                        <rect key="frame" x="184" y="88" width="41" height="17"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Count" id="wbG-HT-bdN">
+                            <font key="font" metaFont="system"/>
+                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
                     <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="rC3-mg-tMh">
-                        <rect key="frame" x="407" y="80" width="59" height="32"/>
+                        <rect key="frame" x="407" y="13" width="59" height="32"/>
                         <buttonCell key="cell" type="push" title="OK" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="CfK-8Y-YNP">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                             <font key="font" metaFont="system"/>
@@ -150,19 +172,19 @@ DQ
                     <constraint firstItem="MrH-Ft-1tn" firstAttribute="top" secondItem="hnP-yo-KBb" secondAttribute="bottom" constant="19" id="DsI-9d-P9b"/>
                     <constraint firstAttribute="trailing" secondItem="MrH-Ft-1tn" secondAttribute="trailing" constant="20" symbolic="YES" id="L6b-S2-rXW"/>
                     <constraint firstItem="MrH-Ft-1tn" firstAttribute="leading" secondItem="p1W-Md-Wfw" secondAttribute="leading" id="NbP-CB-QGM"/>
-                    <constraint firstItem="rC3-mg-tMh" firstAttribute="top" secondItem="MrH-Ft-1tn" secondAttribute="bottom" constant="16" id="TKp-sn-xiU"/>
-                    <constraint firstAttribute="bottom" secondItem="nzj-fK-Vip" secondAttribute="bottom" constant="106" id="Y3H-aQ-YNb"/>
+                    <constraint firstItem="rC3-mg-tMh" firstAttribute="top" secondItem="MrH-Ft-1tn" secondAttribute="bottom" constant="83" id="TKp-sn-xiU"/>
+                    <constraint firstAttribute="bottom" secondItem="nzj-fK-Vip" secondAttribute="bottom" constant="21" id="Y3H-aQ-YNb"/>
                     <constraint firstItem="nzj-fK-Vip" firstAttribute="leading" secondItem="uYX-0C-bOD" secondAttribute="leading" id="Za5-x5-eJr"/>
                     <constraint firstItem="Fkq-Nl-5rY" firstAttribute="centerY" secondItem="MrH-Ft-1tn" secondAttribute="centerY" id="bK9-gp-UzV"/>
                     <constraint firstItem="MrH-Ft-1tn" firstAttribute="leading" secondItem="05M-8P-vtL" secondAttribute="trailing" constant="92" id="gLs-QP-U8s"/>
                     <constraint firstItem="MrH-Ft-1tn" firstAttribute="trailing" secondItem="p1W-Md-Wfw" secondAttribute="trailing" id="iTW-Og-aCE"/>
                     <constraint firstItem="P7L-eo-l3V" firstAttribute="leading" secondItem="uNY-1k-LwL" secondAttribute="leading" id="lCH-5t-qVb"/>
-                    <constraint firstItem="nzj-fK-Vip" firstAttribute="top" secondItem="05M-8P-vtL" secondAttribute="bottom" id="mXA-9N-UNt"/>
+                    <constraint firstItem="nzj-fK-Vip" firstAttribute="top" secondItem="05M-8P-vtL" secondAttribute="bottom" constant="47" id="mXA-9N-UNt"/>
                     <constraint firstItem="nzj-fK-Vip" firstAttribute="leading" secondItem="se5-gp-TjO" secondAttribute="leading" constant="20" symbolic="YES" id="mn4-pg-oMy"/>
                     <constraint firstItem="MrH-Ft-1tn" firstAttribute="trailing" secondItem="hnP-yo-KBb" secondAttribute="trailing" id="pp9-gb-IcG"/>
                     <constraint firstItem="MrH-Ft-1tn" firstAttribute="leading" secondItem="hnP-yo-KBb" secondAttribute="leading" id="qIK-qK-NsQ"/>
                     <constraint firstItem="p1W-Md-Wfw" firstAttribute="leading" secondItem="uNY-1k-LwL" secondAttribute="trailing" constant="26" id="tgx-dn-JvH"/>
-                    <constraint firstItem="05M-8P-vtL" firstAttribute="bottom" secondItem="MrH-Ft-1tn" secondAttribute="bottom" id="w2c-Wi-tzl"/>
+                    <constraint firstItem="05M-8P-vtL" firstAttribute="bottom" secondItem="MrH-Ft-1tn" secondAttribute="bottom" constant="38" id="w2c-Wi-tzl"/>
                     <constraint firstItem="jSv-em-0Gp" firstAttribute="centerY" secondItem="nzj-fK-Vip" secondAttribute="centerY" id="w6C-hd-DIa"/>
                     <constraint firstItem="05M-8P-vtL" firstAttribute="trailing" secondItem="uYX-0C-bOD" secondAttribute="trailing" id="wDW-Xw-AUf"/>
                     <constraint firstItem="P7L-eo-l3V" firstAttribute="top" secondItem="uNY-1k-LwL" secondAttribute="bottom" constant="21" id="wl6-VJ-tLB"/>

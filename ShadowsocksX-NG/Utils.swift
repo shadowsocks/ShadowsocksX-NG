@@ -39,7 +39,7 @@ func splitProfile(url: String, max: Int) -> [String] {
     return [""]
 }
 
-fileprivate func splitor(url: String, regexp: String) -> [String] {
+func splitor(url: String, regexp: String) -> [String] {
     var ret: [String] = []
     var ssrUrl = url
     while ssrUrl.range(of:regexp, options: .regularExpression) != nil{

@@ -31,4 +31,7 @@ class SubscribeManager:NSObject{
         defaults.set(subscribes, forKey: "Subscribe")
         return true
     }
+    func updateAllServerFromSubscribe(){
+        
+    }
 }
