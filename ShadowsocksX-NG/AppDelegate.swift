@@ -52,6 +52,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     @IBOutlet weak var ShowNetworkSpeedItem: NSMenuItem!
     @IBOutlet weak var checkUpdateMenuItem: NSMenuItem!
     @IBOutlet weak var checkUpdateAtLaunchMenuItem: NSMenuItem!
+    @IBOutlet var updateSubscribeAtLaunchMenuItem: NSMenuItem!
+    @IBOutlet var manualUpdateSubscribeMenuItem: NSMenuItem!
+    @IBOutlet var editSubscribeMenuItem: NSMenuItem!
     
     // MARK: Variables
     var statusItemView:StatusItemView!
@@ -92,7 +95,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             "LocalHTTP.FollowGlobal": true,
             "AutoCheckUpdate": false,
             "ACLFileName": "chn.acl",
-            "SubscribeFeed": ""
+            "Subscribes": [],
+            "AutoUpdateSubscribe":false,
         ])
 
         setUpMenu(defaults.bool(forKey: "enable_showSpeed"))
@@ -360,6 +364,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         ServerProfileManager.instance.exportConfigFile()
     }
     
+    @IBAction func updateSubscribe(_ sender: NSMenuItem) {
+    }
+    
+    @IBAction func updateSubscribeAtLaunch(_ sender: NSMenuItem) {
+    }
+    
+    
+    // MARK: Proxy submenu function
+
     @IBAction func selectPACMode(_ sender: NSMenuItem) {
         let defaults = UserDefaults.standard
         defaults.setValue("auto", forKey: "ShadowsocksRunningMode")
@@ -635,6 +648,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         let showBunch = showBunchJsonExampleFileItem
         let importBuntch = importBunchJsonFileItem
         let exportAllServer = exportAllServerProfileItem
+        let updateSubscribeItem = manualUpdateSubscribeMenuItem
+        let autoUpdateSubscribeItem = updateSubscribeAtLaunchMenuItem
+        let editSubscribeItem = editSubscribeMenuItem
 //        let pingItem = pingserverMenuItem
 
         var i = 0
@@ -690,6 +706,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         if !mgr.profiles.isEmpty {
             serversMenuItem.submenu?.addItem(NSMenuItem.separator())
         }
+        serversMenuItem.submenu?.addItem(editSubscribeItem!)
+        serversMenuItem.submenu?.addItem(autoUpdateSubscribeItem!)
+        serversMenuItem.submenu?.addItem(updateSubscribeItem!)
         serversMenuItem.submenu?.addItem(showQRItem!)
         serversMenuItem.submenu?.addItem(scanQRItem!)
         serversMenuItem.submenu?.addItem(showBunch!)

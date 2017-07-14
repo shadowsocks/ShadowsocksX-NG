@@ -15,11 +15,11 @@ class SubscribeManager:NSObject{
     let defaults = UserDefaults.standard
     
     fileprivate override init() {
-        subscribes = defaults.array(forKey: "Subscribe") as! [Subscribe]
+        subscribes = defaults.array(forKey: "Subscribes") as! [Subscribe]
     }
     func addSubscribe(oneSubscribe: Subscribe) -> Bool {
         subscribes.append(oneSubscribe)
-        defaults.set(subscribes, forKey: "Subscribe")
+        defaults.set(subscribes, forKey: "Subscribes")
         return true
     }
     func deleteSubscribe(toDeleteSubscribe: Subscribe) -> Bool {
@@ -28,7 +28,7 @@ class SubscribeManager:NSObject{
                 subscribes.remove(at: index)
             }
         })
-        defaults.set(subscribes, forKey: "Subscribe")
+        defaults.set(subscribes, forKey: "Subscribes")
         return true
     }
     func updateAllServerFromSubscribe(){

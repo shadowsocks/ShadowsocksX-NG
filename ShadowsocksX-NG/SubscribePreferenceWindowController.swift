@@ -18,16 +18,30 @@ class SubscribePreferenceWindowController: NSWindowController {
     @IBOutlet weak var GroupTextField: NSTextField!
     @IBOutlet weak var MaxCountTextField: NSTextField!
     
+    var sbMgr: SubscribeManager!
+    var defaults: UserDefaults!
+    
     override func windowDidLoad() {
         super.windowDidLoad()
 
         // Implement this method to handle any initialization after your window controller's window has been loaded from its nib file.
         // TODO load stored subscribes and prepare the manager
+        sbMgr = SubscribeManager.instance
+        defaults = UserDefaults.standard
+    }
+    
+    override func awakeFromNib() {
+//        profilesTableView.register(forDraggedTypes: [tableViewDragType])
+//        profilesTableView.allowsMultipleSelection = true
     }
     
     @IBAction func onOk(_ sender: NSButton) {
         // TODO append to manager and save
-        var subscribe = Subscribe.init(initUrlString: FeedTextField.stringValue, initGroupName: GroupTextField.stringValue, initToken: TokenTextField.stringValue, initMaxCount: MaxCountTextField.integerValue)
+        let subscribe = Subscribe.init(initUrlString: FeedTextField.stringValue, initGroupName: GroupTextField.stringValue, initToken: TokenTextField.stringValue, initMaxCount: MaxCountTextField.integerValue)
+        if subscribe.feedValidator() {
+            _ = sbMgr.addSubscribe(oneSubscribe: subscribe)
+        }
+        subscribe.updateServerFromFeed()
         window?.performClose(self)
     }
     

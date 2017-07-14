@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="12121" systemVersion="17A264c" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="12121" systemVersion="16F73" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
     <dependencies>
         <deployment identifier="macosx"/>
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="12121"/>
@@ -23,11 +23,13 @@
                 <outlet property="checkUpdateAtLaunchMenuItem" destination="3nJ-zQ-Agj" id="bbR-eO-uCo"/>
                 <outlet property="checkUpdateMenuItem" destination="wyZ-4G-qg9" id="Sva-xA-VQY"/>
                 <outlet property="connectAtLaunchMenuItem" destination="aB3-cf-5j0" id="kW6-UF-38P"/>
+                <outlet property="editSubscribeMenuItem" destination="QJ6-eg-mzv" id="KC0-uH-8q0"/>
                 <outlet property="exportAllServerProfileItem" destination="6k0-gn-DQv" id="1xA-cd-5Ia"/>
                 <outlet property="globalModeMenuItem" destination="Mw3-Jm-eXA" id="ar5-Yx-3ze"/>
                 <outlet property="importBunchJsonFileItem" destination="T9g-gy-gvv" id="GW7-ii-U1j"/>
                 <outlet property="lanchAtLoginMenuItem" destination="eUq-p7-ICK" id="w4p-0c-DZn"/>
                 <outlet property="manualModeMenuItem" destination="8PR-gs-c5N" id="9qz-mU-5kt"/>
+                <outlet property="manualUpdateSubscribeMenuItem" destination="NnE-Ad-1An" id="2Vf-Br-EnF"/>
                 <outlet property="pingserverMenuItem" destination="zfR-Jt-GmS" id="Gjs-bY-0tm"/>
                 <outlet property="proxyMenuItem" destination="diI-fB-Rss" id="Qjk-9U-3Qy"/>
                 <outlet property="runningStatusMenuItem" destination="fzk-mE-CEV" id="Vwm-Rg-Ykn"/>
@@ -38,6 +40,7 @@
                 <outlet property="showQRCodeMenuItem" destination="R6A-96-Zcb" id="XHz-pz-nCz"/>
                 <outlet property="statusMenu" destination="Hob-KD-bx9" id="clA-ZW-0pT"/>
                 <outlet property="toggleRunningMenuItem" destination="GSu-Tf-StS" id="XHw-pU-nCa"/>
+                <outlet property="updateSubscribeAtLaunchMenuItem" destination="nQ4-Nv-tox" id="dOD-xa-Rw4"/>
                 <outlet property="whiteListModeMenuItem" destination="RvZ-Zn-29U" id="2v5-Bd-EDj"/>
             </connections>
         </customObject>
@@ -119,12 +122,6 @@
                                     <action selector="editUserRulesForPAC:" target="Voe-Tx-rLC" id="ZtK-2d-Pcl"/>
                                 </connections>
                             </menuItem>
-                            <menuItem title="Edit Subscribe Feed" id="QJ6-eg-mzv">
-                                <modifierMask key="keyEquivalentModifierMask"/>
-                                <connections>
-                                    <action selector="editSubscribeFeed:" target="Voe-Tx-rLC" id="V3v-T4-Rfn"/>
-                                </connections>
-                            </menuItem>
                             <menuItem isSeparatorItem="YES" id="bMX-qn-Qwi"/>
                             <menuItem title="Advance Proxy Preference..." id="sbx-yz-3lO">
                                 <modifierMask key="keyEquivalentModifierMask"/>
@@ -140,6 +137,24 @@
                     <modifierMask key="keyEquivalentModifierMask" shift="YES"/>
                     <menu key="submenu" title="Servers" id="9Y1-db-3HK">
                         <items>
+                            <menuItem title="Edit Subscribe Feed" id="QJ6-eg-mzv">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="editSubscribeFeed:" target="Voe-Tx-rLC" id="V3v-T4-Rfn"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Update Subscribe on App Start" id="nQ4-Nv-tox">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="updateSubscribeAtLaunch:" target="Voe-Tx-rLC" id="mCZ-VF-av8"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Manual Update Subscribe" id="NnE-Ad-1An">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="updateSubscribe:" target="Voe-Tx-rLC" id="Vno-Oh-0oc"/>
+                                </connections>
+                            </menuItem>
                             <menuItem title="Show QR Code For Current Server..." id="R6A-96-Zcb">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
