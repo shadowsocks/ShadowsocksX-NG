@@ -34,6 +34,7 @@ class SubscribePreferenceWindowController: NSWindowController
         sbMgr = SubscribeManager.instance
         defaults = UserDefaults.standard
         SubscribeTableView.reloadData()
+        updateSubscribeBoxVisible()
     }
     
     override func awakeFromNib() {
@@ -42,14 +43,14 @@ class SubscribePreferenceWindowController: NSWindowController
     }
     
     @IBAction func onOk(_ sender: NSButton) {
-        // TODO append to manager and save
-        let subscribe = Subscribe.init(initUrlString: FeedTextField.stringValue, initGroupName: GroupTextField.stringValue, initToken: TokenTextField.stringValue, initMaxCount: MaxCountTextField.integerValue)
-        if !subscribe.feedValidator() {
-            return shakeWindows()
+        if editingSubscribe != nil {
+            if !editingSubscribe.feedValidator() {
+                // Done Shake window
+                shakeWindows()
+                return
+            }
         }
-        _ = sbMgr.addSubscribe(oneSubscribe: subscribe)
-        subscribe.updateServerFromFeed()
-        SubscribeTableView.reloadData()
+        sbMgr.save()
         window?.performClose(self)
     }
     
@@ -77,10 +78,12 @@ class SubscribePreferenceWindowController: NSWindowController
         if index >= 0 {
             SubscribeTableView.beginUpdates()
             for (_, toDeleteIndex) in SubscribeTableView.selectedRowIndexes.enumerated() {
-                print(sbMgr.subscribes.count)
-                sbMgr.subscribes.remove(at: toDeleteIndex - deleteCount)
+                _ = sbMgr.deleteSubscribe(atIndex: toDeleteIndex - deleteCount)
                 SubscribeTableView.removeRows(at: IndexSet(integer: toDeleteIndex - deleteCount), withAnimation: .effectFade)
                 deleteCount += 1
+                if sbMgr.subscribes.count == 0 {
+                    cleanField()
+                }
             }
             SubscribeTableView.endUpdates()
         }
@@ -92,8 +95,16 @@ class SubscribePreferenceWindowController: NSWindowController
     func updateSubscribeBoxVisible() {
         if sbMgr.subscribes.count <= 0 {
             DeleteSubscribeBtn.isEnabled = false
+            FeedTextField.isEnabled = false
+            TokenTextField.isEnabled = false
+            GroupTextField.isEnabled = false
+            MaxCountTextField.isEnabled = false
         }else{
             DeleteSubscribeBtn.isEnabled = true
+            FeedTextField.isEnabled = true
+            TokenTextField.isEnabled = true
+            GroupTextField.isEnabled = true
+            MaxCountTextField.isEnabled = true
         }
     }
     
@@ -234,6 +245,13 @@ class SubscribePreferenceWindowController: NSWindowController
                 SubscribeTableView.selectRowIndexes(index, byExtendingSelection: false)
             }
         }
+    }
+    
+    func cleanField(){
+        FeedTextField.stringValue = ""
+        TokenTextField.stringValue = ""
+        GroupTextField.stringValue = ""
+        MaxCountTextField.stringValue = ""
     }
     
     func shakeWindows(){

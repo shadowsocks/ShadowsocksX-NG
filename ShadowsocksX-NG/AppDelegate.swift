@@ -378,6 +378,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     }
     
     @IBAction func updateSubscribeAtLaunch(_ sender: NSMenuItem) {
+        let defaults = UserDefaults.standard
+        defaults.set(!defaults.bool(forKey: "AutoUpdateSubscribe"), forKey: "AutoUpdateSubscribe")
+        updateSubscribeAtLaunchMenuItem.state = defaults.bool(forKey: "AutoUpdateSubscribe") ? 1 : 0
     }
     
     
@@ -718,6 +721,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         }
         serversMenuItem.submenu?.addItem(editSubscribeItem!)
         serversMenuItem.submenu?.addItem(autoUpdateSubscribeItem!)
+        autoUpdateSubscribeItem?.state = UserDefaults.standard.bool(forKey: "AutoUpdateSubscribe") ? 1 : 0
         serversMenuItem.submenu?.addItem(updateSubscribeItem!)
         serversMenuItem.submenu?.addItem(showQRItem!)
         serversMenuItem.submenu?.addItem(scanQRItem!)

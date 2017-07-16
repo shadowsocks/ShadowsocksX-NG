@@ -3,13 +3,13 @@
 "CfK-8Y-YNP.title" = "OK";
 
 /* Class = "NSWindow"; title = "Window"; ObjectID = "F0z-JX-Cv5"; */
-"F0z-JX-Cv5.title" = "Window";
+"F0z-JX-Cv5.title" = "订阅设置";
 
 /* Class = "NSTextFieldCell"; title = "Token"; ObjectID = "IrJ-D8-tlX"; */
-"IrJ-D8-tlX.title" = "Token";
+"IrJ-D8-tlX.title" = "口令";
 
 /* Class = "NSTextFieldCell"; title = "Group"; ObjectID = "f2p-qb-uuE"; */
-"f2p-qb-uuE.title" = "Group";
+"f2p-qb-uuE.title" = "组名";
 
 /* Class = "NSTextFieldCell"; title = "Text"; ObjectID = "ik7-wS-gok"; */
 "ik7-wS-gok.title" = "Text";
@@ -18,7 +18,7 @@
 "rMX-5B-Fvs.title" = "订阅设置";
 
 /* Class = "NSTextFieldCell"; title = "Count"; ObjectID = "wbG-HT-bdN"; */
-"wbG-HT-bdN.title" = "Count";
+"wbG-HT-bdN.title" = "最大数量";
 
 /* Class = "NSTextFieldCell"; title = "URL"; ObjectID = "yBp-oB-gbL"; */
-"yBp-oB-gbL.title" = "URL";
+"yBp-oB-gbL.title" = "订阅地址";

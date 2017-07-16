@@ -172,7 +172,10 @@ class Subscribe: NSObject{
     fileprivate func pushNotification(){
         
     }
-    fileprivate func isSame(source: Subscribe, target: Subscribe) -> Bool {
+    class func isSame(source: Subscribe, target: Subscribe) -> Bool {
         return source.subscribeFeed == target.subscribeFeed && source.token == target.token && source.maxCount == target.maxCount
+    }
+    func isExist(_ target: Subscribe) -> Bool {
+        return self.subscribeFeed == target.subscribeFeed
     }
 }

@@ -25,18 +25,24 @@ class SubscribeManager:NSObject{
         }
     }
     func addSubscribe(oneSubscribe: Subscribe) -> Bool {
+        for (index, value) in subscribes.enumerated() {
+            if Subscribe.isSame(source: oneSubscribe, target: value) {
+                return true
+            }
+            if value.isExist(oneSubscribe) {
+                subscribes.replaceSubrange(Range(index..<index + 1), with: [oneSubscribe])
+                return true
+            }
+        }
         subscribes.append(oneSubscribe)
-        defaults.set(subscribesToDefaults(data: subscribes), forKey: "Subscribes")
         return true
     }
-    func deleteSubscribe(toDeleteSubscribe: Subscribe) -> Bool {
-        subscribes.enumerated().forEach({ (index, oneSubscribe) -> Void in
-            if(oneSubscribe.getFeed() == toDeleteSubscribe.getFeed()){
-                subscribes.remove(at: index)
-            }
-        })
-        defaults.set(subscribesToDefaults(data: subscribes), forKey: "Subscribes")
+    func deleteSubscribe(atIndex: Int) -> Bool {
+        subscribes.remove(at: atIndex)
         return true
+    }
+    func save() {
+        defaults.set(subscribesToDefaults(data: subscribes), forKey: "Subscribes")
     }
     fileprivate func subscribesToDefaults(data: [Subscribe]) -> [[String: AnyObject]]{
         var ret : [[String: AnyObject]] = []
