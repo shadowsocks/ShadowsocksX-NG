@@ -16,6 +16,7 @@ class Subscribe: NSObject{
     var maxCount = -1 // -1 is not limited
     var groupName = ""
     var token = ""
+    var cache = ""
     
     var profileMgr: ServerProfileManager!
     
@@ -55,6 +56,35 @@ class Subscribe: NSObject{
     func getMaxCount() -> Int {
         return maxCount
     }
+    static func fromDictionary(_ data:[String:AnyObject]) -> Subscribe {
+        var feed:String = ""
+        var group:String = ""
+        var token:String = ""
+        var maxCount:Int = -1
+        for (key, value) in data {
+            switch key {
+            case "feed":
+                feed = value as! String
+            case "group":
+                group = value as! String
+            case "token":
+                token = value as! String
+            case "maxCount":
+                maxCount = value as! Int
+            default:
+                print("")
+            }
+        }
+        return Subscribe.init(initUrlString: feed, initGroupName: group, initToken: token, initMaxCount: maxCount)
+    }
+    static func toDictionary(_ data: Subscribe) -> [String: AnyObject] {
+        var ret : [String: AnyObject] = [:]
+        ret["feed"] = data.subscribeFeed as AnyObject
+        ret["group"] = data.groupName as AnyObject
+        ret["token"] = data.token as AnyObject
+        ret["maxCount"] = data.maxCount as AnyObject
+        return ret
+    }
     fileprivate func sendRequest(url: String, options: Any, callback: @escaping (String) -> Void) {
         let headers: HTTPHeaders = [
             //            "Authorization": "Basic U2hhZG93c29ja1gtTkctUg==",
@@ -76,8 +106,8 @@ class Subscribe: NSObject{
         }
     }
     func setMaxCount() {
-        sendRequest(url: self.subscribeFeed, options: "", callback: { resString in
-            
+        
+        func getMaxFromRes(resString: String) {
             let maxCountReg = "MAX=[0-9]+"
             let decodeRes = decode64(resString)!
             let range = decodeRes.range(of: maxCountReg, options: .regularExpression)
@@ -88,12 +118,19 @@ class Subscribe: NSObject{
             else{
                 self.maxCount = -1
             }
-            
+        }
+        
+        if cache != "" {
+            return getMaxFromRes(resString: cache)
+        }
+        sendRequest(url: self.subscribeFeed, options: "", callback: { resString in
+            getMaxFromRes(resString: resString)
+            self.cache = resString
         })
     }
     func updateServerFromFeed(){
-        if (!isActive){ return }
-        sendRequest(url: self.subscribeFeed, options: "", callback: { resString in
+        
+        func updateServerHandler(resString: String) {
             let decodeRes = decode64(resString)!
             let ssrregexp = "ssr://([A-Za-z0-9_-]+)"
             let urls = splitor(url: decodeRes, regexp: ssrregexp)
@@ -108,6 +145,15 @@ class Subscribe: NSObject{
             }
             self.profileMgr.save()
             (NSApplication.shared().delegate as! AppDelegate).updateServersMenu()
+        }
+        
+        if (!isActive){ return }
+        if cache != "" {
+            return updateServerHandler(resString: cache)
+        }
+        sendRequest(url: self.subscribeFeed, options: "", callback: { resString in
+            updateServerHandler(resString: resString)
+            self.cache = resString
         })
     }
     func feedValidator() -> Bool{
@@ -117,13 +163,31 @@ class Subscribe: NSObject{
     fileprivate func pushNotification(){
         
     }
-    fileprivate func isExisted() -> Bool{
+    fileprivate func isExisted(profile: ServerProfile) -> Bool{
         // using to url judge
         // if existed update
+        for (_, value) in profileMgr.profiles.enumerated() {
+            let ret = value.serverHost == profile.serverHost
+            if ret {
+                return ret
+            }
+        }
         return false
     }
-    fileprivate func isDuplicated() -> Bool{
+    fileprivate func isDuplicated(profile: ServerProfile) -> Bool{
         // if duplicated skip
+        for (_, value) in profileMgr.profiles.enumerated() {
+            let ret = value.serverHost == profile.serverHost
+                && value.password == profile.password
+                && value.serverPort == profile.serverPort
+                && value.ssrProtocol == profile.ssrProtocol
+                && value.ssrObfs == profile.ssrObfs
+                && value.ssrObfsParam == value.ssrObfsParam
+                && value.ssrProtocolParam == value.ssrProtocolParam
+            if ret {
+                return ret
+            }
+        }
         return false
     }
     fileprivate func isSame(source: Subscribe, target: Subscribe) -> Bool {

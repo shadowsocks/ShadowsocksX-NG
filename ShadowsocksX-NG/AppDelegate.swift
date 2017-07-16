@@ -365,6 +365,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     }
     
     @IBAction func updateSubscribe(_ sender: NSMenuItem) {
+        SubscribeManager.instance.updateAllServerFromSubscribe()
     }
     
     @IBAction func updateSubscribeAtLaunch(_ sender: NSMenuItem) {

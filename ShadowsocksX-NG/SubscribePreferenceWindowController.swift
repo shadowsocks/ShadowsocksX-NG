@@ -8,7 +8,8 @@
 
 import Cocoa
 
-class SubscribePreferenceWindowController: NSWindowController {
+class SubscribePreferenceWindowController: NSWindowController
+    , NSTableViewDataSource, NSTableViewDelegate {
 
     @IBOutlet weak var FeedLabel: NSTextField!
     @IBOutlet weak var OKButton: NSButton!
@@ -17,22 +18,25 @@ class SubscribePreferenceWindowController: NSWindowController {
     @IBOutlet weak var TokenTextField: NSTextField!
     @IBOutlet weak var GroupTextField: NSTextField!
     @IBOutlet weak var MaxCountTextField: NSTextField!
+    @IBOutlet weak var SubscribeTableView: NSTableView!
+
     
     var sbMgr: SubscribeManager!
     var defaults: UserDefaults!
+    let tableViewDragType: String = "subscribe.host"
+    var editingSubscribe: Subscribe!
     
     override func windowDidLoad() {
         super.windowDidLoad()
 
-        // Implement this method to handle any initialization after your window controller's window has been loaded from its nib file.
-        // TODO load stored subscribes and prepare the manager
         sbMgr = SubscribeManager.instance
         defaults = UserDefaults.standard
+        SubscribeTableView.reloadData()
     }
     
     override func awakeFromNib() {
-//        profilesTableView.register(forDraggedTypes: [tableViewDragType])
-//        profilesTableView.allowsMultipleSelection = true
+        SubscribeTableView.register(forDraggedTypes: [tableViewDragType])
+        SubscribeTableView.allowsMultipleSelection = true
     }
     
     @IBAction func onOk(_ sender: NSButton) {
@@ -42,14 +46,167 @@ class SubscribePreferenceWindowController: NSWindowController {
             _ = sbMgr.addSubscribe(oneSubscribe: subscribe)
         }
         subscribe.updateServerFromFeed()
+        SubscribeTableView.reloadData()
         window?.performClose(self)
     }
     
-    func bindSubscribe(index: Int){
-        if index >= 0 && index <= SubscribeManager.instance.subscribes.count {
-            var editSubscribe = SubscribeManager.instance.subscribes[index]
-            FeedTextField.bind("value", to: editSubscribe, withKeyPath: "subscribeFeed", options:  [NSContinuouslyUpdatesValueBindingOption: true])
+    func bindSubscribe(_ index:Int) {
+        if index >= 0 && index < sbMgr.subscribes.count {
+            editingSubscribe = sbMgr.subscribes[index]
+            
+            FeedTextField.bind("value", to: editingSubscribe, withKeyPath: "subscribeFeed", options: [NSContinuouslyUpdatesValueBindingOption: true])
+            TokenTextField.bind("value", to: editingSubscribe, withKeyPath: "token", options: [NSContinuouslyUpdatesValueBindingOption: true])
+            GroupTextField.bind("value", to: editingSubscribe, withKeyPath: "groupName", options: [NSContinuouslyUpdatesValueBindingOption: true])
+            MaxCountTextField.bind("value", to: editingSubscribe, withKeyPath: "maxCount", options: [NSContinuouslyUpdatesValueBindingOption: true])
+            
+        } else {
+            editingSubscribe = nil
+            FeedTextField.unbind("value")
+            TokenTextField.unbind("value")
+            GroupTextField.unbind("value")
+            MaxCountTextField.unbind("value")
         }
     }
     
+    func getDataAtRow(_ index:Int) -> String {
+        return sbMgr.subscribes[index].groupName
+    }
+    
+    // MARK: For NSTableViewDataSource
+    
+    func numberOfRows(in tableView: NSTableView) -> Int {
+        if let mgr = sbMgr {
+            return mgr.subscribes.count
+        }
+        return 0
+    }
+    
+    func tableView(_ tableView: NSTableView
+        , objectValueFor tableColumn: NSTableColumn?
+        , row: Int) -> Any? {
+        
+        let title = getDataAtRow(row)
+        
+        if tableColumn?.identifier == "main" {
+            if title != "" {return title}
+            else {return "S"}
+        } else if tableColumn?.identifier == "status" {
+            return NSImage(named: "menu_icon")
+        }
+        return ""
+    }
+    
+    // MARK: Drag & Drop reorder rows
+    
+    func tableView(_ tableView: NSTableView, pasteboardWriterForRow row: Int) -> NSPasteboardWriting? {
+        let item = NSPasteboardItem()
+        item.setString(String(row), forType: tableViewDragType)
+        return item
+    }
+    
+    func tableView(_ tableView: NSTableView, validateDrop info: NSDraggingInfo, proposedRow row: Int
+        , proposedDropOperation dropOperation: NSTableViewDropOperation) -> NSDragOperation {
+        if dropOperation == .above {
+            return .move
+        }
+        return NSDragOperation()
+    }
+    
+    func tableView(_ tableView: NSTableView, acceptDrop info: NSDraggingInfo
+        , row: Int, dropOperation: NSTableViewDropOperation) -> Bool {
+        if let mgr = sbMgr {
+            var oldIndexes = [Int]()
+            info.enumerateDraggingItems(options: [], for: tableView, classes: [NSPasteboardItem.self], searchOptions: [:]) {
+                if let str = ($0.0.item as! NSPasteboardItem).string(forType: self.tableViewDragType), let index = Int(str) {
+                    oldIndexes.append(index)
+                }
+            }
+            
+            var oldIndexOffset = 0
+            var newIndexOffset = 0
+            
+            // For simplicity, the code below uses `tableView.moveRowAtIndex` to move rows around directly.
+            // You may want to move rows in your content array and then call `tableView.reloadData()` instead.
+            tableView.beginUpdates()
+            for oldIndex in oldIndexes {
+                if oldIndex < row {
+                    let o = mgr.subscribes.remove(at: oldIndex + oldIndexOffset)
+                    mgr.subscribes.insert(o, at:row - 1)
+                    tableView.moveRow(at: oldIndex + oldIndexOffset, to: row - 1)
+                    oldIndexOffset -= 1
+                } else {
+                    let o = mgr.subscribes.remove(at: oldIndex)
+                    mgr.subscribes.insert(o, at:row + newIndexOffset)
+                    tableView.moveRow(at: oldIndex, to: row + newIndexOffset)
+                    newIndexOffset += 1
+                }
+            }
+            tableView.endUpdates()
+            
+            return true
+        }
+        return false
+    }
+    
+    //--------------------------------------------------
+    // For NSTableViewDelegate
+    
+    func tableView(_ tableView: NSTableView
+        , shouldEdit tableColumn: NSTableColumn?, row: Int) -> Bool {
+        return false
+    }
+    
+    func tableView(_ tableView: NSTableView, shouldSelectRow row: Int) -> Bool {
+        if row < 0 {
+            editingSubscribe = nil
+            return true
+        }
+//        if editingSubscribe != nil {
+//            if !editingSubscribe.isValid() {
+//                return false
+//            }
+//        }
+        
+        return true
+    }
+    
+    func tableViewSelectionDidChange(_ notification: Notification) {
+        if SubscribeTableView.selectedRow >= 0 {
+            bindSubscribe(SubscribeTableView.selectedRow)
+            if (SubscribeTableView.selectedRowIndexes.count > 1){
+//                duplicateProfileButton.isEnabled = false
+            } else {
+//                duplicateProfileButton.isEnabled = true
+            }
+        } else {
+            if !sbMgr.subscribes.isEmpty {
+                let index = IndexSet(integer: sbMgr.subscribes.count - 1)
+                SubscribeTableView.selectRowIndexes(index, byExtendingSelection: false)
+            }
+        }
+    }
+    
+    func shakeWindows(){
+        let numberOfShakes:Int = 8
+        let durationOfShake:Float = 0.5
+        let vigourOfShake:Float = 0.05
+        
+        let frame:CGRect = (window?.frame)!
+        let shakeAnimation = CAKeyframeAnimation()
+        
+        let shakePath = CGMutablePath()
+        
+        shakePath.move(to: CGPoint(x:NSMinX(frame), y:NSMinY(frame)))
+        
+        for _ in 1...numberOfShakes{
+            shakePath.addLine(to: CGPoint(x: NSMinX(frame) - frame.size.width * CGFloat(vigourOfShake), y: NSMinY(frame)))
+            shakePath.addLine(to: CGPoint(x: NSMinX(frame) + frame.size.width * CGFloat(vigourOfShake), y: NSMinY(frame)))
+        }
+        
+        shakePath.closeSubpath()
+        shakeAnimation.path = shakePath
+        shakeAnimation.duration = CFTimeInterval(durationOfShake)
+        window?.animations = ["frameOrigin":shakeAnimation]
+        window?.animator().setFrameOrigin(window!.frame.origin)
+    }
 }
