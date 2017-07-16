@@ -71,6 +71,32 @@ class ServerProfileManager: NSObject {
         }
     }
     
+    func isExisted(profile: ServerProfile) -> (Bool, Int){
+        for (index, value) in profiles.enumerated() {
+            let ret = value.serverHost == profile.serverHost
+            if ret {
+                return (ret, index)
+            }
+        }
+        return (false, -1)
+    }
+    
+    func isDuplicated(profile: ServerProfile) -> (Bool, Int){
+        for (index, value) in profiles.enumerated() {
+            let ret = value.serverHost == profile.serverHost
+                && value.password == profile.password
+                && value.serverPort == profile.serverPort
+                && value.ssrProtocol == profile.ssrProtocol
+                && value.ssrObfs == profile.ssrObfs
+                && value.ssrObfsParam == value.ssrObfsParam
+                && value.ssrProtocolParam == value.ssrProtocolParam
+            if ret {
+                return (ret, index)
+            }
+        }
+        return (false, -1)
+    }
+
     func importConfigFile() {
         let openPanel = NSOpenPanel()
         openPanel.title = "Choose Config Json File".localized

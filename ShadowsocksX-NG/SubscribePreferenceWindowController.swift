@@ -20,6 +20,8 @@ class SubscribePreferenceWindowController: NSWindowController
     @IBOutlet weak var MaxCountTextField: NSTextField!
     @IBOutlet weak var SubscribeTableView: NSTableView!
 
+    @IBOutlet weak var AddSubscribeBtn: NSButton!
+    @IBOutlet weak var DeleteSubscribeBtn: NSButton!
     
     var sbMgr: SubscribeManager!
     var defaults: UserDefaults!
@@ -42,12 +44,57 @@ class SubscribePreferenceWindowController: NSWindowController
     @IBAction func onOk(_ sender: NSButton) {
         // TODO append to manager and save
         let subscribe = Subscribe.init(initUrlString: FeedTextField.stringValue, initGroupName: GroupTextField.stringValue, initToken: TokenTextField.stringValue, initMaxCount: MaxCountTextField.integerValue)
-        if subscribe.feedValidator() {
-            _ = sbMgr.addSubscribe(oneSubscribe: subscribe)
+        if !subscribe.feedValidator() {
+            return shakeWindows()
         }
+        _ = sbMgr.addSubscribe(oneSubscribe: subscribe)
         subscribe.updateServerFromFeed()
         SubscribeTableView.reloadData()
         window?.performClose(self)
+    }
+    
+    @IBAction func onAdd(_ sender: NSButton) {
+        if editingSubscribe != nil && !editingSubscribe.feedValidator(){
+            shakeWindows()
+            return
+        }
+        SubscribeTableView.beginUpdates()
+        let subscribe = Subscribe(initUrlString: "", initGroupName: "", initToken: "", initMaxCount: -1)
+        sbMgr.subscribes.append(subscribe)
+        
+        let index = IndexSet(integer: sbMgr.subscribes.count-1)
+        SubscribeTableView.insertRows(at: index, withAnimation: .effectFade)
+        
+        self.SubscribeTableView.scrollRowToVisible(self.sbMgr.subscribes.count-1)
+        self.SubscribeTableView.selectRowIndexes(index, byExtendingSelection: false)
+        SubscribeTableView.endUpdates()
+        updateSubscribeBoxVisible()
+    }
+    
+    @IBAction func onDelete(_ sender: NSButton) {
+        let index = Int(SubscribeTableView.selectedRowIndexes.first!)
+        var deleteCount = 0
+        if index >= 0 {
+            SubscribeTableView.beginUpdates()
+            for (_, toDeleteIndex) in SubscribeTableView.selectedRowIndexes.enumerated() {
+                print(sbMgr.subscribes.count)
+                sbMgr.subscribes.remove(at: toDeleteIndex - deleteCount)
+                SubscribeTableView.removeRows(at: IndexSet(integer: toDeleteIndex - deleteCount), withAnimation: .effectFade)
+                deleteCount += 1
+            }
+            SubscribeTableView.endUpdates()
+        }
+        self.SubscribeTableView.scrollRowToVisible(index - 1)
+        self.SubscribeTableView.selectRowIndexes(IndexSet(integer: index - 1), byExtendingSelection: false)
+        updateSubscribeBoxVisible()
+    }
+    
+    func updateSubscribeBoxVisible() {
+        if sbMgr.subscribes.count <= 0 {
+            DeleteSubscribeBtn.isEnabled = false
+        }else{
+            DeleteSubscribeBtn.isEnabled = true
+        }
     }
     
     func bindSubscribe(_ index:Int) {
@@ -69,7 +116,10 @@ class SubscribePreferenceWindowController: NSWindowController
     }
     
     func getDataAtRow(_ index:Int) -> String {
-        return sbMgr.subscribes[index].groupName
+        if sbMgr.subscribes[index].groupName != "" {
+            return sbMgr.subscribes[index].groupName
+        }
+        return sbMgr.subscribes[index].subscribeFeed
     }
     
     // MARK: For NSTableViewDataSource

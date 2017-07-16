@@ -135,11 +135,20 @@ class Subscribe: NSObject{
             let ssrregexp = "ssr://([A-Za-z0-9_-]+)"
             let urls = splitor(url: decodeRes, regexp: ssrregexp)
             let maxN = self.maxCount == -1 ? urls.count: self.maxCount
+            // TODO change the loop into random pick
             for index in 0..<maxN {
                 
                 let profielDict = ParseAppURLSchemes(URL(string: urls[index]))//ParseSSURL(url)
                 if let profielDict = profielDict {
                     let profile = ServerProfile.fromDictionary(profielDict as [String : AnyObject])
+                    let (dupResult, _) = self.profileMgr.isDuplicated(profile: profile)
+                    let (existResult, existIndex) = self.profileMgr.isExisted(profile: profile)
+                    if dupResult {
+                        return
+                    }
+                    if existResult {
+                        return self.profileMgr.profiles.replaceSubrange(Range(existIndex..<existIndex + 1), with: [profile])
+                    }
                     self.profileMgr.profiles.append(profile)
                 }
             }
@@ -158,37 +167,10 @@ class Subscribe: NSObject{
     }
     func feedValidator() -> Bool{
         // is the right format
-        return subscribeFeed != "" && groupName != "" && token != ""
+        return subscribeFeed != "" && groupName != ""
     }
     fileprivate func pushNotification(){
         
-    }
-    fileprivate func isExisted(profile: ServerProfile) -> Bool{
-        // using to url judge
-        // if existed update
-        for (_, value) in profileMgr.profiles.enumerated() {
-            let ret = value.serverHost == profile.serverHost
-            if ret {
-                return ret
-            }
-        }
-        return false
-    }
-    fileprivate func isDuplicated(profile: ServerProfile) -> Bool{
-        // if duplicated skip
-        for (_, value) in profileMgr.profiles.enumerated() {
-            let ret = value.serverHost == profile.serverHost
-                && value.password == profile.password
-                && value.serverPort == profile.serverPort
-                && value.ssrProtocol == profile.ssrProtocol
-                && value.ssrObfs == profile.ssrObfs
-                && value.ssrObfsParam == value.ssrObfsParam
-                && value.ssrProtocolParam == value.ssrProtocolParam
-            if ret {
-                return ret
-            }
-        }
-        return false
     }
     fileprivate func isSame(source: Subscribe, target: Subscribe) -> Bool {
         return source.subscribeFeed == target.subscribeFeed && source.token == target.token && source.maxCount == target.maxCount
