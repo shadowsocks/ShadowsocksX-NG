@@ -204,9 +204,18 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         if defaults.bool(forKey: "ConnectAtLaunch") {
             toggleRunning(toggleRunningMenuItem)
         }
-        // Version Check!
-        if defaults.bool(forKey: "AutoCheckUpdate"){
-            checkForUpdate(mustShowAlert: false)
+        
+        DispatchQueue.global().async {
+            // Version Check!
+            if defaults.bool(forKey: "AutoCheckUpdate"){
+                self.checkForUpdate(mustShowAlert: false)
+            }
+            if defaults.bool(forKey: "AutoUpdateSubscribe") {
+                SubscribeManager.instance.updateAllServerFromSubscribe()
+            }
+            DispatchQueue.main.async {
+
+            }
         }
     }
 
