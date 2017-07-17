@@ -101,6 +101,7 @@ class Subscribe: NSObject{
                 }
                 else{
                     callback("")//give a empty callback
+                    self.pushNotification(title: "请求失败", subtitle: "", info: "发送到\(url)的请求失败，请检查您的网络")
                     // alse push a notification indicate that the profile may not available
                 }
         }
@@ -144,22 +145,24 @@ class Subscribe: NSObject{
                     let (dupResult, _) = self.profileMgr.isDuplicated(profile: profile)
                     let (existResult, existIndex) = self.profileMgr.isExisted(profile: profile)
                     if dupResult {
-                        return
+                        continue
                     }
                     if existResult {
-                        return self.profileMgr.profiles.replaceSubrange(Range(existIndex..<existIndex + 1), with: [profile])
+                        self.profileMgr.profiles.replaceSubrange(Range(existIndex..<existIndex + 1), with: [profile])
+                        continue
                     }
                     self.profileMgr.profiles.append(profile)
                 }
             }
             self.profileMgr.save()
+            pushNotification(title: "成功更新订阅", subtitle: "", info: "更新来自\(subscribeFeed)的订阅")
             (NSApplication.shared().delegate as! AppDelegate).updateServersMenu()
         }
         
         if (!isActive){ return }
-        if cache != "" {
-            return updateServerHandler(resString: cache)
-        }
+//        if cache != "" {
+//            return updateServerHandler(resString: cache)
+//        }
         sendRequest(url: self.subscribeFeed, options: "", callback: { resString in
             updateServerHandler(resString: resString)
             self.cache = resString
@@ -169,8 +172,15 @@ class Subscribe: NSObject{
         // is the right format
         return subscribeFeed != "" && groupName != ""
     }
-    fileprivate func pushNotification(){
+    fileprivate func pushNotification(title: String, subtitle: String, info: String){
+        let userNote = NSUserNotification()
+        userNote.title = title
+        userNote.subtitle = subtitle
+        userNote.informativeText = info
+        userNote.soundName = NSUserNotificationDefaultSoundName
         
+        NSUserNotificationCenter.default
+            .deliver(userNote);
     }
     class func isSame(source: Subscribe, target: Subscribe) -> Bool {
         return source.subscribeFeed == target.subscribeFeed && source.token == target.token && source.maxCount == target.maxCount
