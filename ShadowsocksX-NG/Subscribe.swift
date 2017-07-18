@@ -100,9 +100,8 @@ class Subscribe: NSObject{
                     callback(response.result.value!)
                 }
                 else{
-                    callback("")//give a empty callback
+                    callback("")
                     self.pushNotification(title: "请求失败", subtitle: "", info: "发送到\(url)的请求失败，请检查您的网络")
-                    // alse push a notification indicate that the profile may not available
                 }
         }
     }
@@ -125,6 +124,7 @@ class Subscribe: NSObject{
             return getMaxFromRes(resString: cache)
         }
         sendRequest(url: self.subscribeFeed, options: "", callback: { resString in
+            if resString == "" {return}
             getMaxFromRes(resString: resString)
             self.cache = resString
         })
@@ -164,6 +164,7 @@ class Subscribe: NSObject{
 //            return updateServerHandler(resString: cache)
 //        }
         sendRequest(url: self.subscribeFeed, options: "", callback: { resString in
+            if resString == "" {return}
             updateServerHandler(resString: resString)
             self.cache = resString
         })
