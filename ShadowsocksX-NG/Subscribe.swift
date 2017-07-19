@@ -135,7 +135,9 @@ class Subscribe: NSObject{
             let decodeRes = decode64(resString)!
             let ssrregexp = "ssr://([A-Za-z0-9_-]+)"
             let urls = splitor(url: decodeRes, regexp: ssrregexp)
-            let maxN = self.maxCount == -1 ? urls.count: self.maxCount
+            // hold if user fill a maxCount larger then server return
+            // Should push a notification about it and correct the user filled maxCOunt?
+            let maxN = (self.maxCount > urls.count) ? urls.count : (self.maxCount == -1) ? urls.count: self.maxCount
             // TODO change the loop into random pick
             for index in 0..<maxN {
                 
