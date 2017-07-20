@@ -39,7 +39,7 @@ From [here](https://github.com/shadowsocks/ShadowsocksX-NG/releases/)
 - Scan QRCode from screen.
 - Auto launch at login.
 - User rules for PAC.
-- Support OTA
+- Support for [AEAD Ciphers](https://shadowsocks.org/en/spec/AEAD-Ciphers.html)
 - HTTP Proxy by [privoxy](http://www.privoxy.org/)
 - Over [kcptun](https://github.com/xtaci/kcptun). Version 20170322
 - Export/Import configure file.
