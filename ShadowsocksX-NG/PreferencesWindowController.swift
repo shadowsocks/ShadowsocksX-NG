@@ -107,6 +107,7 @@ class PreferencesWindowController: NSWindowController
     
     override func awakeFromNib() {
         profilesTableView.register(forDraggedTypes: [tableViewDragType])
+        profilesTableView.allowsMultipleSelection = true
     }
     
     @IBAction func addProfile(_ sender: NSButton) {
@@ -129,13 +130,20 @@ class PreferencesWindowController: NSWindowController
     }
     
     @IBAction func removeProfile(_ sender: NSButton) {
-        let index = profilesTableView.selectedRow
+        let index = Int(profilesTableView.selectedRowIndexes.first!)
+        var deleteCount = 0
         if index >= 0 {
             profilesTableView.beginUpdates()
-            profileMgr.profiles.remove(at: index)
-            profilesTableView.removeRows(at: IndexSet(integer: index), withAnimation: .effectFade)
+            for (_, toDeleteIndex) in profilesTableView.selectedRowIndexes.enumerated() {
+                print(profileMgr.profiles.count)
+                profileMgr.profiles.remove(at: toDeleteIndex - deleteCount)
+                profilesTableView.removeRows(at: IndexSet(integer: toDeleteIndex - deleteCount), withAnimation: .effectFade)
+                deleteCount += 1
+            }
             profilesTableView.endUpdates()
         }
+        self.profilesTableView.scrollRowToVisible(index-1)
+        self.profilesTableView.selectRowIndexes(IndexSet(integer: index-1), byExtendingSelection: false)
         updateProfileBoxVisible()
     }
     
