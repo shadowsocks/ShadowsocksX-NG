@@ -48,7 +48,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     let kProfileMenuItemIndexBase = 100
 
     var statusItem: NSStatusItem!
-    static let StatusItemIconWidth:CGFloat = 20
+    static let StatusItemIconWidth:CGFloat = 30
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         
