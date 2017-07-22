@@ -133,6 +133,9 @@ class PreferencesWindowController: NSWindowController
         self.profilesTableView.scrollRowToVisible(index-1)
         self.profilesTableView.selectRowIndexes(IndexSet(integer: index-1), byExtendingSelection: false)
         updateProfileBoxVisible()
+        if profileMgr.profiles.count == 0 {
+            (NSApplication.shared().delegate as! AppDelegate).toggleRunning((NSApplication.shared().delegate as! AppDelegate).toggleRunningMenuItem)
+        }
     }
     
     @IBAction func ok(_ sender: NSButton) {

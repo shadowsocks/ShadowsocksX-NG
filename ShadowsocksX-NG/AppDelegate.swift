@@ -201,7 +201,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         applyConfig()
         SyncSSLocal()
 
-        if defaults.bool(forKey: "ConnectAtLaunch") {
+        if defaults.bool(forKey: "ConnectAtLaunch") && ServerProfileManager.instance.getActiveProfileId() != "" {
             toggleRunning(toggleRunningMenuItem)
         }
         
