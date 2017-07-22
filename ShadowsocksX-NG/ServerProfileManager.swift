@@ -26,6 +26,12 @@ class ServerProfileManager: NSObject {
             }
         }
         activeProfileId = defaults.string(forKey: "ActiveServerProfileId")
+        for p in profiles {
+            if p.uuid == activeProfileId {
+                return
+            }
+        }
+        activeProfileId = profiles[0].uuid
     }
     
     func setActiveProfiledId(_ id: String) {

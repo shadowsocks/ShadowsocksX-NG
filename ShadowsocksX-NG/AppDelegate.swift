@@ -207,7 +207,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         
         DispatchQueue.global().async {
             // Version Check!
-            if defaults.bool(forKey: "AutoCheckUpdate"){
+            if defaults.bool(forKey: "AutoCheckUpdate") {
                 self.checkForUpdate(mustShowAlert: false)
             }
             if defaults.bool(forKey: "AutoUpdateSubscribe") {
