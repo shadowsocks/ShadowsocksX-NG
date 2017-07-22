@@ -134,6 +134,7 @@ class PreferencesWindowController: NSWindowController
         self.profilesTableView.selectRowIndexes(IndexSet(integer: index-1), byExtendingSelection: false)
         updateProfileBoxVisible()
         if profileMgr.profiles.count == 0 {
+            defaults.set(true, forKey: "ShadowsocksOn")
             (NSApplication.shared().delegate as! AppDelegate).toggleRunning((NSApplication.shared().delegate as! AppDelegate).toggleRunningMenuItem)
         }
     }

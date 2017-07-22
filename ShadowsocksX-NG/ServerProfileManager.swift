@@ -70,10 +70,10 @@ class ServerProfileManager: NSObject {
         defaults.set(_profiles, forKey: "ServerProfiles")
         
         if getActiveProfile() == nil {
-            activeProfileId = nil
+            activeProfileId = ""
         }
         
-        if activeProfileId != nil {
+        if getActiveProfileId() != "" {
             defaults.set(activeProfileId, forKey: "ActiveServerProfileId")
             let _ = writeSSLocalConfFile((getActiveProfile()?.toJsonConfig())!)
         } else {

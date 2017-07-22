@@ -262,12 +262,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     
     @IBAction func toggleRunning(_ sender: NSMenuItem) {
         let defaults = UserDefaults.standard
-        var isOn = defaults.bool(forKey: "ShadowsocksOn")
-        isOn = !isOn
-        defaults.set(isOn, forKey: "ShadowsocksOn")
+        defaults.set(!defaults.bool(forKey: "ShadowsocksOn"), forKey: "ShadowsocksOn")
         
         updateMainMenu()
-        
+        SyncSSLocal()
         applyConfig()
     }
 
