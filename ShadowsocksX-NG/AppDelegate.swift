@@ -118,7 +118,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             , using: {
             (note) in
                 let profileMgr = ServerProfileManager.instance
-                if profileMgr.activeProfileId == nil &&
+                if profileMgr.getActiveProfileId() == "" &&
                     profileMgr.profiles.count > 0{
                     if profileMgr.profiles[0].isValid(){
                         profileMgr.setActiveProfiledId(profileMgr.profiles[0].uuid)
@@ -480,7 +480,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         let index = sender.tag
         let spMgr = ServerProfileManager.instance
         let newProfile = spMgr.profiles[index]
-        if newProfile.uuid != spMgr.activeProfileId {
+        if newProfile.uuid != spMgr.getActiveProfileId() {
             spMgr.setActiveProfiledId(newProfile.uuid)
             updateServersMenu()
             SyncSSLocal()
@@ -542,7 +542,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         
         let mgr = ServerProfileManager.instance
         for p in mgr.profiles {
-            if mgr.activeProfileId == p.uuid {
+            if mgr.getActiveProfileId() == p.uuid {
                 if !p.remark.isEmpty {
                     serverMenuText = p.remark
                 } else {
@@ -671,7 +671,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                     item.title += "  - failed"
                 }
             }
-            if mgr.activeProfileId == p.uuid {
+            if mgr.getActiveProfileId() == p.uuid {
                 item.state = 1
             }
             if !p.isValid() {
@@ -687,7 +687,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                     groupSubmenuItem.title = p.ssrGroup
                     serversMenuItem.submenu?.addItem(groupSubmenuItem)
                     serversMenuItem.submenu?.setSubmenu(groupSubmenu, for: groupSubmenuItem)
-                    if mgr.activeProfileId == p.uuid {
+                    if mgr.getActiveProfileId() == p.uuid {
                         item.state = 1
                         groupSubmenuItem.state = 1
                     }
@@ -696,7 +696,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                     continue
                 }
                 else{
-                    if mgr.activeProfileId == p.uuid {
+                    if mgr.getActiveProfileId() == p.uuid {
                         item.state = 1
                         serversMenuItem.submenu?.item(withTitle: p.ssrGroup)?.state = 1
                     }

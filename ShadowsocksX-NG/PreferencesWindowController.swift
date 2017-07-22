@@ -260,7 +260,7 @@ class PreferencesWindowController: NSWindowController
     
     func getDataAtRow(_ index:Int) -> (String, Bool) {
         let profile = profileMgr.profiles[index]
-        let isActive = (profileMgr.activeProfileId == profile.uuid)
+        let isActive = (profileMgr.getActiveProfileId() == profile.uuid)
         if !profile.remark.isEmpty {
             return (profile.remark, isActive)
         } else {

@@ -168,7 +168,7 @@ func SyncSSLocal() {
     var changed: Bool = false
     changed = changed || generateSSLocalLauchAgentPlist()
     let mgr = ServerProfileManager.instance
-    if mgr.activeProfileId != nil {
+    if mgr.getActiveProfileId() != "" {
         if mgr.getActiveProfile() != nil {
             changed = changed || writeSSLocalConfFile((mgr.getActiveProfile()?.toJsonConfig())!)
         }
@@ -315,7 +315,7 @@ func SyncPrivoxy() {
     var changed: Bool = false
     changed = changed || generatePrivoxyLauchAgentPlist()
     let mgr = ServerProfileManager.instance
-    if mgr.activeProfileId != nil {
+    if mgr.getActiveProfileId() != "" {
         changed = changed || writePrivoxyConfFile()
         
         let on = UserDefaults.standard.bool(forKey: "LocalHTTPOn")

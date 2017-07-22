@@ -19,16 +19,15 @@ class ServerProfileManager: NSObject {
         profiles = [ServerProfile]()
         
         let defaults = UserDefaults.standard
+        activeProfileId = defaults.string(forKey: "ActiveServerProfileId")
+        var didFindActiveProfileId = false
         if let _profiles = defaults.array(forKey: "ServerProfiles") {
             for _profile in _profiles {
                 let profile = ServerProfile.fromDictionary(_profile as! [String : AnyObject])
                 profiles.append(profile)
-            }
-        }
-        activeProfileId = defaults.string(forKey: "ActiveServerProfileId")
-        for p in profiles {
-            if p.uuid == activeProfileId {
-                return
+                if profile.uuid == activeProfileId {
+                    didFindActiveProfileId = true
+                }
             }
         }
         if profiles.count == 0{
@@ -38,13 +37,25 @@ class ServerProfileManager: NSObject {
             NSUserNotificationCenter.default.deliver(notice)
             return
         }
-        activeProfileId = profiles[0].uuid
+        if !didFindActiveProfileId {
+            activeProfileId = profiles[0].uuid
+        }
     }
     
     func setActiveProfiledId(_ id: String) {
         activeProfileId = id
         let defaults = UserDefaults.standard
         defaults.set(id, forKey: "ActiveServerProfileId")
+    }
+    
+    func getActiveProfileId() -> String {
+        for p in profiles {
+            if p.uuid == activeProfileId {
+                return activeProfileId!
+            }
+        }
+        if profiles.count == 0 {return ""}
+        return profiles[0].uuid
     }
     
     func save() {

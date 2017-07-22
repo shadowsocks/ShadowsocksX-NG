@@ -159,6 +159,7 @@ class Subscribe: NSObject{
             self.profileMgr.save()
             pushNotification(title: "成功更新订阅", subtitle: "", info: "更新来自\(subscribeFeed)的订阅")
             (NSApplication.shared().delegate as! AppDelegate).updateServersMenu()
+            (NSApplication.shared().delegate as! AppDelegate).updateRunningModeMenu()
         }
         
         if (!isActive){ return }
