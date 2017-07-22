@@ -13,7 +13,7 @@ class Subscribe: NSObject{
     
     var subscribeFeed = ""
     var isActive = true
-    var maxCount = -1 // -1 is not limited
+    var maxCount = 0 // -1 is not limited
     var groupName = ""
     var token = ""
     var cache = ""
@@ -23,15 +23,11 @@ class Subscribe: NSObject{
     init(initUrlString:String, initGroupName: String, initToken: String, initMaxCount: Int){
         super.init()
         subscribeFeed = initUrlString
-        groupName = initGroupName
+
         token = initToken
     
-        if initMaxCount == 0 {
-            setMaxCount()
-        }
-        else {
-            maxCount = initMaxCount
-        }
+        setMaxCount(initMaxCount: initMaxCount)
+        setGroupName(newGroupName: initGroupName)
         profileMgr = ServerProfileManager.instance
     }
     func getFeed() -> String{
@@ -46,9 +42,21 @@ class Subscribe: NSObject{
     func activateSubscribe(){
         isActive = true
     }
-    func setGroupName(newGroupName: String) -> Bool {
-        groupName = newGroupName
-        return true
+    func setGroupName(newGroupName: String) {
+        func getGroupNameFromRes(resString: String) {
+            let decodeRes = decode64(resString)!
+            let ssrregexp = "ssr://([A-Za-z0-9_-]+)"
+            let urls = splitor(url: decodeRes, regexp: ssrregexp)
+            let profile = ServerProfile.fromDictionary(ParseAppURLSchemes(URL(string: urls[0])) as [String : AnyObject])
+            self.groupName = profile.ssrGroup
+        }
+        if newGroupName != "" { return groupName = newGroupName }
+        if self.cache != "" { return getGroupNameFromRes(resString: cache) }
+        sendRequest(url: self.subscribeFeed, options: "", callback: { resString in
+            if resString == "" { return }
+            getGroupNameFromRes(resString: resString)
+            self.cache = resString
+        })
     }
     func getGroupName() -> String {
         return groupName
@@ -90,7 +98,7 @@ class Subscribe: NSObject{
             //            "Authorization": "Basic U2hhZG93c29ja1gtTkctUg==",
             //            "Accept": "application/json",
             "token": self.token,
-            "User-Agent": "ShadowsocksX-NG-R"
+            "User-Agent": "ShadowsocksX-NG-R " + (getLocalInfo()["CFBundleShortVersionString"] as! String) + " Version " + (getLocalInfo()["CFBundleVersion"] as! String)
         ]
         
         Alamofire.request(url, headers: headers)
@@ -105,8 +113,7 @@ class Subscribe: NSObject{
                 }
         }
     }
-    func setMaxCount() {
-        
+    func setMaxCount(initMaxCount:Int) {
         func getMaxFromRes(resString: String) {
             let maxCountReg = "MAX=[0-9]+"
             let decodeRes = decode64(resString)!
@@ -119,18 +126,15 @@ class Subscribe: NSObject{
                 self.maxCount = -1
             }
         }
-        
-        if cache != "" {
-            return getMaxFromRes(resString: cache)
-        }
+        if initMaxCount != 0 { return self.maxCount = initMaxCount }
+        if cache != "" { return getMaxFromRes(resString: cache) }
         sendRequest(url: self.subscribeFeed, options: "", callback: { resString in
-            if resString == "" {return}
+            if resString == "" { return }// Also should hold if token is wrong feedback
             getMaxFromRes(resString: resString)
             self.cache = resString
         })
     }
     func updateServerFromFeed(){
-        
         func updateServerHandler(resString: String) {
             let decodeRes = decode64(resString)!
             let ssrregexp = "ssr://([A-Za-z0-9_-]+)"
@@ -140,10 +144,8 @@ class Subscribe: NSObject{
             let maxN = (self.maxCount > urls.count) ? urls.count : (self.maxCount == -1) ? urls.count: self.maxCount
             // TODO change the loop into random pick
             for index in 0..<maxN {
-                
-                let profielDict = ParseAppURLSchemes(URL(string: urls[index]))//ParseSSURL(url)
-                if let profielDict = profielDict {
-                    let profile = ServerProfile.fromDictionary(profielDict as [String : AnyObject])
+                if let profileDict = ParseAppURLSchemes(URL(string: urls[index])) {
+                    let profile = ServerProfile.fromDictionary(profileDict as [String : AnyObject])
                     let (dupResult, _) = self.profileMgr.isDuplicated(profile: profile)
                     let (existResult, existIndex) = self.profileMgr.isExisted(profile: profile)
                     if dupResult {
@@ -163,18 +165,20 @@ class Subscribe: NSObject{
         }
         
         if (!isActive){ return }
-//        if cache != "" {
-//            return updateServerHandler(resString: cache)
-//        }
+
         sendRequest(url: self.subscribeFeed, options: "", callback: { resString in
-            if resString == "" {return}
+            if resString == "" { return }
             updateServerHandler(resString: resString)
             self.cache = resString
         })
     }
     func feedValidator() -> Bool{
         // is the right format
-        return subscribeFeed != "" && groupName != ""
+        // should be http or https reg
+        // but we should not support http only feed
+        // TODO refine the regular expression
+        let feedRegExp = "http[s]?://[A-Za-z0-9-_/.=?]*"
+        return subscribeFeed.range(of:feedRegExp, options: .regularExpression) != nil
     }
     fileprivate func pushNotification(title: String, subtitle: String, info: String){
         let userNote = NSUserNotification()
