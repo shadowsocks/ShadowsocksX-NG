@@ -2,7 +2,7 @@
 //  ServerProfileManager.swift
 //  ShadowsocksX-NG
 //
-//  Created by 邱宇舟 on 16/6/6. Modified by 秦宇航 16/9/12 
+//  Created by 邱宇舟 on 16/6/6. Modified by 秦宇航 17/7/22 
 //  Copyright © 2016年 qiuyuzhou. All rights reserved.
 //
 
@@ -30,6 +30,13 @@ class ServerProfileManager: NSObject {
             if p.uuid == activeProfileId {
                 return
             }
+        }
+        if profiles.count == 0{
+            let notice = NSUserNotification()
+            notice.title = "还没有服务器设定！"
+            notice.subtitle = "去设置里面填一下吧，填完记得选择呦~"
+            NSUserNotificationCenter.default.deliver(notice)
+            return
         }
         activeProfileId = profiles[0].uuid
     }

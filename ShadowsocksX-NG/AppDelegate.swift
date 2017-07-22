@@ -230,13 +230,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     }
     
     func applyConfig() {
-        let profileMgr = ServerProfileManager.instance
-        if profileMgr.profiles.count == 0{
-            let notice = NSUserNotification()
-            notice.title = "还没有服务器设定！"
-            notice.subtitle = "去设置里面填一下吧，填完记得选择呦~"
-            NSUserNotificationCenter.default.deliver(notice)
-        }
         let defaults = UserDefaults.standard
         let isOn = defaults.bool(forKey: "ShadowsocksOn")
         let mode = defaults.string(forKey: "ShadowsocksRunningMode")
