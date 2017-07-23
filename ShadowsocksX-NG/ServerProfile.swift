@@ -40,20 +40,20 @@ class ServerProfile: NSObject {
             (profile: ServerProfile) in
             profile.serverHost = data["ServerHost"] as! String
             profile.serverPort = (data["ServerPort"] as! NSNumber).uint16Value
-            profile.method = data["Method"] as! String
+            profile.method = (data["Method"] as! String).lowercased()
             profile.password = data["Password"] as! String
             
             if let remark = data["Remark"] {
                 profile.remark = remark as! String
             }
             if let ssrObfs = data["ssrObfs"] {
-                profile.ssrObfs = ssrObfs as! String
+                profile.ssrObfs = (ssrObfs as! String).lowercased()
             }
             if let ssrObfsParam = data["ssrObfsParam"] {
                 profile.ssrObfsParam = ssrObfsParam as! String
             }
             if let ssrProtocol = data["ssrProtocol"] {
-                profile.ssrProtocol = ssrProtocol as! String
+                profile.ssrProtocol = (ssrProtocol as! String).lowercased()
             }
             if let ssrProtocolParam = data["ssrProtocolParam"]{
                 profile.ssrProtocolParam = ssrProtocolParam as! String
