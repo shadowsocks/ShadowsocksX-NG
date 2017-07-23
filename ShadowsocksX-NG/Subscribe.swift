@@ -53,7 +53,7 @@ class Subscribe: NSObject{
         if newGroupName != "" { return groupName = newGroupName }
         if self.cache != "" { return getGroupNameFromRes(resString: cache) }
         sendRequest(url: self.subscribeFeed, options: "", callback: { resString in
-            if resString == "" { return }
+            if resString == "" { return self.groupName = "New Subscribe" }
             getGroupNameFromRes(resString: resString)
             self.cache = resString
         })
