@@ -199,7 +199,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         
         ProxyConfHelper.install()
         applyConfig()
-        SyncSSLocal()
+//        SyncSSLocal()
 
         if defaults.bool(forKey: "ConnectAtLaunch") && ServerProfileManager.instance.getActiveProfileId() != "" {
             toggleRunning(toggleRunningMenuItem)

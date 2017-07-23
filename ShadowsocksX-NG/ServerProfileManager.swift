@@ -74,7 +74,7 @@ class ServerProfileManager: NSObject {
         }
         
         if getActiveProfileId() != "" {
-            defaults.set(activeProfileId, forKey: "ActiveServerProfileId")
+            defaults.set(getActiveProfileId(), forKey: "ActiveServerProfileId")
             let _ = writeSSLocalConfFile((getActiveProfile()?.toJsonConfig())!)
         } else {
             defaults.removeObject(forKey: "ActiveServerProfileId")
@@ -83,16 +83,13 @@ class ServerProfileManager: NSObject {
     }
     
     func getActiveProfile() -> ServerProfile? {
-        if let id = activeProfileId {
-            for p in profiles {
-                if p.uuid == id {
-                    return p
-                }
+        if getActiveProfileId() == "" { return nil }
+        for p in profiles {
+            if p.uuid == getActiveProfileId() {
+                return p
             }
-            return nil
-        } else {
-            return nil
         }
+        return nil
     }
     
     func isExisted(profile: ServerProfile) -> (Bool, Int){
