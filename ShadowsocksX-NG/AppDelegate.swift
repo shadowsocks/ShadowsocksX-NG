@@ -202,6 +202,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
 //        SyncSSLocal()
 
         if defaults.bool(forKey: "ConnectAtLaunch") && ServerProfileManager.instance.getActiveProfileId() != "" {
+            defaults.set(false, forKey: "ShadowsocksOn")
             toggleRunning(toggleRunningMenuItem)
         }
         
