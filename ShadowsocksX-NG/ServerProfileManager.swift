@@ -109,8 +109,9 @@ class ServerProfileManager: NSObject {
                 && value.serverPort == profile.serverPort
                 && value.ssrProtocol == profile.ssrProtocol
                 && value.ssrObfs == profile.ssrObfs
-                && value.ssrObfsParam == value.ssrObfsParam
-                && value.ssrProtocolParam == value.ssrProtocolParam
+                && value.ssrObfsParam == profile.ssrObfsParam
+                && value.ssrProtocolParam == profile.ssrProtocolParam
+                && value.remark == profile.remark
             if ret {
                 return (ret, index)
             }
