@@ -142,22 +142,23 @@ func UpdatePACFromGFWList() {
     Alamofire.request(url!)
         .responseString {
             response in
-            if response.result.isSuccess {
-                if let v = response.result.value {
-                    do {
-                        try v.write(toFile: GFWListFilePath, atomically: true, encoding: String.Encoding.utf8)
-                        if GeneratePACFile() {
-                            // Popup a user notification
-                            let notification = NSUserNotification()
-                            notification.title = "PAC has been updated by latest GFW List.".localized
-                            NSUserNotificationCenter.default
-                                .deliver(notification)
-                        }
-                    } catch {
-                        
+
+            switch response.result {
+            case .success(let value):
+                do {
+                    try value.write(toFile: GFWListFilePath, atomically: true, encoding: String.Encoding.utf8)
+                    if GeneratePACFile() {
+                        // Popup a user notification
+                        let notification = NSUserNotification()
+                        notification.title = "PAC has been updated by latest GFW List.".localized
+                        NSUserNotificationCenter.default
+                            .deliver(notification)
                     }
+                } catch {
+
                 }
-            } else {
+
+            case .failure:
                 // Popup a user notification
                 let notification = NSUserNotification()
                 notification.title = "Failed to download latest GFW List.".localized
