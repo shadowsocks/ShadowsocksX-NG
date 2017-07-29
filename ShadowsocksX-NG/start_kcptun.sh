@@ -7,3 +7,4 @@
 #  Copyright © 2017年 qiuyuzhou. All rights reserved.
 
 launchctl load "$HOME/Library/LaunchAgents/com.qiuyuzhou.shadowsocksX-NG.kcptun.plist"
+launchctl start com.qiuyuzhou.shadowsocksX-NG.kcptun
