@@ -31,7 +31,7 @@ class ServerProfile: NSObject, NSCopying {
         self.uuid = uuid
     }
 
-    convenience init?(url: URL?) {
+    convenience init?(url: URL) {
         self.init()
 
         func padBase64(string: String) -> String {
@@ -44,14 +44,12 @@ class ServerProfile: NSObject, NSCopying {
             }
         }
 
-        func decodeUrl(url: URL?) -> String? {
-            guard let urlStr = url?.absoluteString else {
-                return nil
-            }
+        func decodeUrl(url: URL) -> String? {
+            let urlStr = url.absoluteString
             let index = urlStr.index(urlStr.startIndex, offsetBy: 5)
             let encodedStr = urlStr.substring(from: index)
             guard let data = Data(base64Encoded: padBase64(string: encodedStr)) else {
-                return url?.absoluteString
+                return url.absoluteString
             }
             guard let decoded = String(data: data, encoding: String.Encoding.utf8) else {
                 return nil

@@ -31,7 +31,7 @@ class ServerProfileTests: XCTestCase {
     }
 
     func testInitWithSelfGeneratedURL() {
-        let newProfile = ServerProfile.init(url: profile.URL())
+        let newProfile = ServerProfile.init(url: profile.URL()!)
 
         XCTAssertEqual(newProfile?.serverHost, profile.serverHost)
         XCTAssertEqual(newProfile?.serverPort, profile.serverPort)
@@ -42,7 +42,7 @@ class ServerProfileTests: XCTestCase {
     }
 
     func testInitWithPlainURL() {
-        let url = URL(string: "ss://aes-256-cfb:password@example.com:8388")
+        let url = URL(string: "ss://aes-256-cfb:password@example.com:8388")!
 
         let profile = ServerProfile(url: url)
 
@@ -57,7 +57,7 @@ class ServerProfileTests: XCTestCase {
     }
 
     func testInitWithPlainURLandQuery() {
-        let url = URL(string: "ss://aes-256-cfb:password@example.com:8388?Remark=Prism&OTA=true")
+        let url = URL(string: "ss://aes-256-cfb:password@example.com:8388?Remark=Prism&OTA=true")!
 
         let profile = ServerProfile(url: url)
 
@@ -72,7 +72,7 @@ class ServerProfileTests: XCTestCase {
     }
 
     func testInitWithPlainURLandAnotherQuery() {
-        let url = URL(string: "ss://aes-256-cfb:password@example.com:8388?Remark=Prism&OTA=0")
+        let url = URL(string: "ss://aes-256-cfb:password@example.com:8388?Remark=Prism&OTA=0")!
 
         let profile = ServerProfile(url: url)
 
@@ -88,7 +88,7 @@ class ServerProfileTests: XCTestCase {
 
     func testInitWithBase64EncodedURL() {
         // "ss://aes-256-cfb:password@example.com:8388"
-        let url = URL(string: "ss://YWVzLTI1Ni1jZmI6cGFzc3dvcmRAZXhhbXBsZS5jb206ODM4OA")
+        let url = URL(string: "ss://YWVzLTI1Ni1jZmI6cGFzc3dvcmRAZXhhbXBsZS5jb206ODM4OA")!
 
         let profile = ServerProfile(url: url)
 
@@ -104,7 +104,7 @@ class ServerProfileTests: XCTestCase {
 
     func testInitWithBase64EncodedURLandQuery() {
         // "ss://aes-256-cfb:password@example.com:8388?Remark=Prism&OTA=true"
-        let url = URL(string: "ss://YWVzLTI1Ni1jZmI6cGFzc3dvcmRAZXhhbXBsZS5jb206ODM4OD9SZW1hcms9UHJpc20mT1RBPXRydWU")
+        let url = URL(string: "ss://YWVzLTI1Ni1jZmI6cGFzc3dvcmRAZXhhbXBsZS5jb206ODM4OD9SZW1hcms9UHJpc20mT1RBPXRydWU")!
 
         let profile = ServerProfile(url: url)
 
@@ -119,15 +119,7 @@ class ServerProfileTests: XCTestCase {
     }
 
     func testInitWithEmptyURL() {
-        let url = URL(string: "ss://")
-
-        let profile = ServerProfile(url: url)
-
-        XCTAssertNil(profile)
-    }
-
-    func testInitWithInvalidURL() {
-        let url = URL(string: "ss://invalid url")
+        let url = URL(string: "ss://")!
 
         let profile = ServerProfile(url: url)
 
@@ -136,7 +128,7 @@ class ServerProfileTests: XCTestCase {
 
     func testInitWithBase64EncodedInvalidURL() {
         // "ss://invalid url"
-        let url = URL(string: "ss://aW52YWxpZCB1cmw")
+        let url = URL(string: "ss://aW52YWxpZCB1cmw")!
 
         let profile = ServerProfile(url: url)
 
