@@ -135,6 +135,40 @@ class ServerProfileTests: XCTestCase {
         XCTAssertNil(profile)
     }
 
+    func testInitWithSIP002URL() {
+        // "ss://aes-256-cfb:password@example.com:8388?Remark=Prism&OTA=true"
+        let url = URL(string: "ss://YWVzLTI1Ni1jZmI6cGFzc3dvcmQ=@example.com:8388/?Remark=Prism&OTA=true")!
+
+        let profile = ServerProfile(url: url)
+
+        XCTAssertNotNil(profile)
+
+        XCTAssertEqual(profile?.serverHost, "example.com")
+        XCTAssertEqual(profile?.serverPort, 8388)
+        XCTAssertEqual(profile?.method, "aes-256-cfb")
+        XCTAssertEqual(profile?.password, "password")
+        XCTAssertEqual(profile?.remark, "Prism")
+        XCTAssertEqual(profile?.ota, true)
+    }
+
+    func testInitWithSIP002URLProfileName() {
+        let url = URL(string: "ss://YWVzLTI1Ni1jZmI6cGFzc3dvcmQ=@example.com:8388/#Name")!
+
+        let profile = ServerProfile(url: url)
+
+        XCTAssertNotNil(profile)
+        XCTAssertEqual(profile?.remark, "Name")
+    }
+
+    func testInitWithSIP002URLProfileNameOverride() {
+        let url = URL(string: "ss://YWVzLTI1Ni1jZmI6cGFzc3dvcmQ=@example.com:8388/?Remark=Name#Overriden")!
+
+        let profile = ServerProfile(url: url)
+
+        XCTAssertNotNil(profile)
+        XCTAssertEqual(profile?.remark, "Overriden")
+    }
+
     func testPerformanceExample() {
         // This is an example of a performance test case.
         self.measure {

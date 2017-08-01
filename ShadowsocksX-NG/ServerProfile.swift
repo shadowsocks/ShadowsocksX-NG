@@ -65,17 +65,40 @@ class ServerProfile: NSObject, NSCopying {
             return nil
         }
         guard let host = parsedUrl.host, let port = parsedUrl.port,
-            let method = parsedUrl.user, let password = parsedUrl.password else {
+            let user = parsedUrl.user else {
             return nil
         }
 
         self.serverHost = host
         self.serverPort = UInt16(port)
-        self.method = method.lowercased()
-        self.password = password
 
+        // This can be overriden by the fragment part of SIP002 URL
         remark = parsedUrl.queryItems?
             .filter({ $0.name == "Remark" }).first?.value ?? ""
+
+        if let password = parsedUrl.password {
+            self.method = user.lowercased()
+            self.password = password
+        } else {
+            // SIP002 URL have no password section
+            guard let data = Data(base64Encoded: padBase64(string: user)),
+                let userInfo = String(data: data, encoding: .utf8) else {
+                return nil
+            }
+
+            let parts = userInfo.characters.split(separator: ":", maxSplits: 1, omittingEmptySubsequences: false)
+            if parts.count != 2 {
+                return nil
+            }
+            self.method = String(parts[0]).lowercased()
+            self.password = String(parts[1])
+
+            // SIP002 defines where to put the profile name
+            if let profileName = parsedUrl.fragment {
+                self.remark = profileName
+            }
+        }
+
         if let otaStr = parsedUrl.queryItems?
             .filter({ $0.name == "OTA" }).first?.value {
             ota = NSString(string: otaStr).boolValue
