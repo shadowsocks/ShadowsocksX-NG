@@ -241,6 +241,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                 }
                 qrcodeWinCtrl = SWBQRCodeWindowController(windowNibName: "SWBQRCodeWindowController")
                 qrcodeWinCtrl.qrCode = profile.URL()!.absoluteString
+                qrcodeWinCtrl.legacyQRCode = profile.URL(legacy: true)!.absoluteString
                 qrcodeWinCtrl.title = profile.title()
                 qrcodeWinCtrl.showWindow(self)
                 NSApp.activate(ignoringOtherApps: true)

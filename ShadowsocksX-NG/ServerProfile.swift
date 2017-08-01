@@ -246,7 +246,7 @@ class ServerProfile: NSObject, NSCopying {
         return true
     }
 
-    func URL() -> Foundation.URL? {
+    private func makeLegacyURL() -> URL? {
         var url = URLComponents()
 
         url.host = serverHost
@@ -274,6 +274,38 @@ class ServerProfile: NSObject, NSCopying {
             return Foundation.URL(string: "ss://\(s)")
         }
         return nil
+    }
+
+    func URL(legacy: Bool = false) -> URL? {
+        // If you want the URL from <= 1.5.1
+        if (legacy) {
+            return self.makeLegacyURL()
+        }
+
+        guard let rawUserInfo = "\(method):\(password)".data(using: .utf8) else {
+            return nil
+        }
+        let paddings = CharacterSet(charactersIn: "=")
+        let userInfo = rawUserInfo.base64EncodedString().trimmingCharacters(in: paddings)
+
+        var items = [URLQueryItem(name: "OTA", value: ota.description)]
+        if enabledKcptun {
+            items.append(URLQueryItem(name: "Kcptun", value: enabledKcptun.description))
+            items.append(contentsOf: kcptunProfile.urlQueryItems())
+        }
+
+        var comps = URLComponents()
+
+        comps.scheme = "ss"
+        comps.host = serverHost
+        comps.port = Int(serverPort)
+        comps.user = userInfo
+        comps.fragment = remark
+        comps.queryItems = items
+
+        let url = try? comps.asURL()
+
+        return url
     }
     
     func title() -> String {

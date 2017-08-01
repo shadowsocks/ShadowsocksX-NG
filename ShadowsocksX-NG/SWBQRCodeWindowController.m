@@ -78,4 +78,13 @@
     [pasteboard writeObjects:copiedObjects];
 }
 
+- (void)flagsChanged:(NSEvent *)event {
+    NSUInteger modifiers = event.modifierFlags & NSDeviceIndependentModifierFlagsMask;
+    if (modifiers & NSAlternateKeyMask) {
+        [self setQRCode:self.legacyQRCode];
+    } else {
+        [self setQRCode:self.qrCode];
+    }
+}
+
 @end
