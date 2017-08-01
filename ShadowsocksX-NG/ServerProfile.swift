@@ -300,6 +300,7 @@ class ServerProfile: NSObject, NSCopying {
         comps.host = serverHost
         comps.port = Int(serverPort)
         comps.user = userInfo
+        comps.path = "/"  // This is required by SIP0002 for URLs with fragment or query
         comps.fragment = remark
         comps.queryItems = items
 
