@@ -26,7 +26,7 @@
  * ./AppDelegate.swift
  */
 
-"Add Shadowsocks Server Profile" = "已添加新Shaodwsocks服务器配置";
+"Add Shadowsocks Server Profile" = "已添加新Shadowsocks服务器配置";
 
 "By scan QR Code" = "通过扫描二维码";
 
