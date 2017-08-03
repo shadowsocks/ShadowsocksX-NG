@@ -94,7 +94,7 @@ class ServerProfileManager: NSObject {
     
     func isExisted(profile: ServerProfile) -> (Bool, Int){
         for (index, value) in profiles.enumerated() {
-            let ret = value.serverHost == profile.serverHost
+            let ret = (value.serverHost == profile.serverHost && value.serverPort == profile.serverPort)
             if ret {
                 return (ret, index)
             }
