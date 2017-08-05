@@ -47,13 +47,28 @@ func generateSSLocalLauchAgentPlist() -> Bool {
     let defaults = UserDefaults.standard
     let enableUdpRelay = defaults.bool(forKey: "LocalSocks5.EnableUDPRelay")
     let enableVerboseMode = defaults.bool(forKey: "LocalSocks5.EnableVerboseMode")
-    
+    let enableACL = defaults.bool(forKey: "ACL.Enable")
+
     var arguments = [sslocalPath, "-c", "ss-local-config.json"]
     if enableUdpRelay {
         arguments.append("-u")
     }
     if enableVerboseMode {
         arguments.append("-v")
+    }
+    if enableACL {
+        let mode = defaults.string(forKey: "ACL.Mode") ?? "bypass-lan-china"
+        let filename = "\(mode).acl"
+
+        let userACLPath = NSHomeDirectory() + "/.ShadowsocksX-NG/" + filename
+        if !fileMgr.fileExists(atPath: userACLPath) {
+            let src = Bundle.main.path(forResource: mode, ofType: "acl")
+
+            // WARNING: Using many force unwraps here as other similar places do
+            try! fileMgr.copyItem(atPath: src!, toPath: userACLPath)
+        }
+
+        arguments.append(contentsOf: ["--acl", userACLPath])
     }
     
     // For a complete listing of the keys, see the launchd.plist manual page.

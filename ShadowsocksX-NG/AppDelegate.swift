@@ -25,6 +25,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     
     @IBOutlet weak var runningStatusMenuItem: NSMenuItem!
     @IBOutlet weak var toggleRunningMenuItem: NSMenuItem!
+
+    @IBOutlet weak var bypassLANAndMainlandChinaMenuItem: NSMenuItem!
+
     @IBOutlet weak var autoModeMenuItem: NSMenuItem!
     @IBOutlet weak var globalModeMenuItem: NSMenuItem!
     @IBOutlet weak var manualModeMenuItem: NSMenuItem!
@@ -65,6 +68,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         defaults.register(defaults: [
             "ShadowsocksOn": true,
             "ShadowsocksRunningMode": "auto",
+            "ACL.Enable": false,
+            "ACL.Mode": "bypass-lan-china",
             "LocalSocks5.ListenPort": NSNumber(value: 1086 as UInt16),
             "LocalSocks5.ListenAddress": "127.0.0.1",
             "PacServer.ListenPort":NSNumber(value: 1089 as UInt16),
@@ -213,6 +218,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                 self.makeToast("Shadowsocks: Off".localized)
             }
         }
+    }
+
+    @IBAction func toggleBypassLANAndMainlandChina(_ sender: NSMenuItem) {
+        let defaults = UserDefaults.standard
+        let isEnabled = defaults.bool(forKey: "ACL.Enable")
+        defaults.set(!isEnabled, forKey: "ACL.Enable")
+
+        self.updateMainMenu()
+        self.applyConfig()
     }
     
     @IBAction func updateGFWList(_ sender: NSMenuItem) {
@@ -441,6 +455,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             let image = NSImage(named: "menu_icon_disabled")
             statusItem.image = image
         }
+
+        let aclEnabled = defaults.bool(forKey: "ACL.Enable")
+        bypassLANAndMainlandChinaMenuItem.state = aclEnabled ? 1 : 0
+
         statusItem.image?.isTemplate = true
         
         updateStatusMenuImage()

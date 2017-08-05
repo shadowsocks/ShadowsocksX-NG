@@ -15,6 +15,7 @@
         <customObject id="Voe-Tx-rLC" customClass="AppDelegate" customModule="ShadowsocksX_NG" customModuleProvider="target">
             <connections>
                 <outlet property="autoModeMenuItem" destination="r07-Gu-aEz" id="9aH-pQ-Rgi"/>
+                <outlet property="bypassLANAndMainlandChinaMenuItem" destination="DqE-sW-LKL" id="Sto-Cp-Sia"/>
                 <outlet property="copyHttpProxyExportCmdLineMenuItem" destination="lg6-To-GZA" id="VTb-he-dg4"/>
                 <outlet property="exportAllServerProfileItem" destination="6k0-gn-DQv" id="W2x-96-ISj"/>
                 <outlet property="globalModeMenuItem" destination="Mw3-Jm-eXA" id="ar5-Yx-3ze"/>
@@ -43,6 +44,13 @@
                     </connections>
                 </menuItem>
                 <menuItem isSeparatorItem="YES" id="LXP-yK-yQu"/>
+                <menuItem title="Bypass LAN and mainland China" id="DqE-sW-LKL">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <connections>
+                        <action selector="toggleBypassLANAndMainlandChina:" target="Voe-Tx-rLC" id="Pwb-1d-aIs"/>
+                    </connections>
+                </menuItem>
+                <menuItem isSeparatorItem="YES" id="eWU-eQ-dX1"/>
                 <menuItem title="macOS Proxy" enabled="NO" id="rGX-3L-aGC">
                     <modifierMask key="keyEquivalentModifierMask"/>
                 </menuItem>

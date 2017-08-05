@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		08FCA0FF1E24BE1A0070984F /* example-gui-config.json in Resources */ = {isa = PBXBuildFile; fileRef = 08FCA0FE1E24BE1A0070984F /* example-gui-config.json */; };
+		1CEEDDEE1F356B84002EA256 /* bypass-lan-china.acl in Resources */ = {isa = PBXBuildFile; fileRef = 1CEEDDED1F356B84002EA256 /* bypass-lan-china.acl */; };
 		258E511BA910B0521B24DAB8 /* Pods_ShadowsocksX_NG.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 283ED1A8E9B711AC65670031 /* Pods_ShadowsocksX_NG.framework */; };
 		9B07EFA71D048BBB0052D9DF /* ss-local in Resources */ = {isa = PBXBuildFile; fileRef = 9B07EFA61D048BBB0052D9DF /* ss-local */; };
 		9B07EFAC1D048E880052D9DF /* menu_icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B07EFA81D048E880052D9DF /* menu_icon@2x.png */; };
@@ -133,6 +134,7 @@
 /* Begin PBXFileReference section */
 		08FCA0FE1E24BE1A0070984F /* example-gui-config.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "example-gui-config.json"; sourceTree = "<group>"; };
 		19083CFCED87354F006967FF /* Pods_ShadowsocksX_NGUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ShadowsocksX_NGUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		1CEEDDED1F356B84002EA256 /* bypass-lan-china.acl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "bypass-lan-china.acl"; sourceTree = "<group>"; };
 		1E7783AEDB4A3BDDC9FF16AC /* libPods-proxy_conf_helper.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-proxy_conf_helper.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		283ED1A8E9B711AC65670031 /* Pods_ShadowsocksX_NG.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ShadowsocksX_NG.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		297AF069022A197FD8E9D226 /* Pods-proxy_conf_helper.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-proxy_conf_helper.release.xcconfig"; path = "Pods/Target Support Files/Pods-proxy_conf_helper/Pods-proxy_conf_helper.release.xcconfig"; sourceTree = "<group>"; };
@@ -324,6 +326,7 @@
 				C6D429981DA76FBC002A5711 /* privoxy.config.example */,
 				9B9CBCB01E2644DC00FC61AA /* start_kcptun.sh */,
 				9B9CBCB11E26450D00FC61AA /* stop_kcptun.sh */,
+				1CEEDDED1F356B84002EA256 /* bypass-lan-china.acl */,
 			);
 			name = "Support Files";
 			sourceTree = "<group>";
@@ -581,6 +584,7 @@
 				9B3F7C001E82BF5B00C68B75 /* libmbedcrypto.2.4.2.dylib in Resources */,
 				9B3F7C011E82BF5B00C68B75 /* libsodium.18.dylib in Resources */,
 				9B3F7C021E82BF5B00C68B75 /* libudns.0.dylib in Resources */,
+				1CEEDDEE1F356B84002EA256 /* bypass-lan-china.acl in Resources */,
 				9B9CBCB41E26453C00FC61AA /* start_kcptun.sh in Resources */,
 				9B9CBCB51E26453C00FC61AA /* stop_kcptun.sh in Resources */,
 				9B938D9A1E864B38005F5636 /* menu_g_icon@2x.png in Resources */,
