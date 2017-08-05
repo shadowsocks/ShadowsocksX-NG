@@ -95,4 +95,6 @@
 /* Class = "NSMenuItem"; title = "Preferences"; ObjectID = "iVn-LD-Ynd"; */
 "iVn-LD-Ynd.title" = "偏好设置";
 
+/* Class = "NSMenuItem"; title = "macOS Proxy"; ObjectID = "rGX-3L-aGC"; */
+"rGX-3L-aGC.title" = "macOS 代理";
 

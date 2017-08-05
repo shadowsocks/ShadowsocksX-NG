@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="11762" systemVersion="16D32" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="12121" systemVersion="16G29" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="11762"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="12121"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="NSApplication">
@@ -43,6 +43,9 @@
                     </connections>
                 </menuItem>
                 <menuItem isSeparatorItem="YES" id="LXP-yK-yQu"/>
+                <menuItem title="macOS Proxy" enabled="NO" id="rGX-3L-aGC">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                </menuItem>
                 <menuItem title="Proxy Auto Configure Mode" id="r07-Gu-aEz">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
