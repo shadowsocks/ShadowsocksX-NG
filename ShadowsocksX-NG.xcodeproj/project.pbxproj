@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		08FCA0FF1E24BE1A0070984F /* example-gui-config.json in Resources */ = {isa = PBXBuildFile; fileRef = 08FCA0FE1E24BE1A0070984F /* example-gui-config.json */; };
+		1C7AE0491F39D3580059DD3B /* ACLUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C7AE0481F39D3580059DD3B /* ACLUtils.swift */; };
 		1CEEDDEE1F356B84002EA256 /* bypass-lan-china.acl in Resources */ = {isa = PBXBuildFile; fileRef = 1CEEDDED1F356B84002EA256 /* bypass-lan-china.acl */; };
 		258E511BA910B0521B24DAB8 /* Pods_ShadowsocksX_NG.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 283ED1A8E9B711AC65670031 /* Pods_ShadowsocksX_NG.framework */; };
 		9B07EFA71D048BBB0052D9DF /* ss-local in Resources */ = {isa = PBXBuildFile; fileRef = 9B07EFA61D048BBB0052D9DF /* ss-local */; };
@@ -134,6 +135,7 @@
 /* Begin PBXFileReference section */
 		08FCA0FE1E24BE1A0070984F /* example-gui-config.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "example-gui-config.json"; sourceTree = "<group>"; };
 		19083CFCED87354F006967FF /* Pods_ShadowsocksX_NGUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ShadowsocksX_NGUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		1C7AE0481F39D3580059DD3B /* ACLUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ACLUtils.swift; sourceTree = "<group>"; };
 		1CEEDDED1F356B84002EA256 /* bypass-lan-china.acl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "bypass-lan-china.acl"; sourceTree = "<group>"; };
 		1E7783AEDB4A3BDDC9FF16AC /* libPods-proxy_conf_helper.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-proxy_conf_helper.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		283ED1A8E9B711AC65670031 /* Pods_ShadowsocksX_NG.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ShadowsocksX_NG.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -376,6 +378,7 @@
 				9BEEF0771D04FE8A00FC52B3 /* LaunchAgentUtils.swift */,
 				9B3FFF0C1D05FEB30019A709 /* Utils.swift */,
 				9B3FFF201D08826E0019A709 /* PACUtils.swift */,
+				1C7AE0481F39D3580059DD3B /* ACLUtils.swift */,
 				9B3FFF131D0705810019A709 /* Notifications.swift */,
 				9B3FFF1D1D0732660019A709 /* Utils.m */,
 				9B3FFF1F1D0734060019A709 /* Utils.h */,
@@ -778,6 +781,7 @@
 				9B3FFF141D0705810019A709 /* Notifications.swift in Sources */,
 				9BEEF0701D04DDB100FC52B3 /* ServerProfileManager.swift in Sources */,
 				9BEEF06E1D04DCE400FC52B3 /* ServerProfile.swift in Sources */,
+				1C7AE0491F39D3580059DD3B /* ACLUtils.swift in Sources */,
 				9B3FFF0D1D05FEB30019A709 /* Utils.swift in Sources */,
 				9BEEF0751D04EF3E00FC52B3 /* PreferencesWindowController.swift in Sources */,
 				9B0BFFE91D0460A70040E62B /* AppDelegate.swift in Sources */,

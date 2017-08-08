@@ -60,14 +60,18 @@ func generateSSLocalLauchAgentPlist() -> Bool {
         let mode = defaults.string(forKey: "ACL.Mode") ?? "bypass-lan-china"
         let filename = "\(mode).acl"
 
-        let userACLPath = NSHomeDirectory() + "/.ShadowsocksX-NG/" + filename
-        if !fileMgr.fileExists(atPath: userACLPath) {
-            let src = Bundle.main.path(forResource: mode, ofType: "acl")
+        switch mode {
+        case "bypass-lan-china":
+            EnsureBypassLANChinaACL()
 
-            // WARNING: Using many force unwraps here as other similar places do
-            try! fileMgr.copyItem(atPath: src!, toPath: userACLPath)
+        case "gfwlist":
+            EnsureGFWListACL()
+
+        default:
+            break
         }
 
+        let userACLPath = NSHomeDirectory() + "/.ShadowsocksX-NG/" + filename
         arguments.append(contentsOf: ["--acl", userACLPath])
     }
     

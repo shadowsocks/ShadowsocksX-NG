@@ -41,6 +41,34 @@ func SyncPac() {
 }
 
 
+/// If gfwlist.txt is not exsited, copy from bundle.
+func EnsureGFWList() {
+    let dst = GFWListFilePath
+    let fileMgr = FileManager.default
+
+    if fileMgr.fileExists(atPath: dst) {
+        return
+    }
+
+    let src = Bundle.main.path(forResource: "gfwlist", ofType: "txt")!
+    try! fileMgr.copyItem(atPath: src, toPath: dst)
+}
+
+
+// If user-rule.txt is not exsited, copy from bundle
+func EnsureUserRule() {
+    let dst = PACUserRuleFilePath
+    let fileMgr = FileManager.default
+
+    if fileMgr.fileExists(atPath: dst) {
+        return
+    }
+
+    let src = Bundle.main.path(forResource: "user-rule", ofType: "txt")
+    try! fileMgr.copyItem(atPath: src!, toPath: dst)
+}
+
+
 func GeneratePACFile() -> Bool {
     let fileMgr = FileManager.default
     // Maker the dir if rulesDirPath is not exesited.
@@ -52,18 +80,9 @@ func GeneratePACFile() -> Bool {
                 , withIntermediateDirectories: true, attributes: nil)
         }
     }
-    
-    // If gfwlist.txt is not exsited, copy from bundle
-    if !fileMgr.fileExists(atPath: GFWListFilePath) {
-        let src = Bundle.main.path(forResource: "gfwlist", ofType: "txt")
-        try! fileMgr.copyItem(atPath: src!, toPath: GFWListFilePath)
-    }
-    
-    // If user-rule.txt is not exsited, copy from bundle
-    if !fileMgr.fileExists(atPath: PACUserRuleFilePath) {
-        let src = Bundle.main.path(forResource: "user-rule", ofType: "txt")
-        try! fileMgr.copyItem(atPath: src!, toPath: PACUserRuleFilePath)
-    }
+
+    EnsureGFWList()
+    EnsureUserRule()
     
     let socks5Port = UserDefaults.standard.integer(forKey: "LocalSocks5.ListenPort")
     
@@ -153,6 +172,7 @@ func UpdatePACFromGFWList() {
                             NSUserNotificationCenter.default
                                 .deliver(notification)
                         }
+                        GenerateGFWListACL()
                     } catch {
                         
                     }

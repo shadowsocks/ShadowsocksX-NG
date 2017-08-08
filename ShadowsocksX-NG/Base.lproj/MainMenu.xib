@@ -21,6 +21,8 @@
                 <outlet property="globalModeMenuItem" destination="Mw3-Jm-eXA" id="ar5-Yx-3ze"/>
                 <outlet property="importBunchJsonFileItem" destination="T9g-gy-gvv" id="vua-jg-YWe"/>
                 <outlet property="manualModeMenuItem" destination="8PR-gs-c5N" id="9qz-mU-5kt"/>
+                <outlet property="proxyAllMenuItem" destination="7Yg-Yn-Ybc" id="gpB-1n-S9h"/>
+                <outlet property="proxyGFWListMenuItem" destination="LKR-vc-z9u" id="imj-zF-5w3"/>
                 <outlet property="runningStatusMenuItem" destination="fzk-mE-CEV" id="Vwm-Rg-Ykn"/>
                 <outlet property="scanQRCodeMenuItem" destination="Qe6-bF-paT" id="XHa-pa-nCa"/>
                 <outlet property="serversMenuItem" destination="u5M-hQ-VSc" id="8gp-SY-Y4U"/>
@@ -44,10 +46,25 @@
                     </connections>
                 </menuItem>
                 <menuItem isSeparatorItem="YES" id="LXP-yK-yQu"/>
+                <menuItem title="Shadowsocks ACL" enabled="NO" id="jIS-bt-aMG">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                </menuItem>
+                <menuItem title="Proxy All" id="7Yg-Yn-Ybc">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <connections>
+                        <action selector="selectProxyAll:" target="Voe-Tx-rLC" id="NYF-pU-BpQ"/>
+                    </connections>
+                </menuItem>
+                <menuItem title="Proxy GFW List" id="LKR-vc-z9u">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <connections>
+                        <action selector="selectProxyGFWList:" target="Voe-Tx-rLC" id="fSm-Of-rmM"/>
+                    </connections>
+                </menuItem>
                 <menuItem title="Bypass LAN and mainland China" id="DqE-sW-LKL">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
-                        <action selector="toggleBypassLANAndMainlandChina:" target="Voe-Tx-rLC" id="Pwb-1d-aIs"/>
+                        <action selector="selectBypassLANAndMainlandChina:" target="Voe-Tx-rLC" id="cr8-pV-4WV"/>
                     </connections>
                 </menuItem>
                 <menuItem isSeparatorItem="YES" id="eWU-eQ-dX1"/>
@@ -129,7 +146,7 @@
                         <action selector="copyExportCommand:" target="Voe-Tx-rLC" id="2U4-3M-sAK"/>
                     </connections>
                 </menuItem>
-                <menuItem title="Update PAC from GFW List" id="TFc-Ec-duM">
+                <menuItem title="Update GFW List and PAC" id="TFc-Ec-duM">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
                         <action selector="updateGFWList:" target="Voe-Tx-rLC" id="Ztt-PS-F3T"/>

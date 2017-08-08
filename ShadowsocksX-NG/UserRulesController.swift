@@ -15,11 +15,7 @@ class UserRulesController: NSWindowController {
     override func windowDidLoad() {
         super.windowDidLoad()
 
-        let fileMgr = FileManager.default
-        if !fileMgr.fileExists(atPath: PACUserRuleFilePath) {
-            let src = Bundle.main.path(forResource: "user-rule", ofType: "txt")
-            try! fileMgr.copyItem(atPath: src!, toPath: PACUserRuleFilePath)
-        }
+        EnsureUserRule()
 
         let str = try? String(contentsOfFile: PACUserRuleFilePath, encoding: String.Encoding.utf8)
         userRulesView.string = str
@@ -46,6 +42,8 @@ class UserRulesController: NSWindowController {
                     NSUserNotificationCenter.default
                         .deliver(notification)
                 }
+
+                GenerateGFWListACL()
             } catch {}
         }
         window?.performClose(self)

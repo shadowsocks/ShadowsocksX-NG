@@ -26,6 +26,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     @IBOutlet weak var runningStatusMenuItem: NSMenuItem!
     @IBOutlet weak var toggleRunningMenuItem: NSMenuItem!
 
+    @IBOutlet weak var proxyAllMenuItem: NSMenuItem!
+    @IBOutlet weak var proxyGFWListMenuItem: NSMenuItem!
     @IBOutlet weak var bypassLANAndMainlandChinaMenuItem: NSMenuItem!
 
     @IBOutlet weak var autoModeMenuItem: NSMenuItem!
@@ -220,10 +222,27 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         }
     }
 
-    @IBAction func toggleBypassLANAndMainlandChina(_ sender: NSMenuItem) {
+    @IBAction func selectProxyAll(_ sender: NSMenuItem) {
         let defaults = UserDefaults.standard
-        let isEnabled = defaults.bool(forKey: "ACL.Enable")
-        defaults.set(!isEnabled, forKey: "ACL.Enable")
+        defaults.set(false, forKey: "ACL.Enable")
+
+        self.updateMainMenu()
+        self.applyConfig()
+    }
+
+    @IBAction func selectProxyGFWList(_ sender: NSMenuItem) {
+        let defaults = UserDefaults.standard
+        defaults.set(true, forKey: "ACL.Enable")
+        defaults.set("gfwlist", forKey: "ACL.Mode")
+
+        self.updateMainMenu()
+        self.applyConfig()
+    }
+
+    @IBAction func selectBypassLANAndMainlandChina(_ sender: NSMenuItem) {
+        let defaults = UserDefaults.standard
+        defaults.set(true, forKey: "ACL.Enable")
+        defaults.set("bypass-lan-china", forKey: "ACL.Mode")
 
         self.updateMainMenu()
         self.applyConfig()
@@ -456,8 +475,19 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             statusItem.image = image
         }
 
+        // Shadowsocks ACL
         let aclEnabled = defaults.bool(forKey: "ACL.Enable")
-        bypassLANAndMainlandChinaMenuItem.state = aclEnabled ? 1 : 0
+        proxyAllMenuItem.state = aclEnabled ? 0 : 1
+        proxyGFWListMenuItem.state = 0
+        bypassLANAndMainlandChinaMenuItem.state = 0
+        if aclEnabled {
+            let mode = defaults.string(forKey: "ACL.Mode") ?? "bypass-lan-china"
+            if (mode == "gfwlist") {
+                proxyGFWListMenuItem.state = 1
+            } else {
+                bypassLANAndMainlandChinaMenuItem.state = 1
+            }
+        }
 
         statusItem.image?.isTemplate = true
         
