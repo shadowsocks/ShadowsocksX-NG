@@ -76,6 +76,13 @@
                                     <action selector="toggleACLRules:" target="Voe-Tx-rLC" id="0JJ-ie-kFp"/>
                                 </connections>
                             </menuItem>
+                            <menuItem isSeparatorItem="YES" id="Ht6-Js-Fr4"/>
+                            <menuItem title="Update GFW List ACL Rule" id="IzY-94-NnJ">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="updateGFWListACL:" target="Voe-Tx-rLC" id="oXh-0p-2iz"/>
+                                </connections>
+                            </menuItem>
                         </items>
                     </menu>
                 </menuItem>

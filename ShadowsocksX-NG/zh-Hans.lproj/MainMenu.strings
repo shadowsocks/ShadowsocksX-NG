@@ -35,8 +35,8 @@
 /* Class = "NSMenuItem"; title = "显示当前服务器的二维码..."; ObjectID = "R6A-96-Zcb"; */
 "R6A-96-Zcb.title" = "显示当前服务器的二维码...";
 
-/* Class = "NSMenuItem"; title = "Update PAC & ACL from GFW List"; ObjectID = "TFc-Ec-duM"; */
-"TFc-Ec-duM.title" = "从 GFW List 更新 PAC 和 ACL";
+/* Class = "NSMenuItem"; title = "从 GFW List 更新PAC"; ObjectID = "TFc-Ec-duM"; */
+"TFc-Ec-duM.title" = "从 GFW List 更新PAC";
 
 /* Class = "NSMenuItem"; title = "反馈"; ObjectID = "W7u-7g-Gv4"; */
 "W7u-7g-Gv4.title" = "反馈";
@@ -107,3 +107,5 @@
 /* Class = "NSMenuItem"; title = "Bypass LAN and mainland China"; ObjectID = "DqE-sW-LKL"; */
 "DqE-sW-LKL.title" = "绕过局域网及中国大陆地址";
 
+/* Class = "NSMenuItem"; title = "Update GFW List ACL Rule"; ObjectID = "IzY-94-NnJ"; */
+"IzY-94-NnJ.title" = "更新 GFW List ACL 规则";

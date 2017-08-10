@@ -1,3 +1,4 @@
+import Alamofire
 import Foundation
 
 
@@ -222,7 +223,7 @@ private func ABPFilterToACL(filter: String) -> String {
 }
 
 
-func GFWListToACL(gfwlist: String) -> String? {
+private func GFWListToACL(gfwlist: String) -> String? {
     guard let decoded = Data(base64Encoded: gfwlist, options: .ignoreUnknownCharacters) else {
         return nil
     }
@@ -231,4 +232,57 @@ func GFWListToACL(gfwlist: String) -> String? {
     }
 
     return ABPFilterToACL(filter: gfwlistFilter)
+}
+
+
+private func SendNotification(message: String) {
+    let notification = NSUserNotification()
+    notification.title = message
+    NSUserNotificationCenter.default.deliver(notification)
+}
+
+
+func UpdateGFWListACL() {
+    guard let url = UserDefaults.standard.string(forKey: "GFWListURL") else {
+        SendNotification(message: "Invalid GFW List URL.".localized)
+        return
+    }
+
+    do {
+        let fileManager = FileManager.default
+        if !fileManager.fileExists(atPath: ACLDirPath) {
+            try fileManager.createDirectory(atPath: ACLDirPath, withIntermediateDirectories: true)
+        }
+    } catch {
+        SendNotification(message: "ACL Directory cannot be created.".localized)
+        return
+    }
+
+    Alamofire.request(url).responseString { response in
+        switch response.result {
+        case .success(let gfwlist):
+            let message: String
+
+            if let aclContent = GFWListToACL(gfwlist: gfwlist) {
+                if ACLRule.proxyGFWList.save(content: aclContent) {
+                    message = "ACL has been updated by lastest GFW List.".localized
+
+                    // This will reload ACL if the generated ACL is changed
+                    SyncSSLocal()
+                } else {
+                    message = "Failed to write GFW List ACL".localized
+                }
+            } else {
+                message = "Failed parse GFW List into ACL.".localized
+            }
+
+            SendNotification(message: message)
+
+        case .failure(let error):
+            let description = String(reflecting: error)
+            NSLog("Error fetching GFWList: \(description)")
+            
+            SendNotification(message: "Failed to download latest GFW List.".localized)
+        }
+    }
 }

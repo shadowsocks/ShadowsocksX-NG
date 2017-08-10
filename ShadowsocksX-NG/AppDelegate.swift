@@ -272,6 +272,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         self.updateACLMenu()
         self.applyConfig()
     }
+
+    @IBAction func updateGFWListACL(_ sender: NSMenuItem) {
+        UpdateGFWListACL()
+    }
     
     @IBAction func updateGFWList(_ sender: NSMenuItem) {
         UpdatePACFromGFWList()
