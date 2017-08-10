@@ -47,8 +47,7 @@ func generateSSLocalLauchAgentPlist() -> Bool {
     let defaults = UserDefaults.standard
     let enableUdpRelay = defaults.bool(forKey: "LocalSocks5.EnableUDPRelay")
     let enableVerboseMode = defaults.bool(forKey: "LocalSocks5.EnableVerboseMode")
-    let enableACL = defaults.bool(forKey: "ACL.Enable")
-
+    
     var arguments = [sslocalPath, "-c", "ss-local-config.json"]
     if enableUdpRelay {
         arguments.append("-u")
@@ -56,24 +55,16 @@ func generateSSLocalLauchAgentPlist() -> Bool {
     if enableVerboseMode {
         arguments.append("-v")
     }
-    if enableACL {
-        let mode = defaults.string(forKey: "ACL.Mode") ?? "bypass-lan-china"
-        let filename = "\(mode).acl"
 
-        switch mode {
-        case "bypass-lan-china":
-            EnsureBypassLANChinaACL()
-
-        case "gfwlist":
-            EnsureGFWListACL()
-
-        default:
-            break
-        }
-
-        let userACLPath = NSHomeDirectory() + "/.ShadowsocksX-NG/" + filename
-        arguments.append(contentsOf: ["--acl", userACLPath])
+    // Generate & Use ACL
+    let acl = ACLManager.instance
+    let aclHash = acl.hash()
+    if let path = acl.generate() {
+        arguments.append(contentsOf: ["--acl", path])
+    } else {
+        NSLog("Failed generating ACL.")
     }
+    let aclChanged = acl.hash() != aclHash
     
     // For a complete listing of the keys, see the launchd.plist manual page.
     let dict: NSMutableDictionary = [
@@ -86,11 +77,9 @@ func generateSSLocalLauchAgentPlist() -> Bool {
     ]
     dict.write(toFile: plistFilepath, atomically: true)
     let Sha1Sum = getFileSHA1Sum(plistFilepath)
-    if oldSha1Sum != Sha1Sum {
-        return true
-    } else {
-        return false
-    }
+    let plistChanged = oldSha1Sum != Sha1Sum
+
+    return aclChanged || plistChanged
 }
 
 func StartSSLocal() {

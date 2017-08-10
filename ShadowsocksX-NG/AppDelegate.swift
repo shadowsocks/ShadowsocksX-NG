@@ -27,8 +27,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     @IBOutlet weak var toggleRunningMenuItem: NSMenuItem!
 
     @IBOutlet weak var proxyAllMenuItem: NSMenuItem!
+    @IBOutlet weak var bypassAllMenuItem: NSMenuItem!
     @IBOutlet weak var proxyGFWListMenuItem: NSMenuItem!
-    @IBOutlet weak var bypassLANAndMainlandChinaMenuItem: NSMenuItem!
+    @IBOutlet weak var bypassLANChinaMenuItem: NSMenuItem!
 
     @IBOutlet weak var autoModeMenuItem: NSMenuItem!
     @IBOutlet weak var globalModeMenuItem: NSMenuItem!
@@ -70,8 +71,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         defaults.register(defaults: [
             "ShadowsocksOn": true,
             "ShadowsocksRunningMode": "auto",
-            "ACL.Enable": false,
-            "ACL.Mode": "bypass-lan-china",
+            "ACL.Default": "proxy",
+            "ACL.Rules": [],
             "LocalSocks5.ListenPort": NSNumber(value: 1086 as UInt16),
             "LocalSocks5.ListenAddress": "127.0.0.1",
             "PacServer.ListenPort":NSNumber(value: 1089 as UInt16),
@@ -222,29 +223,53 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         }
     }
 
-    @IBAction func selectProxyAll(_ sender: NSMenuItem) {
-        let defaults = UserDefaults.standard
-        defaults.set(false, forKey: "ACL.Enable")
+    @IBAction func selectACLDefaultAction(_ sender: NSMenuItem) {
+        let acl = ACLManager.instance
 
-        self.updateMainMenu()
+        switch sender {
+        case proxyAllMenuItem:
+            acl.defaultAction = .proxy
+
+        case bypassAllMenuItem:
+            acl.defaultAction = .bypass
+
+        default:
+            NSLog("Unknown sender: %@", sender)
+            return
+        }
+
+        self.updateACLMenu()
         self.applyConfig()
     }
 
-    @IBAction func selectProxyGFWList(_ sender: NSMenuItem) {
-        let defaults = UserDefaults.standard
-        defaults.set(true, forKey: "ACL.Enable")
-        defaults.set("gfwlist", forKey: "ACL.Mode")
+    @IBAction func toggleACLRules(_ sender: NSMenuItem) {
+        let acl = ACLManager.instance
 
-        self.updateMainMenu()
-        self.applyConfig()
-    }
+        let rule: ACLRule
 
-    @IBAction func selectBypassLANAndMainlandChina(_ sender: NSMenuItem) {
-        let defaults = UserDefaults.standard
-        defaults.set(true, forKey: "ACL.Enable")
-        defaults.set("bypass-lan-china", forKey: "ACL.Mode")
+        switch sender {
+        case proxyGFWListMenuItem:
+            rule = .proxyGFWList
 
-        self.updateMainMenu()
+        case bypassLANChinaMenuItem:
+            rule = .bypassLANChina
+
+        default:
+            NSLog("Unknown sender: %@", sender)
+            return
+        }
+
+        var rules = acl.enabledRules
+
+        if rules.contains(rule) {
+            rules.remove(rule)
+        } else {
+            rules.insert(rule)
+        }
+
+        acl.enabledRules = rules
+
+        self.updateACLMenu()
         self.applyConfig()
     }
     
@@ -474,24 +499,22 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             let image = NSImage(named: "menu_icon_disabled")
             statusItem.image = image
         }
-
-        // Shadowsocks ACL
-        let aclEnabled = defaults.bool(forKey: "ACL.Enable")
-        proxyAllMenuItem.state = aclEnabled ? 0 : 1
-        proxyGFWListMenuItem.state = 0
-        bypassLANAndMainlandChinaMenuItem.state = 0
-        if aclEnabled {
-            let mode = defaults.string(forKey: "ACL.Mode") ?? "bypass-lan-china"
-            if (mode == "gfwlist") {
-                proxyGFWListMenuItem.state = 1
-            } else {
-                bypassLANAndMainlandChinaMenuItem.state = 1
-            }
-        }
-
         statusItem.image?.isTemplate = true
         
+        updateACLMenu()
         updateStatusMenuImage()
+    }
+
+    func updateACLMenu() {
+        let acl = ACLManager.instance
+
+        let defaultAction = acl.defaultAction
+        proxyAllMenuItem.state = (defaultAction == .proxy) ? 1 : 0
+        bypassAllMenuItem.state = (defaultAction == .bypass) ? 1 : 0
+
+        let rules = acl.enabledRules
+        bypassLANChinaMenuItem.state = rules.contains(.bypassLANChina) ? 1 : 0
+        proxyGFWListMenuItem.state = rules.contains(.proxyGFWList) ? 1 : 0
     }
     
     func updateCopyHttpProxyExportMenu() {

@@ -15,7 +15,8 @@
         <customObject id="Voe-Tx-rLC" customClass="AppDelegate" customModule="ShadowsocksX_NG" customModuleProvider="target">
             <connections>
                 <outlet property="autoModeMenuItem" destination="r07-Gu-aEz" id="9aH-pQ-Rgi"/>
-                <outlet property="bypassLANAndMainlandChinaMenuItem" destination="DqE-sW-LKL" id="Sto-Cp-Sia"/>
+                <outlet property="bypassAllMenuItem" destination="N6J-8o-9ZQ" id="OAH-mx-6cU"/>
+                <outlet property="bypassLANChinaMenuItem" destination="DqE-sW-LKL" id="9j0-F2-AeG"/>
                 <outlet property="copyHttpProxyExportCmdLineMenuItem" destination="lg6-To-GZA" id="VTb-he-dg4"/>
                 <outlet property="exportAllServerProfileItem" destination="6k0-gn-DQv" id="W2x-96-ISj"/>
                 <outlet property="globalModeMenuItem" destination="Mw3-Jm-eXA" id="ar5-Yx-3ze"/>
@@ -46,31 +47,39 @@
                     </connections>
                 </menuItem>
                 <menuItem isSeparatorItem="YES" id="LXP-yK-yQu"/>
-                <menuItem title="Shadowsocks ACL" enabled="NO" id="jIS-bt-aMG">
+                <menuItem title="Shadowsocks ACL" id="axt-qL-kUF">
                     <modifierMask key="keyEquivalentModifierMask"/>
-                </menuItem>
-                <menuItem title="Proxy All" id="7Yg-Yn-Ybc">
-                    <modifierMask key="keyEquivalentModifierMask"/>
-                    <connections>
-                        <action selector="selectProxyAll:" target="Voe-Tx-rLC" id="NYF-pU-BpQ"/>
-                    </connections>
-                </menuItem>
-                <menuItem title="Proxy GFW List" id="LKR-vc-z9u">
-                    <modifierMask key="keyEquivalentModifierMask"/>
-                    <connections>
-                        <action selector="selectProxyGFWList:" target="Voe-Tx-rLC" id="fSm-Of-rmM"/>
-                    </connections>
-                </menuItem>
-                <menuItem title="Bypass LAN and mainland China" id="DqE-sW-LKL">
-                    <modifierMask key="keyEquivalentModifierMask"/>
-                    <connections>
-                        <action selector="selectBypassLANAndMainlandChina:" target="Voe-Tx-rLC" id="cr8-pV-4WV"/>
-                    </connections>
+                    <menu key="submenu" title="Shadowsocks ACL" id="rgU-jK-Bax">
+                        <items>
+                            <menuItem title="Proxy All By Default" id="7Yg-Yn-Ybc">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="selectACLDefaultAction:" target="Voe-Tx-rLC" id="9sQ-L6-a2d"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Bypass All By Default" id="N6J-8o-9ZQ">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="selectACLDefaultAction:" target="Voe-Tx-rLC" id="6sG-Q0-uxl"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" id="YgO-00-L9h"/>
+                            <menuItem title="Proxy GFW List" id="LKR-vc-z9u">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="toggleACLRules:" target="Voe-Tx-rLC" id="K1o-b6-5yI"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Bypass LAN and mainland China" id="DqE-sW-LKL">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="toggleACLRules:" target="Voe-Tx-rLC" id="0JJ-ie-kFp"/>
+                                </connections>
+                            </menuItem>
+                        </items>
+                    </menu>
                 </menuItem>
                 <menuItem isSeparatorItem="YES" id="eWU-eQ-dX1"/>
-                <menuItem title="macOS Proxy" enabled="NO" id="rGX-3L-aGC">
-                    <modifierMask key="keyEquivalentModifierMask"/>
-                </menuItem>
                 <menuItem title="Proxy Auto Configure Mode" id="r07-Gu-aEz">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
@@ -146,7 +155,7 @@
                         <action selector="copyExportCommand:" target="Voe-Tx-rLC" id="2U4-3M-sAK"/>
                     </connections>
                 </menuItem>
-                <menuItem title="Update GFW List and PAC" id="TFc-Ec-duM">
+                <menuItem title="Update PAC from GFW List" id="TFc-Ec-duM">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
                         <action selector="updateGFWList:" target="Voe-Tx-rLC" id="Ztt-PS-F3T"/>

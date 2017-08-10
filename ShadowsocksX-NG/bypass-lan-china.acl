@@ -1,7 +1,6 @@
-# This is a direct copy from the following URL
+# This is a modified copy from the following URL
 # https://github.com/shadowsocks/shadowsocks-android/blob/d51bf46413fb9cf231fcb3f8d5b7674e5319aafc/mobile/src/main/assets/acl/bypass-lan-china.acl
-
-[proxy_all]
+# Global [proxy_all] header is removed
 
 [bypass_list]
 0.0.0.0/8

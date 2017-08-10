@@ -2,13 +2,139 @@ import Foundation
 
 
 let ACLDirPath = NSHomeDirectory() + "/.ShadowsocksX-NG/"
-let ACLBypassLANChinaFilePath = ACLDirPath + "bypass-lan-china.acl"
-let ACLGFWListFilePath = ACLDirPath + "gfwlist.acl"
+
+
+enum ACLAction: String {
+    case bypass
+    case proxy
+}
+
+
+enum ACLRule: String {
+    case bypassLANChina
+    case proxyGFWList
+    case custom
+
+    func load() -> String {
+        // One can override the default rules by writing custom rules
+        // to a specific file
+        let overridePath = ACLDirPath + filename
+        if let content = try? String(contentsOfFile: overridePath) {
+            return content
+        }
+        // Two force unwraps because it is a builtin file
+        let path = Bundle.main.path(forResource: resourceName, ofType: "acl")!
+        return try! String(contentsOfFile: path)
+    }
+
+    private var resourceName: String {
+        switch self {
+        case .bypassLANChina:
+            return "bypass-lan-china"
+
+        case .proxyGFWList:
+            return "gfwlist"
+
+        case .custom:
+            return "custom"
+        }
+    }
+
+    private var filename: String {
+        return "\(resourceName).acl"
+    }
+}
 
 
 struct ACLEntry {
-    let bypass: Bool
+    let action: ACLAction
     let regexp: String
+}
+
+
+class ACLManager {
+
+    static let instance = ACLManager(userDefaults: UserDefaults.standard)
+
+    private let userDefaults: UserDefaults
+    private let filePath: String
+
+    // Chosen when the request does not match any other rules
+    var defaultAction: ACLAction {
+        get {
+            guard let stored = userDefaults.string(forKey: "ACL.Default") else {
+                return .proxy
+            }
+            guard let action = ACLAction(rawValue: stored) else {
+                return .proxy
+            }
+            return action
+        }
+        set {
+            let stored = newValue.rawValue
+            userDefaults.set(stored, forKey: "ACL.Default")
+        }
+    }
+
+    // Which builtin rules to include in the generated ACL file
+    var enabledRules: Set<ACLRule> {
+        get {
+            // Custom rules are always active
+            // You can edit it by editing ~/.ShadowsocksX-NG/custom.acl
+            let alwaysActiveRules: Set<ACLRule> = [.custom]
+
+            guard let raw = userDefaults.array(forKey: "ACL.Rules") else {
+                return alwaysActiveRules
+            }
+            guard let stored = raw as? [String] else {
+                return alwaysActiveRules
+            }
+            let rules = stored.flatMap { ACLRule(rawValue: $0) }
+            return Set(rules).union(alwaysActiveRules)
+        }
+        set {
+            let stored = newValue.map { $0.rawValue }
+            userDefaults.set(stored, forKey: "ACL.Rules")
+        }
+    }
+
+    init(userDefaults: UserDefaults) {
+        self.userDefaults = userDefaults
+        self.filePath = ACLDirPath + ".generated.acl"
+    }
+
+    func hash() -> String {
+        return getFileSHA1Sum(filePath)
+    }
+
+    func generate() -> String? {
+        let content = generateContent()
+
+        do {
+            try content.write(toFile: filePath, atomically: true, encoding: .utf8)
+            return filePath
+        } catch {
+            return nil
+        }
+    }
+
+    private func generateContent() -> String {
+        var contents = [String]()
+
+        switch defaultAction {
+        case .bypass:
+            contents.append("[bypass_all]")
+
+        case .proxy:
+            contents.append("[proxy_all]")
+        }
+
+        for rule in enabledRules {
+            contents.append(rule.load())
+        }
+
+        return contents.joined(separator: "\n")
+    }
 }
 
 
@@ -66,7 +192,8 @@ private func ACLEntryFrom(rule: String) -> ACLEntry? {
         return nil
     }
 
-    return ACLEntry(bypass: exceptionRule, regexp: regexp)
+    let action: ACLAction = exceptionRule ? .bypass : .proxy
+    return ACLEntry(action: action, regexp: regexp)
 }
 
 
@@ -74,7 +201,7 @@ private func ABPFilterToACL(filter: String) -> String {
     let rules = filter.components(separatedBy: .newlines)
 
     var entries = rules.flatMap(ACLEntryFrom(rule:))
-    let p = entries.partition { $0.bypass }
+    let p = entries.partition { $0.action == .bypass }
     let regexps = entries.map { $0.regexp }
     let proxyList = regexps.prefix(upTo: p).joined(separator: "\n")
     let bypassList = regexps.suffix(from: p).joined(separator: "\n")
@@ -84,7 +211,7 @@ private func ABPFilterToACL(filter: String) -> String {
 }
 
 
-func Generate(ACLFile output: String, FromGFWList gfwlist: String, AndABPFile abp: String) -> Bool {
+private func Generate(ACLFile output: String, FromGFWList gfwlist: String) -> Bool {
     guard let base64Filter = try? String(contentsOfFile: gfwlist) else {
         return false
     }
@@ -92,53 +219,12 @@ func Generate(ACLFile output: String, FromGFWList gfwlist: String, AndABPFile ab
         let gfwlistFilter = String(data: decoded, encoding: .utf8) else {
         return false
     }
-    guard let abpFilter = try? String(contentsOfFile: abp) else {
-        return false
-    }
 
-    let filter = "\(abpFilter)\n\(gfwlistFilter)"
-    let acl = ABPFilterToACL(filter: filter)
+    let acl = ABPFilterToACL(filter: gfwlistFilter)
 
     guard let aclData = acl.data(using: .utf8) else {
         return false
     }
 
     return (try? aclData.write(to: URL(fileURLWithPath: output))) != nil
-}
-
-
-func GenerateGFWListACL() {
-    EnsureGFWList()
-    EnsureUserRule()
-
-    if !Generate(ACLFile: ACLGFWListFilePath,
-                 FromGFWList: GFWListFilePath,
-                 AndABPFile: PACUserRuleFilePath) {
-        NSLog("Generate GFWList ACL failed")
-    }
-}
-
-
-func EnsureBypassLANChinaACL() {
-    let dst = ACLBypassLANChinaFilePath
-    let fileMgr = FileManager.default
-
-    if fileMgr.fileExists(atPath: dst) {
-        return
-    }
-
-    let src = Bundle.main.path(forResource: "bypass-lan-china", ofType: "acl")!
-    try! fileMgr.copyItem(atPath: src, toPath: dst)
-}
-
-
-func EnsureGFWListACL() {
-    let dst = ACLGFWListFilePath
-    let fileMgr = FileManager.default
-
-    if fileMgr.fileExists(atPath: dst) {
-        return
-    }
-
-    GenerateGFWListACL()
 }
