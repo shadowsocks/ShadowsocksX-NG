@@ -156,6 +156,25 @@ func UpdatePACFromGFWList() {
                     } catch {
                         
                     }
+
+                    let message: String
+
+                    if let aclContent = GFWListToACL(gfwlist: v) {
+                        if ACLRule.proxyGFWList.save(content: aclContent) {
+                            message = "ACL has been updated by lastest GFW List.".localized
+
+                            // This will reload ACL if the generated ACL is changed
+                            SyncSSLocal()
+                        } else {
+                            message = "Failed to write GFW List ACL".localized
+                        }
+                    } else {
+                        message = "Failed parse GFW List into ACL.".localized
+                    }
+
+                    let notification = NSUserNotification()
+                    notification.title = message
+                    NSUserNotificationCenter.default.deliver(notification)
                 }
             } else {
                 // Popup a user notification

@@ -27,6 +27,17 @@ enum ACLRule: String {
         return try! String(contentsOfFile: path)
     }
 
+    func save(content: String) -> Bool {
+        let path = ACLDirPath + filename
+
+        do {
+            try content.write(toFile: path, atomically: true, encoding: .utf8)
+            return true
+        } catch {
+            return false
+        }
+    }
+
     private var resourceName: String {
         switch self {
         case .bypassLANChina:
@@ -207,24 +218,17 @@ private func ABPFilterToACL(filter: String) -> String {
     let bypassList = regexps.suffix(from: p).joined(separator: "\n")
 
     // Swift 4: Change this to a multiline string literal for better readability
-    return "[bypass_all]\n\n[proxy_list]\n\(proxyList)\n\n[bypass_list]\n\(bypassList)\n"
+    return "[proxy_list]\n\(proxyList)\n\n[bypass_list]\n\(bypassList)\n"
 }
 
 
-private func Generate(ACLFile output: String, FromGFWList gfwlist: String) -> Bool {
-    guard let base64Filter = try? String(contentsOfFile: gfwlist) else {
-        return false
+func GFWListToACL(gfwlist: String) -> String? {
+    guard let decoded = Data(base64Encoded: gfwlist, options: .ignoreUnknownCharacters) else {
+        return nil
     }
-    guard let decoded = Data(base64Encoded: base64Filter, options: .ignoreUnknownCharacters),
-        let gfwlistFilter = String(data: decoded, encoding: .utf8) else {
-        return false
-    }
-
-    let acl = ABPFilterToACL(filter: gfwlistFilter)
-
-    guard let aclData = acl.data(using: .utf8) else {
-        return false
+    guard let gfwlistFilter = String(data: decoded, encoding: .utf8) else {
+        return nil
     }
 
-    return (try? aclData.write(to: URL(fileURLWithPath: output))) != nil
+    return ABPFilterToACL(filter: gfwlistFilter)
 }

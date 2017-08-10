@@ -8,6 +8,12 @@
 
 "PAC has been updated by latest GFW List." = "PAC has been updated by latest GFW List.";
 
+"ACL has been updated by lastest GFW List." = "ACL has been updated by lastest GFW List.";
+
+"Failed to write GFW List ACL" = "Failed to write GFW List ACL";
+
+"Failed parse GFW List into ACL." = "Failed parse GFW List into ACL.";
+
 "Failed to download latest GFW List." = "Failed to download latest GFW List.";
 
 /*

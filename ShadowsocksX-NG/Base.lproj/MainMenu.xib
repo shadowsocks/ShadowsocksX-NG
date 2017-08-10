@@ -155,7 +155,7 @@
                         <action selector="copyExportCommand:" target="Voe-Tx-rLC" id="2U4-3M-sAK"/>
                     </connections>
                 </menuItem>
-                <menuItem title="Update PAC from GFW List" id="TFc-Ec-duM">
+                <menuItem title="Update PAC &amp; ACL from GFW List" id="TFc-Ec-duM">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
                         <action selector="updateGFWList:" target="Voe-Tx-rLC" id="Ztt-PS-F3T"/>
