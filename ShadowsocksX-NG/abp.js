@@ -769,7 +769,14 @@ for (var i = 0; i < rules.length; i++) {
   defaultMatcher.add(Filter.fromText(rules[i]));
 }
 
+function UserCustomProxy(url, host) {
+    __USERSCRIPT__
+    return false;
+}
+
 function FindProxyForURL(url, host) {
+  var uproxy = UserCustomProxy(url, hot);
+  if (uproxy) return `${uproxy} ${proxy}`;
   if (defaultMatcher.matchesAny(url, host) instanceof BlockingFilter) {
     return proxy;
   }

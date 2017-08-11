@@ -13,6 +13,7 @@ let OldErrorPACRulesDirPath = NSHomeDirectory() + "/.ShadowsocksX-NE/"
 
 let PACRulesDirPath = NSHomeDirectory() + "/.ShadowsocksX-NG/"
 let PACUserRuleFilePath = PACRulesDirPath + "user-rule.txt"
+let PACUserScriptFilePath = PACRulesDirPath + "user-script.txt"
 let PACFilePath = PACRulesDirPath + "gfwlist.js"
 let GFWListFilePath = PACRulesDirPath + "gfwlist.txt"
 
@@ -65,6 +66,12 @@ func GeneratePACFile() -> Bool {
         try! fileMgr.copyItem(atPath: src!, toPath: PACUserRuleFilePath)
     }
     
+    // If user-script.txt is not exsited, copy from bundle
+    if !fileMgr.fileExists(atPath: PACUserScriptFilePath) {
+        let src = Bundle.main.path(forResource: "user-script", ofType: "txt")
+        try! fileMgr.copyItem(atPath: src!, toPath: PACUserScriptFilePath)
+    }
+    
     let socks5Port = UserDefaults.standard.integer(forKey: "LocalSocks5.ListenPort")
     
     do {
@@ -105,9 +112,15 @@ func GeneratePACFile() -> Bool {
                 let jsData = try? Data(contentsOf: jsPath!)
                 var jsStr = String(data: jsData!, encoding: String.Encoding.utf8)
                 
+                // Get user pac js
+                let userScriptStr = try String(contentsOfFile: PACUserScriptFilePath, encoding: String.Encoding.utf8)
+                
+                
                 // Replace rules placeholder in pac js
                 jsStr = jsStr!.replacingOccurrences(of: "__RULES__"
                     , with: rulesJsonStr!)
+                // Replace userScript in pac js
+                jsStr = jsStr!.replacingOccurrences(of: "__USERSCRIPT__", with: userScriptStr)
                 // Replace __SOCKS5PORT__ palcholder in pac js
                 let result = jsStr!.replacingOccurrences(of: "__SOCKS5PORT__"
                     , with: "\(socks5Port)")

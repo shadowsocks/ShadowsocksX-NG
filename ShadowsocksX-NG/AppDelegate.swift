@@ -17,6 +17,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     var qrcodeWinCtrl: SWBQRCodeWindowController!
     var preferencesWinCtrl: PreferencesWindowController!
     var editUserRulesWinCtrl: UserRulesController!
+    var editUserScriptWinCtrl: UserScriptController!
     var allInOnePreferencesWinCtrl: PreferencesWinController!
     var toastWindowCtrl: ToastWindowController!
 
@@ -225,6 +226,18 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         }
         let ctrl = UserRulesController(windowNibName: "UserRulesController")
         editUserRulesWinCtrl = ctrl
+        
+        ctrl.showWindow(self)
+        NSApp.activate(ignoringOtherApps: true)
+        ctrl.window?.makeKeyAndOrderFront(self)
+    }
+    
+    @IBAction func editUserScriptForPAC(_ sender: NSMenuItem) {
+        if editUserScriptWinCtrl != nil {
+            editUserScriptWinCtrl.close()
+        }
+        let ctrl = UserScriptController(windowNibName: "UserScriptController")
+        editUserScriptWinCtrl = ctrl
         
         ctrl.showWindow(self)
         NSApp.activate(ignoringOtherApps: true)
