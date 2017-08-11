@@ -81,8 +81,8 @@
 		C8E42A6E1D4F2CAF0074C7EA /* UserRulesController.xib in Resources */ = {isa = PBXBuildFile; fileRef = C8E42A701D4F2CAF0074C7EA /* UserRulesController.xib */; };
 		D8E3630B1E2072980027449B /* ServerProfileTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8E3630A1E2072980027449B /* ServerProfileTests.swift */; };
 		DA582BF71F3D865300339E44 /* UserScriptController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA582BF51F3D865300339E44 /* UserScriptController.swift */; };
-		DA582BF81F3D865300339E44 /* UserScriptController.xib in Resources */ = {isa = PBXBuildFile; fileRef = DA582BF61F3D865300339E44 /* UserScriptController.xib */; };
 		DA582BFB1F3D899C00339E44 /* user-script.txt in Resources */ = {isa = PBXBuildFile; fileRef = DA582BFA1F3D899C00339E44 /* user-script.txt */; };
+		DA582C071F3D977C00339E44 /* UserScriptController.xib in Resources */ = {isa = PBXBuildFile; fileRef = DA582C091F3D977C00339E44 /* UserScriptController.xib */; };
 		E0E57CCA7EB34B90F9D340F2 /* Pods_ShadowsocksX_NGTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 388120F062D7EB7DD0D8DDCA /* Pods_ShadowsocksX_NGTests.framework */; };
 		F0809FF1595BE2966343D3C7 /* libPods-proxy_conf_helper.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1E7783AEDB4A3BDDC9FF16AC /* libPods-proxy_conf_helper.a */; };
 /* End PBXBuildFile section */
@@ -238,8 +238,9 @@
 		C8E42A721D4F2CB10074C7EA /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/UserRulesController.strings"; sourceTree = "<group>"; };
 		D8E3630A1E2072980027449B /* ServerProfileTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ServerProfileTests.swift; sourceTree = "<group>"; };
 		DA582BF51F3D865300339E44 /* UserScriptController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UserScriptController.swift; sourceTree = "<group>"; };
-		DA582BF61F3D865300339E44 /* UserScriptController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = UserScriptController.xib; sourceTree = "<group>"; };
 		DA582BFA1F3D899C00339E44 /* user-script.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "user-script.txt"; sourceTree = "<group>"; };
+		DA582C081F3D977C00339E44 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/UserScriptController.xib; sourceTree = "<group>"; };
+		DA582C0C1F3D978700339E44 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/UserScriptController.strings"; sourceTree = "<group>"; };
 		E9E9FB3855DA55D0710EE7BD /* Pods-ShadowsocksX-NG.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ShadowsocksX-NG.release.xcconfig"; path = "Pods/Target Support Files/Pods-ShadowsocksX-NG/Pods-ShadowsocksX-NG.release.xcconfig"; sourceTree = "<group>"; };
 		FE3237E9FB24D9B924A0E630 /* Pods-ShadowsocksX-NG.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ShadowsocksX-NG.debug.xcconfig"; path = "Pods/Target Support Files/Pods-ShadowsocksX-NG/Pods-ShadowsocksX-NG.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -420,7 +421,7 @@
 				9B3546701E802B1200B510B4 /* ToastWindowController.swift */,
 				9B3546711E802B1200B510B4 /* ToastWindowController.xib */,
 				DA582BF51F3D865300339E44 /* UserScriptController.swift */,
-				DA582BF61F3D865300339E44 /* UserScriptController.xib */,
+				DA582C091F3D977C00339E44 /* UserScriptController.xib */,
 			);
 			name = UI;
 			sourceTree = "<group>";
@@ -624,7 +625,7 @@
 				C6D429931DA75988002A5711 /* install_privoxy.sh in Resources */,
 				9B58320B1E7422DB009D5B7D /* http.png in Resources */,
 				9BC70EDC1D2E3E3100EDA4CA /* Localizable.strings in Resources */,
-				DA582BF81F3D865300339E44 /* UserScriptController.xib in Resources */,
+				DA582C071F3D977C00339E44 /* UserScriptController.xib in Resources */,
 				9B0BFFEE1D0460A70040E62B /* MainMenu.xib in Resources */,
 				9B3FFF4C1D09D8F70019A709 /* install_helper.sh in Resources */,
 				C6D429961DA75988002A5711 /* start_privoxy.sh in Resources */,
@@ -874,6 +875,15 @@
 				C8E42A721D4F2CB10074C7EA /* zh-Hans */,
 			);
 			name = UserRulesController.xib;
+			sourceTree = "<group>";
+		};
+		DA582C091F3D977C00339E44 /* UserScriptController.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				DA582C081F3D977C00339E44 /* Base */,
+				DA582C0C1F3D978700339E44 /* zh-Hans */,
+			);
+			name = UserScriptController.xib;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */
