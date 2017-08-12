@@ -109,3 +109,6 @@
 
 /* Class = "NSMenuItem"; title = "Update GFW List ACL Rule"; ObjectID = "IzY-94-NnJ"; */
 "IzY-94-NnJ.title" = "更新 GFW List ACL 规则";
+
+/* Class = "NSMenuItem"; title = "Edit Custom Rules..."; ObjectID = "8Yf-qX-rEW"; */
+"8Yf-qX-rEW.title" = "编辑自定义规则...";

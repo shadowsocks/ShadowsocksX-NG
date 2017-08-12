@@ -58,9 +58,18 @@ enum ACLRule: String {
 }
 
 
-struct ACLEntry {
-    let action: ACLAction
-    let regexp: String
+// TODO: IP / CIDR / Regexp
+@objc(ACLEntry)
+class ACLEntry: NSObject {
+    dynamic var stringValue: String
+
+    override init() {
+        self.stringValue = ""
+    }
+
+    init(stringValue value: String) {
+        self.stringValue = value
+    }
 }
 
 
@@ -150,7 +159,7 @@ class ACLManager {
 }
 
 
-private func ACLEntryFrom(rule: String) -> ACLEntry? {
+private func ACLEntryFrom(rule: String) -> (action: ACLAction, entry: ACLEntry)? {
     // Skip empty lines and comment
     let trimmed = rule.trimmingCharacters(in: .whitespacesAndNewlines)
     if trimmed.isEmpty {
@@ -205,7 +214,7 @@ private func ACLEntryFrom(rule: String) -> ACLEntry? {
     }
 
     let action: ACLAction = exceptionRule ? .bypass : .proxy
-    return ACLEntry(action: action, regexp: regexp)
+    return (action, ACLEntry(stringValue: regexp))
 }
 
 
@@ -214,7 +223,7 @@ private func ABPFilterToACL(filter: String) -> String {
 
     var entries = rules.flatMap(ACLEntryFrom(rule:))
     let p = entries.partition { $0.action == .bypass }
-    let regexps = entries.map { $0.regexp }
+    let regexps = entries.map { $0.entry.stringValue }
     let proxyList = regexps.prefix(upTo: p).joined(separator: "\n")
     let bypassList = regexps.suffix(from: p).joined(separator: "\n")
 

@@ -19,6 +19,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     var editUserRulesWinCtrl: UserRulesController!
     var allInOnePreferencesWinCtrl: PreferencesWinController!
     var toastWindowCtrl: ToastWindowController!
+    var editCustomRulesWinCtrl: CustomRulesController!
 
     @IBOutlet weak var window: NSWindow!
     @IBOutlet weak var statusMenu: NSMenu!
@@ -271,6 +272,22 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
 
         self.updateACLMenu()
         self.applyConfig()
+    }
+
+    @IBAction func editCustomRules(_ sender: NSMenuItem) {
+        if let controller = editCustomRulesWinCtrl {
+            controller.window?.close()
+        }
+
+        let controller = CustomRulesController()
+        let window = controller.window!
+        window.center()
+        window.makeKeyAndOrderFront(nil)
+        controller.showWindow(self)
+
+        NSApp.activate(ignoringOtherApps: true)
+
+        editCustomRulesWinCtrl = controller
     }
 
     @IBAction func updateGFWListACL(_ sender: NSMenuItem) {

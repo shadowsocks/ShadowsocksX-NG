@@ -77,6 +77,12 @@
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="Ht6-Js-Fr4"/>
+                            <menuItem title="Edit Custom Rules..." id="8Yf-qX-rEW">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="editCustomRules:" target="Voe-Tx-rLC" id="orr-7c-AQv"/>
+                                </connections>
+                            </menuItem>
                             <menuItem title="Update GFW List ACL Rule" id="IzY-94-NnJ">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
