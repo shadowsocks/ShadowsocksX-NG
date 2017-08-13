@@ -276,18 +276,75 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
 
     @IBAction func editCustomRules(_ sender: NSMenuItem) {
         if let controller = editCustomRulesWinCtrl {
-            controller.window?.close()
+            controller.window?.performClose(self)
         }
 
         let controller = CustomRulesController()
-        let window = controller.window!
-        window.center()
-        window.makeKeyAndOrderFront(nil)
         controller.showWindow(self)
-
         NSApp.activate(ignoringOtherApps: true)
 
         editCustomRulesWinCtrl = controller
+    }
+
+    @IBAction func importCustomRules(_ sender: NSMenuItem) {
+        let panel = NSOpenPanel()
+        panel.title = "Import Custom Rules".localized
+        panel.allowsMultipleSelection = false
+        panel.canChooseDirectories = false
+        panel.canCreateDirectories = false
+        panel.canChooseFiles = true
+        panel.becomeKey()
+
+        guard panel.runModal() == NSFileHandlingPanelOKButton else {
+            return
+        }
+        guard let url = panel.url else {
+            return
+        }
+
+        DispatchQueue.global(qos: .userInitiated).async {
+            let message: String
+            if ACLRule.custom.importFrom(url) {
+                message = "Import custom rules succeeded".localized
+            } else {
+                message = "Import custom rules failed".localized
+            }
+
+            let notification = NSUserNotification()
+            notification.title = message
+            NSUserNotificationCenter.default.deliver(notification)
+
+            SyncSSLocal()
+        }
+    }
+
+    @IBAction func exportCustomRules(_ sender: NSMenuItem) {
+        let panel = NSSavePanel()
+        panel.title = "Export Custom Rules".localized
+        panel.canCreateDirectories = true
+        panel.allowedFileTypes = ["acl"]
+        panel.nameFieldStringValue = "export.acl"
+        panel.becomeKey()
+
+        guard panel.runModal() == NSFileHandlingPanelOKButton else {
+            return
+        }
+        guard let url = panel.url else {
+            return
+        }
+
+        DispatchQueue.global(qos: .userInitiated).async {
+            let message: String
+            if ACLRule.custom.exportTo(url) {
+                message = "Export custom rules succeeded".localized
+            } else {
+                message = "Export custom rules failed".localized
+            }
+
+            let notification = NSUserNotification()
+            notification.title = message
+            NSUserNotificationCenter.default.deliver(notification)
+        }
     }
 
     @IBAction func updateGFWListACL(_ sender: NSMenuItem) {

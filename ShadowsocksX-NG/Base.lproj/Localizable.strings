@@ -61,3 +61,15 @@
 "Manual" = "Manual";
 
 "Show Running Mode On Status Bar" = "Show Running Mode On Status Bar";
+
+"Import Custom Rules" = "Import Custom Rules";
+
+"Import custom rules succeeded" = "Import custom rules succeeded";
+
+"Import custom rules failed" = "Import custom rules failed";
+
+"Export Custom Rules" = "Export Custom Rules";
+
+"Export custom rules succeeded" = "Export custom rules succeeded";
+
+"Export custom rules failed" = "Export custom rules failed";

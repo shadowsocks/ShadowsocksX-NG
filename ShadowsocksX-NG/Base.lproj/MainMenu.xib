@@ -83,6 +83,19 @@
                                     <action selector="editCustomRules:" target="Voe-Tx-rLC" id="orr-7c-AQv"/>
                                 </connections>
                             </menuItem>
+                            <menuItem title="Import Custom Rules..." id="cqR-5j-lDC">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="importCustomRules:" target="Voe-Tx-rLC" id="4h7-eg-aRE"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Export Custom Rules..." id="dco-72-Cql">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="exportCustomRules:" target="Voe-Tx-rLC" id="wel-Op-dMA"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" id="Ktg-fM-hk2"/>
                             <menuItem title="Update GFW List ACL Rule" id="IzY-94-NnJ">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>

@@ -11,6 +11,30 @@ enum ACLAction: String {
 }
 
 
+private func readString(from url: URL) -> String? {
+    do {
+        let content = try String(contentsOf: url)
+        return content
+    } catch (let error) {
+        let description = String(describing: error)
+        NSLog("Reading from \(url) failed: \(description)")
+        return nil
+    }
+}
+
+
+private func writeString(_ content: String, to url: URL) -> Bool {
+    do {
+        try content.write(to: url, atomically: true, encoding: .utf8)
+        return true
+    } catch (let error) {
+        let description = String(describing: error)
+        NSLog("Writing to \(url) failed: \(description)")
+        return false
+    }
+}
+
+
 enum ACLRule: String {
     case bypassLANChina
     case proxyGFWList
@@ -20,23 +44,96 @@ enum ACLRule: String {
         // One can override the default rules by writing custom rules
         // to a specific file
         let overridePath = ACLDirPath + filename
-        if let content = try? String(contentsOfFile: overridePath) {
+        let overrideUrl = URL(fileURLWithPath: overridePath)
+        if let content = readString(from: overrideUrl) {
             return content
         }
         // Two force unwraps because it is a builtin file
-        let path = Bundle.main.path(forResource: resourceName, ofType: "acl")!
-        return try! String(contentsOfFile: path)
+        let url = Bundle.main.url(forResource: resourceName, withExtension: "acl")!
+        return readString(from: url)!
     }
 
     func save(content: String) -> Bool {
         let path = ACLDirPath + filename
+        let url = URL(fileURLWithPath: path)
+        return writeString(content, to: url)
+    }
 
-        do {
-            try content.write(toFile: path, atomically: true, encoding: .utf8)
-            return true
-        } catch {
+    func exportTo(_ url: URL) -> Bool {
+        let content = load()
+        return writeString(content, to: url)
+    }
+
+    func importFrom(_ url: URL) -> Bool {
+        guard let source = readString(from: url) else {
             return false
         }
+        let parsed = ACLRule.parse(content: source)
+        let content = ACLRule.compose(proxyList: parsed.proxyList,
+                                      bypassList: parsed.bypassList)
+        return save(content: content)
+    }
+
+    static func compose(proxyList: [String],
+                        bypassList: [String],
+                        defaultAction: ACLAction? = nil) -> String {
+        var sections = [String]()
+
+        switch defaultAction {
+        case .some(.bypass):
+            sections.append("[bypass_all]")
+
+        case .some(.proxy):
+            sections.append("[proxy_list]")
+
+        default:
+            break
+        }
+
+        sections.append(contentsOf: [
+            "[proxy_list]",
+            proxyList.joined(separator: "\n"),
+            "[bypass_list]",
+            bypassList.joined(separator: "\n"),
+        ])
+
+        return sections.joined(separator: "\n")
+    }
+
+    static func parse(content: String) -> (proxyList: [String], bypassList: [String]) {
+        let lines = content.components(separatedBy: .newlines).map {
+            $0.trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+
+        var proxyList = [String]()
+        var bypassList = [String]()
+        var currentAction: ACLAction?
+        for line in lines {
+            if line.isEmpty {
+                continue
+            }
+
+            switch line {
+            case "[bypass_list]":
+                currentAction = .bypass
+
+            case "[proxy_list]":
+                currentAction = .proxy
+
+            default:
+                guard let action = currentAction else {
+                    continue
+                }
+                switch action {
+                case .bypass:
+                    bypassList.append(line)
+
+                case .proxy:
+                    proxyList.append(line)
+                }
+            }
+        }
+        return (proxyList, bypassList)
     }
 
     private var resourceName: String {
@@ -129,14 +226,13 @@ class ACLManager {
     }
 
     func generate() -> String? {
+        let url = URL(fileURLWithPath: filePath)
         let content = generateContent()
 
-        do {
-            try content.write(toFile: filePath, atomically: true, encoding: .utf8)
-            return filePath
-        } catch {
+        guard writeString(content, to: url) else {
             return nil
         }
+        return filePath
     }
 
     private func generateContent() -> String {
@@ -224,11 +320,12 @@ private func ABPFilterToACL(filter: String) -> String {
     var entries = rules.flatMap(ACLEntryFrom(rule:))
     let p = entries.partition { $0.action == .bypass }
     let regexps = entries.map { $0.entry.stringValue }
-    let proxyList = regexps.prefix(upTo: p).joined(separator: "\n")
-    let bypassList = regexps.suffix(from: p).joined(separator: "\n")
+    let proxyList = regexps.prefix(upTo: p)
+    let bypassList = regexps.suffix(from: p)
 
-    // Swift 4: Change this to a multiline string literal for better readability
-    return "[proxy_list]\n\(proxyList)\n\n[bypass_list]\n\(bypassList)\n"
+    return ACLRule.compose(proxyList: Array(proxyList),
+                           bypassList: Array(bypassList),
+                           defaultAction: .proxy)
 }
 
 

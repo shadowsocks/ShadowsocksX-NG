@@ -66,6 +66,18 @@
 
 "Show Running Mode On Status Bar" = "在状态栏显示运行模式";
 
+"Import Custom Rules" = "导入自定义规则";
+
+"Import custom rules succeeded" = "自定义规则已导入";
+
+"Import custom rules failed" = "自定义规则导入失败";
+
+"Export Custom Rules" = "导出自定义规则";
+
+"Export custom rules succeeded" = "自定义规则已导出";
+
+"Export custom rules failed" = "自定义规则导出失败";
+
 /*
  * ./HTTPPreferencesWindowController.swift
  */

@@ -112,3 +112,9 @@
 
 /* Class = "NSMenuItem"; title = "Edit Custom Rules..."; ObjectID = "8Yf-qX-rEW"; */
 "8Yf-qX-rEW.title" = "编辑自定义规则...";
+
+/* Class = "NSMenuItem"; title = "Export Custom Rules..."; ObjectID = "dco-72-Cql"; */
+"dco-72-Cql.title" = "导出自定义规则...";
+
+/* Class = "NSMenuItem"; title = "Import Custom Rules..."; ObjectID = "cqR-5j-lDC"; */
+"cqR-5j-lDC.title" = "导入自定义规则...";

@@ -22,6 +22,13 @@ class CustomRulesController: NSWindowController {
     override func windowDidLoad() {
         super.windowDidLoad()
 
+        if let window = window {
+            window.center()
+            window.makeKeyAndOrderFront(nil)
+        } else {
+            NSLog("CustomRulesController window not exist yet")
+        }
+
         proxyListController.addObserver(self, forKeyPath: "selection", context: nil)
         bypassListController.addObserver(self, forKeyPath: "selection", context: nil)
 
@@ -98,51 +105,20 @@ class CustomRulesController: NSWindowController {
     }
 
     func parseFromACL(acl: ACLRule) {
-        let content = acl.load()
+        bypassList.removeAll()
+        proxyList.removeAll()
 
-        let lines = content.components(separatedBy: .newlines).map {
-            $0.trimmingCharacters(in: .whitespacesAndNewlines)
-        }
-
-        var currentAction: ACLAction?
-        for line in lines {
-            if line.isEmpty {
-                continue
-            }
-
-            switch line {
-            case "[bypass_list]":
-                currentAction = .bypass
-
-            case "[proxy_list]":
-                currentAction = .proxy
-
-            default:
-                guard let action = currentAction else {
-                    continue
-                }
-                let entry = ACLEntry(stringValue: line)
-                switch action {
-                case .bypass:
-                    bypassList.append(entry)
-
-                case .proxy:
-                    proxyList.append(entry)
-                }
-            }
-        }
+        let parsed = ACLRule.parse(content: acl.load())
+        bypassList = parsed.bypassList.map { ACLEntry(stringValue: $0) }
+        proxyList = parsed.proxyList.map { ACLEntry(stringValue: $0) }
     }
 
     func writeToACL(acl: ACLRule) -> Bool {
-        let proxyContent = proxyList.map({ $0.stringValue }).joined(separator: "\n")
-        let bypassContent = bypassList.map({ $0.stringValue }).joined(separator: "\n")
+        let rawProxyList = proxyList.map { $0.stringValue }
+        let rawBypassList = bypassList.map { $0.stringValue }
 
-        let content = [
-            "[proxy_list]",
-            proxyContent,
-            "[bypass_list]",
-            bypassContent,
-        ].joined(separator: "\n")
+        let content = ACLRule.compose(proxyList: rawProxyList,
+                                      bypassList: rawBypassList)
 
         return acl.save(content: content)
     }
