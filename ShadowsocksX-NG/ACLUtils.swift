@@ -24,6 +24,20 @@ private func readString(from url: URL) -> String? {
 
 
 private func writeString(_ content: String, to url: URL) -> Bool {
+    let parent = url.deletingLastPathComponent()
+
+    let fileManager = FileManager.default
+    if !fileManager.fileExists(atPath: parent.path) {
+        do {
+            try fileManager.createDirectory(at: parent,
+                                            withIntermediateDirectories: true)
+        } catch (let error) {
+            let description = String(describing: error)
+            NSLog("Creating directory \(parent) failed: \(description)")
+            return false
+        }
+    }
+
     do {
         try content.write(to: url, atomically: true, encoding: .utf8)
         return true
