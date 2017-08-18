@@ -15,6 +15,7 @@ let PACRulesDirPath = NSHomeDirectory() + "/.ShadowsocksX-NG/"
 let PACUserRuleFilePath = PACRulesDirPath + "user-rule.txt"
 let PACUserScriptFilePath = PACRulesDirPath + "user-script.txt"
 let PACFilePath = PACRulesDirPath + "gfwlist.js"
+let PACWhitelistPath = PACRulesDirPath + "gfwwhitelist.js"
 let GFWListFilePath = PACRulesDirPath + "gfwlist.txt"
 
 
@@ -34,13 +35,16 @@ func SyncPac() {
         needGenerate = true
     }
     
+    if let mode = UserDefaults.standard.string(forKey: "ShadowsocksRunningMode"),mode == "whitelist",!fileMgr.fileExists(atPath: PACWhitelistPath) {
+        needGenerate = true
+    }
+    
     if needGenerate {
         if !GeneratePACFile() {
             NSLog("GeneratePACFile failed!")
         }
     }
 }
-
 
 func GeneratePACFile() -> Bool {
     let fileMgr = FileManager.default
@@ -73,6 +77,37 @@ func GeneratePACFile() -> Bool {
     }
     
     let socks5Port = UserDefaults.standard.integer(forKey: "LocalSocks5.ListenPort")
+    
+    guard let mode = UserDefaults.standard.string(forKey: "ShadowsocksRunningMode"),mode != "whitelist" else {
+        
+       do {
+           
+           // Get raw pac js
+           let jsPath = Bundle.main.url(forResource: "awp", withExtension: "js")
+           let jsData = try? Data(contentsOf: jsPath!)
+           var jsStr = String(data: jsData!, encoding: String.Encoding.utf8)
+           
+           // Get user pac js
+           let userScriptStr = try String(contentsOfFile: PACUserScriptFilePath, encoding: String.Encoding.utf8)
+           
+           // Replace userScript in pac js
+           jsStr = jsStr!.replacingOccurrences(of: "__USERSCRIPT__", with: userScriptStr)
+           // Replace __SOCKS5PORT__ palcholder in pac js
+           let result = jsStr!.replacingOccurrences(of: "__SOCKS5PORT__"
+               , with: "\(socks5Port)")
+           
+           // Write the pac js to file.
+           try result.data(using: String.Encoding.utf8)?
+               .write(to: URL(fileURLWithPath: PACWhitelistPath), options: .atomic)
+           
+           return true
+       } catch {
+           
+       }
+
+        
+        return false;
+    }
     
     do {
         let gfwlist = try String(contentsOfFile: GFWListFilePath, encoding: String.Encoding.utf8)

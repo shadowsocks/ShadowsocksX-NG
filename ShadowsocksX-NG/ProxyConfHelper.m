@@ -118,6 +118,10 @@ GCDWebServer *webServer =nil;
     return [NSString stringWithFormat:@"%@/%@", NSHomeDirectory(), @".ShadowsocksX-NG/gfwlist.js"];
 }
 
++ (NSString*)getPACWhiteliatFilePath {
+    return [NSString stringWithFormat:@"%@/%@", NSHomeDirectory(), @".ShadowsocksX-NG/gfwwhitelist.js"];
+}
+
 + (void)enablePACProxy {
     //start server here and then using the string next line
     //next two lines can open gcdwebserver and work around pac file
@@ -127,6 +131,18 @@ GCDWebServer *webServer =nil;
     NSURL* url = [NSURL URLWithString: [self getHttpPACUrl]];
     
     NSMutableArray* args = [@[@"--mode", @"auto", @"--pac-url", [url absoluteString]]mutableCopy];
+    
+    [self addArguments4ManualSpecifyNetworkServices:args];
+    [self callHelper:args];
+}
+
++ (void)enableWhiteListProxy {
+    NSString* PACFilePath = [self getPACWhiteliatFilePath];
+    [self startPACServer:PACFilePath];
+    
+    NSURL* url = [NSURL URLWithString:[self getHttpPACUrl]];
+    
+    NSMutableArray* args = [@[@"--mode", @"whitelist", @"--pac-url", [url absoluteString]]mutableCopy];
     
     [self addArguments4ManualSpecifyNetworkServices:args];
     [self callHelper:args];

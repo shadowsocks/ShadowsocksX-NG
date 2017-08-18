@@ -27,6 +27,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     @IBOutlet weak var runningStatusMenuItem: NSMenuItem!
     @IBOutlet weak var toggleRunningMenuItem: NSMenuItem!
     @IBOutlet weak var autoModeMenuItem: NSMenuItem!
+    @IBOutlet weak var whitelistModeMenuItem: NSMenuItem!
     @IBOutlet weak var globalModeMenuItem: NSMenuItem!
     @IBOutlet weak var manualModeMenuItem: NSMenuItem!
     
@@ -37,6 +38,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     @IBOutlet var importBunchJsonFileItem: NSMenuItem!
     @IBOutlet var exportAllServerProfileItem: NSMenuItem!
     @IBOutlet var serversPreferencesMenuItem: NSMenuItem!
+    
+    @IBOutlet weak var updateGFWListMenuItem: NSMenuItem!
+    @IBOutlet weak var editUserScriptMenuItem: NSMenuItem!
+    @IBOutlet weak var editUserRulesMenuItem: NSMenuItem!
     
     @IBOutlet weak var copyHttpProxyExportCmdLineMenuItem: NSMenuItem!
     
@@ -182,6 +187,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         if isOn {
             if mode == "auto" {
                 ProxyConfHelper.enablePACProxy()
+            } else if mode == "whitelist" {
+                ProxyConfHelper.enableWhiteListProxy()
             } else if mode == "global" {
                 ProxyConfHelper.enableGlobalProxy()
             } else if mode == "manual" {
@@ -295,6 +302,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         applyConfig()
     }
     
+    @IBAction func selectPACWhiteListMode(_ sender: NSMenuItem) {
+        let defaults = UserDefaults.standard
+        defaults.setValue("whitelist", forKey: "ShadowsocksRunningMode")
+        updateRunningModeMenu()
+        applyConfig()
+    }
+    
     @IBAction func selectGlobalMode(_ sender: NSMenuItem) {
         let defaults = UserDefaults.standard
         defaults.setValue("global", forKey: "ShadowsocksRunningMode")
@@ -401,17 +415,22 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         }
         serversMenuItem.title = serverMenuText
         
+        updateGFWListMenuItem.isHidden = mode != "auto"
+        editUserScriptMenuItem.isHidden = mode != "auto"
+        editUserRulesMenuItem.isHidden = mode != "auto"
+        
+        autoModeMenuItem.state = 0
+        whitelistModeMenuItem.state = 0
+        globalModeMenuItem.state = 0
+        manualModeMenuItem.state = 0
+        
         if mode == "auto" {
             autoModeMenuItem.state = 1
-            globalModeMenuItem.state = 0
-            manualModeMenuItem.state = 0
+        } else if mode == "whitelist" {
+            whitelistModeMenuItem.state = 1
         } else if mode == "global" {
-            autoModeMenuItem.state = 0
             globalModeMenuItem.state = 1
-            manualModeMenuItem.state = 0
         } else if mode == "manual" {
-            autoModeMenuItem.state = 0
-            globalModeMenuItem.state = 0
             manualModeMenuItem.state = 1
         }
         updateStatusMenuImage()
@@ -426,6 +445,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                 switch m {
                     case "auto":
                         statusItem.image = NSImage(named: "menu_p_icon")
+                    case "whitelist":
+                        statusItem.image = NSImage(named: "menu_w_icon")
                     case "global":
                         statusItem.image = NSImage(named: "menu_g_icon")
                     case "manual":

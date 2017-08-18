@@ -59,6 +59,9 @@
 /* Class = "NSMenuItem"; title = "PAC自动模式"; ObjectID = "r07-Gu-aEz"; */
 "r07-Gu-aEz.title" = "PAC自动模式";
 
+/* Class = "NSMenuItem"; title = "PAC白名单模式"; ObjectID = "gcg-Vm-yQs"; */
+"gcg-Vm-yQs.title" = "PAC白名单模式";
+
 /* Class = "NSMenuItem"; title = "编辑PAC用户自定规则..."; ObjectID = "rms-p0-CvB"; */
 "rms-p0-CvB.title" = "编辑PAC用户自定规则...";
 
