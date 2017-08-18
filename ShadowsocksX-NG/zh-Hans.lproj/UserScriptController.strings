@@ -1,0 +1,9 @@
+
+/* Class = "NSWindow"; title = "User Script"; ObjectID = "F0z-JX-Cv5"; */
+"F0z-JX-Cv5.title" = "用户脚本";
+
+/* Class = "NSButtonCell"; title = "OK"; ObjectID = "Sha-hu-iDj"; */
+"Sha-hu-iDj.title" = "确定";
+
+/* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "ych-f7-XJx"; */
+"ych-f7-XJx.title" = "取消";

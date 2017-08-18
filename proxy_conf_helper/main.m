@@ -25,7 +25,7 @@ int main(int argc, const char * argv[])
     NSString* privoxyPortString;
     
     BRLOptionParser *options = [BRLOptionParser new];
-    [options setBanner:@"Usage: %s [-v] [-m auto|global|off] [-u <url>] [-p <port>] [-r <port>]", argv[0]];
+    [options setBanner:@"Usage: %s [-v] [-m auto|whitelist|global|off] [-u <url>] [-p <port>] [-r <port>]", argv[0]];
     
     // Version
     [options addOption:"version" flag:'v' description:@"Print the version number." block:^{
@@ -41,7 +41,7 @@ int main(int argc, const char * argv[])
     }];
     
     // Mode
-    [options addOption:"mode" flag:'m' description:@"Proxy mode, may be: auto,global,off" argument:&mode];
+    [options addOption:"mode" flag:'m' description:@"Proxy mode, may be: auto,whitelist,global,off" argument:&mode];
     
     [options addOption:"pac-url" flag:'u' description:@"PAC file url for auto mode." argument:&pacURL];
     [options addOption:"port" flag:'p' description:@"Listen port for global mode." argument:&portString];
@@ -62,6 +62,10 @@ int main(int argc, const char * argv[])
     
     if (mode) {
         if ([@"auto" isEqualToString:mode]) {
+            if (!pacURL) {
+                return 1;
+            }
+        } else if([@"whitelist" isEqualToString:mode]) {
             if (!pacURL) {
                 return 1;
             }
@@ -141,8 +145,14 @@ int main(int argc, const char * argv[])
                 
                 NSString* prefPath = [NSString stringWithFormat:@"/%@/%@/%@", kSCPrefNetworkServices
                                       , key, kSCEntNetProxies];
-                
                 if ([mode isEqualToString:@"auto"]) {
+                    
+                    [proxies setObject:pacURL forKey:(NSString *)kCFNetworkProxiesProxyAutoConfigURLString];
+                    [proxies setObject:[NSNumber numberWithInt:1] forKey:(NSString *)kCFNetworkProxiesProxyAutoConfigEnable];
+                    
+                    SCPreferencesPathSetValue(prefRef, (__bridge CFStringRef)prefPath
+                                              , (__bridge CFDictionaryRef)proxies);
+                } else if([mode isEqualToString:@"whitelist"]) {
                     
                     [proxies setObject:pacURL forKey:(NSString *)kCFNetworkProxiesProxyAutoConfigURLString];
                     [proxies setObject:[NSNumber numberWithInt:1] forKey:(NSString *)kCFNetworkProxiesProxyAutoConfigEnable];

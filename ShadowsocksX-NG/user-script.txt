@@ -1,0 +1,4 @@
+//Support Charles
+//if (dnsDomainIs(host, 'baidu.com')||shExpMatch(url, "*.google.com/*")) {
+//  return "PROXY 127.0.0.1:8888;";
+//}

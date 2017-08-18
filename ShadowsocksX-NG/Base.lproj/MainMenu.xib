@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="11762" systemVersion="16D32" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="12120" systemVersion="16F73" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="11762"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="12120"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="NSApplication">
@@ -16,6 +16,8 @@
             <connections>
                 <outlet property="autoModeMenuItem" destination="r07-Gu-aEz" id="9aH-pQ-Rgi"/>
                 <outlet property="copyHttpProxyExportCmdLineMenuItem" destination="lg6-To-GZA" id="VTb-he-dg4"/>
+                <outlet property="editUserRulesMenuItem" destination="rms-p0-CvB" id="tKX-9g-bAw"/>
+                <outlet property="editUserScriptMenuItem" destination="04Z-3L-2DD" id="1xQ-8c-SQk"/>
                 <outlet property="exportAllServerProfileItem" destination="6k0-gn-DQv" id="W2x-96-ISj"/>
                 <outlet property="globalModeMenuItem" destination="Mw3-Jm-eXA" id="ar5-Yx-3ze"/>
                 <outlet property="importBunchJsonFileItem" destination="T9g-gy-gvv" id="vua-jg-YWe"/>
@@ -28,6 +30,8 @@
                 <outlet property="showQRCodeMenuItem" destination="R6A-96-Zcb" id="XHz-pz-nCz"/>
                 <outlet property="statusMenu" destination="Hob-KD-bx9" id="clA-ZW-0pT"/>
                 <outlet property="toggleRunningMenuItem" destination="GSu-Tf-StS" id="XHw-pU-nCa"/>
+                <outlet property="updateGFWListMenuItem" destination="TFc-Ec-duM" id="sZP-NB-zA6"/>
+                <outlet property="whitelistModeMenuItem" destination="gcg-Vm-yQs" id="zRo-P6-0wg"/>
             </connections>
         </customObject>
         <customObject id="YLy-65-1bz" customClass="NSFontManager"/>
@@ -47,6 +51,12 @@
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
                         <action selector="selectPACMode:" target="Voe-Tx-rLC" id="l36-cd-xl7"/>
+                    </connections>
+                </menuItem>
+                <menuItem title="Proxy Auto WhiteList Configure Mode" id="gcg-Vm-yQs">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <connections>
+                        <action selector="selectPACWhiteListMode:" target="Voe-Tx-rLC" id="qZY-Tu-3Xv"/>
                     </connections>
                 </menuItem>
                 <menuItem title="Global Mode" id="Mw3-Jm-eXA">
@@ -122,6 +132,12 @@
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
                         <action selector="updateGFWList:" target="Voe-Tx-rLC" id="Ztt-PS-F3T"/>
+                    </connections>
+                </menuItem>
+                <menuItem title="Edit User Script For PAC..." id="04Z-3L-2DD">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <connections>
+                        <action selector="editUserScriptForPAC:" target="Voe-Tx-rLC" id="bEh-TU-SZC"/>
                     </connections>
                 </menuItem>
                 <menuItem title="Edit User Rules For PAC..." id="rms-p0-CvB">

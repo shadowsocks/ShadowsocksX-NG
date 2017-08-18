@@ -59,8 +59,14 @@
 /* Class = "NSMenuItem"; title = "PAC自动模式"; ObjectID = "r07-Gu-aEz"; */
 "r07-Gu-aEz.title" = "PAC自动模式";
 
+/* Class = "NSMenuItem"; title = "PAC白名单模式"; ObjectID = "gcg-Vm-yQs"; */
+"gcg-Vm-yQs.title" = "PAC白名单模式";
+
 /* Class = "NSMenuItem"; title = "编辑PAC用户自定规则..."; ObjectID = "rms-p0-CvB"; */
 "rms-p0-CvB.title" = "编辑PAC用户自定规则...";
+
+/* Class = "NSMenuItem"; title = "编辑PAC用户自定脚本..."; ObjectID = "04Z-3L-2DD"; */
+"04Z-3L-2DD.title" = "编辑PAC用户自定脚本...";
 
 /* Class = "NSMenuItem"; title = "Advanced PAC Proxy Preferences..."; ObjectID = "sbx-yz-3lO"; */
 "sbx-yz-3lO.title" = "高级PAC代理设置...";
