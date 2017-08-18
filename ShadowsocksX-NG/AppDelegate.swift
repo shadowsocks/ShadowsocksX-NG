@@ -416,7 +416,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         serversMenuItem.title = serverMenuText
         
         updateGFWListMenuItem.isHidden = mode != "auto"
-        editUserScriptMenuItem.isHidden = mode != "auto"
         editUserRulesMenuItem.isHidden = mode != "auto"
         
         autoModeMenuItem.state = 0
