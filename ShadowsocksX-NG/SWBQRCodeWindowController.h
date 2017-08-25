@@ -11,6 +11,7 @@
 
 @interface SWBQRCodeWindowController : NSWindowController
 
+@property (nonatomic, copy) NSString *legacyQRCode;
 @property (nonatomic, copy) NSString *qrCode;
 @property (nonatomic, copy) NSString *title;
 
