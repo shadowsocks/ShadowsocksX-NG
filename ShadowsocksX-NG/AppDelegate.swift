@@ -50,11 +50,35 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     var statusItem: NSStatusItem!
     static let StatusItemIconWidth: CGFloat = NSVariableStatusItemLength
     
+    func ensureLaunchAgentsDirOwner () {
+        let dirPath = NSHomeDirectory() + "/Library/LaunchAgents"
+        let fileMgr = FileManager.default
+        if fileMgr.fileExists(atPath: dirPath) {
+            do {
+                let attrs = try fileMgr.attributesOfItem(atPath: dirPath)
+                if attrs[FileAttributeKey.ownerAccountName] as! String != NSUserName() {
+                    //try fileMgr.setAttributes([FileAttributeKey.ownerAccountName: NSUserName()], ofItemAtPath: dirPath)
+                    let bashFilePath = Bundle.main.path(forResource: "fix_dir_owner.sh", ofType: nil)!
+                    let script = "do shell script \"bash \(bashFilePath) \(NSUserName()) \" with administrator privileges"
+                    if let appleScript = NSAppleScript(source: script) {
+                        var err: NSDictionary? = nil
+                        appleScript.executeAndReturnError(&err)
+                    }
+                }
+            }
+            catch {
+                NSLog("Error when ensure the owner of $HOME/Library/LaunchAgents, \(error.localizedDescription)")
+            }
+        }
+    }
+    
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         
         _ = LaunchAtLoginController()// Ensure set when launch
         
         NSUserNotificationCenter.default.delegate = self
+        
+        self.ensureLaunchAgentsDirOwner()
         
         // Prepare ss-local
         InstallSSLocal()
