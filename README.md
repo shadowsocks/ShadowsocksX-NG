@@ -1,6 +1,6 @@
 # ShadowsocksX-NG
 
-Current version is 1.5
+Current version is 1.5.1
 
 [![Build Status](https://travis-ci.org/shadowsocks/ShadowsocksX-NG.svg?branch=develop)](https://travis-ci.org/shadowsocks/ShadowsocksX-NG)
 
@@ -59,7 +59,7 @@ Run ss-local as a background service through launchd, not as an in-app process.
 So after you quit the app, the ss-local maybe be still running.
 
 Added a manual mode which won't configure the system proxy settings.
-Then you could configure your apps to use socks5 proxy manual.
+Then you could configure your apps to use the socks5 proxy manually.
 
 ## Contributing 
 
