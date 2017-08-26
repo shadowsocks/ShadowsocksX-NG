@@ -19,13 +19,32 @@
     [super windowDidLoad];
     
     // Implement this method to handle any initialization after your window controller's window has been loaded from its nib file.
-    [self setQRCode:self.qrCode];
+    [self setQRCode:self.qrCode withOverlayText:@"Shadowsocks-NG SIP002"];
 }
 
-- (void)setQRCode:(NSString*) qrCode {
+- (void)setQRCode:(NSString*) qrCode withOverlayText: (NSString*) text {
     CGImageRef cgImgRef = [self createQRImageForString:qrCode size:CGSizeMake(250, 250)];
     
     NSImage *image = [[NSImage alloc]initWithCGImage:cgImgRef size:CGSizeMake(250, 250)];
+    if (text) {
+        // Draw overlay text
+        NSDictionary* attrs = @{
+                                NSForegroundColorAttributeName: [NSColor colorWithRed:28/255.0 green:155/255.0 blue:71/255.0 alpha:1],
+                                NSBackgroundColorAttributeName: [NSColor whiteColor],
+                                NSFontAttributeName: [NSFont fontWithName:@"Helvetica" size:(CGFloat)16],
+                                };
+        NSMutableAttributedString* attrsText = [[NSMutableAttributedString alloc] initWithString: text
+                                                                        attributes: attrs];
+        [attrsText setAttributes:@{
+                                NSForegroundColorAttributeName: [NSColor darkGrayColor],
+                                NSBackgroundColorAttributeName: [NSColor whiteColor],
+                                NSFontAttributeName: [NSFont fontWithName:@"Helvetica" size:(CGFloat)16],
+                                   } range: NSMakeRange(0, 14)];
+        
+        [image lockFocus];
+        [attrsText drawAtPoint: NSMakePoint(45, 8)];
+        [image unlockFocus];
+    }
     self.imageView.image = image;
 }
 
@@ -36,6 +55,14 @@
     
     NSData *data = [string dataUsingEncoding:NSUTF8StringEncoding];
     [filter setValue:data forKey:@"inputMessage"];
+    /*
+         L: 7%
+         M: 15%
+         Q: 25%
+         H: 30%
+     */
+    [filter setValue:@"Q" forKey:@"inputCorrectionLevel"];
+    
     CIImage *image = [filter valueForKey:@"outputImage"];
     
     // Calculate the size of the generated image and the scale for the desired image size
@@ -76,6 +103,15 @@
     [pasteboard clearContents];
     NSArray *copiedObjects = [NSArray arrayWithObject: self.imageView.image];
     [pasteboard writeObjects:copiedObjects];
+}
+
+- (void)flagsChanged:(NSEvent *)event {
+    NSUInteger modifiers = event.modifierFlags & NSDeviceIndependentModifierFlagsMask;
+    if (modifiers & NSAlternateKeyMask) {
+        [self setQRCode:self.legacyQRCode withOverlayText:@"Shadowsocks-NG Legacy"];
+    } else {
+        [self setQRCode:self.qrCode withOverlayText:@"Shadowsocks-NG SIP002"];
+    }
 }
 
 @end
