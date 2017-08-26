@@ -30,6 +30,8 @@ class ToastWindowController: NSWindowController {
     override func windowDidLoad() {
         super.windowDidLoad()
 
+        self.shouldCascadeWindows = false
+
         // Implement this method to handle any initialization after your window controller's window has been loaded from its nib file.
         if let win = self.window {
             win.isOpaque = false
