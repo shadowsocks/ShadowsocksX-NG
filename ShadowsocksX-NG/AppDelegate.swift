@@ -32,10 +32,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     @IBOutlet weak var serversMenuItem: NSMenuItem!
     @IBOutlet var showQRCodeMenuItem: NSMenuItem!
     @IBOutlet var scanQRCodeMenuItem: NSMenuItem!
-    @IBOutlet var showBunchJsonExampleFileItem: NSMenuItem!
-    @IBOutlet var importBunchJsonFileItem: NSMenuItem!
-    @IBOutlet var exportAllServerProfileItem: NSMenuItem!
-    @IBOutlet var serversPreferencesMenuItem: NSMenuItem!
+    @IBOutlet var serverProfilesBeginSeparatorMenuItem: NSMenuItem!
+    @IBOutlet var serverProfilesEndSeparatorMenuItem: NSMenuItem!
     
     @IBOutlet weak var copyHttpProxyExportCmdLineMenuItem: NSMenuItem!
     
@@ -478,39 +476,33 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     }
     
     func updateServersMenu() {
+        guard let menu = serversMenuItem.submenu else { return }
+
         let mgr = ServerProfileManager.instance
-        serversMenuItem.submenu?.removeAllItems()
-        let preferencesItem = serversPreferencesMenuItem
-        let showBunch = showBunchJsonExampleFileItem
-        let importBuntch = importBunchJsonFileItem
-        let exportAllServer = exportAllServerProfileItem
-        
-        serversMenuItem.submenu?.addItem(preferencesItem!)
-        serversMenuItem.submenu?.addItem(NSMenuItem.separator())
-        
-        var i = 0
-        for p in mgr.profiles {
+        let profiles = mgr.profiles
+
+        // Remove all profile menu items
+        let beginIndex = menu.index(of: serverProfilesBeginSeparatorMenuItem) + 1
+        let endIndex = menu.index(of: serverProfilesEndSeparatorMenuItem)
+        // Remove from end to begin, so the index won't change :)
+        for index in (beginIndex..<endIndex).reversed() {
+            menu.removeItem(at: index)
+        }
+
+        // Insert all profile menu items
+        for (i, profile) in profiles.enumerated().reversed() {
             let item = NSMenuItem()
             item.tag = i + kProfileMenuItemIndexBase
-            item.title = p.title()
-            if mgr.activeProfileId == p.uuid {
-                item.state = 1
-            }
-            if !p.isValid() {
-                item.isEnabled = false
-            }
+            item.title = profile.title()
+            item.state = (mgr.activeProfileId == profile.uuid) ? 1 : 0
+            item.isEnabled = profile.isValid()
             item.action = #selector(AppDelegate.selectServer)
             
-            serversMenuItem.submenu?.addItem(item)
-            i += 1
+            menu.insertItem(item, at: beginIndex)
         }
-        if !mgr.profiles.isEmpty {
-            serversMenuItem.submenu?.addItem(NSMenuItem.separator())
-        }
-        
-        serversMenuItem.submenu?.addItem(showBunch!)
-        serversMenuItem.submenu?.addItem(importBuntch!)
-        serversMenuItem.submenu?.addItem(exportAllServer!)
+
+        // End separator is redundant if profile section is empty
+        serverProfilesEndSeparatorMenuItem.isHidden = profiles.isEmpty
     }
     
     func handleURLEvent(_ event: NSAppleEventDescriptor, withReplyEvent replyEvent: NSAppleEventDescriptor) {
