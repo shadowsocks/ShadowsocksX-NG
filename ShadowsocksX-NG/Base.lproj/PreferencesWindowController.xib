@@ -375,7 +375,7 @@ DQ
                         <constraints>
                             <constraint firstAttribute="width" constant="69" id="s2I-cF-RJc"/>
                         </constraints>
-                        <buttonCell key="cell" type="push" title="Cacnel" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="j03-9E-uHW">
+                        <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="j03-9E-uHW">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                             <font key="font" metaFont="system"/>
                             <string key="keyEquivalent" base64-UTF8="YES">
