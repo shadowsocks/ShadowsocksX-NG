@@ -158,7 +158,7 @@ int main(int argc, const char * argv[])
                      kCFNetworkProxiesSOCKSPort];
                     [proxies setObject:[NSNumber numberWithInt:1] forKey:(NSString*)
                      kCFNetworkProxiesSOCKSEnable];
-                    [proxies setObject:@[@"127.0.0.1", @"localhost"] forKey:(NSString *)kCFNetworkProxiesExceptionsList];
+                    [proxies setObject:@[@"127.0.0.1", @"localhost", @"192.168.0.0/16", @"10.0.0.0/8"] forKey:(NSString *)kCFNetworkProxiesExceptionsList];
                     
                     if (privoxyPort != 0) {
                         [proxies setObject:@"127.0.0.1" forKey:(NSString *)
