@@ -68,5 +68,8 @@ class ProxyInterfacesViewCtrl: NSViewController, NSTableViewDataSource, NSTableV
         } else {
             selectedNetworkServices.remove(key)
         }
+
+        UserDefaults.standard.set(selectedNetworkServices.allObjects,
+                                  forKey: "Proxy4NetworkServices")
     }
 }

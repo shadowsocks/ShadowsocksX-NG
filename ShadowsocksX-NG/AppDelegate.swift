@@ -32,10 +32,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     @IBOutlet weak var serversMenuItem: NSMenuItem!
     @IBOutlet var showQRCodeMenuItem: NSMenuItem!
     @IBOutlet var scanQRCodeMenuItem: NSMenuItem!
-    @IBOutlet var showBunchJsonExampleFileItem: NSMenuItem!
-    @IBOutlet var importBunchJsonFileItem: NSMenuItem!
-    @IBOutlet var exportAllServerProfileItem: NSMenuItem!
-    @IBOutlet var serversPreferencesMenuItem: NSMenuItem!
+    @IBOutlet var serverProfilesBeginSeparatorMenuItem: NSMenuItem!
+    @IBOutlet var serverProfilesEndSeparatorMenuItem: NSMenuItem!
     
     @IBOutlet weak var copyHttpProxyExportCmdLineMenuItem: NSMenuItem!
     
@@ -48,13 +46,37 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     let kProfileMenuItemIndexBase = 100
 
     var statusItem: NSStatusItem!
-    static let StatusItemIconWidth:CGFloat = 20
+    static let StatusItemIconWidth: CGFloat = NSVariableStatusItemLength
+    
+    func ensureLaunchAgentsDirOwner () {
+        let dirPath = NSHomeDirectory() + "/Library/LaunchAgents"
+        let fileMgr = FileManager.default
+        if fileMgr.fileExists(atPath: dirPath) {
+            do {
+                let attrs = try fileMgr.attributesOfItem(atPath: dirPath)
+                if attrs[FileAttributeKey.ownerAccountName] as! String != NSUserName() {
+                    //try fileMgr.setAttributes([FileAttributeKey.ownerAccountName: NSUserName()], ofItemAtPath: dirPath)
+                    let bashFilePath = Bundle.main.path(forResource: "fix_dir_owner.sh", ofType: nil)!
+                    let script = "do shell script \"bash \(bashFilePath) \(NSUserName()) \" with administrator privileges"
+                    if let appleScript = NSAppleScript(source: script) {
+                        var err: NSDictionary? = nil
+                        appleScript.executeAndReturnError(&err)
+                    }
+                }
+            }
+            catch {
+                NSLog("Error when ensure the owner of $HOME/Library/LaunchAgents, \(error.localizedDescription)")
+            }
+        }
+    }
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         
         _ = LaunchAtLoginController()// Ensure set when launch
         
         NSUserNotificationCenter.default.delegate = self
+        
+        self.ensureLaunchAgentsDirOwner()
         
         // Prepare ss-local
         InstallSSLocal()
@@ -241,6 +263,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                 }
                 qrcodeWinCtrl = SWBQRCodeWindowController(windowNibName: "SWBQRCodeWindowController")
                 qrcodeWinCtrl.qrCode = profile.URL()!.absoluteString
+                qrcodeWinCtrl.legacyQRCode = profile.URL(legacy: true)!.absoluteString
                 qrcodeWinCtrl.title = profile.title()
                 qrcodeWinCtrl.showWindow(self)
                 NSApp.activate(ignoringOtherApps: true)
@@ -453,39 +476,33 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     }
     
     func updateServersMenu() {
+        guard let menu = serversMenuItem.submenu else { return }
+
         let mgr = ServerProfileManager.instance
-        serversMenuItem.submenu?.removeAllItems()
-        let preferencesItem = serversPreferencesMenuItem
-        let showBunch = showBunchJsonExampleFileItem
-        let importBuntch = importBunchJsonFileItem
-        let exportAllServer = exportAllServerProfileItem
-        
-        serversMenuItem.submenu?.addItem(preferencesItem!)
-        serversMenuItem.submenu?.addItem(NSMenuItem.separator())
-        
-        var i = 0
-        for p in mgr.profiles {
+        let profiles = mgr.profiles
+
+        // Remove all profile menu items
+        let beginIndex = menu.index(of: serverProfilesBeginSeparatorMenuItem) + 1
+        let endIndex = menu.index(of: serverProfilesEndSeparatorMenuItem)
+        // Remove from end to begin, so the index won't change :)
+        for index in (beginIndex..<endIndex).reversed() {
+            menu.removeItem(at: index)
+        }
+
+        // Insert all profile menu items
+        for (i, profile) in profiles.enumerated().reversed() {
             let item = NSMenuItem()
             item.tag = i + kProfileMenuItemIndexBase
-            item.title = p.title()
-            if mgr.activeProfileId == p.uuid {
-                item.state = 1
-            }
-            if !p.isValid() {
-                item.isEnabled = false
-            }
+            item.title = profile.title()
+            item.state = (mgr.activeProfileId == profile.uuid) ? 1 : 0
+            item.isEnabled = profile.isValid()
             item.action = #selector(AppDelegate.selectServer)
             
-            serversMenuItem.submenu?.addItem(item)
-            i += 1
+            menu.insertItem(item, at: beginIndex)
         }
-        if !mgr.profiles.isEmpty {
-            serversMenuItem.submenu?.addItem(NSMenuItem.separator())
-        }
-        
-        serversMenuItem.submenu?.addItem(showBunch!)
-        serversMenuItem.submenu?.addItem(importBuntch!)
-        serversMenuItem.submenu?.addItem(exportAllServer!)
+
+        // End separator is redundant if profile section is empty
+        serverProfilesEndSeparatorMenuItem.isHidden = profiles.isEmpty
     }
     
     func handleURLEvent(_ event: NSAppleEventDescriptor, withReplyEvent replyEvent: NSAppleEventDescriptor) {
