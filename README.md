@@ -1,6 +1,6 @@
 # ShadowsocksX-NG
 
-Current version is 1.6.0
+Current version is 1.6.1
 
 [![Build Status](https://travis-ci.org/shadowsocks/ShadowsocksX-NG.svg?branch=develop)](https://travis-ci.org/shadowsocks/ShadowsocksX-NG)
 
@@ -62,8 +62,6 @@ Added a manual mode which won't configure the system proxy settings,
 so that you could configure your apps to use the SOCKS5 proxy manually.
 
 ## Contributing
-
-[![gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/ShadowsocksX-NG/Lobby)
 
 Contributions must be available on a separately named branch based on the latest version of the main branch `develop`.
 

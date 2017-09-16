@@ -19,7 +19,7 @@
     [super windowDidLoad];
     
     // Implement this method to handle any initialization after your window controller's window has been loaded from its nib file.
-    [self setQRCode:self.qrCode withOverlayText:@"Shadowsocks-NG SIP002"];
+    [self setQRCode:self.qrCode withOverlayText:@"SIP002"];
 }
 
 - (void)setQRCode:(NSString*) qrCode withOverlayText: (NSString*) text {
@@ -35,14 +35,9 @@
                                 };
         NSMutableAttributedString* attrsText = [[NSMutableAttributedString alloc] initWithString: text
                                                                         attributes: attrs];
-        [attrsText setAttributes:@{
-                                NSForegroundColorAttributeName: [NSColor darkGrayColor],
-                                NSBackgroundColorAttributeName: [NSColor whiteColor],
-                                NSFontAttributeName: [NSFont fontWithName:@"Helvetica" size:(CGFloat)16],
-                                   } range: NSMakeRange(0, 14)];
         
         [image lockFocus];
-        [attrsText drawAtPoint: NSMakePoint(45, 8)];
+        [attrsText drawAtPoint: NSMakePoint(100, 5)];
         [image unlockFocus];
     }
     self.imageView.image = image;
@@ -108,9 +103,9 @@
 - (void)flagsChanged:(NSEvent *)event {
     NSUInteger modifiers = event.modifierFlags & NSDeviceIndependentModifierFlagsMask;
     if (modifiers & NSAlternateKeyMask) {
-        [self setQRCode:self.legacyQRCode withOverlayText:@"Shadowsocks-NG Legacy"];
+        [self setQRCode:self.legacyQRCode withOverlayText:@"Legacy"];
     } else {
-        [self setQRCode:self.qrCode withOverlayText:@"Shadowsocks-NG SIP002"];
+        [self setQRCode:self.qrCode withOverlayText:@"SIP002"];
     }
 }
 

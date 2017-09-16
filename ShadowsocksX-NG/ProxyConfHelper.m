@@ -51,12 +51,12 @@ GCDWebServer *webServer =nil;
         NSString *helperPath = [NSString stringWithFormat:@"%@/%@", [[NSBundle mainBundle] resourcePath], @"install_helper.sh"];
         NSLog(@"run install script: %@", helperPath);
         NSDictionary *error;
-        NSString *script = [NSString stringWithFormat:@"do shell script \"bash %@\" with administrator privileges", helperPath];
+        NSString *script = [NSString stringWithFormat:@"do shell script \"/bin/bash \\\"%@\\\"\" with administrator privileges", helperPath];
         NSAppleScript *appleScript = [[NSAppleScript new] initWithSource:script];
         if ([appleScript executeAndReturnError:&error]) {
             NSLog(@"installation success");
         } else {
-            NSLog(@"installation failure");
+            NSLog(@"installation failure: %@", error);
         }
     }
 }
