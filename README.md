@@ -63,8 +63,6 @@ so that you could configure your apps to use the SOCKS5 proxy manually.
 
 ## Contributing
 
-[![gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/ShadowsocksX-NG/Lobby)
-
 Contributions must be available on a separately named branch based on the latest version of the main branch `develop`.
 
 ref: [GitFlow](http://nvie.com/posts/a-successful-git-branching-model/)
