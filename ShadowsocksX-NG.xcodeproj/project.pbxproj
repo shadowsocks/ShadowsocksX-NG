@@ -64,6 +64,7 @@
 		9BA04B231D23D5A5005AAD7F /* ProxyConfTool.m in Sources */ = {isa = PBXBuildFile; fileRef = 9BA04B221D23D5A5005AAD7F /* ProxyConfTool.m */; };
 		9BAFE2E21E83ED7F00F71CCE /* PreferencesWinController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9BAFE2E41E83ED7F00F71CCE /* PreferencesWinController.xib */; };
 		9BB706A71D1B982300551F0E /* SWBApplication.m in Sources */ = {isa = PBXBuildFile; fileRef = 9BB706A51D1B982300551F0E /* SWBApplication.m */; };
+		9BBE7B751F508A0E00E8FFE5 /* fix_dir_owner.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9BBE7B711F50790500E8FFE5 /* fix_dir_owner.sh */; };
 		9BC70EDC1D2E3E3100EDA4CA /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 9B172A6C1D0ADDDD00B87B9A /* Localizable.strings */; };
 		9BEEF0691D04D4D500FC52B3 /* install_ss_local.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9BEEF0651D04CB8500FC52B3 /* install_ss_local.sh */; };
 		9BEEF06A1D04D4D500FC52B3 /* start_ss_local.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9BEEF0661D04CE8D00FC52B3 /* start_ss_local.sh */; };
@@ -216,6 +217,7 @@
 		9BAFE2EB1E83F91D00F71CCE /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/MainMenu.strings"; sourceTree = "<group>"; };
 		9BB706A51D1B982300551F0E /* SWBApplication.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SWBApplication.m; sourceTree = "<group>"; };
 		9BB706A61D1B982300551F0E /* SWBApplication.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SWBApplication.h; sourceTree = "<group>"; };
+		9BBE7B711F50790500E8FFE5 /* fix_dir_owner.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = fix_dir_owner.sh; sourceTree = "<group>"; };
 		9BE8FBC11D0B71CF00CAFD01 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/PreferencesWindowController.strings"; sourceTree = "<group>"; };
 		9BEEF0651D04CB8500FC52B3 /* install_ss_local.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = install_ss_local.sh; sourceTree = "<group>"; };
 		9BEEF0661D04CE8D00FC52B3 /* start_ss_local.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = start_ss_local.sh; sourceTree = "<group>"; };
@@ -324,6 +326,7 @@
 				C6D429981DA76FBC002A5711 /* privoxy.config.example */,
 				9B9CBCB01E2644DC00FC61AA /* start_kcptun.sh */,
 				9B9CBCB11E26450D00FC61AA /* stop_kcptun.sh */,
+				9BBE7B711F50790500E8FFE5 /* fix_dir_owner.sh */,
 			);
 			name = "Support Files";
 			sourceTree = "<group>";
@@ -577,6 +580,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9BBE7B751F508A0E00E8FFE5 /* fix_dir_owner.sh in Resources */,
 				9B3F7BFF1E82BF5B00C68B75 /* libev.4.dylib in Resources */,
 				9B3F7C001E82BF5B00C68B75 /* libmbedcrypto.2.4.2.dylib in Resources */,
 				9B3F7C011E82BF5B00C68B75 /* libsodium.18.dylib in Resources */,

@@ -60,7 +60,6 @@ func generateSSLocalLauchAgentPlist() -> Bool {
     let dict: NSMutableDictionary = [
         "Label": "com.qiuyuzhou.shadowsocksX-NG.local",
         "WorkingDirectory": NSHomeDirectory() + APP_SUPPORT_DIR,
-        "KeepAlive": true,
         "StandardOutPath": logFilePath,
         "StandardErrorPath": logFilePath,
         "ProgramArguments": arguments,
@@ -203,7 +202,6 @@ func generatePrivoxyLauchAgentPlist() -> Bool {
     let dict: NSMutableDictionary = [
         "Label": "com.qiuyuzhou.shadowsocksX-NG.http",
         "WorkingDirectory": NSHomeDirectory() + APP_SUPPORT_DIR,
-        "KeepAlive": true,
         "StandardOutPath": logFilePath,
         "StandardErrorPath": logFilePath,
         "ProgramArguments": arguments
@@ -358,7 +356,6 @@ func generateKcptunLauchAgentPlist() -> Bool {
     let dict: NSMutableDictionary = [
         "Label": "com.qiuyuzhou.shadowsocksX-NG.kcptun",
         "WorkingDirectory": NSHomeDirectory() + APP_SUPPORT_DIR,
-        "KeepAlive": true,
         "StandardOutPath": logFilePath,
         "StandardErrorPath": logFilePath,
         "ProgramArguments": arguments,
