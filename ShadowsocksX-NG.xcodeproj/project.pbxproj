@@ -18,6 +18,8 @@
 		9B0BFFEB1D0460A70040E62B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9B0BFFEA1D0460A70040E62B /* Assets.xcassets */; };
 		9B0BFFEE1D0460A70040E62B /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9B0BFFEC1D0460A70040E62B /* MainMenu.xib */; };
 		9B0BFFF91D0460A70040E62B /* ShadowsocksX_NGTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B0BFFF81D0460A70040E62B /* ShadowsocksX_NGTests.swift */; };
+		9B16E59A1F99FD0700E54DC5 /* icons8-Eye Filled-50.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B16E5971F99FD0700E54DC5 /* icons8-Eye Filled-50.png */; };
+		9B16E59B1F99FD0700E54DC5 /* icons8-Blind Filled-50.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B16E5991F99FD0700E54DC5 /* icons8-Blind Filled-50.png */; };
 		9B2491B41D0ACC3A003BBECC /* PreferencesWindowController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9B2491B61D0ACC3A003BBECC /* PreferencesWindowController.xib */; };
 		9B3546721E802B1200B510B4 /* ToastWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B3546701E802B1200B510B4 /* ToastWindowController.swift */; };
 		9B3546731E802B1200B510B4 /* ToastWindowController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9B3546711E802B1200B510B4 /* ToastWindowController.xib */; };
@@ -155,6 +157,8 @@
 		9B0BFFF41D0460A70040E62B /* ShadowsocksX-NGTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "ShadowsocksX-NGTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		9B0BFFF81D0460A70040E62B /* ShadowsocksX_NGTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShadowsocksX_NGTests.swift; sourceTree = "<group>"; };
 		9B0BFFFA1D0460A70040E62B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		9B16E5971F99FD0700E54DC5 /* icons8-Eye Filled-50.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icons8-Eye Filled-50.png"; sourceTree = "<group>"; };
+		9B16E5991F99FD0700E54DC5 /* icons8-Blind Filled-50.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icons8-Blind Filled-50.png"; sourceTree = "<group>"; };
 		9B172A601D0ADA5B00B87B9A /* genstrings.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = genstrings.py; sourceTree = "<group>"; };
 		9B172A6B1D0ADDDD00B87B9A /* Base */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Base; path = Base.lproj/Localizable.strings; sourceTree = "<group>"; };
 		9B172A6D1D0ADDE800B87B9A /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
@@ -288,6 +292,8 @@
 		9B07EFB01D048E900052D9DF /* Support Files */ = {
 			isa = PBXGroup;
 			children = (
+				9B16E5991F99FD0700E54DC5 /* icons8-Blind Filled-50.png */,
+				9B16E5971F99FD0700E54DC5 /* icons8-Eye Filled-50.png */,
 				9B938D931E864B38005F5636 /* menu_g_icon.png */,
 				9B938D941E864B38005F5636 /* menu_g_icon@2x.png */,
 				9B938D951E864B38005F5636 /* menu_m_icon.png */,
@@ -602,6 +608,7 @@
 				C8E42A6E1D4F2CAF0074C7EA /* UserRulesController.xib in Resources */,
 				9BEEF06A1D04D4D500FC52B3 /* start_ss_local.sh in Resources */,
 				9B5832111E742632009D5B7D /* kcptun_1.png in Resources */,
+				9B16E59A1F99FD0700E54DC5 /* icons8-Eye Filled-50.png in Resources */,
 				9B938D9C1E864B38005F5636 /* menu_m_icon@2x.png in Resources */,
 				9B3546731E802B1200B510B4 /* ToastWindowController.xib in Resources */,
 				C6D429941DA75988002A5711 /* privoxy in Resources */,
@@ -619,6 +626,7 @@
 				C6D429931DA75988002A5711 /* install_privoxy.sh in Resources */,
 				9B58320B1E7422DB009D5B7D /* http.png in Resources */,
 				9BC70EDC1D2E3E3100EDA4CA /* Localizable.strings in Resources */,
+				9B16E59B1F99FD0700E54DC5 /* icons8-Blind Filled-50.png in Resources */,
 				9B0BFFEE1D0460A70040E62B /* MainMenu.xib in Resources */,
 				9B3FFF4C1D09D8F70019A709 /* install_helper.sh in Resources */,
 				C6D429961DA75988002A5711 /* start_privoxy.sh in Resources */,

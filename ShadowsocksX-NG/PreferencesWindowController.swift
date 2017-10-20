@@ -23,7 +23,11 @@ class PreferencesWindowController: NSWindowController
     @IBOutlet weak var kcptunPortTextField: NSTextField!
     @IBOutlet weak var methodTextField: NSComboBox!
     
+    @IBOutlet weak var passwordTabView: NSTabView!
     @IBOutlet weak var passwordTextField: NSTextField!
+    @IBOutlet weak var passwordSecureTextField: NSSecureTextField!
+    @IBOutlet weak var togglePasswordVisibleButton: NSButton!
+    
     @IBOutlet weak var remarkTextField: NSTextField!
     
     @IBOutlet weak var otaCheckBoxBtn: NSButton!
@@ -188,6 +192,16 @@ class PreferencesWindowController: NSWindowController
         updateProfileBoxVisible()
     }
     
+    @IBAction func togglePasswordVisible(_ sender: Any) {
+        if passwordTabView.selectedTabViewItem?.identifier as! String == "secure" {
+            passwordTabView.selectTabViewItem(withIdentifier: "insecure")
+            togglePasswordVisibleButton.image = NSImage(named: "icons8-Eye Filled-50")
+        } else {
+            passwordTabView.selectTabViewItem(withIdentifier: "secure")
+            togglePasswordVisibleButton.image = NSImage(named: "icons8-Blind Filled-50")
+        }
+    }
+    
     @IBAction func copyCurrentProfileURL2Pasteboard(_ sender: NSButton) {
         let index = profilesTableView.selectedRow
         if  index >= 0 {
@@ -247,6 +261,8 @@ class PreferencesWindowController: NSWindowController
             methodTextField.bind("value", to: editingProfile, withKeyPath: "method"
                 , options: [NSContinuouslyUpdatesValueBindingOption: true])
             passwordTextField.bind("value", to: editingProfile, withKeyPath: "password"
+                , options: [NSContinuouslyUpdatesValueBindingOption: true])
+            passwordSecureTextField.bind("value", to: editingProfile, withKeyPath: "password"
                 , options: [NSContinuouslyUpdatesValueBindingOption: true])
             
             remarkTextField.bind("value", to: editingProfile, withKeyPath: "remark"
