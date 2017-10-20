@@ -46,7 +46,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     let kProfileMenuItemIndexBase = 100
 
     var statusItem: NSStatusItem!
-    static let StatusItemIconWidth: CGFloat = NSVariableStatusItemLength
+    static let StatusItemIconWidth: CGFloat = NSStatusItem.variableLength
     
     func ensureLaunchAgentsDirOwner () {
         let dirPath = NSHomeDirectory() + "/Library/LaunchAgents"
@@ -104,8 +104,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             "Kcptun.Conn": NSNumber(value: 1),
             ])
         
-        statusItem = NSStatusBar.system().statusItem(withLength: AppDelegate.StatusItemIconWidth)
-        let image : NSImage = NSImage(named: "menu_icon")!
+        statusItem = NSStatusBar.system.statusItem(withLength: AppDelegate.StatusItemIconWidth)
+        let image : NSImage = NSImage(named: NSImage.Name(rawValue: "menu_icon"))!
         image.isTemplate = true
         statusItem.image = image
         statusItem.menu = statusMenu
@@ -245,7 +245,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         if editUserRulesWinCtrl != nil {
             editUserRulesWinCtrl.close()
         }
-        let ctrl = UserRulesController(windowNibName: "UserRulesController")
+        let ctrl = UserRulesController(windowNibName: NSNib.Name(rawValue: "UserRulesController"))
         editUserRulesWinCtrl = ctrl
         
         ctrl.showWindow(self)
@@ -261,7 +261,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                 if qrcodeWinCtrl != nil{
                     qrcodeWinCtrl.close()
                 }
-                qrcodeWinCtrl = SWBQRCodeWindowController(windowNibName: "SWBQRCodeWindowController")
+                qrcodeWinCtrl = SWBQRCodeWindowController(windowNibName: NSNib.Name(rawValue: "SWBQRCodeWindowController"))
                 qrcodeWinCtrl.qrCode = profile.URL()!.absoluteString
                 qrcodeWinCtrl.legacyQRCode = profile.URL(legacy: true)!.absoluteString
                 qrcodeWinCtrl.title = profile.title()
@@ -323,7 +323,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         if preferencesWinCtrl != nil {
             preferencesWinCtrl.close()
         }
-        let ctrl = PreferencesWindowController(windowNibName: "PreferencesWindowController")
+        let ctrl = PreferencesWindowController(windowNibName: NSNib.Name(rawValue: "PreferencesWindowController"))
         preferencesWinCtrl = ctrl
         
         ctrl.showWindow(self)
@@ -336,7 +336,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             allInOnePreferencesWinCtrl.close()
         }
         
-        allInOnePreferencesWinCtrl = PreferencesWinController(windowNibName: "PreferencesWinController")
+        allInOnePreferencesWinCtrl = PreferencesWinController(windowNibName: NSNib.Name(rawValue: "PreferencesWinController"))
         
         allInOnePreferencesWinCtrl.showWindow(self)
         NSApp.activate(ignoringOtherApps: true)
@@ -366,24 +366,24 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         let command = "export http_proxy=http://\(address):\(port);export https_proxy=http://\(address):\(port);"
         
         // Copy to paste board.
-        NSPasteboard.general().clearContents()
-        NSPasteboard.general().setString(command, forType: NSStringPboardType)
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(command, forType: NSPasteboard.PasteboardType.string)
         
         // Show a toast notification.
         self.makeToast("Export Command Copied.".localized)
     }
     
     @IBAction func showLogs(_ sender: NSMenuItem) {
-        let ws = NSWorkspace.shared()
+        let ws = NSWorkspace.shared
         if let appUrl = ws.urlForApplication(withBundleIdentifier: "com.apple.Console") {
             try! ws.launchApplication(at: appUrl
-                ,options: .default
-                ,configuration: [NSWorkspaceLaunchConfigurationArguments: "~/Library/Logs/ss-local.log"])
+                ,options: NSWorkspace.LaunchOptions.default
+                ,configuration: [NSWorkspace.LaunchConfigurationKey.arguments: "~/Library/Logs/ss-local.log"])
         }
     }
     
     @IBAction func feedback(_ sender: NSMenuItem) {
-        NSWorkspace.shared().open(URL(string: "https://github.com/qiuyuzhou/ShadowsocksX-NG/issues")!)
+        NSWorkspace.shared.open(URL(string: "https://github.com/qiuyuzhou/ShadowsocksX-NG/issues")!)
     }
     
     @IBAction func showAbout(_ sender: NSMenuItem) {
@@ -412,17 +412,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         serversMenuItem.title = serverMenuText
         
         if mode == "auto" {
-            autoModeMenuItem.state = 1
-            globalModeMenuItem.state = 0
-            manualModeMenuItem.state = 0
+            autoModeMenuItem.state = NSControl.StateValue(rawValue: 1)
+            globalModeMenuItem.state = NSControl.StateValue(rawValue: 0)
+            manualModeMenuItem.state = NSControl.StateValue(rawValue: 0)
         } else if mode == "global" {
-            autoModeMenuItem.state = 0
-            globalModeMenuItem.state = 1
-            manualModeMenuItem.state = 0
+            autoModeMenuItem.state = NSControl.StateValue(rawValue: 0)
+            globalModeMenuItem.state = NSControl.StateValue(rawValue: 1)
+            manualModeMenuItem.state = NSControl.StateValue(rawValue: 0)
         } else if mode == "manual" {
-            autoModeMenuItem.state = 0
-            globalModeMenuItem.state = 0
-            manualModeMenuItem.state = 1
+            autoModeMenuItem.state = NSControl.StateValue(rawValue: 0)
+            globalModeMenuItem.state = NSControl.StateValue(rawValue: 0)
+            manualModeMenuItem.state = NSControl.StateValue(rawValue: 1)
         }
         updateStatusMenuImage()
     }
@@ -435,17 +435,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             if let m = mode {
                 switch m {
                     case "auto":
-                        statusItem.image = NSImage(named: "menu_p_icon")
+                        statusItem.image = NSImage(named: NSImage.Name(rawValue: "menu_p_icon"))
                     case "global":
-                        statusItem.image = NSImage(named: "menu_g_icon")
+                        statusItem.image = NSImage(named: NSImage.Name(rawValue: "menu_g_icon"))
                     case "manual":
-                        statusItem.image = NSImage(named: "menu_m_icon")
+                        statusItem.image = NSImage(named: NSImage.Name(rawValue: "menu_m_icon"))
                 default: break
                 }
                 statusItem.image?.isTemplate = true
             }
         } else {
-            statusItem.image = NSImage(named: "menu_icon_disabled")
+            statusItem.image = NSImage(named: NSImage.Name(rawValue: "menu_icon_disabled"))
             statusItem.image?.isTemplate = true
         }
     }
@@ -456,12 +456,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         if isOn {
             runningStatusMenuItem.title = "Shadowsocks: On".localized
             toggleRunningMenuItem.title = "Turn Shadowsocks Off".localized
-            let image = NSImage(named: "menu_icon")
+            let image = NSImage(named: NSImage.Name(rawValue: "menu_icon"))
             statusItem.image = image
         } else {
             runningStatusMenuItem.title = "Shadowsocks: Off".localized
             toggleRunningMenuItem.title = "Turn Shadowsocks On".localized
-            let image = NSImage(named: "menu_icon_disabled")
+            let image = NSImage(named: NSImage.Name(rawValue: "menu_icon_disabled"))
             statusItem.image = image
         }
         statusItem.image?.isTemplate = true
@@ -494,7 +494,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             let item = NSMenuItem()
             item.tag = i + kProfileMenuItemIndexBase
             item.title = profile.title()
-            item.state = (mgr.activeProfileId == profile.uuid) ? 1 : 0
+            item.state = NSControl.StateValue(rawValue: (mgr.activeProfileId == profile.uuid) ? 1 : 0)
             item.isEnabled = profile.isValid()
             item.action = #selector(AppDelegate.selectServer)
             
@@ -505,7 +505,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         serverProfilesEndSeparatorMenuItem.isHidden = profiles.isEmpty
     }
     
-    func handleURLEvent(_ event: NSAppleEventDescriptor, withReplyEvent replyEvent: NSAppleEventDescriptor) {
+    @objc func handleURLEvent(_ event: NSAppleEventDescriptor, withReplyEvent replyEvent: NSAppleEventDescriptor) {
         if let urlString = event.paramDescriptor(forKeyword: AEKeyword(keyDirectObject))?.stringValue {
             if let url = URL(string: urlString) {
                 NotificationCenter.default.post(
@@ -576,7 +576,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         if toastWindowCtrl != nil {
             toastWindowCtrl.close()
         }
-        toastWindowCtrl = ToastWindowController(windowNibName: "ToastWindowController")
+        toastWindowCtrl = ToastWindowController(windowNibName: NSNib.Name(rawValue: "ToastWindowController"))
         toastWindowCtrl.message = message
         toastWindowCtrl.showWindow(self)
         //NSApp.activate(ignoringOtherApps: true)

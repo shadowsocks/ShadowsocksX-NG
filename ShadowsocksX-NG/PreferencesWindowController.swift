@@ -110,7 +110,7 @@ class PreferencesWindowController: NSWindowController
     }
     
     override func awakeFromNib() {
-        profilesTableView.register(forDraggedTypes: [tableViewDragType])
+        profilesTableView.registerForDraggedTypes([NSPasteboard.PasteboardType(rawValue: tableViewDragType)])
         profilesTableView.allowsMultipleSelection = true
     }
     
@@ -125,7 +125,7 @@ class PreferencesWindowController: NSWindowController
         profileMgr.profiles.append(profile)
         
         let index = IndexSet(integer: profileMgr.profiles.count-1)
-        profilesTableView.insertRows(at: index, withAnimation: .effectFade)
+        profilesTableView.insertRows(at: index, withAnimation: NSTableView.AnimationOptions.effectFade)
         
         self.profilesTableView.scrollRowToVisible(self.profileMgr.profiles.count-1)
         self.profilesTableView.selectRowIndexes(index, byExtendingSelection: false)
@@ -141,7 +141,7 @@ class PreferencesWindowController: NSWindowController
             for (_, toDeleteIndex) in profilesTableView.selectedRowIndexes.enumerated() {
                 print(profileMgr.profiles.count)
                 profileMgr.profiles.remove(at: toDeleteIndex - deleteCount)
-                profilesTableView.removeRows(at: IndexSet(integer: toDeleteIndex - deleteCount), withAnimation: .effectFade)
+                profilesTableView.removeRows(at: IndexSet(integer: toDeleteIndex - deleteCount), withAnimation: NSTableView.AnimationOptions.effectFade)
                 deleteCount += 1
             }
             profilesTableView.endUpdates()
@@ -182,7 +182,7 @@ class PreferencesWindowController: NSWindowController
             
             profilesTableView.beginUpdates()
             let index = IndexSet(integer: toDuplicateIndex + copyCount)
-            profilesTableView.insertRows(at: index, withAnimation: .effectFade)
+            profilesTableView.insertRows(at: index, withAnimation: NSTableView.AnimationOptions.effectFade)
             self.profilesTableView.scrollRowToVisible(toDuplicateIndex + copyCount)
             self.profilesTableView.selectRowIndexes(index, byExtendingSelection: false)
             profilesTableView.endUpdates()
@@ -195,10 +195,10 @@ class PreferencesWindowController: NSWindowController
     @IBAction func togglePasswordVisible(_ sender: Any) {
         if passwordTabView.selectedTabViewItem?.identifier as! String == "secure" {
             passwordTabView.selectTabViewItem(withIdentifier: "insecure")
-            togglePasswordVisibleButton.image = NSImage(named: "icons8-Eye Filled-50")
+            togglePasswordVisibleButton.image = NSImage(named: NSImage.Name(rawValue: "icons8-Eye Filled-50"))
         } else {
             passwordTabView.selectTabViewItem(withIdentifier: "secure")
-            togglePasswordVisibleButton.image = NSImage(named: "icons8-Blind Filled-50")
+            togglePasswordVisibleButton.image = NSImage(named: NSImage.Name(rawValue: "icons8-Blind Filled-50"))
         }
     }
     
@@ -210,7 +210,7 @@ class PreferencesWindowController: NSWindowController
             if let url = ssURL {
                 // Then copy url to pasteboard
                 // TODO Why it not working?? It's ok in objective-c
-                let pboard = NSPasteboard.general()
+                let pboard = NSPasteboard.general
                 pboard.clearContents()
                 let rs = pboard.writeObjects([url as NSPasteboardWriting])
                 if rs {
@@ -253,70 +253,70 @@ class PreferencesWindowController: NSWindowController
                     }
             })
             
-            hostTextField.bind("value", to: editingProfile, withKeyPath: "serverHost"
-                , options: [NSContinuouslyUpdatesValueBindingOption: true])
-            portTextField.bind("value", to: editingProfile, withKeyPath: "serverPort"
-                , options: [NSContinuouslyUpdatesValueBindingOption: true])
+            hostTextField.bind(NSBindingName(rawValue: "value"), to: editingProfile, withKeyPath: "serverHost"
+                , options: [NSBindingOption.continuouslyUpdatesValue: true])
+            portTextField.bind(NSBindingName(rawValue: "value"), to: editingProfile, withKeyPath: "serverPort"
+                , options: [NSBindingOption.continuouslyUpdatesValue: true])
             
-            methodTextField.bind("value", to: editingProfile, withKeyPath: "method"
-                , options: [NSContinuouslyUpdatesValueBindingOption: true])
-            passwordTextField.bind("value", to: editingProfile, withKeyPath: "password"
-                , options: [NSContinuouslyUpdatesValueBindingOption: true])
-            passwordSecureTextField.bind("value", to: editingProfile, withKeyPath: "password"
-                , options: [NSContinuouslyUpdatesValueBindingOption: true])
+            methodTextField.bind(NSBindingName(rawValue: "value"), to: editingProfile, withKeyPath: "method"
+                , options: [NSBindingOption.continuouslyUpdatesValue: true])
+            passwordTextField.bind(NSBindingName(rawValue: "value"), to: editingProfile, withKeyPath: "password"
+                , options: [NSBindingOption.continuouslyUpdatesValue: true])
+            passwordSecureTextField.bind(NSBindingName(rawValue: "value"), to: editingProfile, withKeyPath: "password"
+                , options: [NSBindingOption.continuouslyUpdatesValue: true])
             
-            remarkTextField.bind("value", to: editingProfile, withKeyPath: "remark"
-                , options: [NSContinuouslyUpdatesValueBindingOption: true])
+            remarkTextField.bind(NSBindingName(rawValue: "value"), to: editingProfile, withKeyPath: "remark"
+                , options: [NSBindingOption.continuouslyUpdatesValue: true])
             
-            otaCheckBoxBtn.bind("value", to: editingProfile, withKeyPath: "ota"
-                , options: [NSContinuouslyUpdatesValueBindingOption: true])
+            otaCheckBoxBtn.bind(NSBindingName(rawValue: "value"), to: editingProfile, withKeyPath: "ota"
+                , options: [NSBindingOption.continuouslyUpdatesValue: true])
             
             // --------------------------------------------------
             // Kcptun
-            kcptunCheckBoxBtn.bind("value", to: editingProfile, withKeyPath: "enabledKcptun"
-                , options: [NSContinuouslyUpdatesValueBindingOption: true])
+            kcptunCheckBoxBtn.bind(NSBindingName(rawValue: "value"), to: editingProfile, withKeyPath: "enabledKcptun"
+                , options: [NSBindingOption.continuouslyUpdatesValue: true])
             
-            kcptunPortTextField.bind("value", to: editingProfile, withKeyPath: "serverPort"
-                , options: [NSContinuouslyUpdatesValueBindingOption: true])
+            kcptunPortTextField.bind(NSBindingName(rawValue: "value"), to: editingProfile, withKeyPath: "serverPort"
+                , options: [NSBindingOption.continuouslyUpdatesValue: true])
             
-            kcptunProfileBox.bind("Hidden", to: editingProfile, withKeyPath: "enabledKcptun"
-                , options: [NSContinuouslyUpdatesValueBindingOption: false,
-                            NSValueTransformerNameBindingOption: NSValueTransformerName.negateBooleanTransformerName])
+            kcptunProfileBox.bind(NSBindingName(rawValue: "Hidden"), to: editingProfile, withKeyPath: "enabledKcptun"
+                , options: [NSBindingOption.continuouslyUpdatesValue: false,
+                            NSBindingOption.valueTransformerName: NSValueTransformerName.negateBooleanTransformerName])
             
-            kcptunNocompCheckBoxBtn.bind("value", to: editingProfile, withKeyPath: "kcptunProfile.nocomp", options: nil)
+            kcptunNocompCheckBoxBtn.bind(NSBindingName(rawValue: "value"), to: editingProfile, withKeyPath: "kcptunProfile.nocomp", options: nil)
             
-            kcptunModeComboBox.bind("value", to: editingProfile, withKeyPath: "kcptunProfile.mode", options: nil)
+            kcptunModeComboBox.bind(NSBindingName(rawValue: "value"), to: editingProfile, withKeyPath: "kcptunProfile.mode", options: nil)
             
-            kcptunCryptComboBox.bind("value", to: editingProfile, withKeyPath: "kcptunProfile.crypt", options: nil)
+            kcptunCryptComboBox.bind(NSBindingName(rawValue: "value"), to: editingProfile, withKeyPath: "kcptunProfile.crypt", options: nil)
             
-            kcptunKeyTextField.bind("value", to: editingProfile, withKeyPath: "kcptunProfile.key"
-                , options: [NSContinuouslyUpdatesValueBindingOption: true])
+            kcptunKeyTextField.bind(NSBindingName(rawValue: "value"), to: editingProfile, withKeyPath: "kcptunProfile.key"
+                , options: [NSBindingOption.continuouslyUpdatesValue: true])
             
-            kcptunDatashardTextField.bind("value", to: editingProfile, withKeyPath: "kcptunProfile.datashard"
-                , options: [NSContinuouslyUpdatesValueBindingOption: true])
+            kcptunDatashardTextField.bind(NSBindingName(rawValue: "value"), to: editingProfile, withKeyPath: "kcptunProfile.datashard"
+                , options: [NSBindingOption.continuouslyUpdatesValue: true])
             
-            kcptunParityshardTextField.bind("value", to: editingProfile, withKeyPath: "kcptunProfile.parityshard"
-                , options: [NSContinuouslyUpdatesValueBindingOption: true])
+            kcptunParityshardTextField.bind(NSBindingName(rawValue: "value"), to: editingProfile, withKeyPath: "kcptunProfile.parityshard"
+                , options: [NSBindingOption.continuouslyUpdatesValue: true])
             
-            kcptunMTUTextField.bind("value", to: editingProfile, withKeyPath: "kcptunProfile.mtu"
-                , options: [NSContinuouslyUpdatesValueBindingOption: true])
+            kcptunMTUTextField.bind(NSBindingName(rawValue: "value"), to: editingProfile, withKeyPath: "kcptunProfile.mtu"
+                , options: [NSBindingOption.continuouslyUpdatesValue: true])
             
-            kcptunArgumentsTextField.bind("value", to: editingProfile, withKeyPath: "kcptunProfile.arguments"
-                , options: [NSContinuouslyUpdatesValueBindingOption: true])
+            kcptunArgumentsTextField.bind(NSBindingName(rawValue: "value"), to: editingProfile, withKeyPath: "kcptunProfile.arguments"
+                , options: [NSBindingOption.continuouslyUpdatesValue: true])
             
         } else {
             editingProfile = nil
-            hostTextField.unbind("value")
-            portTextField.unbind("value")
+            hostTextField.unbind(NSBindingName(rawValue: "value"))
+            portTextField.unbind(NSBindingName(rawValue: "value"))
             
-            methodTextField.unbind("value")
-            passwordTextField.unbind("value")
+            methodTextField.unbind(NSBindingName(rawValue: "value"))
+            passwordTextField.unbind(NSBindingName(rawValue: "value"))
             
-            remarkTextField.unbind("value")
+            remarkTextField.unbind(NSBindingName(rawValue: "value"))
             
-            otaCheckBoxBtn.unbind("value")
+            otaCheckBoxBtn.unbind(NSBindingName(rawValue: "value"))
             
-            kcptunCheckBoxBtn.unbind("value")
+            kcptunCheckBoxBtn.unbind(NSBindingName(rawValue: "value"))
         }
     }
     
@@ -346,11 +346,11 @@ class PreferencesWindowController: NSWindowController
         
         let (title, isActive) = getDataAtRow(row)
         
-        if tableColumn?.identifier == "main" {
+        if tableColumn?.identifier == NSUserInterfaceItemIdentifier("main") {
             return title
-        } else if tableColumn?.identifier == "status" {
+        } else if tableColumn?.identifier == NSUserInterfaceItemIdentifier("status") {
             if isActive {
-                return NSImage(named: "NSMenuOnStateTemplate")
+                return NSImage(named: NSImage.Name(rawValue: "NSMenuOnStateTemplate"))
             } else {
                 return nil
             }
@@ -362,12 +362,12 @@ class PreferencesWindowController: NSWindowController
     
     func tableView(_ tableView: NSTableView, pasteboardWriterForRow row: Int) -> NSPasteboardWriting? {
         let item = NSPasteboardItem()
-        item.setString(String(row), forType: tableViewDragType)
+        item.setString(String(row), forType: NSPasteboard.PasteboardType(rawValue: tableViewDragType))
         return item
     }
     
     func tableView(_ tableView: NSTableView, validateDrop info: NSDraggingInfo, proposedRow row: Int
-        , proposedDropOperation dropOperation: NSTableViewDropOperation) -> NSDragOperation {
+        , proposedDropOperation dropOperation: NSTableView.DropOperation) -> NSDragOperation {
         if dropOperation == .above {
             return .move
         }
@@ -375,14 +375,15 @@ class PreferencesWindowController: NSWindowController
     }
     
     func tableView(_ tableView: NSTableView, acceptDrop info: NSDraggingInfo
-        , row: Int, dropOperation: NSTableViewDropOperation) -> Bool {
+        , row: Int, dropOperation: NSTableView.DropOperation) -> Bool {
         if let mgr = profileMgr {
             var oldIndexes = [Int]()
-            info.enumerateDraggingItems(options: [], for: tableView, classes: [NSPasteboardItem.self], searchOptions: [:]) {
-                if let str = ($0.0.item as! NSPasteboardItem).string(forType: self.tableViewDragType), let index = Int(str) {
+            info.enumerateDraggingItems(options: [], for: tableView, classes: [NSPasteboardItem.self], searchOptions: [:], using: {
+                (draggingItem: NSDraggingItem, idx: Int, stop: UnsafeMutablePointer<ObjCBool>) in
+                if let str = (draggingItem.item as! NSPasteboardItem).string(forType: NSPasteboard.PasteboardType(rawValue: self.tableViewDragType)), let index = Int(str) {
                     oldIndexes.append(index)
                 }
-            }
+            })
             
             var oldIndexOffset = 0
             var newIndexOffset = 0
@@ -462,7 +463,7 @@ class PreferencesWindowController: NSWindowController
         shakePath.closeSubpath()
         shakeAnimation.path = shakePath
         shakeAnimation.duration = CFTimeInterval(durationOfShake)
-        window?.animations = ["frameOrigin":shakeAnimation]
+        window?.animations = [NSAnimatablePropertyKey(rawValue: "frameOrigin"):shakeAnimation]
         window?.animator().setFrameOrigin(window!.frame.origin)
     }
 }

@@ -47,8 +47,8 @@ class ServerProfile: NSObject, NSCopying {
         func decodeUrl(url: URL) -> String? {
             let urlStr = url.absoluteString
             let index = urlStr.index(urlStr.startIndex, offsetBy: 5)
-            let encodedStr = urlStr.substring(from: index)
-            guard let data = Data(base64Encoded: padBase64(string: encodedStr)) else {
+            let encodedStr = urlStr[index...]
+            guard let data = Data(base64Encoded: padBase64(string: String(encodedStr))) else {
                 return url.absoluteString
             }
             guard let decoded = String(data: data, encoding: String.Encoding.utf8) else {

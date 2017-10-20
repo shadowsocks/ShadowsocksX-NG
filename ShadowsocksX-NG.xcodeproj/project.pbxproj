@@ -532,11 +532,11 @@
 				TargetAttributes = {
 					9B0BFFE41D0460A70040E62B = {
 						CreatedOnToolsVersion = 7.3.1;
-						LastSwiftMigration = 0800;
+						LastSwiftMigration = 0900;
 					};
 					9B0BFFF31D0460A70040E62B = {
 						CreatedOnToolsVersion = 7.3.1;
-						LastSwiftMigration = 0800;
+						LastSwiftMigration = 0900;
 						TestTargetID = 9B0BFFE41D0460A70040E62B;
 					};
 					9B3FFF431D09CD3B0019A709 = {
@@ -1004,7 +1004,8 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "ShadowsocksX-NG/ShadowsocksX-NG-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 3.0;
+				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
+				SWIFT_VERSION = 4.0;
 			};
 			name = Debug;
 		};
@@ -1031,7 +1032,8 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.qiuyuzhou.ShadowsocksX-NG";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "ShadowsocksX-NG/ShadowsocksX-NG-Bridging-Header.h";
-				SWIFT_VERSION = 3.0;
+				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
+				SWIFT_VERSION = 4.0;
 			};
 			name = Release;
 		};
@@ -1046,7 +1048,8 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.qiuyuzhou.ShadowsocksX-NGTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "ShadowsocksX-NG/ShadowsocksX-NG-Bridging-Header.h";
-				SWIFT_VERSION = 3.0;
+				SWIFT_SWIFT3_OBJC_INFERENCE = On;
+				SWIFT_VERSION = 4.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ShadowsocksX-NG.app/Contents/MacOS/ShadowsocksX-NG";
 			};
 			name = Debug;
@@ -1062,7 +1065,8 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.qiuyuzhou.ShadowsocksX-NGTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "ShadowsocksX-NG/ShadowsocksX-NG-Bridging-Header.h";
-				SWIFT_VERSION = 3.0;
+				SWIFT_SWIFT3_OBJC_INFERENCE = On;
+				SWIFT_VERSION = 4.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ShadowsocksX-NG.app/Contents/MacOS/ShadowsocksX-NG";
 			};
 			name = Release;

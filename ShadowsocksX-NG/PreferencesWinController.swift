@@ -19,7 +19,7 @@ class PreferencesWinController: NSWindowController {
         super.windowDidLoad()
 
         // Implement this method to handle any initialization after your window controller's window has been loaded from its nib file.
-        toolbar.selectedItemIdentifier = "general"
+        toolbar.selectedItemIdentifier = NSToolbarItem.Identifier(rawValue: "general")
     }
     
     func windowWillClose(_ notification: Notification) {
