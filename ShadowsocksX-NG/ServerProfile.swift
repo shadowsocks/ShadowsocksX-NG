@@ -203,7 +203,12 @@ class ServerProfile: NSObject, NSCopying {
     
     func toKcptunJsonConfig() -> [String: AnyObject] {
         var conf = kcptunProfile.toJsonConfig()
-        conf["remoteaddr"] = "\(serverHost):\(serverPort)" as AnyObject
+        if serverHost.contains(Character(":")) {
+            conf["remoteaddr"] = "[\(serverHost)]:\(serverPort)" as AnyObject
+        } else {
+            conf["remoteaddr"] = "\(serverHost):\(serverPort)" as AnyObject
+        }
+
         return conf
     }
 
