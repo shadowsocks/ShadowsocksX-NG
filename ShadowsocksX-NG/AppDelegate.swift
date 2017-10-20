@@ -57,7 +57,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                 if attrs[FileAttributeKey.ownerAccountName] as! String != NSUserName() {
                     //try fileMgr.setAttributes([FileAttributeKey.ownerAccountName: NSUserName()], ofItemAtPath: dirPath)
                     let bashFilePath = Bundle.main.path(forResource: "fix_dir_owner.sh", ofType: nil)!
-                    let script = "do shell script \"bash \\\"(bashFilePath)\\\" \(NSUserName()) \" with administrator privileges"
+                    let script = "do shell script \"bash \\\"\(bashFilePath)\\\" \(NSUserName()) \" with administrator privileges"
                     if let appleScript = NSAppleScript(source: script) {
                         var err: NSDictionary? = nil
                         appleScript.executeAndReturnError(&err)
