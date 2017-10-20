@@ -22,7 +22,7 @@ class PreferencesWinController: NSWindowController {
         toolbar.selectedItemIdentifier = NSToolbarItem.Identifier(rawValue: "general")
     }
     
-    func windowWillClose(_ notification: Notification) {
+    @objc func windowWillClose(_ notification: Notification) {
         NotificationCenter.default
             .post(name: NOTIFY_CONF_CHANGED, object: nil)
     }

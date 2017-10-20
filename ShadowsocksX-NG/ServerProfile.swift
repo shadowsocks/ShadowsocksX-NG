@@ -11,17 +11,17 @@ import Cocoa
 
 class ServerProfile: NSObject, NSCopying {
     
-    var uuid: String
+    @objc var uuid: String
 
-    var serverHost: String = ""
-    var serverPort: uint16 = 8379
-    var method:String = "aes-128-gcm"
-    var password:String = ""
-    var remark:String = ""
-    var ota: Bool = false // onetime authentication
+    @objc var serverHost: String = ""
+    @objc var serverPort: uint16 = 8379
+    @objc var method:String = "aes-128-gcm"
+    @objc var password:String = ""
+    @objc var remark:String = ""
+    @objc var ota: Bool = false // onetime authentication
     
-    var enabledKcptun: Bool = false
-    var kcptunProfile = KcptunProfile()
+    @objc var enabledKcptun: Bool = false
+    @objc var kcptunProfile = KcptunProfile()
     
     override init() {
         uuid = UUID().uuidString

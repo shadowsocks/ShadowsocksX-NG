@@ -11,15 +11,15 @@ import Foundation
 
 class KcptunProfile: NSObject, NSCopying {
     
-    var mode: String = "fast"
+    @objc var mode: String = "fast"
     
-    var key: String = "it's a secrect"
-    var crypt: String = "aes"
-    var nocomp: Bool = false
-    var datashard: uint = 10
-    var parityshard: uint = 3
-    var mtu: uint = 1350
-    var arguments: String = ""
+    @objc var key: String = "it's a secrect"
+    @objc var crypt: String = "aes"
+    @objc var nocomp: Bool = false
+    @objc var datashard: uint = 10
+    @objc var parityshard: uint = 3
+    @objc var mtu: uint = 1350
+    @objc var arguments: String = ""
     
     
     public func copy(with zone: NSZone? = nil) -> Any {
