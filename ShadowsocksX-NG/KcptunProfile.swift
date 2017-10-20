@@ -20,6 +20,8 @@ class KcptunProfile: NSObject, NSCopying {
     var parityshard: uint = 3
     var mtu: uint = 1350
     var arguments: String = ""
+    var sndwnd: uint = 128  // 128 is default, but 256 is good
+    var rcvwnd: uint = 512  // 512 is default, but 2048 is good
     
     
     public func copy(with zone: NSZone? = nil) -> Any {
@@ -43,6 +45,8 @@ class KcptunProfile: NSObject, NSCopying {
                                          "datashard": NSNumber(value: self.datashard),
                                          "parityshard": NSNumber(value: self.parityshard),
                                          "mtu": NSNumber(value: self.mtu),
+                                         "rcvwnd": NSNumber(value: rcvwnd),
+                                         "sndwnd": NSNumber(value: sndwnd),
                                          "arguments": self.arguments as AnyObject,
                                          ]
         return conf
@@ -58,6 +62,12 @@ class KcptunProfile: NSObject, NSCopying {
         profile.parityshard = uint((data["parityshard"] as! NSNumber).uintValue)
         if let v = data["mtu"] as? NSNumber {
             profile.mtu = uint(v.uintValue)
+        }
+        if let v = data["rcvwnd"] as? NSNumber {
+            profile.rcvwnd = uint(v.uintValue)
+        }
+        if let v = data["sndwnd"] as? NSNumber {
+            profile.sndwnd = uint(v.uintValue)
         }
         if let arguments = data["arguments"] as? String {
             profile.arguments = arguments
@@ -82,6 +92,8 @@ class KcptunProfile: NSObject, NSCopying {
                                          "parityshard": NSNumber(value: self.parityshard),
                                          "mtu": NSNumber(value: self.mtu),
                                          "conn": NSNumber(value: connNum),
+                                         "rcvwnd": NSNumber(value: rcvwnd),
+                                         "sndwnd": NSNumber(value: sndwnd),
                                          ]
         return conf
     }
@@ -95,6 +107,8 @@ class KcptunProfile: NSObject, NSCopying {
             URLQueryItem(name: "parityshard", value: "\(parityshard)"),
             URLQueryItem(name: "nocomp", value: nocomp.description),
             URLQueryItem(name: "mtu", value: "\(mtu)"),
+            URLQueryItem(name: "rcvwnd", value: "\(rcvwnd)"),
+            URLQueryItem(name: "sndwnd", value: "\(sndwnd)"),
             URLQueryItem(name: "arguments", value: arguments),
         ]
     }
@@ -136,6 +150,18 @@ class KcptunProfile: NSObject, NSCopying {
                 if let v = item.value {
                     if let vv = uint(v) {
                         mtu = vv
+                    }
+                }
+            case "rcvwnd":
+                if let v = item.value {
+                    if let vv = uint(v) {
+                        rcvwnd = vv
+                    }
+                }
+            case "sndwnd":
+                if let v = item.value {
+                    if let vv = uint(v) {
+                        sndwnd = vv
                     }
                 }
             case "arguments":
