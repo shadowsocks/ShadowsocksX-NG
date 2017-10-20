@@ -48,9 +48,9 @@ class ProxyInterfacesViewCtrl: NSViewController, NSTableViewDataSource, NSTableV
         let networkService = networkServices[row] as! [String: Any]
         let key = networkService["key"] as! String
         if selectedNetworkServices.contains(key) {
-            cell.state = NSControl.StateValue(rawValue: 1)
+            cell.state = .on
         } else {
-            cell.state = NSControl.StateValue(rawValue: 0)
+            cell.state = .off
         }
         let userDefinedName = networkService["userDefinedName"] as! String
         cell.title = userDefinedName
