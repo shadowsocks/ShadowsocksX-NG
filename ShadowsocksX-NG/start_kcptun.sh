@@ -7,5 +7,5 @@
 #  Copyright © 2017年 qiuyuzhou. All rights reserved.
 
 chmod 644 "$HOME/Library/LaunchAgents/com.qiuyuzhou.shadowsocksX-NG.kcptun.plist"
-launchctl load "$HOME/Library/LaunchAgents/com.qiuyuzhou.shadowsocksX-NG.kcptun.plist"
+launchctl load -wF "$HOME/Library/LaunchAgents/com.qiuyuzhou.shadowsocksX-NG.kcptun.plist"
 launchctl start com.qiuyuzhou.shadowsocksX-NG.kcptun
