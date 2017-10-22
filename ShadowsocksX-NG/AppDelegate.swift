@@ -411,17 +411,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         serversMenuItem.title = serverMenuText
         
         if mode == "auto" {
-            autoModeMenuItem.state = NSControl.StateValue(rawValue: 1)
-            globalModeMenuItem.state = NSControl.StateValue(rawValue: 0)
-            manualModeMenuItem.state = NSControl.StateValue(rawValue: 0)
+            autoModeMenuItem.state = .on
+            globalModeMenuItem.state = .off
+            manualModeMenuItem.state = .off
         } else if mode == "global" {
-            autoModeMenuItem.state = NSControl.StateValue(rawValue: 0)
-            globalModeMenuItem.state = NSControl.StateValue(rawValue: 1)
-            manualModeMenuItem.state = NSControl.StateValue(rawValue: 0)
+            autoModeMenuItem.state = .off
+            globalModeMenuItem.state = .on
+            manualModeMenuItem.state = .off
         } else if mode == "manual" {
-            autoModeMenuItem.state = NSControl.StateValue(rawValue: 0)
-            globalModeMenuItem.state = NSControl.StateValue(rawValue: 0)
-            manualModeMenuItem.state = NSControl.StateValue(rawValue: 1)
+            autoModeMenuItem.state = .off
+            globalModeMenuItem.state = .off
+            manualModeMenuItem.state = .on
         }
         updateStatusMenuImage()
     }
@@ -493,7 +493,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             let item = NSMenuItem()
             item.tag = i + kProfileMenuItemIndexBase
             item.title = profile.title()
-            item.state = NSControl.StateValue(rawValue: (mgr.activeProfileId == profile.uuid) ? 1 : 0)
+            item.state = (mgr.activeProfileId == profile.uuid) ? .on : .off
             item.isEnabled = profile.isValid()
             item.action = #selector(AppDelegate.selectServer)
             
