@@ -72,9 +72,9 @@
     CGContextRef bitmapRef = CGBitmapContextCreate(nil, width, height, 8, 0, cs, (CGBitmapInfo)kCGImageAlphaNone);
     
 #if TARGET_OS_IPHONE
-    CIContext *context = [CIContext contextWithOptions:nil];
+    CIContext *context = [CIContext contextWithOptions: @{kCIContextUseSoftwareRenderer: true}];
 #else
-    CIContext *context = [CIContext contextWithCGContext:bitmapRef options:nil];
+    CIContext *context = [CIContext contextWithCGContext:bitmapRef options:@{kCIContextUseSoftwareRenderer: @true}];
 #endif
     
     CGImageRef bitmapImage = [context createCGImage:image fromRect:extent];
