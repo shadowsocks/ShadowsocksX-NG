@@ -55,6 +55,16 @@ func generateSSLocalLauchAgentPlist() -> Bool {
     if enableVerboseMode {
         arguments.append("-v")
     }
+
+    // Generate & Use ACL
+    let acl = ACLManager.instance
+    let aclHash = acl.hash()
+    if let path = acl.generate() {
+        arguments.append(contentsOf: ["--acl", path])
+    } else {
+        NSLog("Failed generating ACL.")
+    }
+    let aclChanged = acl.hash() != aclHash
     
     // For a complete listing of the keys, see the launchd.plist manual page.
     let dict: NSMutableDictionary = [
@@ -67,11 +77,9 @@ func generateSSLocalLauchAgentPlist() -> Bool {
     ]
     dict.write(toFile: plistFilepath, atomically: true)
     let Sha1Sum = getFileSHA1Sum(plistFilepath)
-    if oldSha1Sum != Sha1Sum {
-        return true
-    } else {
-        return false
-    }
+    let plistChanged = oldSha1Sum != Sha1Sum
+
+    return aclChanged || plistChanged
 }
 
 func StartSSLocal() {

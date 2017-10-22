@@ -15,9 +15,13 @@
         <customObject id="Voe-Tx-rLC" customClass="AppDelegate" customModule="ShadowsocksX_NG" customModuleProvider="target">
             <connections>
                 <outlet property="autoModeMenuItem" destination="r07-Gu-aEz" id="9aH-pQ-Rgi"/>
+                <outlet property="bypassAllMenuItem" destination="N6J-8o-9ZQ" id="OAH-mx-6cU"/>
+                <outlet property="bypassLANChinaMenuItem" destination="DqE-sW-LKL" id="9j0-F2-AeG"/>
                 <outlet property="copyHttpProxyExportCmdLineMenuItem" destination="lg6-To-GZA" id="VTb-he-dg4"/>
                 <outlet property="globalModeMenuItem" destination="Mw3-Jm-eXA" id="ar5-Yx-3ze"/>
                 <outlet property="manualModeMenuItem" destination="8PR-gs-c5N" id="9qz-mU-5kt"/>
+                <outlet property="proxyAllMenuItem" destination="7Yg-Yn-Ybc" id="gpB-1n-S9h"/>
+                <outlet property="proxyGFWListMenuItem" destination="LKR-vc-z9u" id="imj-zF-5w3"/>
                 <outlet property="runningStatusMenuItem" destination="fzk-mE-CEV" id="Vwm-Rg-Ykn"/>
                 <outlet property="scanQRCodeMenuItem" destination="Qe6-bF-paT" id="XHa-pa-nCa"/>
                 <outlet property="serverProfilesBeginSeparatorMenuItem" destination="4iN-w2-but" id="Jyu-48-AzD"/>
@@ -41,6 +45,65 @@
                     </connections>
                 </menuItem>
                 <menuItem isSeparatorItem="YES" id="LXP-yK-yQu"/>
+                <menuItem title="Shadowsocks ACL" id="axt-qL-kUF">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <menu key="submenu" title="Shadowsocks ACL" id="rgU-jK-Bax">
+                        <items>
+                            <menuItem title="Proxy All By Default" id="7Yg-Yn-Ybc">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="selectACLDefaultAction:" target="Voe-Tx-rLC" id="9sQ-L6-a2d"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Bypass All By Default" id="N6J-8o-9ZQ">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="selectACLDefaultAction:" target="Voe-Tx-rLC" id="6sG-Q0-uxl"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" id="YgO-00-L9h"/>
+                            <menuItem title="Proxy GFW List" id="LKR-vc-z9u">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="toggleACLRules:" target="Voe-Tx-rLC" id="K1o-b6-5yI"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Bypass LAN and mainland China" id="DqE-sW-LKL">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="toggleACLRules:" target="Voe-Tx-rLC" id="0JJ-ie-kFp"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" id="Ht6-Js-Fr4"/>
+                            <menuItem title="Edit Custom Rules..." id="8Yf-qX-rEW">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="editCustomRules:" target="Voe-Tx-rLC" id="orr-7c-AQv"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Import Custom Rules..." id="cqR-5j-lDC">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="importCustomRules:" target="Voe-Tx-rLC" id="4h7-eg-aRE"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Export Custom Rules..." id="dco-72-Cql">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="exportCustomRules:" target="Voe-Tx-rLC" id="wel-Op-dMA"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" id="Ktg-fM-hk2"/>
+                            <menuItem title="Update GFW List ACL Rule" id="IzY-94-NnJ">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="updateGFWListACL:" target="Voe-Tx-rLC" id="oXh-0p-2iz"/>
+                                </connections>
+                            </menuItem>
+                        </items>
+                    </menu>
+                </menuItem>
+                <menuItem isSeparatorItem="YES" id="eWU-eQ-dX1"/>
                 <menuItem title="Proxy Auto Configure Mode" id="r07-Gu-aEz">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
@@ -117,7 +180,7 @@
                         <action selector="copyExportCommand:" target="Voe-Tx-rLC" id="2U4-3M-sAK"/>
                     </connections>
                 </menuItem>
-                <menuItem title="Update PAC from GFW List" id="TFc-Ec-duM">
+                <menuItem title="Update PAC &amp; ACL from GFW List" id="TFc-Ec-duM">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
                         <action selector="updateGFWList:" target="Voe-Tx-rLC" id="Ztt-PS-F3T"/>

@@ -32,6 +32,10 @@ func SyncPac() {
     if !fileMgr.fileExists(atPath: PACRulesDirPath) {
         needGenerate = true
     }
+
+    if !fileMgr.fileExists(atPath: PACFilePath) {
+        needGenerate = true
+    }
     
     if needGenerate {
         if !GeneratePACFile() {

@@ -8,6 +8,12 @@
 
 "PAC has been updated by latest GFW List." = "PAC has been updated by latest GFW List.";
 
+"ACL has been updated by lastest GFW List." = "ACL has been updated by lastest GFW List.";
+
+"Failed to write GFW List ACL" = "Failed to write GFW List ACL";
+
+"Failed parse GFW List into ACL." = "Failed parse GFW List into ACL.";
+
 "Failed to download latest GFW List." = "Failed to download latest GFW List.";
 
 /*
@@ -55,3 +61,15 @@
 "Manual" = "Manual";
 
 "Show Running Mode On Status Bar" = "Show Running Mode On Status Bar";
+
+"Import Custom Rules" = "Import Custom Rules";
+
+"Import custom rules succeeded" = "Import custom rules succeeded";
+
+"Import custom rules failed" = "Import custom rules failed";
+
+"Export Custom Rules" = "Export Custom Rules";
+
+"Export custom rules succeeded" = "Export custom rules succeeded";
+
+"Export custom rules failed" = "Export custom rules failed";

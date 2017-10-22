@@ -19,12 +19,19 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     var editUserRulesWinCtrl: UserRulesController!
     var allInOnePreferencesWinCtrl: PreferencesWinController!
     var toastWindowCtrl: ToastWindowController!
+    var editCustomRulesWinCtrl: CustomRulesController!
 
     @IBOutlet weak var window: NSWindow!
     @IBOutlet weak var statusMenu: NSMenu!
     
     @IBOutlet weak var runningStatusMenuItem: NSMenuItem!
     @IBOutlet weak var toggleRunningMenuItem: NSMenuItem!
+
+    @IBOutlet weak var proxyAllMenuItem: NSMenuItem!
+    @IBOutlet weak var bypassAllMenuItem: NSMenuItem!
+    @IBOutlet weak var proxyGFWListMenuItem: NSMenuItem!
+    @IBOutlet weak var bypassLANChinaMenuItem: NSMenuItem!
+
     @IBOutlet weak var autoModeMenuItem: NSMenuItem!
     @IBOutlet weak var globalModeMenuItem: NSMenuItem!
     @IBOutlet weak var manualModeMenuItem: NSMenuItem!
@@ -87,6 +94,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         defaults.register(defaults: [
             "ShadowsocksOn": true,
             "ShadowsocksRunningMode": "auto",
+            "ACL.Default": "proxy",
+            "ACL.Rules": [],
             "LocalSocks5.ListenPort": NSNumber(value: 1086 as UInt16),
             "LocalSocks5.ListenAddress": "127.0.0.1",
             "PacServer.ListenPort":NSNumber(value: 1089 as UInt16),
@@ -235,6 +244,133 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                 self.makeToast("Shadowsocks: Off".localized)
             }
         }
+    }
+
+    @IBAction func selectACLDefaultAction(_ sender: NSMenuItem) {
+        let acl = ACLManager.instance
+
+        switch sender {
+        case proxyAllMenuItem:
+            acl.defaultAction = .proxy
+
+        case bypassAllMenuItem:
+            acl.defaultAction = .bypass
+
+        default:
+            NSLog("Unknown sender: %@", sender)
+            return
+        }
+
+        self.updateACLMenu()
+        self.applyConfig()
+    }
+
+    @IBAction func toggleACLRules(_ sender: NSMenuItem) {
+        let acl = ACLManager.instance
+
+        let rule: ACLRule
+
+        switch sender {
+        case proxyGFWListMenuItem:
+            rule = .proxyGFWList
+
+        case bypassLANChinaMenuItem:
+            rule = .bypassLANChina
+
+        default:
+            NSLog("Unknown sender: %@", sender)
+            return
+        }
+
+        var rules = acl.enabledRules
+
+        if rules.contains(rule) {
+            rules.remove(rule)
+        } else {
+            rules.insert(rule)
+        }
+
+        acl.enabledRules = rules
+
+        self.updateACLMenu()
+        self.applyConfig()
+    }
+
+    @IBAction func editCustomRules(_ sender: NSMenuItem) {
+        if let controller = editCustomRulesWinCtrl {
+            controller.window?.performClose(self)
+        }
+
+        let controller = CustomRulesController()
+        controller.showWindow(self)
+        NSApp.activate(ignoringOtherApps: true)
+
+        editCustomRulesWinCtrl = controller
+    }
+
+    @IBAction func importCustomRules(_ sender: NSMenuItem) {
+        let panel = NSOpenPanel()
+        panel.title = "Import Custom Rules".localized
+        panel.allowsMultipleSelection = false
+        panel.canChooseDirectories = false
+        panel.canCreateDirectories = false
+        panel.canChooseFiles = true
+        panel.becomeKey()
+
+        guard panel.runModal() == NSFileHandlingPanelOKButton else {
+            return
+        }
+        guard let url = panel.url else {
+            return
+        }
+
+        DispatchQueue.global(qos: .userInitiated).async {
+            let message: String
+            if ACLRule.custom.importFrom(url) {
+                message = "Import custom rules succeeded".localized
+            } else {
+                message = "Import custom rules failed".localized
+            }
+
+            let notification = NSUserNotification()
+            notification.title = message
+            NSUserNotificationCenter.default.deliver(notification)
+
+            SyncSSLocal()
+        }
+    }
+
+    @IBAction func exportCustomRules(_ sender: NSMenuItem) {
+        let panel = NSSavePanel()
+        panel.title = "Export Custom Rules".localized
+        panel.canCreateDirectories = true
+        panel.allowedFileTypes = ["acl"]
+        panel.nameFieldStringValue = "export.acl"
+        panel.becomeKey()
+
+        guard panel.runModal() == NSFileHandlingPanelOKButton else {
+            return
+        }
+        guard let url = panel.url else {
+            return
+        }
+
+        DispatchQueue.global(qos: .userInitiated).async {
+            let message: String
+            if ACLRule.custom.exportTo(url) {
+                message = "Export custom rules succeeded".localized
+            } else {
+                message = "Export custom rules failed".localized
+            }
+
+            let notification = NSUserNotification()
+            notification.title = message
+            NSUserNotificationCenter.default.deliver(notification)
+        }
+    }
+
+    @IBAction func updateGFWListACL(_ sender: NSMenuItem) {
+        UpdateGFWListACL()
     }
     
     @IBAction func updateGFWList(_ sender: NSMenuItem) {
@@ -465,7 +601,20 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         }
         statusItem.image?.isTemplate = true
         
+        updateACLMenu()
         updateStatusMenuImage()
+    }
+
+    func updateACLMenu() {
+        let acl = ACLManager.instance
+
+        let defaultAction = acl.defaultAction
+        proxyAllMenuItem.state = (defaultAction == .proxy) ? 1 : 0
+        bypassAllMenuItem.state = (defaultAction == .bypass) ? 1 : 0
+
+        let rules = acl.enabledRules
+        bypassLANChinaMenuItem.state = rules.contains(.bypassLANChina) ? 1 : 0
+        proxyGFWListMenuItem.state = rules.contains(.proxyGFWList) ? 1 : 0
     }
     
     func updateCopyHttpProxyExportMenu() {

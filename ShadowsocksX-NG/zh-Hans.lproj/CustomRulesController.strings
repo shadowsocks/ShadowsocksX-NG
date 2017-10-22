@@ -1,0 +1,30 @@
+
+/* Class = "NSTextFieldCell"; title = "Proxy:"; ObjectID = "9w4-qK-new"; */
+"9w4-qK-new.title" = "代理：";
+
+/* Class = "NSWindow"; title = "Edit Custom Rules"; ObjectID = "F0z-JX-Cv5"; */
+"F0z-JX-Cv5.title" = "编辑自定义规则";
+
+/* Class = "NSTextFieldCell"; title = "Table View Cell"; ObjectID = "Jsr-vw-m72"; */
+"Jsr-vw-m72.title" = "Table View Cell";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "K73-1n-XLr"; */
+"K73-1n-XLr.title" = "Text Cell";
+
+/* Class = "NSTextFieldCell"; title = "Bypass:"; ObjectID = "KEY-dn-1gf"; */
+"KEY-dn-1gf.title" = "绕过：";
+
+/* Class = "NSTextFieldCell"; title = "Text Cell"; ObjectID = "MjP-zc-Ktx"; */
+"MjP-zc-Ktx.title" = "Text Cell";
+
+/* Class = "NSButtonCell"; title = "Cancel"; ObjectID = "OT7-mr-O7G"; */
+"OT7-mr-O7G.title" = "取消";
+
+/* Class = "NSButtonCell"; title = "OK"; ObjectID = "SRG-1z-wQi"; */
+"SRG-1z-wQi.title" = "确定";
+
+/* Class = "NSTextFieldCell"; title = "Table View Cell"; ObjectID = "rgE-hP-JwM"; */
+"rgE-hP-JwM.title" = "Table View Cell";
+
+/* Class = "NSTextFieldCell"; title = "Use IP / CIDR, or use Regular Expressions to match domains."; ObjectID = "vqe-u4-d1R"; */
+"vqe-u4-d1R.title" = "填写 IP 或 CIDR，或者使用正则表达式匹配域名。";

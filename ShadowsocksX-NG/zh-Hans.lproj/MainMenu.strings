@@ -95,4 +95,26 @@
 /* Class = "NSMenuItem"; title = "Preferences"; ObjectID = "iVn-LD-Ynd"; */
 "iVn-LD-Ynd.title" = "偏好设置";
 
+/* Class = "NSMenuItem"; title = "Proxy All By Default"; ObjectID = "7Yg-Yn-Ybc"; */
+"7Yg-Yn-Ybc.title" = "默认代理全部";
 
+/* Class = "NSMenuItem"; title = "Bypass All By Default"; ObjectID = "N6J-8o-9ZQ"; */
+"N6J-8o-9ZQ.title" = "默认绕过全部";
+
+/* Class = "NSMenuItem"; title = "Proxy GFW List"; ObjectID = "LKR-vc-z9u"; */
+"LKR-vc-z9u.title" = "代理符合 GFW List 的地址";
+
+/* Class = "NSMenuItem"; title = "Bypass LAN and mainland China"; ObjectID = "DqE-sW-LKL"; */
+"DqE-sW-LKL.title" = "绕过局域网及中国大陆地址";
+
+/* Class = "NSMenuItem"; title = "Update GFW List ACL Rule"; ObjectID = "IzY-94-NnJ"; */
+"IzY-94-NnJ.title" = "更新 GFW List ACL 规则";
+
+/* Class = "NSMenuItem"; title = "Edit Custom Rules..."; ObjectID = "8Yf-qX-rEW"; */
+"8Yf-qX-rEW.title" = "编辑自定义规则...";
+
+/* Class = "NSMenuItem"; title = "Export Custom Rules..."; ObjectID = "dco-72-Cql"; */
+"dco-72-Cql.title" = "导出自定义规则...";
+
+/* Class = "NSMenuItem"; title = "Import Custom Rules..."; ObjectID = "cqR-5j-lDC"; */
+"cqR-5j-lDC.title" = "导入自定义规则...";
