@@ -8,6 +8,7 @@ PODS:
   - RxCocoa (3.3.1):
     - RxSwift (~> 3.3)
   - RxSwift (3.3.1)
+  - XYPingUtil (0.0.1)
 
 DEPENDENCIES:
   - Alamofire (~> 4.2.0)
@@ -16,6 +17,7 @@ DEPENDENCIES:
   - MASShortcut (~> 2)
   - RxCocoa (~> 3.0)
   - RxSwift (~> 3.0)
+  - XYPingUtil (~> 0.0.1)
 
 SPEC CHECKSUMS:
   Alamofire: aa2e09d871c9160ac53c90e83c68064a94e3dfbe
@@ -24,7 +26,8 @@ SPEC CHECKSUMS:
   MASShortcut: 9c215e8a8a78f3d01ce56da48e2730ab66b538fa
   RxCocoa: 7dcb7a1860fc9cd0e23dae67ab105fc2916670b6
   RxSwift: 8fc9f2de6275a9101d518444e00bf32f1a42caac
+  XYPingUtil: 707e3b113c0ed9d85ca8ef7b13c12ee9cd21b276
 
-PODFILE CHECKSUM: e59f622df37d0fe135432c1ccda243973c311def
+PODFILE CHECKSUM: 175af699fc3044cb595eea78783dea931a37bf9f
 
-COCOAPODS: 1.2.0
+COCOAPODS: 1.4.0.beta.1
