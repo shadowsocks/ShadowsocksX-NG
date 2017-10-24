@@ -85,9 +85,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             "LocalSocks5.EnableUDPRelay": NSNumber(value: false as Bool),
             "LocalSocks5.EnableVerboseMode": NSNumber(value: false as Bool),
             "GFWListURL": "https://raw.githubusercontent.com/gfwlist/gfwlist/master/gfwlist.txt",
-            "ACLWhiteListURL": "https://raw.githubusercontent.com/shadowsocksr/shadowsocksr-libev/master/acl/chn.acl",
-            "ACLAutoListURL": "https://raw.githubusercontent.com/shadowsocksr/shadowsocksr-libev/master/acl/gfwlist.acl",
-            "ACLProxyBackCHNURL":"https://raw.githubusercontent.com/shadowsocksr/ShadowsocksX-NG/develop/ShadowsocksX-NG/backchn.acl",
+            "ACLWhiteListURL": "https://raw.githubusercontent.com/shadowsocks/shadowsocks-libev/master/acl/chn.acl",
+            "ACLAutoListURL": "https://raw.githubusercontent.com/shadowsocks/shadowsocks-libev/master/acl/gfwlist.acl",
+            "ACLProxyBackCHNURL":"https://raw.githubusercontent.com/shadowsocks/shadowsocks-libev/master/ShadowsocksX-NG/server_block_chn.acl",
             "AutoConfigureNetworkServices": NSNumber(value: true as Bool),
             "LocalHTTP.ListenAddress": "127.0.0.1",
             "LocalHTTP.ListenPort": NSNumber(value: 1087 as UInt16),
@@ -759,7 +759,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                     let alertResult = versionChecker.showAlertView(Title: newVersion["Title"] as! String, SubTitle: newVersion["SubTitle"] as! String, ConfirmBtn: newVersion["ConfirmBtn"] as! String, CancelBtn: newVersion["CancelBtn"] as! String)
                     print(alertResult)
                     if (newVersion["newVersion"] as! Bool && alertResult == 1000){
-                        NSWorkspace.shared().open(URL(string: "https://github.com/shadowsocksr/ShadowsocksX-NG/releases")!)
+                        NSWorkspace.shared().open(URL(string: "https://github.com/qinyuhang/ShadowsocksX-NG-R/releases")!)
                     }
                 }
             }
