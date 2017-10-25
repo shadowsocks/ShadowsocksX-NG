@@ -338,7 +338,7 @@ class ServerProfile: NSObject, NSCopying {
         PingUtil.pingHost(serverHost, success: { (ping) in
             self.ping = ping
         }, failure: {
-            print("ping failure")
+            NSLog("Ping %@ fail", self.serverHost)
         })
     }
 }
