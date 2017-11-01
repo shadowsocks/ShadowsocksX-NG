@@ -27,6 +27,8 @@ class PreferencesWindowController: NSWindowController
     @IBOutlet weak var passwordTextField: NSTextField!
     @IBOutlet weak var passwordSecureTextField: NSSecureTextField!
     @IBOutlet weak var togglePasswordVisibleButton: NSButton!
+    @IBOutlet weak var pluginTextField: NSTextField!
+    @IBOutlet weak var pluginOptionsTextField: NSTextField!
     
     @IBOutlet weak var remarkTextField: NSTextField!
     
@@ -263,6 +265,11 @@ class PreferencesWindowController: NSWindowController
             passwordTextField.bind(NSBindingName(rawValue: "value"), to: editingProfile, withKeyPath: "password"
                 , options: [NSBindingOption.continuouslyUpdatesValue: true])
             passwordSecureTextField.bind(NSBindingName(rawValue: "value"), to: editingProfile, withKeyPath: "password"
+                , options: [NSBindingOption.continuouslyUpdatesValue: true])
+
+            pluginTextField.bind(NSBindingName(rawValue: "value"), to: editingProfile, withKeyPath: "plugin"
+                , options: [NSBindingOption.continuouslyUpdatesValue: true])
+            pluginOptionsTextField.bind(NSBindingName(rawValue: "value"), to: editingProfile, withKeyPath: "pluginOptions"
                 , options: [NSBindingOption.continuouslyUpdatesValue: true])
             
             remarkTextField.bind(NSBindingName(rawValue: "value"), to: editingProfile, withKeyPath: "remark"
