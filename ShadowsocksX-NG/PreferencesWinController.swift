@@ -30,5 +30,10 @@ class PreferencesWinController: NSWindowController {
     @IBAction func toolbarAction(sender: NSToolbarItem) {
         tabView.selectTabViewItem(withIdentifier: sender.itemIdentifier)
     }
+
+    @IBAction func resetProxyExceptions(sender: NSButton) {
+        let defaults = UserDefaults.standard
+        defaults.set("127.0.0.1, localhost, 192.168.0.0/16, 10.0.0.0/8", forKey: "ProxyExceptions")
+    }
     
 }

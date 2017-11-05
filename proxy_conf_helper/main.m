@@ -97,12 +97,6 @@ int main(int argc, const char * argv[])
             return 1;
         }
     }
-
-    // Bypass these Hosts & Domains if not specified
-    if ([proxyExceptions count] == 0) {
-        NSArray* bypass = @[@"127.0.0.1", @"localhost", @"192.168.0.0/16", @"10.0.0.0/8"];
-        [proxyExceptions addObjectsFromArray:bypass];
-    }
     
     static AuthorizationRef authRef;
     static AuthorizationFlags authFlags;

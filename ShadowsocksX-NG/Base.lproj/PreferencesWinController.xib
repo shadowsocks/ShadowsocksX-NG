@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="13196" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="13529" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="13196"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="13529"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
@@ -19,7 +19,7 @@
             <windowStyleMask key="styleMask" titled="YES" closable="YES"/>
             <windowPositionMask key="initialPositionMask" topStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="609" y="533" width="480" height="326"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1920" height="1057"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1920" height="1058"/>
             <view key="contentView" wantsLayer="YES" id="se5-gp-TjO">
                 <rect key="frame" x="0.0" y="0.0" width="480" height="326"/>
                 <autoresizingMask key="autoresizingMask"/>
@@ -504,7 +504,7 @@
                                                         <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                         <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
                                                         <tableColumns>
-                                                            <tableColumn width="435" minWidth="40" maxWidth="1000" id="4CL-dk-HUu">
+                                                            <tableColumn identifier="" width="435" minWidth="40" maxWidth="1000" id="4CL-dk-HUu">
                                                                 <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border">
                                                                     <font key="font" metaFont="smallSystem"/>
                                                                     <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -553,7 +553,7 @@
                                             </textFieldCell>
                                         </textField>
                                         <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="1lH-rX-WZT">
-                                            <rect key="frame" x="18" y="78" width="444" height="17"/>
+                                            <rect key="frame" x="18" y="78" width="373" height="17"/>
                                             <textFieldCell key="cell" sendsActionOnEndEditing="YES" title="Bypass proxy settings for these Hosts &amp; Domains:" id="v4F-L4-s8U">
                                                 <font key="font" metaFont="system"/>
                                                 <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -578,16 +578,28 @@
                                                 </binding>
                                             </connections>
                                         </textField>
+                                        <button horizontalHuggingPriority="750" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="qG0-rB-6MR">
+                                            <rect key="frame" x="391" y="68" width="75" height="32"/>
+                                            <buttonCell key="cell" type="push" title="Reset" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="Afd-bH-wOk">
+                                                <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <action selector="resetProxyExceptionsWithSender:" target="-2" id="cUx-aD-yJN"/>
+                                            </connections>
+                                        </button>
                                     </subviews>
                                     <constraints>
                                         <constraint firstItem="dGc-zC-AYJ" firstAttribute="trailing" secondItem="fMc-SG-EDy" secondAttribute="trailing" id="3Zz-40-KQq"/>
-                                        <constraint firstAttribute="trailing" secondItem="1lH-rX-WZT" secondAttribute="trailing" constant="20" symbolic="YES" id="97Q-CF-Qtl"/>
+                                        <constraint firstAttribute="trailing" secondItem="qG0-rB-6MR" secondAttribute="trailing" constant="20" symbolic="YES" id="FPF-lZ-XI4"/>
+                                        <constraint firstItem="qG0-rB-6MR" firstAttribute="leading" secondItem="1lH-rX-WZT" secondAttribute="trailing" constant="8" symbolic="YES" id="SMh-gj-3ha"/>
                                         <constraint firstAttribute="trailing" secondItem="N84-AY-ecA" secondAttribute="trailing" constant="20" symbolic="YES" id="Uag-W2-BfP"/>
                                         <constraint firstItem="dGc-zC-AYJ" firstAttribute="top" secondItem="x9X-2w-cOy" secondAttribute="bottom" constant="13" id="Vl7-m0-TAK"/>
                                         <constraint firstItem="x9X-2w-cOy" firstAttribute="leading" secondItem="fMc-SG-EDy" secondAttribute="leading" id="XxO-Kg-0A0"/>
                                         <constraint firstItem="N84-AY-ecA" firstAttribute="top" secondItem="1lH-rX-WZT" secondAttribute="bottom" constant="13" id="YQ8-Ic-aQJ"/>
                                         <constraint firstItem="x9X-2w-cOy" firstAttribute="top" secondItem="Ati-LQ-RB7" secondAttribute="top" constant="69" id="eQy-6U-sR6"/>
                                         <constraint firstItem="x9X-2w-cOy" firstAttribute="top" secondItem="fMc-SG-EDy" secondAttribute="bottom" constant="8" symbolic="YES" id="hmT-Zp-1O2"/>
+                                        <constraint firstItem="qG0-rB-6MR" firstAttribute="baseline" secondItem="1lH-rX-WZT" secondAttribute="baseline" id="iFX-QW-es0"/>
                                         <constraint firstItem="dGc-zC-AYJ" firstAttribute="leading" secondItem="x9X-2w-cOy" secondAttribute="leading" id="jdE-no-Bqt"/>
                                         <constraint firstItem="1lH-rX-WZT" firstAttribute="leading" secondItem="Ati-LQ-RB7" secondAttribute="leading" constant="20" symbolic="YES" id="lUz-Xl-cKK"/>
                                         <constraint firstItem="1lH-rX-WZT" firstAttribute="top" secondItem="dGc-zC-AYJ" secondAttribute="bottom" constant="16" id="oWs-sE-I2C"/>
