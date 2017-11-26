@@ -119,11 +119,12 @@ GCDWebServer *webServer =nil;
 
     NSString* rawExceptions = [defaults stringForKey:@"ProxyExceptions"];
     if (rawExceptions) {
-        NSCharacterSet* seps = [NSCharacterSet characterSetWithCharactersInString:@", 、"];
         NSCharacterSet* whites = [NSCharacterSet whitespaceAndNewlineCharacterSet];
+        NSMutableCharacterSet* seps = [NSMutableCharacterSet characterSetWithCharactersInString:@",、"];
+        [seps formUnionWithCharacterSet:whites];
+
         NSArray* exceptions = [rawExceptions componentsSeparatedByCharactersInSet:seps];
-        for (NSString* rawDomainOrHost in exceptions) {
-            NSString* domainOrHost = [rawDomainOrHost stringByTrimmingCharactersInSet:whites];
+        for (NSString* domainOrHost in exceptions) {
             if ([domainOrHost length] > 0) {
                 [args addObject:@"-x"];
                 [args addObject:domainOrHost];
