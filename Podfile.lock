@@ -5,9 +5,9 @@ PODS:
     - GCDWebServer/Core (= 3.3.3)
   - GCDWebServer/Core (3.3.3)
   - MASShortcut (2.3.6)
-  - RxCocoa (3.3.1):
-    - RxSwift (~> 3.3)
-  - RxSwift (3.3.1)
+  - RxCocoa (4.0.0):
+    - RxSwift (~> 4.0)
+  - RxSwift (4.0.0)
   - XYPingUtil (0.0.1)
 
 DEPENDENCIES:
@@ -15,8 +15,8 @@ DEPENDENCIES:
   - BRLOptionParser (~> 0.3.1)
   - GCDWebServer (~> 3.0)
   - MASShortcut (~> 2)
-  - RxCocoa (~> 3.0)
-  - RxSwift (~> 3.0)
+  - RxCocoa (~> 4.0)
+  - RxSwift (~> 4.0)
   - XYPingUtil (~> 0.0.1)
 
 SPEC CHECKSUMS:
@@ -24,10 +24,10 @@ SPEC CHECKSUMS:
   BRLOptionParser: a03256a8ff003ca1f5376c55f55f210e085a3958
   GCDWebServer: 1c39a1f0763e4eb492bee021e4270fce097d3555
   MASShortcut: 9c215e8a8a78f3d01ce56da48e2730ab66b538fa
-  RxCocoa: 7dcb7a1860fc9cd0e23dae67ab105fc2916670b6
-  RxSwift: 8fc9f2de6275a9101d518444e00bf32f1a42caac
+  RxCocoa: d62846ca96495d862fa4c59ea7d87e5031d7340e
+  RxSwift: fd680d75283beb5e2559486f3c0ff852f0d35334
   XYPingUtil: 707e3b113c0ed9d85ca8ef7b13c12ee9cd21b276
 
-PODFILE CHECKSUM: 175af699fc3044cb595eea78783dea931a37bf9f
+PODFILE CHECKSUM: 50dd154ecd7d67fa282755c8bd60eb953685b035
 
 COCOAPODS: 1.3.1

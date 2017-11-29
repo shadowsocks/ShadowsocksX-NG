@@ -12,8 +12,8 @@ target 'ShadowsocksX-NG' do
   pod 'XYPingUtil', '~> 0.0.1'
   
   # https://github.com/ReactiveX/RxSwift/blob/master/Documentation/GettingStarted.md
-  pod 'RxSwift',    '~> 3.0'
-  pod 'RxCocoa',    '~> 3.0'
+  pod 'RxSwift',    '~> 4.0'
+  pod 'RxCocoa',    '~> 4.0'
 
   target 'ShadowsocksX-NGTests' do
     inherit! :search_paths
