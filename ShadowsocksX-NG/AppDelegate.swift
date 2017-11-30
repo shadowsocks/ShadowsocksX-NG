@@ -102,16 +102,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             "Kcptun.LocalHost": "127.0.0.1",
             "Kcptun.LocalPort": NSNumber(value: 8388),
             "Kcptun.Conn": NSNumber(value: 1),
+            "ProxyExceptions": "127.0.0.1, localhost, 192.168.0.0/16, 10.0.0.0/8",
             ])
-
-        // To keep the default exception values backward compatible, we set it
-        // to the previously hardcoded value if the key doesn't exist.
-        // Registering defaults won't work because the empty state is a valid
-        // value, and Cocoa Bindings won't distinguish between empty and string
-        // values.
-        if defaults.string(forKey: "ProxyExceptions") == nil {
-            defaults.set("127.0.0.1, localhost, 192.168.0.0/16, 10.0.0.0/8", forKey: "ProxyExceptions")
-        }
         
         statusItem = NSStatusBar.system.statusItem(withLength: AppDelegate.StatusItemIconWidth)
         let image : NSImage = NSImage(named: NSImage.Name(rawValue: "menu_icon"))!
