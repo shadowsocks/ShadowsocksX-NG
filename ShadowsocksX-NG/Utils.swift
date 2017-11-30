@@ -32,3 +32,33 @@ enum ProxyType {
 struct Globals {
     static var proxyType = ProxyType.pac
 }
+
+func splitProfile(url: String, max: Int) -> [String] {
+    let ssrregexp = "ssr://([A-Za-z0-9_-]+)"
+    let ssregexp = "ss://([A-Za-z0-9_-]+"
+    
+    
+    if url.hasPrefix("ss://"){
+        return splitor(url: url, regexp: ssregexp)
+    }else if url.hasPrefix("ssr://"){
+        return splitor(url: url, regexp: ssrregexp)
+    }
+    return [""]
+}
+
+func splitor(url: String, regexp: String) -> [String] {
+    var ret: [String] = []
+    var ssrUrl = url
+    while ssrUrl.range(of:regexp, options: .regularExpression) != nil {
+        let range = ssrUrl.range(of:regexp, options: .regularExpression)
+        let result = ssrUrl.substring(with:range!)
+        ssrUrl.replaceSubrange(range!, with: "")
+        ret.append(result)
+    }
+    return ret
+}
+
+func getLocalInfo() -> [String: Any] {
+    let InfoDict = Bundle.main.infoDictionary
+    return InfoDict!
+}

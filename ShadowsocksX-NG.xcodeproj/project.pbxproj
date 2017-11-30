@@ -8,6 +8,11 @@
 
 /* Begin PBXBuildFile section */
 		08FCA0FF1E24BE1A0070984F /* example-gui-config.json in Resources */ = {isa = PBXBuildFile; fileRef = 08FCA0FE1E24BE1A0070984F /* example-gui-config.json */; };
+		11E174C11FCFB972000F9FF1 /* PingClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E174C01FCFB972000F9FF1 /* PingClient.swift */; };
+		11E174CA1FCFD809000F9FF1 /* Subscribe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E174C71FCFD808000F9FF1 /* Subscribe.swift */; };
+		11E174CB1FCFD809000F9FF1 /* SubscribeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E174C81FCFD809000F9FF1 /* SubscribeManager.swift */; };
+		11E174D01FCFD893000F9FF1 /* SubscribePreferenceWindowController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 11E174CF1FCFD892000F9FF1 /* SubscribePreferenceWindowController.xib */; };
+		11E174D21FCFD922000F9FF1 /* SubscribePreferenceWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E174D11FCFD922000F9FF1 /* SubscribePreferenceWindowController.swift */; };
 		258E511BA910B0521B24DAB8 /* Pods_ShadowsocksX_NG.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 283ED1A8E9B711AC65670031 /* Pods_ShadowsocksX_NG.framework */; };
 		9B07EFA71D048BBB0052D9DF /* ss-local in Resources */ = {isa = PBXBuildFile; fileRef = 9B07EFA61D048BBB0052D9DF /* ss-local */; };
 		9B07EFAC1D048E880052D9DF /* menu_icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B07EFA81D048E880052D9DF /* menu_icon@2x.png */; };
@@ -133,6 +138,11 @@
 
 /* Begin PBXFileReference section */
 		08FCA0FE1E24BE1A0070984F /* example-gui-config.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "example-gui-config.json"; sourceTree = "<group>"; };
+		11E174C01FCFB972000F9FF1 /* PingClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PingClient.swift; sourceTree = "<group>"; };
+		11E174C71FCFD808000F9FF1 /* Subscribe.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Subscribe.swift; path = "../../SSR-MAC-1.4.2-R8-subscribe-alpha-3/ShadowsocksX-NG/Subscribe.swift"; sourceTree = "<group>"; };
+		11E174C81FCFD809000F9FF1 /* SubscribeManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SubscribeManager.swift; path = "../../SSR-MAC-1.4.2-R8-subscribe-alpha-3/ShadowsocksX-NG/SubscribeManager.swift"; sourceTree = "<group>"; };
+		11E174CF1FCFD892000F9FF1 /* SubscribePreferenceWindowController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = SubscribePreferenceWindowController.xib; sourceTree = "<group>"; };
+		11E174D11FCFD922000F9FF1 /* SubscribePreferenceWindowController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SubscribePreferenceWindowController.swift; sourceTree = "<group>"; };
 		19083CFCED87354F006967FF /* Pods_ShadowsocksX_NGUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ShadowsocksX_NGUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		1E7783AEDB4A3BDDC9FF16AC /* libPods-proxy_conf_helper.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-proxy_conf_helper.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		283ED1A8E9B711AC65670031 /* Pods_ShadowsocksX_NG.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ShadowsocksX_NG.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -359,6 +369,8 @@
 		9B0BFFE71D0460A70040E62B /* ShadowsocksX-NG */ = {
 			isa = PBXGroup;
 			children = (
+				11E174C71FCFD808000F9FF1 /* Subscribe.swift */,
+				11E174C81FCFD809000F9FF1 /* SubscribeManager.swift */,
 				9BB706A51D1B982300551F0E /* SWBApplication.m */,
 				9BB706A61D1B982300551F0E /* SWBApplication.h */,
 				9B3FFF511D09DBA20019A709 /* ShadowsocksX-NG-Bridging-Header.h */,
@@ -371,6 +383,7 @@
 				9B0BFFEC1D0460A70040E62B /* MainMenu.xib */,
 				9B0BFFEF1D0460A70040E62B /* Info.plist */,
 				9BEEF06D1D04DCE400FC52B3 /* ServerProfile.swift */,
+				11E174C01FCFB972000F9FF1 /* PingClient.swift */,
 				9B9CBCA51E25E1DB00FC61AA /* KcptunProfile.swift */,
 				9BEEF06F1D04DDB100FC52B3 /* ServerProfileManager.swift */,
 				9BEEF0771D04FE8A00FC52B3 /* LaunchAgentUtils.swift */,
@@ -403,6 +416,8 @@
 		9B3FFF0B1D05D8B80019A709 /* UI */ = {
 			isa = PBXGroup;
 			children = (
+				11E174CF1FCFD892000F9FF1 /* SubscribePreferenceWindowController.xib */,
+				11E174D11FCFD922000F9FF1 /* SubscribePreferenceWindowController.swift */,
 				9B3FFF331D08CEF70019A709 /* SWBQRCodeWindowController.xib */,
 				9B3FFF301D08CEE40019A709 /* SWBQRCodeWindowController.h */,
 				9B3FFF311D08CEE40019A709 /* SWBQRCodeWindowController.m */,
@@ -617,6 +632,7 @@
 				9B938D9B1E864B38005F5636 /* menu_m_icon.png in Resources */,
 				9B3FFF271D0898EB0019A709 /* gfwlist.txt in Resources */,
 				C6D429931DA75988002A5711 /* install_privoxy.sh in Resources */,
+				11E174D01FCFD893000F9FF1 /* SubscribePreferenceWindowController.xib in Resources */,
 				9B58320B1E7422DB009D5B7D /* http.png in Resources */,
 				9BC70EDC1D2E3E3100EDA4CA /* Localizable.strings in Resources */,
 				9B0BFFEE1D0460A70040E62B /* MainMenu.xib in Resources */,
@@ -772,14 +788,18 @@
 				9B3FFF4F1D09D9D50019A709 /* ProxyConfHelper.m in Sources */,
 				9B5831F61E7302F8009D5B7D /* ShortcutsController.m in Sources */,
 				9BB706A71D1B982300551F0E /* SWBApplication.m in Sources */,
+				11E174C11FCFB972000F9FF1 /* PingClient.swift in Sources */,
+				11E174CA1FCFD809000F9FF1 /* Subscribe.swift in Sources */,
 				9B3FFF1E1D0732660019A709 /* Utils.m in Sources */,
 				9B3FFF321D08CEE40019A709 /* SWBQRCodeWindowController.m in Sources */,
+				11E174D21FCFD922000F9FF1 /* SubscribePreferenceWindowController.swift in Sources */,
 				9B3FFF211D08826E0019A709 /* PACUtils.swift in Sources */,
 				9B3FFF141D0705810019A709 /* Notifications.swift in Sources */,
 				9BEEF0701D04DDB100FC52B3 /* ServerProfileManager.swift in Sources */,
 				9BEEF06E1D04DCE400FC52B3 /* ServerProfile.swift in Sources */,
 				9B3FFF0D1D05FEB30019A709 /* Utils.swift in Sources */,
 				9BEEF0751D04EF3E00FC52B3 /* PreferencesWindowController.swift in Sources */,
+				11E174CB1FCFD809000F9FF1 /* SubscribeManager.swift in Sources */,
 				9B0BFFE91D0460A70040E62B /* AppDelegate.swift in Sources */,
 				9BA04B231D23D5A5005AAD7F /* ProxyConfTool.m in Sources */,
 				9B5831FF1E741969009D5B7D /* PreferencesWinController.swift in Sources */,

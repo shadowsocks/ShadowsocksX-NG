@@ -95,4 +95,14 @@
 /* Class = "NSMenuItem"; title = "Preferences"; ObjectID = "iVn-LD-Ynd"; */
 "iVn-LD-Ynd.title" = "偏好设置";
 
+/* Class = "NSMenuItem"; title = "Ping Server"; ObjectID = "Qe6-bF-paT"; */
+"Qe6-bF-paT.title" = "服务器测速";
 
+/* Class = "NSMenuItem"; title = "Edit Subscribe Feed"; ObjectID = "5yB-UA-sFo"; */
+"5yB-UA-sFo.title" = "编辑订阅";
+
+/* Class = "NSMenuItem"; title = "Manual Update Subscribe"; ObjectID = "29j-24-B0P"; */
+"29j-24-B0P.title" = "手动更新订阅";
+
+/* Class = "NSMenuItem"; title = "Update Subscribe on App Start"; ObjectID = "5oa-Kd-H8H"; */
+"5oa-Kd-H8H.title" = "启动时更新订阅";

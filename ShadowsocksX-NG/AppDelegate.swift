@@ -19,6 +19,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     var editUserRulesWinCtrl: UserRulesController!
     var allInOnePreferencesWinCtrl: PreferencesWinController!
     var toastWindowCtrl: ToastWindowController!
+    var subscribePreferenceWinCtrl: SubscribePreferenceWindowController!
 
     @IBOutlet weak var window: NSWindow!
     @IBOutlet weak var statusMenu: NSMenu!
@@ -30,10 +31,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     @IBOutlet weak var manualModeMenuItem: NSMenuItem!
     
     @IBOutlet weak var serversMenuItem: NSMenuItem!
+    @IBOutlet var pingServerMenuItem: NSMenuItem!
     @IBOutlet var showQRCodeMenuItem: NSMenuItem!
     @IBOutlet var scanQRCodeMenuItem: NSMenuItem!
     @IBOutlet var serverProfilesBeginSeparatorMenuItem: NSMenuItem!
-    @IBOutlet var serverProfilesEndSeparatorMenuItem: NSMenuItem!
+    
+    @IBOutlet var updateSubscribeAtLaunchMenuItem: NSMenuItem!
     
     @IBOutlet weak var copyHttpProxyExportCmdLineMenuItem: NSMenuItem!
     
@@ -101,7 +104,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             "LocalHTTP.FollowGlobal": true,
             "Kcptun.LocalHost": "127.0.0.1",
             "Kcptun.LocalPort": NSNumber(value: 8388),
-            "Kcptun.Conn": NSNumber(value: 1),
+            "Kcptun.Conn": NSNumber(value: 1)
             ])
         
         statusItem = NSStatusBar.system().statusItem(withLength: AppDelegate.StatusItemIconWidth)
@@ -183,6 +186,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
 
         // Register global hotkey
         ShortcutsController.bindShortcuts()
+        
+        DispatchQueue.global().async {
+            if defaults.bool(forKey: "AutoUpdateSubscribe") {
+                SubscribeManager.instance.updateAllServerFromSubscribe()
+            }
+            DispatchQueue.main.async {
+                
+            }
+        }
     }
     
     func applicationWillTerminate(_ aNotification: Notification) {
@@ -279,6 +291,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         if let msg = errMsg {
             self.makeToast(msg)
         }
+    }
+    
+    @IBAction func doPingTest(sender: NSMenuItem) {
+        PingServers.instance.ping()
     }
     
     @IBAction func scanQRCodeFromScreen(_ sender: NSMenuItem) {
@@ -391,6 +407,29 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         NSApp.activate(ignoringOtherApps: true)
     }
     
+    @IBAction func editSubscribeFeed(_ sender: NSMenuItem) {
+        if subscribePreferenceWinCtrl != nil {
+            subscribePreferenceWinCtrl.close()
+        }
+        let ctrl = SubscribePreferenceWindowController(windowNibName: "SubscribePreferenceWindowController")
+        subscribePreferenceWinCtrl = ctrl
+        
+        ctrl.showWindow(self)
+        NSApp.activate(ignoringOtherApps: true)
+        ctrl.window?.makeKeyAndOrderFront(self)
+    }
+    
+    @IBAction func updateSubscribe(_ sender: NSMenuItem) {
+        SubscribeManager.instance.updateAllServerFromSubscribe()
+    }
+    
+    @IBAction func updateSubscribeAtLaunch(_ sender: NSMenuItem) {
+        let defaults = UserDefaults.standard
+        defaults.set(!defaults.bool(forKey: "AutoUpdateSubscribe"), forKey: "AutoUpdateSubscribe")
+        print(defaults.bool(forKey: "AutoUpdateSubscribe"))
+        updateSubscribeAtLaunchMenuItem.state = defaults.bool(forKey: "AutoUpdateSubscribe") ? 1 : 0
+    }
+    
     func updateRunningModeMenu() {
         let defaults = UserDefaults.standard
         let mode = defaults.string(forKey: "ShadowsocksRunningMode")
@@ -407,6 +446,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                     profileName = p.serverHost
                 }
                 serverMenuText = "\(serverMenuText) - \(profileName)"
+                if let latency = p.latency{
+                    serverMenuText += "  - \(latency)ms"
+                }
             }
         }
         serversMenuItem.title = serverMenuText
@@ -480,13 +522,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
 
         let mgr = ServerProfileManager.instance
         let profiles = mgr.profiles
+        updateSubscribeAtLaunchMenuItem.state = UserDefaults.standard.bool(forKey: "AutoUpdateSubscribe") ? 1 : 0
 
         // Remove all profile menu items
         let beginIndex = menu.index(of: serverProfilesBeginSeparatorMenuItem) + 1
-        let endIndex = menu.index(of: serverProfilesEndSeparatorMenuItem)
-        // Remove from end to begin, so the index won't change :)
-        for index in (beginIndex..<endIndex).reversed() {
-            menu.removeItem(at: index)
+        if (beginIndex <= menu.numberOfItems - 1) {
+            // Remove from end to begin, so the index won't change :)
+            for index in (beginIndex..<menu.numberOfItems) {
+                menu.removeItem(at: beginIndex)
+            }
         }
 
         // Insert all profile menu items
@@ -497,12 +541,35 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             item.state = (mgr.activeProfileId == profile.uuid) ? 1 : 0
             item.isEnabled = profile.isValid()
             item.action = #selector(AppDelegate.selectServer)
-            
-            menu.insertItem(item, at: beginIndex)
+            if let latency = profile.latency{
+                item.title += "  - \(latency)ms"
+            }
+            if !profile.ssrGroup.isEmpty {
+                if((menu.item(withTitle: profile.ssrGroup)) == nil){
+                    let groupSubmenu = NSMenu()
+                    let groupSubmenuItem = NSMenuItem()
+                    groupSubmenuItem.title = profile.ssrGroup
+                    menu.addItem(groupSubmenuItem)
+                    menu.setSubmenu(groupSubmenu, for: groupSubmenuItem)
+                    if mgr.getActiveProfileId() == profile.uuid {
+                        item.state = 1
+                        groupSubmenuItem.state = 1
+                    }
+                    groupSubmenuItem.submenu?.addItem(item)
+                    continue
+                }
+                else{
+                    if mgr.getActiveProfileId() == profile.uuid {
+                        item.state = 1
+                        menu.item(withTitle: profile.ssrGroup)?.state = 1
+                    }
+                    menu.item(withTitle: profile.ssrGroup)?.submenu?.addItem(item)
+                    continue
+                }
+            }
+            menu.addItem(item)
         }
 
-        // End separator is redundant if profile section is empty
-        serverProfilesEndSeparatorMenuItem.isHidden = profiles.isEmpty
     }
     
     func handleURLEvent(_ event: NSAppleEventDescriptor, withReplyEvent replyEvent: NSAppleEventDescriptor) {

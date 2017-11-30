@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="12121" systemVersion="16G29" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="13529" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="12121"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="13529"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="NSApplication">
@@ -18,14 +18,14 @@
                 <outlet property="copyHttpProxyExportCmdLineMenuItem" destination="lg6-To-GZA" id="VTb-he-dg4"/>
                 <outlet property="globalModeMenuItem" destination="Mw3-Jm-eXA" id="ar5-Yx-3ze"/>
                 <outlet property="manualModeMenuItem" destination="8PR-gs-c5N" id="9qz-mU-5kt"/>
+                <outlet property="pingServerMenuItem" destination="Qe6-bF-paT" id="oo2-WR-cqU"/>
                 <outlet property="runningStatusMenuItem" destination="fzk-mE-CEV" id="Vwm-Rg-Ykn"/>
-                <outlet property="scanQRCodeMenuItem" destination="Qe6-bF-paT" id="XHa-pa-nCa"/>
                 <outlet property="serverProfilesBeginSeparatorMenuItem" destination="4iN-w2-but" id="Jyu-48-AzD"/>
-                <outlet property="serverProfilesEndSeparatorMenuItem" destination="3cf-dF-7dx" id="eyc-6W-nWV"/>
                 <outlet property="serversMenuItem" destination="u5M-hQ-VSc" id="8gp-SY-Y4U"/>
                 <outlet property="showQRCodeMenuItem" destination="R6A-96-Zcb" id="XHz-pz-nCz"/>
                 <outlet property="statusMenu" destination="Hob-KD-bx9" id="clA-ZW-0pT"/>
                 <outlet property="toggleRunningMenuItem" destination="GSu-Tf-StS" id="XHw-pU-nCa"/>
+                <outlet property="updateSubscribeAtLaunchMenuItem" destination="5oa-Kd-H8H" id="QNk-2x-6E8"/>
             </connections>
         </customObject>
         <customObject id="YLy-65-1bz" customClass="NSFontManager"/>
@@ -70,8 +70,26 @@
                                     <action selector="editServerPreferences:" target="Voe-Tx-rLC" id="6Lv-6i-Neb"/>
                                 </connections>
                             </menuItem>
-                            <menuItem isSeparatorItem="YES" id="4iN-w2-but"/>
-                            <menuItem isSeparatorItem="YES" id="3cf-dF-7dx"/>
+                            <menuItem isSeparatorItem="YES" id="74e-7k-zdC"/>
+                            <menuItem title="Edit Subscribe Feed" id="5yB-UA-sFo">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="editSubscribeFeed:" target="Voe-Tx-rLC" id="AoN-6Y-Pdh"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Manual Update Subscribe" id="29j-24-B0P">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="updateSubscribe:" target="Voe-Tx-rLC" id="V1d-T7-ATa"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Update Subscribe on App Start" id="5oa-Kd-H8H">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="updateSubscribeAtLaunch:" target="Voe-Tx-rLC" id="rx8-va-qIW"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" id="gf6-5h-9nq"/>
                             <menuItem title="Show Bunch Json Example File..." id="pdy-JE-50Q">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
@@ -90,13 +108,20 @@
                                     <action selector="exportAllServerProfileWithSender:" target="Voe-Tx-rLC" id="0ip-dJ-juc"/>
                                 </connections>
                             </menuItem>
+                            <menuItem isSeparatorItem="YES" id="4iN-w2-but"/>
                         </items>
                     </menu>
                 </menuItem>
-                <menuItem title="Scan QR Code From Screen ..." id="Qe6-bF-paT">
+                <menuItem title="Ping Server" id="Qe6-bF-paT">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
-                        <action selector="scanQRCodeFromScreen:" target="Voe-Tx-rLC" id="zQZ-IT-H4a"/>
+                        <action selector="doPingTestWithSender:" target="Voe-Tx-rLC" id="2dF-6k-hI0"/>
+                    </connections>
+                </menuItem>
+                <menuItem title="Scan QR Code From Screen ..." id="qHH-c1-6Tb">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <connections>
+                        <action selector="scanQRCodeFromScreen:" target="Voe-Tx-rLC" id="BYl-ZY-Qo6"/>
                     </connections>
                 </menuItem>
                 <menuItem title="Show QR Code For Current Server..." id="R6A-96-Zcb">

@@ -20,6 +20,10 @@ class ServerProfile: NSObject, NSCopying {
     var remark:String = ""
     var ota: Bool = false // onetime authentication
     
+    var ssrGroup: String = ""
+    
+    var latency:String?
+    
     var enabledKcptun: Bool = false
     var kcptunProfile = KcptunProfile()
     
@@ -148,6 +152,9 @@ class ServerProfile: NSObject, NSCopying {
             if let kcptunData = data["KcptunProfile"] {
                 profile.kcptunProfile =  KcptunProfile.fromDictionary(kcptunData as! [String:Any?])
             }
+            if let ssrGroup = data["ssrGroup"]{
+                profile.ssrGroup = ssrGroup as! String
+            }
         }
 
         if let id = data["Id"] as? String {
@@ -172,6 +179,7 @@ class ServerProfile: NSObject, NSCopying {
         d["OTA"] = ota as AnyObject?
         d["EnabledKcptun"] = NSNumber(value: enabledKcptun)
         d["KcptunProfile"] = kcptunProfile.toDictionary() as AnyObject
+        d["ssrGroup"] = ssrGroup as AnyObject?
         return d
     }
 
