@@ -1,6 +1,0 @@
-framework module XYPingUtil {
-  umbrella header "XYPingUtil-umbrella.h"
-
-  export *
-  module * { export * }
-}
