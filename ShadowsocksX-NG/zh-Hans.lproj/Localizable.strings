@@ -65,3 +65,5 @@
  */
 
 "Export Command Copied." = "Export 命令已复制至剪贴板";
+
+"Timeout" = "超时";

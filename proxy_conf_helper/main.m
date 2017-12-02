@@ -25,7 +25,7 @@ int main(int argc, const char * argv[])
     NSString* privoxyPortString;
     
     BRLOptionParser *options = [BRLOptionParser new];
-    [options setBanner:@"Usage: %s [-v] [-m auto|global|off] [-u <url>] [-p <port>] [-r <port>]", argv[0]];
+    [options setBanner:@"Usage: %s [-v] [-m auto|global|off] [-u <url>] [-p <port>] [-r <port>] [-x <exception>]", argv[0]];
     
     // Version
     [options addOption:"version" flag:'v' description:@"Print the version number." block:^{
@@ -51,6 +51,11 @@ int main(int argc, const char * argv[])
     NSMutableSet* networkServiceKeys = [NSMutableSet set];
     [options addOption:"network-service" flag:'n' description:@"Manual specify the network profile need to set proxy." blockWithArgument:^(NSString* value){
         [networkServiceKeys addObject:value];
+    }];
+
+    NSMutableSet* proxyExceptions = [NSMutableSet set];
+    [options addOption:"proxy-exception" flag:'x' description:@"Bypass proxy settings for this Host / Domain" blockWithArgument:^(NSString *value) {
+        [proxyExceptions addObject:value];
     }];
     
     NSError *error = nil;
@@ -158,7 +163,7 @@ int main(int argc, const char * argv[])
                      kCFNetworkProxiesSOCKSPort];
                     [proxies setObject:[NSNumber numberWithInt:1] forKey:(NSString*)
                      kCFNetworkProxiesSOCKSEnable];
-                    [proxies setObject:@[@"127.0.0.1", @"localhost", @"192.168.0.0/16", @"10.0.0.0/8"] forKey:(NSString *)kCFNetworkProxiesExceptionsList];
+                    [proxies setObject:[proxyExceptions allObjects] forKey:(NSString *)kCFNetworkProxiesExceptionsList];
                     
                     if (privoxyPort != 0) {
                         [proxies setObject:@"127.0.0.1" forKey:(NSString *)

@@ -9,6 +9,6 @@
 #ifndef proxy_conf_helper_version_h
 #define proxy_conf_helper_version_h
 
-#define kProxyConfHelperVersion @"1.6.0"
+#define kProxyConfHelperVersion @"1.7.0"
 
 #endif /* proxy_conf_helper_version_h */

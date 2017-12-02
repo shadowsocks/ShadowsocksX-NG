@@ -74,6 +74,9 @@
 /* Class = "NSButtonCell"; title = "Auto Configure"; ObjectID = "bu3-s5-bYM"; */
 "bu3-s5-bYM.title" = "自动配置";
 
+/* Class = "NSTextFieldCell"; title = "Bypass proxy settings for these Hosts & Domains:"; ObjectID = "v4F-L4-s8U"; */
+"v4F-L4-s8U.title" = "忽略这些主机与域的代理设置：";
+
 /* Class = "NSButtonCell"; title = "Enable Verbose Mode"; ObjectID = "cIS-Wb-Rzg"; */
 "cIS-Wb-Rzg.title" = "Enable Verbose Mode";
 

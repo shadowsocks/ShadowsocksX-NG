@@ -36,10 +36,10 @@ class ToastWindowController: NSWindowController {
         if let win = self.window {
             win.isOpaque = false
             win.backgroundColor = .clear
-            win.styleMask = .borderless
+            win.styleMask = NSWindow.StyleMask.borderless
             win.hidesOnDeactivate = false
-            win.collectionBehavior = .canJoinAllSpaces
-            win.level = Int(CGWindowLevelForKey(.floatingWindow))
+            win.collectionBehavior = NSWindow.CollectionBehavior.canJoinAllSpaces
+            win.level = NSWindow.Level(rawValue: Int(CGWindowLevelForKey(.floatingWindow)))
             win.orderFrontRegardless()
         }
 
@@ -63,7 +63,7 @@ class ToastWindowController: NSWindowController {
         hudWindowFrame.size.width = labelFrame.size.width + kHudHorizontalMargin * 2
         hudWindowFrame.size.height = kHudHeight
 
-        let screenRect: NSRect = NSScreen.screens()![0].visibleFrame
+        let screenRect: NSRect = NSScreen.screens[0].visibleFrame
         hudWindowFrame.origin.x = (screenRect.size.width - hudWindowFrame.size.width) / 2
         hudWindowFrame.origin.y = (screenRect.size.height - hudWindowFrame.size.height) / 2
         self.window!.setFrame(hudWindowFrame, display: true)
@@ -102,7 +102,7 @@ class ToastWindowController: NSWindowController {
             repeats: false)
     }
 
-    func fadeOutHud() -> Void {
+    @objc func fadeOutHud() -> Void {
         fadingOut = true
 
         CATransaction.begin()
