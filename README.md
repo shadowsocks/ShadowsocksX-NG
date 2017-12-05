@@ -1,6 +1,6 @@
 # ShadowsocksX-NG
 
-Current version is 1.6.1
+Current version is 1.7.0
 
 [![Build Status](https://travis-ci.org/shadowsocks/ShadowsocksX-NG.svg?branch=develop)](https://travis-ci.org/shadowsocks/ShadowsocksX-NG)
 
@@ -24,7 +24,7 @@ Then I will rewrite the GUI code in Swift.
 
 ### Building
 
-- Xcode 9.0.1+
+- Xcode 9.1+
 - CocoaPods 1.2+
 
 ## Download
