@@ -55,6 +55,7 @@ func generateSSLocalLauchAgentPlist() -> Bool {
     if enableVerboseMode {
         arguments.append("-v")
     }
+    arguments.append("--reuse-port")
     
     // For a complete listing of the keys, see the launchd.plist manual page.
     let dict: NSMutableDictionary = [
