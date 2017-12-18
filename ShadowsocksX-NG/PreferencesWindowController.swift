@@ -31,6 +31,7 @@ class PreferencesWindowController: NSWindowController
     @IBOutlet weak var remarkTextField: NSTextField!
     
     @IBOutlet weak var otaCheckBoxBtn: NSButton!
+    @IBOutlet weak var pingCheckBoxBtn: NSButton!
     
     @IBOutlet weak var kcptunCheckBoxBtn: NSButton!
     @IBOutlet weak var kcptunCryptComboBox: NSComboBox!
@@ -272,6 +273,9 @@ class PreferencesWindowController: NSWindowController
             otaCheckBoxBtn.bind(NSBindingName(rawValue: "value"), to: editingProfile, withKeyPath: "ota"
                 , options: [NSBindingOption.continuouslyUpdatesValue: true])
             
+            pingCheckBoxBtn.bind(NSBindingName(rawValue: "value"), to: editingProfile, withKeyPath: "enabledPing"
+                , options: [NSBindingOption.continuouslyUpdatesValue: true])
+            
             // --------------------------------------------------
             // Kcptun
             kcptunCheckBoxBtn.bind(NSBindingName(rawValue: "value"), to: editingProfile, withKeyPath: "enabledKcptun"
@@ -316,6 +320,7 @@ class PreferencesWindowController: NSWindowController
             remarkTextField.unbind(NSBindingName(rawValue: "value"))
             
             otaCheckBoxBtn.unbind(NSBindingName(rawValue: "value"))
+            pingCheckBoxBtn.unbind(NSBindingName(rawValue: "value"))
             
             kcptunCheckBoxBtn.unbind(NSBindingName(rawValue: "value"))
         }

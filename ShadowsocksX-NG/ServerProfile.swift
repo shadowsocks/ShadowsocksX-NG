@@ -20,6 +20,7 @@ class ServerProfile: NSObject, NSCopying {
     @objc var password:String = ""
     @objc var remark:String = ""
     @objc var ota: Bool = false // onetime authentication
+    @objc var enabledPing: Bool = false
     
     @objc var enabledKcptun: Bool = false
     @objc var kcptunProfile = KcptunProfile()
@@ -106,6 +107,11 @@ class ServerProfile: NSObject, NSCopying {
             .filter({ $0.name == "OTA" }).first?.value {
             ota = NSString(string: otaStr).boolValue
         }
+        if let enabledPingStr = parsedUrl.queryItems?
+            .filter({ $0.name == "Ping" }).first?.value {
+            enabledPing = NSString(string: enabledPingStr).boolValue
+        }
+        
         if let enabledKcptunStr = parsedUrl.queryItems?
             .filter({ $0.name == "Kcptun" }).first?.value {
             enabledKcptun = NSString(string: enabledKcptunStr).boolValue
@@ -127,6 +133,7 @@ class ServerProfile: NSObject, NSCopying {
         copy.remark = self.remark
         copy.ota = self.ota
         
+        copy.enabledPing = self.enabledPing
         copy.enabledKcptun = self.enabledKcptun
         copy.kcptunProfile = self.kcptunProfile.copy() as! KcptunProfile
         copy.ping = self.ping
@@ -145,6 +152,9 @@ class ServerProfile: NSObject, NSCopying {
             }
             if let ota = data["OTA"] {
                 profile.ota = ota as! Bool
+            }
+            if let enabledPing = data["EnabledPing"] {
+                profile.enabledPing = enabledPing as! Bool
             }
             if let enabledKcptun = data["EnabledKcptun"] {
                 profile.enabledKcptun = enabledKcptun as! Bool
@@ -177,6 +187,7 @@ class ServerProfile: NSObject, NSCopying {
         d["Password"] = password as AnyObject?
         d["Remark"] = remark as AnyObject?
         d["OTA"] = ota as AnyObject?
+        d["EnabledPing"] = NSNumber(value: enabledPing)
         d["EnabledKcptun"] = NSNumber(value: enabledKcptun)
         d["KcptunProfile"] = kcptunProfile.toDictionary() as AnyObject
         d["Ping"] = NSNumber(value: ping)
@@ -323,22 +334,32 @@ class ServerProfile: NSObject, NSCopying {
     }
     
     func title() -> String {
-        var ping = self.ping == 0 ? "" : "(\(self.ping)ms)"
-        if self.ping == -1 {
-            ping = "(\("Timeout".localized))"
-        }
-        if remark.isEmpty {
-            return "\(serverHost):\(serverPort)\(ping)"
-        } else {
-            return "\(remark) (\(serverHost):\(serverPort))\(ping)"
+        if self.enabledPing {
+            var ping = self.ping == 0 ? "" : "(\(self.ping)ms)"
+            if self.ping == -1 {
+                ping = "(\("Timeout".localized))"
+            }
+            if remark.isEmpty {
+                return "\(serverHost):\(serverPort)\(ping)"
+            } else {
+                return "\(remark) (\(serverHost):\(serverPort))\(ping)"
+            }
+        }else{
+            if remark.isEmpty {
+                return "\(serverHost):\(serverPort)"
+            } else {
+                return "\(remark) (\(serverHost):\(serverPort))"
+            }
         }
     }
     
     func refreshPing() {
-        PingUtil.pingHost(serverHost, success: { (ping) in
-            self.ping = ping
-        }, failure: {
-            NSLog("Ping %@ fail", self.serverHost)
-        })
+        if self.enabledPing {
+            PingUtil.pingHost(serverHost, success: { (ping) in
+                self.ping = ping
+            }, failure: {
+                NSLog("Ping %@ fail", self.serverHost)
+            })
+        }
     }
 }
