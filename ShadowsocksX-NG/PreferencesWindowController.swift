@@ -160,7 +160,6 @@ class PreferencesWindowController: NSWindowController
             }
         }
         profileMgr.save()
-        ServerProfileManager.instance.refreshPing()
         window?.performClose(nil)
 
         

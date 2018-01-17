@@ -7,7 +7,6 @@
 //
 
 import Cocoa
-import XYPingUtil
 
 
 class ServerProfile: NSObject, NSCopying {
@@ -23,8 +22,6 @@ class ServerProfile: NSObject, NSCopying {
     
     @objc var enabledKcptun: Bool = false
     @objc var kcptunProfile = KcptunProfile()
-    
-    @objc var ping:Int = 0
     
     override init() {
         uuid = UUID().uuidString
@@ -129,7 +126,6 @@ class ServerProfile: NSObject, NSCopying {
         
         copy.enabledKcptun = self.enabledKcptun
         copy.kcptunProfile = self.kcptunProfile.copy() as! KcptunProfile
-        copy.ping = self.ping
         return copy;
     }
     
@@ -151,9 +147,6 @@ class ServerProfile: NSObject, NSCopying {
             }
             if let kcptunData = data["KcptunProfile"] {
                 profile.kcptunProfile =  KcptunProfile.fromDictionary(kcptunData as! [String:Any?])
-            }
-            if let ping = data["Ping"] as? NSNumber {
-                profile.ping = ping.intValue
             }
         }
 
@@ -179,7 +172,6 @@ class ServerProfile: NSObject, NSCopying {
         d["OTA"] = ota as AnyObject?
         d["EnabledKcptun"] = NSNumber(value: enabledKcptun)
         d["KcptunProfile"] = kcptunProfile.toDictionary() as AnyObject
-        d["Ping"] = NSNumber(value: ping)
         return d
     }
 
@@ -323,22 +315,11 @@ class ServerProfile: NSObject, NSCopying {
     }
     
     func title() -> String {
-        var ping = self.ping == 0 ? "" : "(\(self.ping)ms)"
-        if self.ping == -1 {
-            ping = "(\("Timeout".localized))"
-        }
         if remark.isEmpty {
-            return "\(serverHost):\(serverPort)\(ping)"
+            return "\(serverHost):\(serverPort)"
         } else {
-            return "\(remark) (\(serverHost):\(serverPort))\(ping)"
+            return "\(remark) (\(serverHost):\(serverPort))"
         }
     }
     
-    func refreshPing() {
-        PingUtil.pingHost(serverHost, success: { (ping) in
-            self.ping = ping
-        }, failure: {
-            NSLog("Ping %@ fail", self.serverHost)
-        })
-    }
 }

@@ -24,8 +24,8 @@ Then I will rewrite the GUI code in Swift.
 
 ### Building
 
-- Xcode 9.1+
-- CocoaPods 1.2+
+- Xcode 9.2+
+- CocoaPods 1.3.1+
 
 ## Download
 

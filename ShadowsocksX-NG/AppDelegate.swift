@@ -110,7 +110,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         image.isTemplate = true
         statusItem.image = image
         statusItem.menu = statusMenu
-        ServerProfileManager.instance.refreshPing()
         
         let notifyCenter = NotificationCenter.default
         
@@ -556,7 +555,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             
             if isChanged {
                 mgr.save()
-                ServerProfileManager.instance.refreshPing()
                 self.updateServersMenu()
             } else {
                 sendNotify("Not found valid qrcode of shadowsocks profile.", "", "")

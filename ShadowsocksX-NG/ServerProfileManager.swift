@@ -58,12 +58,6 @@ class ServerProfileManager: NSObject {
         }
     }
     
-    func refreshPing() {
-        for profile in profiles {
-            profile.refreshPing()
-        }
-    }
-    
     func getActiveProfile() -> ServerProfile? {
         if let id = activeProfileId {
             for p in profiles {
@@ -112,7 +106,6 @@ class ServerProfileManager: NSObject {
                     
                     self.profiles.append(profile)
                     self.save()
-                    self.refreshPing()
                 }
                 NotificationCenter.default.post(name: NOTIFY_SERVER_PROFILES_CHANGED, object: nil)
                 let configsCount = (jsonArr1.object(forKey: "configs") as! [[String: AnyObject]]).count
