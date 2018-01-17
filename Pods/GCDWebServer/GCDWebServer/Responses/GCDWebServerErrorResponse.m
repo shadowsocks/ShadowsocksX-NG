@@ -31,10 +31,6 @@
 
 #import "GCDWebServerPrivate.h"
 
-@interface GCDWebServerErrorResponse ()
-- (instancetype)initWithStatusCode:(NSInteger)statusCode underlyingError:(NSError*)underlyingError messageFormat:(NSString*)format arguments:(va_list)arguments;
-@end
-
 @implementation GCDWebServerErrorResponse
 
 + (instancetype)responseWithClientError:(GCDWebServerClientErrorHTTPStatusCode)errorCode message:(NSString*)format, ... {

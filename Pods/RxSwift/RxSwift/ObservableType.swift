@@ -29,7 +29,7 @@ public protocol ObservableType : ObservableConvertibleType {
     When sequence sends `Complete` or `Error` event all internal resources that compute sequence elements
     will be freed.
     
-    To cancel production of sequence elements and free resources immediatelly, call `dispose` on returned
+    To cancel production of sequence elements and free resources immediately, call `dispose` on returned
     subscription.
     
     - returns: Subscription for `observer` that can be used to cancel production of sequence elements and free resources.

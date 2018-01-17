@@ -17,7 +17,7 @@ extension Observable {
      */
     @available(*, deprecated, message: "Implicit conversions from any type to optional type are allowed and that is causing issues with `from` operator overloading.", renamed: "from(optional:)")
     public static func from(_ optional: E?) -> Observable<E> {
-        return ObservableOptional(optional: optional)
+        return Observable.from(optional: optional)
     }
 
     /**
@@ -31,7 +31,7 @@ extension Observable {
      */
     @available(*, deprecated, message: "Implicit conversions from any type to optional type are allowed and that is causing issues with `from` operator overloading.", renamed: "from(optional:scheduler:)")
     public static func from(_ optional: E?, scheduler: ImmediateSchedulerType) -> Observable<E> {
-        return ObservableOptionalScheduled(optional: optional, scheduler: scheduler)
+        return Observable.from(optional: optional, scheduler: scheduler)
     }
 }
 

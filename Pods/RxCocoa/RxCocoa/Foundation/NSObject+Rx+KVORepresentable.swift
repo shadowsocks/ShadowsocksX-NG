@@ -8,7 +8,7 @@
 
 #if !os(Linux)
 
-import Foundation
+import Foundation.NSObject
 #if !RX_NO_MODULE
     import RxSwift
 #endif

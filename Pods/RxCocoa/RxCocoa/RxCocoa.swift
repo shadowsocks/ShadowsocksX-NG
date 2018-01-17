@@ -49,7 +49,7 @@ extension RxCocoaError {
         case let .itemsNotYetBound(object):
             return "Data source is set, but items are not yet bound to user interface for `\(object)`."
         case let .invalidPropertyName(object, propertyName):
-            return "Object `\(object)` dosn't have a property named `\(propertyName)`."
+            return "Object `\(object)` doesn't have a property named `\(propertyName)`."
         case let .invalidObjectOnKeyPath(object, sourceObject, propertyName):
             return "Unobservable object `\(object)` was observed as `\(propertyName)` of `\(sourceObject)`."
         case .errorDuringSwizzling:

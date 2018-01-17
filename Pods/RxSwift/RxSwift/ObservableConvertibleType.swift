@@ -6,7 +6,7 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-/// Type that can be converted to observable sequence (`Observer<E>`).
+/// Type that can be converted to observable sequence (`Observable<E>`).
 public protocol ObservableConvertibleType {
     /// Type of elements in sequence.
     associatedtype E

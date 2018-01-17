@@ -31,28 +31,21 @@
 
 #import "GCDWebServerPrivate.h"
 
-@interface GCDWebServerDataResponse () {
-@private
+@implementation GCDWebServerDataResponse {
   NSData* _data;
   BOOL _done;
 }
-@end
 
-@implementation GCDWebServerDataResponse
+@dynamic contentType;
 
 + (instancetype)responseWithData:(NSData*)data contentType:(NSString*)type {
   return [[[self class] alloc] initWithData:data contentType:type];
 }
 
 - (instancetype)initWithData:(NSData*)data contentType:(NSString*)type {
-  if (data == nil) {
-    GWS_DNOT_REACHED();
-    return nil;
-  }
-  
   if ((self = [super init])) {
     _data = data;
-    
+
     self.contentType = type;
     self.contentLength = data.length;
   }
@@ -124,8 +117,7 @@
   [variables enumerateKeysAndObjectsUsingBlock:^(NSString* key, NSString* value, BOOL* stop) {
     [html replaceOccurrencesOfString:[NSString stringWithFormat:@"%%%@%%", key] withString:value options:0 range:NSMakeRange(0, html.length)];
   }];
-  id response = [self initWithHTML:html];
-  return response;
+  return [self initWithHTML:html];
 }
 
 - (instancetype)initWithJSONObject:(id)object {
@@ -135,6 +127,7 @@
 - (instancetype)initWithJSONObject:(id)object contentType:(NSString*)type {
   NSData* data = [NSJSONSerialization dataWithJSONObject:object options:0 error:NULL];
   if (data == nil) {
+    GWS_DNOT_REACHED();
     return nil;
   }
   return [self initWithData:data contentType:type];

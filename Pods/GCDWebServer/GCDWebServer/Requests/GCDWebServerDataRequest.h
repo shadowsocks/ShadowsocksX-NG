@@ -27,6 +27,8 @@
 
 #import "GCDWebServerRequest.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 /**
  *  The GCDWebServerDataRequest subclass of GCDWebServerRequest stores the body
  *  of the HTTP request in memory.
@@ -49,12 +51,14 @@
  *  The text encoding used to interpret the data is extracted from the
  *  "Content-Type" header or defaults to UTF-8.
  */
-@property(nonatomic, readonly) NSString* text;
+@property(nonatomic, readonly, nullable) NSString* text;
 
 /**
  *  Returns the data for the request body interpreted as a JSON object. If the
  *  content type of the body is not JSON, or if an error occurs, nil is returned.
  */
-@property(nonatomic, readonly) id jsonObject;
+@property(nonatomic, readonly, nullable) id jsonObject;
 
 @end
+
+NS_ASSUME_NONNULL_END

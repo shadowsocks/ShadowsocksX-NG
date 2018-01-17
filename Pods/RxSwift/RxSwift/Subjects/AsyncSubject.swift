@@ -38,6 +38,11 @@ public final class AsyncSubject<Element>
     }
     private var _lastElement: Element?
 
+    #if DEBUG
+        fileprivate let _synchronizationTracker = SynchronizationTracker()
+    #endif
+
+
     /// Creates a subject.
     public override init() {
         #if TRACE_RESOURCES
@@ -50,6 +55,10 @@ public final class AsyncSubject<Element>
     ///
     /// - parameter event: Event to send to the observers.
     public func on(_ event: Event<E>) {
+        #if DEBUG
+            _synchronizationTracker.register(synchronizationErrorMessage: .default)
+            defer { _synchronizationTracker.unregister() }
+        #endif
         let (observers, event) = _synchronized_on(event)
         switch event {
         case .next:

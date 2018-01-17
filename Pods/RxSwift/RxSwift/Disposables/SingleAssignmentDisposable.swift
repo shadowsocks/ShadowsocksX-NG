@@ -11,7 +11,7 @@ Represents a disposable resource which only allows a single assignment of its un
 
 If an underlying disposable resource has already been set, future attempts to set the underlying disposable resource will throw an exception.
 */
-public final class SingleAssignmentDisposable : DisposeBase, Disposable, Cancelable {
+public final class SingleAssignmentDisposable : DisposeBase, Cancelable {
 
     fileprivate enum DisposeState: UInt32 {
         case disposed = 1
