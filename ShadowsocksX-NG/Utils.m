@@ -45,7 +45,7 @@ void ScanQRCodeOnScreen() {
     NSMutableArray* foundSSUrls = [NSMutableArray array];
     
     CIDetector *detector = [CIDetector detectorOfType:@"CIDetectorTypeQRCode"
-                                              context:nil
+                                              context:[CIContext contextWithOptions:@{kCIContextUseSoftwareRenderer: @true}]
                                               options:@{ CIDetectorAccuracy:CIDetectorAccuracyHigh }];
     
     for (unsigned int displaysIndex = 0; displaysIndex < dspCount; displaysIndex++)
@@ -66,7 +66,7 @@ void ScanQRCodeOnScreen() {
     }
     
     free(displays);
-    
+    // TODO if not find any urls push a notification tells there is no QR on the screen
     [[NSNotificationCenter defaultCenter]
      postNotificationName:@"NOTIFY_FOUND_SS_URL"
      object:nil
