@@ -1,6 +1,6 @@
 # ShadowsocksX-NG
 
-Current version is 1.7.0
+Current version is 1.7.1
 
 [![Build Status](https://travis-ci.org/shadowsocks/ShadowsocksX-NG.svg?branch=develop)](https://travis-ci.org/shadowsocks/ShadowsocksX-NG)
 
