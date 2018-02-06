@@ -116,7 +116,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         
         _ = notifyCenter.rx.notification(NOTIFY_CONF_CHANGED)
             .subscribe(onNext: { noti in
-                SyncSSLocal()
                 self.applyConfig()
                 self.updateCopyHttpProxyExportMenu()
             })

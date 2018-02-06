@@ -70,8 +70,10 @@ func generateSSLocalLauchAgentPlist() -> Bool {
     dict.write(toFile: plistFilepath, atomically: true)
     let Sha1Sum = getFileSHA1Sum(plistFilepath)
     if oldSha1Sum != Sha1Sum {
+        NSLog("generateSSLocalLauchAgentPlist - File has been changed.")
         return true
     } else {
+        NSLog("generateSSLocalLauchAgentPlist - File has not been changed.")
         return false
     }
 }
@@ -125,12 +127,14 @@ func writeSSLocalConfFile(_ conf:[String:AnyObject]) -> Bool {
         
         let oldSum = getFileSHA1Sum(filepath)
         try data.write(to: URL(fileURLWithPath: filepath), options: .atomic)
-        let newSum = getFileSHA1Sum(filepath)
+        let newSum = data.sha1()
         
         if oldSum == newSum {
+            NSLog("writeSSLocalConfFile - File has not been changed.")
             return false
         }
         
+        NSLog("writeSSLocalConfFile - File has been changed.")
         return true
     } catch {
         NSLog("Write ss-local file failed.")

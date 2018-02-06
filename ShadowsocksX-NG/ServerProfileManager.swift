@@ -48,14 +48,6 @@ class ServerProfileManager: NSObject {
         if getActiveProfile() == nil {
             activeProfileId = nil
         }
-        
-        if activeProfileId != nil {
-            defaults.set(activeProfileId, forKey: "ActiveServerProfileId")
-            _ = writeSSLocalConfFile((getActiveProfile()?.toJsonConfig())!)
-        } else {
-            defaults.removeObject(forKey: "ActiveServerProfileId")
-            removeSSLocalConfFile()
-        }
     }
     
     func getActiveProfile() -> ServerProfile? {
