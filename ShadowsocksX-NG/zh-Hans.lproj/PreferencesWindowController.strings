@@ -37,3 +37,9 @@
 
 /* Class = "NSMenuItem"; title = "Clone"; ObjectID = "bl9-lq-u9V"; */
 "bl9-lq-u9V.title" = "克隆";
+
+/* Class = "NSTextFieldCell"; title = "Plugin:"; ObjectID = "gDt-yZ-Mqs"; */
+"gDt-yZ-Mqs.title" = "插件:";
+
+/* Class = "NSTextFieldCell"; title = "Plugin Opts:"; ObjectID = "orT-7j-dxE"; */
+"orT-7j-dxE.title" = "插件选项:";

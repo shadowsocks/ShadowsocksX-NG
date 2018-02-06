@@ -23,6 +23,10 @@ class ServerProfile: NSObject, NSCopying {
     @objc var enabledKcptun: Bool = false
     @objc var kcptunProfile = KcptunProfile()
     
+    // SIP003 Plugin
+    @objc var plugin: String = ""  // empty string disables plugin
+    @objc var pluginOptions: String = ""
+    
     override init() {
         uuid = UUID().uuidString
     }
@@ -113,6 +117,15 @@ class ServerProfile: NSObject, NSCopying {
                 self.kcptunProfile.loadUrlQueryItems(items: items)
             }
         }
+
+        if let pluginStr = parsedUrl.queryItems?
+            .filter({ $0.name == "plugin" }).first?.value {
+            let parts = pluginStr.split(separator: ";", maxSplits: 1)
+            if parts.count == 2 {
+                plugin = String(parts[0])
+                pluginOptions = String(parts[1])
+            }
+        }
     }
     
     public func copy(with zone: NSZone? = nil) -> Any {
@@ -126,6 +139,8 @@ class ServerProfile: NSObject, NSCopying {
         
         copy.enabledKcptun = self.enabledKcptun
         copy.kcptunProfile = self.kcptunProfile.copy() as! KcptunProfile
+        copy.plugin = self.plugin
+        copy.pluginOptions = self.pluginOptions
         return copy;
     }
     
@@ -147,6 +162,12 @@ class ServerProfile: NSObject, NSCopying {
             }
             if let kcptunData = data["KcptunProfile"] {
                 profile.kcptunProfile =  KcptunProfile.fromDictionary(kcptunData as! [String:Any?])
+            }
+            if let plugin = data["Plugin"] as? String {
+                profile.plugin = plugin
+            }
+            if let pluginOptions = data["PluginOptions"] as? String {
+                profile.pluginOptions = pluginOptions
             }
         }
 
@@ -172,6 +193,8 @@ class ServerProfile: NSObject, NSCopying {
         d["OTA"] = ota as AnyObject?
         d["EnabledKcptun"] = NSNumber(value: enabledKcptun)
         d["KcptunProfile"] = kcptunProfile.toDictionary() as AnyObject
+        d["Plugin"] = plugin as AnyObject
+        d["PluginOptions"] = pluginOptions as AnyObject
         return d
     }
 
@@ -196,6 +219,13 @@ class ServerProfile: NSObject, NSCopying {
         } else {
             conf["server"] = serverHost as AnyObject
             conf["server_port"] = NSNumber(value: serverPort as UInt16)
+        }
+
+        if !plugin.isEmpty {
+            // all plugin binaries should be located in the plugins dir
+            // so that we don't have to mess up with PATH envvars
+            conf["plugin"] = "plugins/\(plugin)" as AnyObject
+            conf["plugin_opts"] = pluginOptions as AnyObject
         }
 
         return conf
@@ -297,6 +327,10 @@ class ServerProfile: NSObject, NSCopying {
         if enabledKcptun {
             items.append(URLQueryItem(name: "Kcptun", value: enabledKcptun.description))
             items.append(contentsOf: kcptunProfile.urlQueryItems())
+        }
+        if !plugin.isEmpty {
+            let value = "\(plugin);\(pluginOptions)"
+            items.append(URLQueryItem(name: "plugin", value: value))
         }
 
         var comps = URLComponents()

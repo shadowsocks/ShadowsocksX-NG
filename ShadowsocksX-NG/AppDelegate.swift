@@ -82,6 +82,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         InstallSSLocal()
         InstallKcptunClient()
         InstallPrivoxy()
+        InstallSimpleObfs()
         // Prepare defaults
         let defaults = UserDefaults.standard
         defaults.register(defaults: [
