@@ -38,6 +38,9 @@
 /* Class = "NSMenuItem"; title = "从 GFW List 更新PAC"; ObjectID = "TFc-Ec-duM"; */
 "TFc-Ec-duM.title" = "从 GFW List 更新PAC";
 
+/* Class = "NSMenuItem"; title = "复制 HTTP 代理命令行"; ObjectID = "lg6-To-GZA"; */
+"lg6-To-GZA.title" = "复制 HTTP 代理命令行";
+
 /* Class = "NSMenuItem"; title = "反馈"; ObjectID = "W7u-7g-Gv4"; */
 "W7u-7g-Gv4.title" = "反馈";
 
