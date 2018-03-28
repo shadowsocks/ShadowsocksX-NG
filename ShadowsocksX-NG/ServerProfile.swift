@@ -320,6 +320,7 @@ class ServerProfile: NSObject, NSCopying {
         guard let rawUserInfo = "\(method):\(password)".data(using: .utf8) else {
             return nil
         }
+        let userInfo = rawUserInfo.base64EncodedString()
 
         var items = [URLQueryItem(name: "OTA", value: ota.description)]
         if enabledKcptun {
