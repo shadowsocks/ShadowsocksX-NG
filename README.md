@@ -1,6 +1,6 @@
 # ShadowsocksX-NG
 
-Current version is 1.7.1
+Current version is 1.8.0
 
 [![Build Status](https://travis-ci.org/shadowsocks/ShadowsocksX-NG.svg?branch=develop)](https://travis-ci.org/shadowsocks/ShadowsocksX-NG)
 
@@ -24,7 +24,7 @@ Then I will rewrite the GUI code in Swift.
 
 ### Building
 
-- Xcode 9.2+
+- Xcode 9.3+
 - CocoaPods 1.3.1+
 
 ## Download
@@ -33,7 +33,7 @@ From [here](https://github.com/shadowsocks/ShadowsocksX-NG/releases/)
 
 ## Features
 
-- Uses `ss-local` from shadowsocks-libev 3.0.5
+- Uses `ss-local` from shadowsocks-libev 3.1.3
 - Could update PAC by download GFW List from GitHub.
 - Shows QRCode for current server profile.
 - Scans QRCode from screen.
