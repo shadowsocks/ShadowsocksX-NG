@@ -14,6 +14,6 @@ mkdir -p "$PluginDir"
 
 cp -f obfs-local "$TargetDir"
 
-ln -sfh "$TargetDir/obfs-local" "$PluginDir"
+ln -sfh "$TargetDir/obfs-local" "$PluginDir/simple-obfs"
 
 echo done
