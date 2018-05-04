@@ -8,7 +8,7 @@
 
 import Foundation
 
-let SS_LOCAL_VERSION = "3.0.5"
+let SS_LOCAL_VERSION = "3.1.3"
 let KCPTUN_CLIENT_VERSION = "20170322"
 let PRIVOXY_VERSION = "3.0.26.static"
 let SIMPLE_OBFS_VERSION = "0.0.2"
