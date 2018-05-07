@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		08FCA0FF1E24BE1A0070984F /* example-gui-config.json in Resources */ = {isa = PBXBuildFile; fileRef = 08FCA0FE1E24BE1A0070984F /* example-gui-config.json */; };
+		1C82DBA81FA96C7500B32551 /* obfs-local in Resources */ = {isa = PBXBuildFile; fileRef = 1C82DBA51FA96C7400B32551 /* obfs-local */; };
+		1C82DBAA1FA96FB600B32551 /* install_simple_obfs.sh in Resources */ = {isa = PBXBuildFile; fileRef = 1C82DBA91FA96F0300B32551 /* install_simple_obfs.sh */; };
 		258E511BA910B0521B24DAB8 /* Pods_ShadowsocksX_NG.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 283ED1A8E9B711AC65670031 /* Pods_ShadowsocksX_NG.framework */; };
 		9B07EFA71D048BBB0052D9DF /* ss-local in Resources */ = {isa = PBXBuildFile; fileRef = 9B07EFA61D048BBB0052D9DF /* ss-local */; };
 		9B07EFAC1D048E880052D9DF /* menu_icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B07EFA81D048E880052D9DF /* menu_icon@2x.png */; };
@@ -25,7 +27,6 @@
 		9B3546731E802B1200B510B4 /* ToastWindowController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9B3546711E802B1200B510B4 /* ToastWindowController.xib */; };
 		9B3F7BFF1E82BF5B00C68B75 /* libev.4.dylib in Resources */ = {isa = PBXBuildFile; fileRef = 9B3F7BF71E82BF2D00C68B75 /* libev.4.dylib */; };
 		9B3F7C001E82BF5B00C68B75 /* libmbedcrypto.2.4.2.dylib in Resources */ = {isa = PBXBuildFile; fileRef = 9B3F7BF81E82BF2D00C68B75 /* libmbedcrypto.2.4.2.dylib */; };
-		9B3F7C011E82BF5B00C68B75 /* libsodium.18.dylib in Resources */ = {isa = PBXBuildFile; fileRef = 9B3F7BF91E82BF2E00C68B75 /* libsodium.18.dylib */; };
 		9B3F7C021E82BF5B00C68B75 /* libudns.0.dylib in Resources */ = {isa = PBXBuildFile; fileRef = 9B3F7BFA1E82BF2E00C68B75 /* libudns.0.dylib */; };
 		9B3FFF0D1D05FEB30019A709 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B3FFF0C1D05FEB30019A709 /* Utils.swift */; };
 		9B3FFF141D0705810019A709 /* Notifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B3FFF131D0705810019A709 /* Notifications.swift */; };
@@ -48,6 +49,9 @@
 		9B5832071E7421B2009D5B7D /* virtual-server-icon-3.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B5832061E7421B2009D5B7D /* virtual-server-icon-3.png */; };
 		9B58320B1E7422DB009D5B7D /* http.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B58320A1E7422DB009D5B7D /* http.png */; };
 		9B5832111E742632009D5B7D /* kcptun_1.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B5832101E742632009D5B7D /* kcptun_1.png */; };
+		9B5AA0A1209C100C00E8B659 /* libsodium.23.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B5AA09F209C100C00E8B659 /* libsodium.23.dylib */; };
+		9B5AA0A3209C103900E8B659 /* libcares.2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B5AA0A2209C103900E8B659 /* libcares.2.dylib */; };
+		9B5AA0A5209C115B00E8B659 /* libmbedcrypto.2.8.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B5AA0A4209C115B00E8B659 /* libmbedcrypto.2.8.0.dylib */; };
 		9B6BF9541E27B2570061B9A7 /* ServiceManagement.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B6BF9531E27B2570061B9A7 /* ServiceManagement.framework */; };
 		9B86459D1E7C2CAD00A84029 /* ProxyInterfacesViewCtrl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B86459C1E7C2CAD00A84029 /* ProxyInterfacesViewCtrl.swift */; };
 		9B938D991E864B38005F5636 /* menu_g_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B938D931E864B38005F5636 /* menu_g_icon.png */; };
@@ -136,6 +140,8 @@
 /* Begin PBXFileReference section */
 		08FCA0FE1E24BE1A0070984F /* example-gui-config.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "example-gui-config.json"; sourceTree = "<group>"; };
 		19083CFCED87354F006967FF /* Pods_ShadowsocksX_NGUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ShadowsocksX_NGUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		1C82DBA51FA96C7400B32551 /* obfs-local */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = "obfs-local"; sourceTree = "<group>"; };
+		1C82DBA91FA96F0300B32551 /* install_simple_obfs.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = install_simple_obfs.sh; sourceTree = "<group>"; };
 		1E7783AEDB4A3BDDC9FF16AC /* libPods-proxy_conf_helper.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-proxy_conf_helper.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		283ED1A8E9B711AC65670031 /* Pods_ShadowsocksX_NG.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ShadowsocksX_NG.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		297AF069022A197FD8E9D226 /* Pods-proxy_conf_helper.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-proxy_conf_helper.release.xcconfig"; path = "Pods/Target Support Files/Pods-proxy_conf_helper/Pods-proxy_conf_helper.release.xcconfig"; sourceTree = "<group>"; };
@@ -167,7 +173,6 @@
 		9B3546711E802B1200B510B4 /* ToastWindowController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ToastWindowController.xib; sourceTree = "<group>"; };
 		9B3F7BF71E82BF2D00C68B75 /* libev.4.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libev.4.dylib; sourceTree = "<group>"; };
 		9B3F7BF81E82BF2D00C68B75 /* libmbedcrypto.2.4.2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libmbedcrypto.2.4.2.dylib; sourceTree = "<group>"; };
-		9B3F7BF91E82BF2E00C68B75 /* libsodium.18.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libsodium.18.dylib; sourceTree = "<group>"; };
 		9B3F7BFA1E82BF2E00C68B75 /* libudns.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libudns.0.dylib; sourceTree = "<group>"; };
 		9B3FFF0C1D05FEB30019A709 /* Utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		9B3FFF131D0705810019A709 /* Notifications.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Notifications.swift; sourceTree = "<group>"; };
@@ -199,6 +204,9 @@
 		9B5832061E7421B2009D5B7D /* virtual-server-icon-3.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "virtual-server-icon-3.png"; sourceTree = "<group>"; };
 		9B58320A1E7422DB009D5B7D /* http.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = http.png; sourceTree = "<group>"; };
 		9B5832101E742632009D5B7D /* kcptun_1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = kcptun_1.png; sourceTree = "<group>"; };
+		9B5AA09F209C100C00E8B659 /* libsodium.23.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libsodium.23.dylib; sourceTree = "<group>"; };
+		9B5AA0A2209C103900E8B659 /* libcares.2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libcares.2.dylib; sourceTree = "<group>"; };
+		9B5AA0A4209C115B00E8B659 /* libmbedcrypto.2.8.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libmbedcrypto.2.8.0.dylib; sourceTree = "<group>"; };
 		9B6BF9531E27B2570061B9A7 /* ServiceManagement.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ServiceManagement.framework; path = System/Library/Frameworks/ServiceManagement.framework; sourceTree = SDKROOT; };
 		9B86459C1E7C2CAD00A84029 /* ProxyInterfacesViewCtrl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ProxyInterfacesViewCtrl.swift; sourceTree = "<group>"; };
 		9B938D931E864B38005F5636 /* menu_g_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = menu_g_icon.png; sourceTree = "<group>"; };
@@ -249,9 +257,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9B5AA0A3209C103900E8B659 /* libcares.2.dylib in Frameworks */,
 				9B6BF9541E27B2570061B9A7 /* ServiceManagement.framework in Frameworks */,
 				9B3FFF3E1D08D9910019A709 /* SystemConfiguration.framework in Frameworks */,
+				9B5AA0A5209C115B00E8B659 /* libmbedcrypto.2.8.0.dylib in Frameworks */,
 				258E511BA910B0521B24DAB8 /* Pods_ShadowsocksX_NG.framework in Frameworks */,
+				9B5AA0A1209C100C00E8B659 /* libsodium.23.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -274,6 +285,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		1C82DBA31FA96C7400B32551 /* simple-obfs */ = {
+			isa = PBXGroup;
+			children = (
+				1C82DBA51FA96C7400B32551 /* obfs-local */,
+				1C82DBA91FA96F0300B32551 /* install_simple_obfs.sh */,
+			);
+			path = "simple-obfs";
+			sourceTree = "<group>";
+		};
 		33F4F299F89330966F4526E4 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
@@ -292,6 +312,10 @@
 		9B07EFB01D048E900052D9DF /* Support Files */ = {
 			isa = PBXGroup;
 			children = (
+				9B5AA09F209C100C00E8B659 /* libsodium.23.dylib */,
+				9B5AA0A2209C103900E8B659 /* libcares.2.dylib */,
+				9B5AA0A4209C115B00E8B659 /* libmbedcrypto.2.8.0.dylib */,
+				1C82DBA31FA96C7400B32551 /* simple-obfs */,
 				9B16E5991F99FD0700E54DC5 /* icons8-Blind Filled-50.png */,
 				9B16E5971F99FD0700E54DC5 /* icons8-Eye Filled-50.png */,
 				9B938D931E864B38005F5636 /* menu_g_icon.png */,
@@ -302,7 +326,6 @@
 				9B938D981E864B38005F5636 /* menu_p_icon@2x.png */,
 				9B3F7BF71E82BF2D00C68B75 /* libev.4.dylib */,
 				9B3F7BF81E82BF2D00C68B75 /* libmbedcrypto.2.4.2.dylib */,
-				9B3F7BF91E82BF2E00C68B75 /* libsodium.18.dylib */,
 				9B3F7BFA1E82BF2E00C68B75 /* libudns.0.dylib */,
 				9B5832101E742632009D5B7D /* kcptun_1.png */,
 				9B58320A1E7422DB009D5B7D /* http.png */,
@@ -588,8 +611,8 @@
 			files = (
 				9BBE7B751F508A0E00E8FFE5 /* fix_dir_owner.sh in Resources */,
 				9B3F7BFF1E82BF5B00C68B75 /* libev.4.dylib in Resources */,
+				1C82DBAA1FA96FB600B32551 /* install_simple_obfs.sh in Resources */,
 				9B3F7C001E82BF5B00C68B75 /* libmbedcrypto.2.4.2.dylib in Resources */,
-				9B3F7C011E82BF5B00C68B75 /* libsodium.18.dylib in Resources */,
 				9B3F7C021E82BF5B00C68B75 /* libudns.0.dylib in Resources */,
 				9B9CBCB41E26453C00FC61AA /* start_kcptun.sh in Resources */,
 				9B9CBCB51E26453C00FC61AA /* stop_kcptun.sh in Resources */,
@@ -620,6 +643,7 @@
 				9BAFE2E21E83ED7F00F71CCE /* PreferencesWinController.xib in Resources */,
 				9B0BFFEB1D0460A70040E62B /* Assets.xcassets in Resources */,
 				08FCA0FF1E24BE1A0070984F /* example-gui-config.json in Resources */,
+				1C82DBA81FA96C7500B32551 /* obfs-local in Resources */,
 				9B938D9D1E864B38005F5636 /* menu_p_icon.png in Resources */,
 				9B938D9B1E864B38005F5636 /* menu_m_icon.png in Resources */,
 				9B3FFF271D0898EB0019A709 /* gfwlist.txt in Resources */,
@@ -1018,6 +1042,7 @@
 					"$(inherited)",
 					"$(SDKROOT)/usr/lib/system",
 					"$(PROJECT_DIR)/ShadowsocksX-NG",
+					"$(PROJECT_DIR)/ShadowsocksX-NG/simple-obfs",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.qiuyuzhou.ShadowsocksX-NG";
@@ -1047,6 +1072,7 @@
 					"$(inherited)",
 					"$(SDKROOT)/usr/lib/system",
 					"$(PROJECT_DIR)/ShadowsocksX-NG",
+					"$(PROJECT_DIR)/ShadowsocksX-NG/simple-obfs",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.qiuyuzhou.ShadowsocksX-NG";
