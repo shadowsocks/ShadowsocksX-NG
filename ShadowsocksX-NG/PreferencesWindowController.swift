@@ -78,6 +78,7 @@ class PreferencesWindowController: NSWindowController
             "camellia-256-cfb",
             "bf-cfb",
             "chacha20-ietf-poly1305",
+            "xchacha20-ietf-poly1305",
             "salsa20",
             "chacha20",
             "chacha20-ietf",
