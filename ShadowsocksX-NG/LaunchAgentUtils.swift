@@ -11,7 +11,7 @@ import Foundation
 let SS_LOCAL_VERSION = "3.1.3"
 let KCPTUN_CLIENT_VERSION = "v20170718"
 let PRIVOXY_VERSION = "3.0.26.static"
-let SIMPLE_OBFS_VERSION = "0.0.2"
+let SIMPLE_OBFS_VERSION = "0.0.5"
 let APP_SUPPORT_DIR = "/Library/Application Support/ShadowsocksX-NG/"
 let LAUNCH_AGENT_DIR = "/Library/LaunchAgents/"
 let LAUNCH_AGENT_CONF_SSLOCAL_NAME = "com.qiuyuzhou.shadowsocksX-NG.local.plist"
