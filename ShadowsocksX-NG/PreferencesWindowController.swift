@@ -204,6 +204,11 @@ class PreferencesWindowController: NSWindowController
         }
     }
     
+    @IBAction func openPluginHelp(_ sender: Any) {
+        let url = URL(string: "https://github.com/shadowsocks/ShadowsocksX-NG/wiki/SIP003-Plugin")
+        NSWorkspace.shared.open(url!)
+    }
+    
     @IBAction func copyCurrentProfileURL2Pasteboard(_ sender: NSButton) {
         let index = profilesTableView.selectedRow
         if  index >= 0 {

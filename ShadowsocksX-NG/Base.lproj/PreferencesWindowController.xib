@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="13196" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="14109" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="13196"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14109"/>
         <capability name="box content view" minToolsVersion="7.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -158,7 +158,7 @@
                                     </textFieldCell>
                                 </textField>
                                 <textField verticalHuggingPriority="750" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="0PP-Ng-z0v">
-                                    <rect key="frame" x="110" y="351" width="170" height="22"/>
+                                    <rect key="frame" x="110" y="351" width="135" height="22"/>
                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="IGs-KE-ySP">
                                         <font key="font" metaFont="system"/>
                                         <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
@@ -520,6 +520,16 @@
                                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                     </textFieldCell>
                                 </textField>
+                                <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="jch-rI-Swc">
+                                    <rect key="frame" x="254" y="349" width="25" height="25"/>
+                                    <buttonCell key="cell" type="help" bezelStyle="helpButton" imagePosition="left" borderStyle="border" inset="2" id="IF1-Fy-5la">
+                                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                        <font key="font" metaFont="system"/>
+                                    </buttonCell>
+                                    <connections>
+                                        <action selector="openPluginHelp:" target="-2" id="ZjN-36-KgP"/>
+                                    </connections>
+                                </button>
                             </subviews>
                             <constraints>
                                 <constraint firstItem="Baj-Yh-kmj" firstAttribute="baseline" secondItem="q3C-S0-iNn" secondAttribute="baseline" id="0Fs-Yi-WBo"/>
@@ -528,7 +538,7 @@
                                 <constraint firstItem="5eh-s9-YH8" firstAttribute="top" secondItem="0PP-Ng-z0v" secondAttribute="bottom" constant="10" symbolic="YES" id="1aa-nq-sFq"/>
                                 <constraint firstItem="DHz-Hx-kZ5" firstAttribute="leading" secondItem="Qfe-Ql-iCO" secondAttribute="trailing" constant="8" symbolic="YES" id="1bR-S3-Tdq"/>
                                 <constraint firstItem="ef4-8J-eFn" firstAttribute="top" secondItem="R4F-j7-GkK" secondAttribute="bottom" constant="8" symbolic="YES" id="41P-Ix-it2"/>
-                                <constraint firstItem="jDI-cn-wYa" firstAttribute="trailing" secondItem="0PP-Ng-z0v" secondAttribute="trailing" id="5DS-4j-Cr9"/>
+                                <constraint firstItem="jDI-cn-wYa" firstAttribute="trailing" secondItem="0PP-Ng-z0v" secondAttribute="trailing" constant="35" id="5DS-4j-Cr9"/>
                                 <constraint firstAttribute="trailing" secondItem="lng-AE-g0J" secondAttribute="trailing" constant="24" id="6W3-BA-gYo"/>
                                 <constraint firstItem="Otb-CO-KUH" firstAttribute="trailing" secondItem="Zgs-86-BfH" secondAttribute="trailing" id="8Pl-xV-uvr"/>
                                 <constraint firstItem="9CP-zt-WuH" firstAttribute="leading" secondItem="Zgs-86-BfH" secondAttribute="leading" id="8r8-GD-9Z3"/>
@@ -555,6 +565,7 @@
                                 <constraint firstItem="ef4-8J-eFn" firstAttribute="leading" secondItem="Kft-TG-O5S" secondAttribute="trailing" constant="8" symbolic="YES" id="VGj-2V-kmi"/>
                                 <constraint firstAttribute="trailing" secondItem="WE7-7J-vda" secondAttribute="trailing" id="WAe-uE-c28"/>
                                 <constraint firstItem="Otb-CO-KUH" firstAttribute="leading" secondItem="R4F-j7-GkK" secondAttribute="trailing" constant="8" symbolic="YES" id="dL8-po-Zhh"/>
+                                <constraint firstItem="jch-rI-Swc" firstAttribute="centerX" secondItem="jDI-cn-wYa" secondAttribute="centerX" id="eTA-qv-ID2"/>
                                 <constraint firstItem="HPg-NP-kjP" firstAttribute="baseline" secondItem="R4F-j7-GkK" secondAttribute="baseline" id="fb7-sB-eHL"/>
                                 <constraint firstItem="DHz-Hx-kZ5" firstAttribute="top" secondItem="jDI-cn-wYa" secondAttribute="top" id="fbb-RF-Wvf"/>
                                 <constraint firstItem="Qfe-Ql-iCO" firstAttribute="leading" secondItem="a3z-VL-3xV" secondAttribute="leading" constant="40" id="fw1-Zg-LaZ"/>
@@ -569,6 +580,7 @@
                                 <constraint firstItem="5eh-s9-YH8" firstAttribute="leading" secondItem="4LD-CD-u7b" secondAttribute="trailing" constant="8" symbolic="YES" id="uFv-U2-g2d"/>
                                 <constraint firstItem="9CP-zt-WuH" firstAttribute="leading" secondItem="a3z-VL-3xV" secondAttribute="leading" constant="85" id="vYk-bK-2hT"/>
                                 <constraint firstItem="Qfe-Ql-iCO" firstAttribute="centerY" secondItem="DHz-Hx-kZ5" secondAttribute="centerY" id="wKU-B5-A3m"/>
+                                <constraint firstItem="jch-rI-Swc" firstAttribute="top" secondItem="0PP-Ng-z0v" secondAttribute="top" id="zzw-ge-6mH"/>
                             </constraints>
                         </view>
                         <color key="fillColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
