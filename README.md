@@ -33,7 +33,8 @@ From [here](https://github.com/shadowsocks/ShadowsocksX-NG/releases/)
 
 ## Features
 
-- Uses `ss-local` from shadowsocks-libev 3.1.3
+- `ss-local` from shadowsocks-libev 3.1.3
+- Support SIP003 plugins. Embed `kcptun` and `simple-obfs`.
 - Could update PAC by download GFW List from GitHub.
 - Shows QRCode for current server profile.
 - Scans QRCode from screen.
