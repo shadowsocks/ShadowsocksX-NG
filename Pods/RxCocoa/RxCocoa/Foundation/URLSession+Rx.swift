@@ -24,9 +24,7 @@ import var Foundation.NSURLErrorDomain
     import Foundation
 #endif
 
-#if !RX_NO_MODULE
 import RxSwift
-#endif
 
 /// RxCocoa URL errors.
 public enum RxCocoaURLError
@@ -123,7 +121,7 @@ extension Reactive where Base: URLSession {
     - parameter request: URL request.
     - returns: Observable sequence of URL responses.
     */
-    public func response(request: URLRequest) -> Observable<(HTTPURLResponse, Data)> {
+    public func response(request: URLRequest) -> Observable<(response: HTTPURLResponse, data: Data)> {
         return Observable.create { observer in
 
             // smart compiler should be able to optimize this out
@@ -158,7 +156,7 @@ extension Reactive where Base: URLSession {
                     return
                 }
 
-                observer.on(.next(httpResponse, data))
+                observer.on(.next((httpResponse, data)))
                 observer.on(.completed)
             }
 
@@ -184,12 +182,12 @@ extension Reactive where Base: URLSession {
     - returns: Observable sequence of response data.
     */
     public func data(request: URLRequest) -> Observable<Data> {
-        return response(request: request).map { (response, data) -> Data in
-            if 200 ..< 300 ~= response.statusCode {
-                return data
+        return response(request: request).map { pair -> Data in
+            if 200 ..< 300 ~= pair.0.statusCode {
+                return pair.1
             }
             else {
-                throw RxCocoaURLError.httpRequestFailed(response: response, data: data)
+                throw RxCocoaURLError.httpRequestFailed(response: pair.0, data: pair.1)
             }
         }
     }

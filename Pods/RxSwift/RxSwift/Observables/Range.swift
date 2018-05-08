@@ -6,7 +6,7 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-extension Observable where Element : SignedInteger {
+extension ObservableType where E : RxAbstractInteger {
     /**
      Generates an observable sequence of integral numbers within a specified range, using the specified scheduler to generate and send out observer messages.
 
@@ -22,7 +22,7 @@ extension Observable where Element : SignedInteger {
     }
 }
 
-final fileprivate class RangeProducer<E: SignedInteger> : Producer<E> {
+final fileprivate class RangeProducer<E: RxAbstractInteger> : Producer<E> {
     fileprivate let _start: E
     fileprivate let _count: E
     fileprivate let _scheduler: ImmediateSchedulerType
@@ -48,7 +48,7 @@ final fileprivate class RangeProducer<E: SignedInteger> : Producer<E> {
     }
 }
 
-final fileprivate class RangeSink<O: ObserverType> : Sink<O> where O.E: SignedInteger {
+final fileprivate class RangeSink<O: ObserverType> : Sink<O> where O.E: RxAbstractInteger {
     typealias Parent = RangeProducer<O.E>
     
     private let _parent: Parent

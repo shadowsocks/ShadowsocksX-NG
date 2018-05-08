@@ -8,9 +8,7 @@
 
 import class Foundation.NSObject
 
-#if !RX_NO_MODULE
 import RxSwift
-#endif
 
 class RxTarget : NSObject
                , Disposable {

@@ -6,7 +6,7 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-extension Observable {
+extension ObservableType {
     /**
      Generates an observable sequence that repeats the given element infinitely, using the specified scheduler to send out observer messages.
 

@@ -8,9 +8,6 @@
 
 /// Represents a push style sequence.
 public protocol ObservableType : ObservableConvertibleType {
-    /// Type of elements in sequence.
-    associatedtype E
-    
     /**
     Subscribes `observer` to receive events for this sequence.
     

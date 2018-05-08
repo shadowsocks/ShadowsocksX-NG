@@ -8,10 +8,9 @@
 
 #if !os(Linux)
 
+import RxSwift
+
 import Foundation.NSObject
-#if !RX_NO_MODULE
-    import RxSwift
-#endif
 
 extension Reactive where Base: NSObject {
     /**
@@ -23,7 +22,7 @@ extension Reactive where Base: NSObject {
 
      For more information take a look at `observe` method.
      */
-    public func observe<E: RawRepresentable>(_ type: E.Type, _ keyPath: String, options: NSKeyValueObservingOptions = [.new, .initial], retainSelf: Bool = true) -> Observable<E?> where E.RawValue: KVORepresentable {
+    public func observe<E: RawRepresentable>(_ type: E.Type, _ keyPath: String, options: KeyValueObservingOptions = [.new, .initial], retainSelf: Bool = true) -> Observable<E?> where E.RawValue: KVORepresentable {
         return observe(E.RawValue.KVOType.self, keyPath, options: options, retainSelf: retainSelf)
             .map(E.init)
     }
@@ -43,7 +42,7 @@ extension Reactive where Base: NSObject {
 
          For more information take a look at `observeWeakly` method.
          */
-        public func observeWeakly<E: RawRepresentable>(_ type: E.Type, _ keyPath: String, options: NSKeyValueObservingOptions = [.new, .initial]) -> Observable<E?> where E.RawValue: KVORepresentable {
+        public func observeWeakly<E: RawRepresentable>(_ type: E.Type, _ keyPath: String, options: KeyValueObservingOptions = [.new, .initial]) -> Observable<E?> where E.RawValue: KVORepresentable {
             return observeWeakly(E.RawValue.KVOType.self, keyPath, options: options)
                 .map(E.init)
         }

@@ -9,70 +9,54 @@
 #if os(macOS)
 
 import Cocoa
-#if !RX_NO_MODULE
 import RxSwift
-#endif
 
 /// Delegate proxy for `NSTextField`.
 ///
 /// For more information take a look at `DelegateProxyType`.
-public class RxTextFieldDelegateProxy
-    : DelegateProxy
-    , NSTextFieldDelegate
-    , DelegateProxyType {
-
-    fileprivate let textSubject = PublishSubject<String?>()
+open class RxTextFieldDelegateProxy
+    : DelegateProxy<NSTextField, NSTextFieldDelegate>
+    , DelegateProxyType 
+    , NSTextFieldDelegate {
 
     /// Typed parent object.
     public weak private(set) var textField: NSTextField?
 
     /// Initializes `RxTextFieldDelegateProxy`
     ///
-    /// - parameter parentObject: Parent object for delegate proxy.
-    public required init(parentObject: AnyObject) {
-        self.textField = castOrFatalError(parentObject)
-        super.init(parentObject: parentObject)
+    /// - parameter textField: Parent object for delegate proxy.
+    init(textField: NSTextField) {
+        self.textField = textField
+        super.init(parentObject: textField, delegateProxy: RxTextFieldDelegateProxy.self)
     }
+
+    public static func registerKnownImplementations() {
+        self.register { RxTextFieldDelegateProxy(textField: $0) }
+    }
+
+    fileprivate let textSubject = PublishSubject<String?>()
 
     // MARK: Delegate methods
 
-    public override func controlTextDidChange(_ notification: Notification) {
+    open override func controlTextDidChange(_ notification: Notification) {
         let textField: NSTextField = castOrFatalError(notification.object)
         let nextValue = textField.stringValue
         self.textSubject.on(.next(nextValue))
-        _forwardToDelegate?.controlTextDidChange(notification)
+        _forwardToDelegate?.controlTextDidChange?(notification)
     }
 
     // MARK: Delegate proxy methods
 
     /// For more information take a look at `DelegateProxyType`.
-    public override class func createProxyForObject(_ object: AnyObject) -> AnyObject {
-        let control: NSTextField = castOrFatalError(object)
-        return control.createRxDelegateProxy()
+    open class func currentDelegate(for object: ParentObject) -> NSTextFieldDelegate? {
+        return object.delegate
     }
 
     /// For more information take a look at `DelegateProxyType`.
-    public class func currentDelegateFor(_ object: AnyObject) -> AnyObject? {
-        let textField: NSTextField = castOrFatalError(object)
-        return textField.delegate
-    }
-
-    /// For more information take a look at `DelegateProxyType`.
-    public class func setCurrentDelegate(_ delegate: AnyObject?, toObject object: AnyObject) {
-        let textField: NSTextField = castOrFatalError(object)
-        textField.delegate = castOptionalOrFatalError(delegate)
+    open class func setCurrentDelegate(_ delegate: NSTextFieldDelegate?, to object: ParentObject) {
+        object.delegate = delegate
     }
     
-}
-
-extension NSTextField {
-
-    /// Factory method that enables subclasses to implement their own `delegate`.
-    ///
-    /// - returns: Instance of delegate proxy that wraps `delegate`.
-    public func createRxDelegateProxy() -> RxTextFieldDelegateProxy {
-        return RxTextFieldDelegateProxy(parentObject: self)
-    }
 }
 
 extension Reactive where Base: NSTextField {
@@ -80,19 +64,19 @@ extension Reactive where Base: NSTextField {
     /// Reactive wrapper for `delegate`.
     ///
     /// For more information take a look at `DelegateProxyType` protocol documentation.
-    public var delegate: DelegateProxy {
-        return RxTextFieldDelegateProxy.proxyForObject(base)
+    public var delegate: DelegateProxy<NSTextField, NSTextFieldDelegate> {
+        return RxTextFieldDelegateProxy.proxy(for: base)
     }
     
     /// Reactive wrapper for `text` property.
     public var text: ControlProperty<String?> {
-        let delegate = RxTextFieldDelegateProxy.proxyForObject(base)
+        let delegate = RxTextFieldDelegateProxy.proxy(for: base)
         
         let source = Observable.deferred { [weak textField = self.base] in
             delegate.textSubject.startWith(textField?.stringValue)
         }.takeUntil(deallocated)
 
-        let observer = UIBindingObserver(UIElement: base) { (control, value: String?) in
+        let observer = Binder(base) { (control, value: String?) in
             control.stringValue = value ?? ""
         }
 
