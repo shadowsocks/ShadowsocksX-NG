@@ -142,6 +142,12 @@
                         <action selector="checkForUpdates:" target="Voe-Tx-rLC" id="rWL-H9-me8"/>
                     </connections>
                 </menuItem>
+                <menuItem title="Help" id="Xg8-er-4Ov">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <connections>
+                        <action selector="showHelp:" target="Voe-Tx-rLC" id="Q7X-kb-TWD"/>
+                    </connections>
+                </menuItem>
                 <menuItem title="About" id="LgB-6g-Gba">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
