@@ -136,6 +136,12 @@
                         <action selector="showLogs:" target="Voe-Tx-rLC" id="5FZ-Xo-DGb"/>
                     </connections>
                 </menuItem>
+                <menuItem title="Check for Updates..." id="hLv-bp-doM">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <connections>
+                        <action selector="checkForUpdates:" target="Voe-Tx-rLC" id="rWL-H9-me8"/>
+                    </connections>
+                </menuItem>
                 <menuItem title="About" id="LgB-6g-Gba">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
