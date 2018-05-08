@@ -39,7 +39,7 @@ class ServerProfile: NSObject, NSCopying {
         self.init()
 
         func padBase64(string: String) -> String {
-            var length = string.characters.count
+            var length = string.utf8.count
             if length % 4 == 0 {
                 return string
             } else {
@@ -90,7 +90,7 @@ class ServerProfile: NSObject, NSCopying {
                 return nil
             }
 
-            let parts = userInfo.characters.split(separator: ":", maxSplits: 1, omittingEmptySubsequences: false)
+            let parts = userInfo.split(separator: ":", maxSplits: 1, omittingEmptySubsequences: false)
             if parts.count != 2 {
                 return nil
             }
