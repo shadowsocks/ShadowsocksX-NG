@@ -183,6 +183,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
 
         // Register global hotkey
         ShortcutsController.bindShortcuts()
+        
+        // Start API Server
+        ApiMgr.shard.start()
     }
     
     func applicationWillTerminate(_ aNotification: Notification) {
@@ -400,7 +403,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     
     func updateRunningModeMenu() {
         let defaults = UserDefaults.standard
-        let mode = defaults.string(forKey: "ShadowsocksRunningMode")
+        let mode = defaults.string(forKey: "ShadowsocksRunningMosde")
         
         var serverMenuText = "Servers".localized
 
