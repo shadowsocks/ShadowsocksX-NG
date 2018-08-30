@@ -11,8 +11,8 @@ import GCDWebServer
 
 
 
-class ApiMgr{
-    static let shard = ApiMgr()
+class APIServer{
+    static let shard = APIServer()
     
     let apiserver = GCDWebServer()
     let SerMgr = ServerProfileManager.instance
@@ -30,31 +30,41 @@ class ApiMgr{
     }
     
     func setRouter(){
-        apiserver.addHandler(forMethod: "GET", path: "/servers", request: GCDWebServerRequest.self, processBlock: {request in
-            return GCDWebServerDataResponse(jsonObject: self.serverList(), contentType: "json")
+        apiserver.addHandler(forMethod: "GET", path: "/status", request: GCDWebServerRequest.self, processBlock: {request in
+            let isOn = self.defaults.bool(forKey: "ShadowsocksOn")
+            return GCDWebServerDataResponse(jsonObject: ["enable":isOn], contentType: "json")
         })
         
         apiserver.addHandler(forMethod: "POST", path: "/toggle", request: GCDWebServerRequest.self, processBlock: {request in
-            self.toggle()
+            self.appdeleget.doToggleRunning(showToast: false)
             return GCDWebServerDataResponse(jsonObject: ["Status":1], contentType: "json")
         })
         
-        apiserver.addHandler(forMethod: "POST", path: "/mode", request: GCDWebServerURLEncodedFormRequest.self, processBlock: {request in
-            if let arg = ((request as! GCDWebServerURLEncodedFormRequest).arguments["value"])as? String
-            {
-                switch arg{
-                case "auto":self.defaults.setValue("auto", forKey: "ShadowsocksRunningMode")
-                case "global":self.defaults.setValue("global", forKey: "ShadowsocksRunningMode")
-                case "manual":self.defaults.setValue("manual", forKey: "ShadowsocksRunningMode")
-                default: return GCDWebServerDataResponse(jsonObject: ["Status":0], contentType: "json")
-                }
-                DispatchQueue.global().async(execute: {
-                    self.appdeleget.updateRunningModeMenu()
-                });
-                return GCDWebServerDataResponse(jsonObject: ["Status":1], contentType: "json")
+        apiserver.addHandler(forMethod: "GET", path: "/servers", request: GCDWebServerRequest.self, processBlock: {request in
+            
+            var data = [[String:String]]()
+            
+            for each in self.SerMgr.profiles{
+                data.append(["id":each.uuid,"note":each.remark,
+                             "active":self.SerMgr.activeProfileId == each.uuid ? "1" : "0"])
             }
-            return GCDWebServerDataResponse(jsonObject: ["Status":0], contentType: "json")
+            
+            return GCDWebServerDataResponse(jsonObject: data, contentType: "json")
         })
+        
+        apiserver.addHandler(forMethod: "POST", path: "/servers", request: GCDWebServerURLEncodedFormRequest.self, processBlock: {request in
+            
+            let uuid = ((request as! GCDWebServerURLEncodedFormRequest).arguments["uuid"])as? String
+            for each in self.SerMgr.profiles{
+                if (each.uuid == uuid) {
+                    self.appdeleget.changeServer(uuid: uuid!)
+                    return GCDWebServerDataResponse(jsonObject: ["status":1], contentType: "json")
+
+                }
+            }
+            return GCDWebServerDataResponse(jsonObject: ["status":0], contentType: "json")
+        })
+        
         
         apiserver.addHandler(forMethod: "GET", path: "/mode", request: GCDWebServerRequest.self, processBlock: {request in
             if let current = self.defaults.string(forKey: "ShadowsocksRunningMode"){
@@ -63,46 +73,16 @@ class ApiMgr{
             return GCDWebServerDataResponse(jsonObject: ["mode":"unknow"], contentType: "json")
         })
         
-        apiserver.addHandler(forMethod: "GET", path: "/status", request: GCDWebServerRequest.self, processBlock: {request in
-            let current = self.defaults.bool(forKey: "ShadowsocksOn")
-            return GCDWebServerDataResponse(jsonObject: ["enable":current], contentType: "json")
-        })
-        
-        apiserver.addHandler(forMethod: "POST", path: "/servers", request: GCDWebServerURLEncodedFormRequest.self, processBlock: {request in
-            let uuid = ((request as! GCDWebServerURLEncodedFormRequest).arguments["uuid"])as? String
-            if uuid == nil{return GCDWebServerDataResponse(jsonObject: ["status":0], contentType: "json")}
-            self.changeServ(uuid: uuid!)
-            return GCDWebServerDataResponse(jsonObject: ["status":1], contentType: "json")
-        })
-    }
-    
-    func serverList() -> [[String:String]]{
-        var data = [[String:String]]()
-        for each in self.SerMgr.profiles{
-            data.append(["id":each.uuid,"note":each.remark,
-                         "active":SerMgr.activeProfileId == each.uuid ? "1" : "0"])
-        }
-        return data
-    }
-    
-    func toggle(){
-        var isOn = self.defaults.bool(forKey: "ShadowsocksOn")
-        isOn = !isOn
-        self.defaults.set(isOn, forKey: "ShadowsocksOn")
-        appdeleget.applyConfig()
-        DispatchQueue.global().async(execute:{
-            self.appdeleget.updateMainMenu()
-        });
-    }
-    
-    func changeServ(uuid:String){
-        for each in SerMgr.profiles{
-            if each.uuid == uuid{
-                SerMgr.setActiveProfiledId(uuid)
-                appdeleget.updateServersMenu()
-                SyncSSLocal()
-                return
+        apiserver.addHandler(forMethod: "POST", path: "/mode", request: GCDWebServerURLEncodedFormRequest.self, processBlock: {request in
+            let arg = ((request as! GCDWebServerURLEncodedFormRequest).arguments["value"])as? String
+            
+            if (arg != "auto" && arg != "global" && arg != "manual") {
+                return GCDWebServerDataResponse(jsonObject: ["Status":0], contentType: "json")
             }
-        }
+
+            self.appdeleget.changeMode(mode: arg!)
+            
+            return GCDWebServerDataResponse(jsonObject: ["Status":1], contentType: "json")
+        })
     }
 }
