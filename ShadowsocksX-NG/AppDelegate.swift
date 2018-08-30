@@ -183,6 +183,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
 
         // Register global hotkey
         ShortcutsController.bindShortcuts()
+        
+        // Start API Server
+        APIServer.shard.start()
     }
     
     func applicationWillTerminate(_ aNotification: Notification) {
@@ -211,6 +214,20 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         } else {
             ProxyConfHelper.disableProxy()
         }
+    }
+    
+    func changeMode(mode:String!) {
+        let defaults = UserDefaults.standard
+
+        switch mode{
+            case "auto":defaults.setValue("auto", forKey: "ShadowsocksRunningMode")
+            case "global":defaults.setValue("global", forKey: "ShadowsocksRunningMode")
+            case "manual":defaults.setValue("manual", forKey: "ShadowsocksRunningMode")
+            default: fatalError()
+        }
+        
+        updateRunningModeMenu()
+        applyConfig()
     }
 
     // MARK: - UI Methods
@@ -299,24 +316,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     }
 
     @IBAction func selectPACMode(_ sender: NSMenuItem) {
-        let defaults = UserDefaults.standard
-        defaults.setValue("auto", forKey: "ShadowsocksRunningMode")
-        updateRunningModeMenu()
-        applyConfig()
+        changeMode(mode: "auto")
     }
     
     @IBAction func selectGlobalMode(_ sender: NSMenuItem) {
-        let defaults = UserDefaults.standard
-        defaults.setValue("global", forKey: "ShadowsocksRunningMode")
-        updateRunningModeMenu()
-        applyConfig()
+        changeMode(mode: "global")
     }
     
     @IBAction func selectManualMode(_ sender: NSMenuItem) {
-        let defaults = UserDefaults.standard
-        defaults.setValue("manual", forKey: "ShadowsocksRunningMode")
-        updateRunningModeMenu()
-        applyConfig()
+        changeMode(mode: "manual")
     }
     
     @IBAction func editServerPreferences(_ sender: NSMenuItem) {
@@ -342,17 +350,25 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         allInOnePreferencesWinCtrl.window?.makeKeyAndOrderFront(self)
     }
     
-    @IBAction func selectServer(_ sender: NSMenuItem) {
-        let index = sender.tag - kProfileMenuItemIndexBase
+    func changeServer(@objc uuid: String) {
         let spMgr = ServerProfileManager.instance
-        let newProfile = spMgr.profiles[index]
-        if newProfile.uuid != spMgr.activeProfileId {
-            spMgr.setActiveProfiledId(newProfile.uuid)
+
+        if uuid != spMgr.activeProfileId {
+            spMgr.setActiveProfiledId(uuid)
             updateServersMenu()
             SyncSSLocal()
             applyConfig()
         }
+        
         updateRunningModeMenu()
+    }
+    
+    @IBAction func selectServer(_ sender: NSMenuItem) {
+        let index = sender.tag - kProfileMenuItemIndexBase
+        let spMgr = ServerProfileManager.instance
+        let newProfileId = spMgr.profiles[index].uuid
+        
+        changeServer(uuid:newProfileId)
     }
     
     @IBAction func copyExportCommand(_ sender: NSMenuItem) {
@@ -400,7 +416,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     
     func updateRunningModeMenu() {
         let defaults = UserDefaults.standard
-        let mode = defaults.string(forKey: "ShadowsocksRunningMode")
+        let mode = defaults.string(forKey: "ShadowsocksRunningMosde")
         
         var serverMenuText = "Servers".localized
 
