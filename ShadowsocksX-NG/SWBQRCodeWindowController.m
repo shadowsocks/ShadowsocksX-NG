@@ -23,9 +23,8 @@
 }
 
 - (void)setQRCode:(NSString*) qrCode withOverlayText: (NSString*) text {
-    CGImageRef cgImgRef = [self createQRImageForString:qrCode size:CGSizeMake(250, 250)];
+    NSImage *image = [self createQRImageForString:qrCode size:NSMakeSize(250, 250)];
     
-    NSImage *image = [[NSImage alloc]initWithCGImage:cgImgRef size:CGSizeMake(250, 250)];
     if (text) {
         // Draw overlay text
         NSDictionary* attrs = @{
@@ -43,7 +42,10 @@
     self.imageView.image = image;
 }
 
-- (CGImageRef)createQRImageForString:(NSString *)string size:(CGSize)size {
+- (NSImage*)createQRImageForString:(NSString *)string size:(NSSize)size {
+    NSImage *outputImage = [[NSImage alloc]initWithSize:size];
+    [outputImage lockFocus];
+    
     // Setup the QR filter with our string
     CIFilter *filter = [CIFilter filterWithName:@"CIQRCodeGenerator"];
     [filter setDefaults];
@@ -64,33 +66,19 @@
     CGRect extent = CGRectIntegral(image.extent);
     CGFloat scale = MIN(size.width / CGRectGetWidth(extent), size.height / CGRectGetHeight(extent));
     
-    // Since CoreImage nicely interpolates, we need to create a bitmap image that we'll draw into
-    // a bitmap context at the desired size;
-    size_t width = CGRectGetWidth(extent) * scale;
-    size_t height = CGRectGetHeight(extent) * scale;
-    CGColorSpaceRef cs = CGColorSpaceCreateDeviceGray();
-    CGContextRef bitmapRef = CGBitmapContextCreate(nil, width, height, 8, 0, cs, (CGBitmapInfo)kCGImageAlphaNone);
+    CGImageRef bitmapImage = [NSGraphicsContext.currentContext.CIContext createCGImage:image fromRect:extent];
     
-#if TARGET_OS_IPHONE
-    CIContext *context = [CIContext contextWithOptions: @{kCIContextUseSoftwareRenderer: true}];
-#else
-    CIContext *context = [CIContext contextWithCGContext:bitmapRef options:@{kCIContextUseSoftwareRenderer: @true}];
-#endif
+    CGContextRef graphicsContext = NSGraphicsContext.currentContext.CGContext;
     
-    CGImageRef bitmapImage = [context createCGImage:image fromRect:extent];
-    
-    CGContextSetInterpolationQuality(bitmapRef, kCGInterpolationNone);
-    CGContextScaleCTM(bitmapRef, scale, scale);
-    CGContextDrawImage(bitmapRef, extent, bitmapImage);
-    
-    // Create an image with the contents of our bitmap
-    CGImageRef scaledImage = CGBitmapContextCreateImage(bitmapRef);
+    CGContextSetInterpolationQuality(graphicsContext, kCGInterpolationNone);
+    CGContextScaleCTM(graphicsContext, scale, scale);
+    CGContextDrawImage(graphicsContext, extent, bitmapImage);
     
     // Cleanup
-    CGContextRelease(bitmapRef);
     CGImageRelease(bitmapImage);
     
-    return scaledImage;
+    [outputImage unlockFocus];
+    return outputImage;
 }
 
 - (IBAction) copyQRCode: (id) sender{
