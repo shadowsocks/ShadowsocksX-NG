@@ -185,7 +185,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         ShortcutsController.bindShortcuts()
         
         // Start API Server
-        APIServer.shard.start()
+        HTTPUserProxy.shard.start()
     }
     
     func applicationWillTerminate(_ aNotification: Notification) {

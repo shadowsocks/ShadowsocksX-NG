@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dictionary SYSTEM "file://localhost/System/Library/DTDs/sdef.dtd">
+
+<dictionary title="ShadowsocksX-NG">
+
+    <suite name="ShadowsocksX-NG Suite" code="sktc">
+        <enumeration name="Mode" code="mode">
+            <enumerator name="auto" code="auto">
+                <cocoa string-value="auto"/>
+            </enumerator>
+            <enumerator name="manual" code="manu">
+                <cocoa string-value="manual"/>
+            </enumerator>
+            <enumerator name="global" code="glbl">
+                <cocoa string-value="global"/>
+            </enumerator>
+        </enumeration>
+        
+        <command name="isRunning" code="isruning">
+            <cocoa class="ShadowsocksX_NG.AppleScriptUserProxy"/>
+            <result type="boolean"/>
+        </command>
+        
+        <command name="toggle" code="sstoggle" description="Turn on/off the client.">
+            <cocoa class="ShadowsocksX_NG.AppleScriptUserProxy"/>
+        </command>
+        
+        <command name="mode" code="currmode">
+            <cocoa class="ShadowsocksX_NG.AppleScriptUserProxy"/>
+            <result type="Mode"/>
+        </command>
+        
+        <command name="change mode" code="chagmode">
+            <cocoa class="ShadowsocksX_NG.AppleScriptUserProxy"/>
+            <direct-parameter type="Mode"/>
+        </command>
+        
+        <command name="servers" code="sevrlist">
+            <cocoa class="ShadowsocksX_NG.AppleScriptUserProxy"/>
+            <result>
+                <type type="text" list="yes"/>
+            </result>
+        </command>
+        
+        <command name="change server" code="chagServ">
+            <cocoa class="ShadowsocksX_NG.AppleScriptUserProxy"/>
+            <direct-parameter type="text"/>
+        </command>
+    </suite>￼
+    
+</dictionary>

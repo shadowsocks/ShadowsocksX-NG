@@ -11,8 +11,8 @@ import GCDWebServer
 
 
 
-class APIServer{
-    static let shard = APIServer()
+class HTTPUserProxy{
+    static let shard = HTTPUserProxy()
     
     let apiserver = GCDWebServer()
     let SerMgr = ServerProfileManager.instance
