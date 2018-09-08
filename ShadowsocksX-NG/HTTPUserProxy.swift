@@ -37,7 +37,7 @@ class HTTPUserProxy{
         
         apiserver.addHandler(forMethod: "POST", path: "/toggle", request: GCDWebServerRequest.self, processBlock: {request in
             self.appdeleget.doToggleRunning(showToast: false)
-            return GCDWebServerDataResponse(jsonObject: ["Status":1], contentType: "json")
+            return GCDWebServerDataResponse(jsonObject: ["status":1], contentType: "json")
         })
         
         apiserver.addHandler(forMethod: "GET", path: "/servers", request: GCDWebServerRequest.self, processBlock: {request in
@@ -45,7 +45,7 @@ class HTTPUserProxy{
             var data = [[String:String]]()
             
             for each in self.SerMgr.profiles{
-                data.append(["id":each.uuid,"note":each.remark,
+                data.append(["id":each.uuid,"remark":each.remark,
                              "active":self.SerMgr.activeProfileId == each.uuid ? "1" : "0"])
             }
             
@@ -54,7 +54,7 @@ class HTTPUserProxy{
         
         apiserver.addHandler(forMethod: "POST", path: "/servers", request: GCDWebServerURLEncodedFormRequest.self, processBlock: {request in
             
-            let uuid = ((request as! GCDWebServerURLEncodedFormRequest).arguments["uuid"])as? String
+            let uuid = ((request as! GCDWebServerURLEncodedFormRequest).arguments["id"])as? String
             for each in self.SerMgr.profiles{
                 if (each.uuid == uuid) {
                     self.appdeleget.changeServer(uuid: uuid!)
@@ -74,15 +74,15 @@ class HTTPUserProxy{
         })
         
         apiserver.addHandler(forMethod: "POST", path: "/mode", request: GCDWebServerURLEncodedFormRequest.self, processBlock: {request in
-            let arg = ((request as! GCDWebServerURLEncodedFormRequest).arguments["value"])as? String
+            let arg = ((request as! GCDWebServerURLEncodedFormRequest).arguments["mode"])as? String
             
             if (arg != "auto" && arg != "global" && arg != "manual") {
-                return GCDWebServerDataResponse(jsonObject: ["Status":0], contentType: "json")
+                return GCDWebServerDataResponse(jsonObject: ["status":0], contentType: "json")
             }
 
             self.appdeleget.changeMode(mode: arg!)
             
-            return GCDWebServerDataResponse(jsonObject: ["Status":1], contentType: "json")
+            return GCDWebServerDataResponse(jsonObject: ["status":1], contentType: "json")
         })
     }
 }
