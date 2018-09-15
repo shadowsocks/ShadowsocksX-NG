@@ -284,19 +284,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     @IBAction func scanQRCodeFromScreen(_ sender: NSMenuItem) {
         ScanQRCodeOnScreen()
     }
-    
-    @IBAction func showBunchJsonExampleFile(sender: NSMenuItem) {
-        ServerProfileManager.showExampleConfigFile()
-    }
-    
-    @IBAction func importBunchJsonFile(sender: NSMenuItem) {
-        ServerProfileManager.instance.importConfigFile()
-        //updateServersMenu()//not working
-    }
-    
-    @IBAction func exportAllServerProfile(sender: NSMenuItem) {
-        ServerProfileManager.instance.exportConfigFile()
-    }
 
     @IBAction func selectPACMode(_ sender: NSMenuItem) {
         let defaults = UserDefaults.standard

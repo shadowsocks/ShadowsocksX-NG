@@ -43,7 +43,6 @@ From [here](https://github.com/shadowsocks/ShadowsocksX-NG/releases/)
 - Support for [AEAD Ciphers](https://shadowsocks.org/en/spec/AEAD-Ciphers.html)
 - HTTP Proxy by [privoxy](http://www.privoxy.org/)
 - Over [kcptun](https://github.com/xtaci/kcptun). Version 20170322. [Deprecated - Please use kcptun by SIP003 plugin.This would be removed in future.]
-- Export/Import configure file.
 - An advanced preferences panel for configuring:
 	- Local SOCKS5 listen address.
 	- Local SOCKS5 listen port.
