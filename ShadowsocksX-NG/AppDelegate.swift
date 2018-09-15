@@ -80,7 +80,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         
         // Prepare ss-local
         InstallSSLocal()
-        InstallKcptunClient()
         InstallPrivoxy()
         InstallSimpleObfs()
         // Prepare defaults
@@ -188,7 +187,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     func applicationWillTerminate(_ aNotification: Notification) {
         // Insert code here to tear down your application
         StopSSLocal()
-        StopKcptun()
         StopPrivoxy()
         ProxyConfHelper.disableProxy()
     }

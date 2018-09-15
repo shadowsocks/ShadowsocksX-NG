@@ -57,12 +57,7 @@
 		9B938D9C1E864B38005F5636 /* menu_m_icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B938D961E864B38005F5636 /* menu_m_icon@2x.png */; };
 		9B938D9D1E864B38005F5636 /* menu_p_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B938D971E864B38005F5636 /* menu_p_icon.png */; };
 		9B938D9E1E864B38005F5636 /* menu_p_icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B938D981E864B38005F5636 /* menu_p_icon@2x.png */; };
-		9B9CBCA61E25E1DB00FC61AA /* KcptunProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B9CBCA51E25E1DB00FC61AA /* KcptunProfile.swift */; };
-		9B9CBCA81E26312E00FC61AA /* install_kcptun.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9B9CBCA71E26310E00FC61AA /* install_kcptun.sh */; };
-		9B9CBCAA1E2633CB00FC61AA /* kcptun_client in Resources */ = {isa = PBXBuildFile; fileRef = 9B9CBCA91E2633CB00FC61AA /* kcptun_client */; };
 		9B9CBCAF1E263B1600FC61AA /* libpcre.1.dylib in Resources */ = {isa = PBXBuildFile; fileRef = 9B9CBCAD1E263A6600FC61AA /* libpcre.1.dylib */; };
-		9B9CBCB41E26453C00FC61AA /* start_kcptun.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9B9CBCB01E2644DC00FC61AA /* start_kcptun.sh */; };
-		9B9CBCB51E26453C00FC61AA /* stop_kcptun.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9B9CBCB11E26450D00FC61AA /* stop_kcptun.sh */; };
 		9B9F13A71E8A28B300DE4794 /* LaunchHelper.app in CopyFiles */ = {isa = PBXBuildFile; fileRef = 9B9F13A61E8A282D00DE4794 /* LaunchHelper.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		9BA04B231D23D5A5005AAD7F /* ProxyConfTool.m in Sources */ = {isa = PBXBuildFile; fileRef = 9BA04B221D23D5A5005AAD7F /* ProxyConfTool.m */; };
 		9BAFE2E21E83ED7F00F71CCE /* PreferencesWinController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9BAFE2E41E83ED7F00F71CCE /* PreferencesWinController.xib */; };
@@ -213,12 +208,7 @@
 		9B938D961E864B38005F5636 /* menu_m_icon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "menu_m_icon@2x.png"; sourceTree = "<group>"; };
 		9B938D971E864B38005F5636 /* menu_p_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = menu_p_icon.png; sourceTree = "<group>"; };
 		9B938D981E864B38005F5636 /* menu_p_icon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "menu_p_icon@2x.png"; sourceTree = "<group>"; };
-		9B9CBCA51E25E1DB00FC61AA /* KcptunProfile.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KcptunProfile.swift; sourceTree = "<group>"; };
-		9B9CBCA71E26310E00FC61AA /* install_kcptun.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = install_kcptun.sh; sourceTree = "<group>"; };
-		9B9CBCA91E2633CB00FC61AA /* kcptun_client */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = kcptun_client; sourceTree = "<group>"; };
 		9B9CBCAD1E263A6600FC61AA /* libpcre.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libpcre.1.dylib; sourceTree = "<group>"; };
-		9B9CBCB01E2644DC00FC61AA /* start_kcptun.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = start_kcptun.sh; sourceTree = "<group>"; };
-		9B9CBCB11E26450D00FC61AA /* stop_kcptun.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = stop_kcptun.sh; sourceTree = "<group>"; };
 		9B9F13A11E8A282C00DE4794 /* LaunchHelper.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = LaunchHelper.xcodeproj; path = LaunchHelper/LaunchHelper.xcodeproj; sourceTree = "<group>"; };
 		9BA04B211D23D5A5005AAD7F /* ProxyConfTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ProxyConfTool.h; sourceTree = "<group>"; };
 		9BA04B221D23D5A5005AAD7F /* ProxyConfTool.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ProxyConfTool.m; sourceTree = "<group>"; };
@@ -308,7 +298,6 @@
 			isa = PBXGroup;
 			children = (
 				9B5AA0A9209C41EC00E8B659 /* ss-local */,
-				9B5AA0A8209C41B400E8B659 /* kcptun */,
 				1C82DBA31FA96C7400B32551 /* simple-obfs */,
 				9B16E5991F99FD0700E54DC5 /* icons8-Blind Filled-50.png */,
 				9B5AA0AA209C42A900E8B659 /* privoxy */,
@@ -379,7 +368,6 @@
 				9B0BFFEC1D0460A70040E62B /* MainMenu.xib */,
 				9B0BFFEF1D0460A70040E62B /* Info.plist */,
 				9BEEF06D1D04DCE400FC52B3 /* ServerProfile.swift */,
-				9B9CBCA51E25E1DB00FC61AA /* KcptunProfile.swift */,
 				9BEEF06F1D04DDB100FC52B3 /* ServerProfileManager.swift */,
 				9BEEF0771D04FE8A00FC52B3 /* LaunchAgentUtils.swift */,
 				9B3FFF0C1D05FEB30019A709 /* Utils.swift */,
@@ -433,17 +421,6 @@
 				9B3FFF461D09CD3B0019A709 /* main.m */,
 			);
 			path = proxy_conf_helper;
-			sourceTree = "<group>";
-		};
-		9B5AA0A8209C41B400E8B659 /* kcptun */ = {
-			isa = PBXGroup;
-			children = (
-				9B9CBCA71E26310E00FC61AA /* install_kcptun.sh */,
-				9B9CBCB01E2644DC00FC61AA /* start_kcptun.sh */,
-				9B9CBCB11E26450D00FC61AA /* stop_kcptun.sh */,
-				9B9CBCA91E2633CB00FC61AA /* kcptun_client */,
-			);
-			name = kcptun;
 			sourceTree = "<group>";
 		};
 		9B5AA0A9209C41EC00E8B659 /* ss-local */ = {
@@ -633,14 +610,10 @@
 				9BBE7B751F508A0E00E8FFE5 /* fix_dir_owner.sh in Resources */,
 				9B3F7BFF1E82BF5B00C68B75 /* libev.4.dylib in Resources */,
 				1C82DBAA1FA96FB600B32551 /* install_simple_obfs.sh in Resources */,
-				9B9CBCB41E26453C00FC61AA /* start_kcptun.sh in Resources */,
-				9B9CBCB51E26453C00FC61AA /* stop_kcptun.sh in Resources */,
 				9B938D9A1E864B38005F5636 /* menu_g_icon@2x.png in Resources */,
 				9B938D9E1E864B38005F5636 /* menu_p_icon@2x.png in Resources */,
 				9B9CBCAF1E263B1600FC61AA /* libpcre.1.dylib in Resources */,
-				9B9CBCA81E26312E00FC61AA /* install_kcptun.sh in Resources */,
 				9B5832031E741F8D009D5B7D /* command-512.png in Resources */,
-				9B9CBCAA1E2633CB00FC61AA /* kcptun_client in Resources */,
 				9B3FFF541D09E2D10019A709 /* proxy_conf_helper in Resources */,
 				9B5832071E7421B2009D5B7D /* virtual-server-icon-3.png in Resources */,
 				9BEEF0691D04D4D500FC52B3 /* install_ss_local.sh in Resources */,
@@ -857,7 +830,6 @@
 				9B5831FF1E741969009D5B7D /* PreferencesWinController.swift in Sources */,
 				9BEEF0781D04FE8A00FC52B3 /* LaunchAgentUtils.swift in Sources */,
 				9B3546721E802B1200B510B4 /* ToastWindowController.swift in Sources */,
-				9B9CBCA61E25E1DB00FC61AA /* KcptunProfile.swift in Sources */,
 				C8E42A6C1D4F270A0074C7EA /* UserRulesController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
