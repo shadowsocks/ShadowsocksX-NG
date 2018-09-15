@@ -24,8 +24,8 @@ Then I will rewrite the GUI code in Swift.
 
 ### Building
 
-- Xcode 9.3+
-- CocoaPods 1.3.1+
+- Xcode 9.4.1+
+- CocoaPods 1.5.3+
 
 ## Download
 
@@ -33,16 +33,16 @@ From [here](https://github.com/shadowsocks/ShadowsocksX-NG/releases/)
 
 ## Features
 
-- `ss-local` from shadowsocks-libev 3.1.3
+- `ss-local` from shadowsocks-libev 3.2.0
 - Support SIP003 plugins. Embed `kcptun` and `simple-obfs`.
 - Could update PAC by download GFW List from GitHub.
-- Shows QRCode for current server profile.
+- Shows QRCode for current server profile in legacy and SIP002 format.
 - Scans QRCode from screen.
 - Auto launch at login.
 - User rules for PAC.
 - Support for [AEAD Ciphers](https://shadowsocks.org/en/spec/AEAD-Ciphers.html)
 - HTTP Proxy by [privoxy](http://www.privoxy.org/)
-- Over [kcptun](https://github.com/xtaci/kcptun). Version 20170322
+- Over [kcptun](https://github.com/xtaci/kcptun). Version 20170322. [Deprecated - Please use kcptun by SIP003 plugin.This would be removed in future.]
 - Export/Import configure file.
 - An advanced preferences panel for configuring:
 	- Local SOCKS5 listen address.
