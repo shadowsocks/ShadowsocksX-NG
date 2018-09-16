@@ -6,7 +6,7 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-extension Observable {
+extension ObservableType {
     /**
      Propagates the observable sequence that reacts first.
 
@@ -14,8 +14,8 @@ extension Observable {
 
      - returns: An observable sequence that surfaces any of the given sequences, whichever reacted first.
      */
-    public static func amb<S: Sequence>(_ sequence: S) -> Observable<Element>
-        where S.Iterator.Element == Observable<Element> {
+    public static func amb<S: Sequence>(_ sequence: S) -> Observable<E>
+        where S.Iterator.Element == Observable<E> {
             return sequence.reduce(Observable<S.Iterator.Element.E>.never()) { a, o in
                 return a.amb(o.asObservable())
             }

@@ -21,19 +21,6 @@ extension ObservableType {
         -> Observable<R> {
         return self.asObservable().composeMap(transform)
     }
-
-    /**
-     Projects each element of an observable sequence into a new form by incorporating the element's index.
-
-     - seealso: [map operator on reactivex.io](http://reactivex.io/documentation/operators/map.html)
-
-     - parameter selector: A transform function to apply to each source element; the second parameter of the function represents the index of the source element.
-     - returns: An observable sequence whose elements are the result of invoking the transform function on each element of source.
-     */
-    public func mapWithIndex<R>(_ selector: @escaping (E, Int) throws -> R)
-        -> Observable<R> {
-        return MapWithIndex(source: asObservable(), selector: selector)
-    }
 }
 
 final fileprivate class MapSink<SourceType, O : ObserverType> : Sink<O>, ObserverType {
@@ -67,62 +54,6 @@ final fileprivate class MapSink<SourceType, O : ObserverType> : Sink<O>, Observe
             forwardOn(.completed)
             dispose()
         }
-    }
-}
-
-final fileprivate class MapWithIndexSink<SourceType, O : ObserverType> : Sink<O>, ObserverType {
-    typealias Selector = (SourceType, Int) throws -> ResultType
-
-    typealias ResultType = O.E
-    typealias Element = SourceType
-    typealias Parent = MapWithIndex<SourceType, ResultType>
-    
-    private let _selector: Selector
-
-    private var _index = 0
-
-    init(selector: @escaping Selector, observer: O, cancel: Cancelable) {
-        _selector = selector
-        super.init(observer: observer, cancel: cancel)
-    }
-
-    func on(_ event: Event<SourceType>) {
-        switch event {
-        case .next(let element):
-            do {
-                let mappedElement = try _selector(element, try incrementChecked(&_index))
-                forwardOn(.next(mappedElement))
-            }
-            catch let e {
-                forwardOn(.error(e))
-                dispose()
-            }
-        case .error(let error):
-            forwardOn(.error(error))
-            dispose()
-        case .completed:
-            forwardOn(.completed)
-            dispose()
-        }
-    }
-}
-
-final fileprivate class MapWithIndex<SourceType, ResultType> : Producer<ResultType> {
-    typealias Selector = (SourceType, Int) throws -> ResultType
-
-    private let _source: Observable<SourceType>
-
-    private let _selector: Selector
-
-    init(source: Observable<SourceType>, selector: @escaping Selector) {
-        _source = source
-        _selector = selector
-    }
-
-    override func run<O: ObserverType>(_ observer: O, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where O.E == ResultType {
-        let sink = MapWithIndexSink(selector: _selector, observer: observer, cancel: cancel)
-        let subscription = _source.subscribe(sink)
-        return (sink: sink, subscription: subscription)
     }
 }
 

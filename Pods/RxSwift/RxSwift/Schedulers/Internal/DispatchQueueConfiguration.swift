@@ -43,7 +43,11 @@ extension DispatchQueueConfiguration {
         let compositeDisposable = CompositeDisposable()
 
         let timer = DispatchSource.makeTimerSource(queue: queue)
-        timer.scheduleOneshot(deadline: deadline)
+        #if swift(>=4.0)
+            timer.schedule(deadline: deadline, leeway: leeway)
+        #else
+            timer.scheduleOneshot(deadline: deadline, leeway: leeway)
+        #endif
 
         // TODO:
         // This looks horrible, and yes, it is.
@@ -77,8 +81,12 @@ extension DispatchQueueConfiguration {
         var timerState = state
 
         let timer = DispatchSource.makeTimerSource(queue: queue)
-        timer.scheduleRepeating(deadline: initial, interval: dispatchInterval(period), leeway: leeway)
-
+        #if swift(>=4.0)
+            timer.schedule(deadline: initial, repeating: dispatchInterval(period), leeway: leeway)
+        #else
+            timer.scheduleRepeating(deadline: initial, interval: dispatchInterval(period), leeway: leeway)
+        #endif
+        
         // TODO:
         // This looks horrible, and yes, it is.
         // It looks like Apple has made a conceputal change here, and I'm unsure why.

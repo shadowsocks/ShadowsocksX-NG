@@ -6,7 +6,7 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-extension Observable {
+extension ObservableType {
     /**
      Generates an observable sequence by running a state-driven loop producing the sequence's elements, using the specified scheduler
      to run the loop send out observer messages.

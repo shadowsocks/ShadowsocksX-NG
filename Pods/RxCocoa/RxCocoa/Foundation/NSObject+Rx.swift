@@ -9,11 +9,9 @@
 #if !os(Linux)
 
 import Foundation.NSObject
-#if !RX_NO_MODULE
-    import RxSwift
-    #if SWIFT_PACKAGE && !DISABLE_SWIZZLING && !os(Linux)
-        import RxCocoaRuntime
-    #endif
+import RxSwift
+#if SWIFT_PACKAGE && !DISABLE_SWIZZLING && !os(Linux)
+    import RxCocoaRuntime
 #endif
 
 #if !DISABLE_SWIZZLING && !os(Linux)
@@ -65,7 +63,7 @@ extension Reactive where Base: NSObject {
      - parameter retainSelf: Retains self during observation if set `true`.
      - returns: Observable sequence of objects on `keyPath`.
      */
-    public func observe<E>(_ type: E.Type, _ keyPath: String, options: NSKeyValueObservingOptions = [.new, .initial], retainSelf: Bool = true) -> Observable<E?> {
+    public func observe<E>(_ type: E.Type, _ keyPath: String, options: KeyValueObservingOptions = [.new, .initial], retainSelf: Bool = true) -> Observable<E?> {
         return KVOObservable(object: base, keyPath: keyPath, options: options, retainTarget: retainSelf).asObservable()
     }
 }
@@ -89,7 +87,7 @@ extension Reactive where Base: NSObject {
      - parameter options: KVO mechanism notification options.
      - returns: Observable sequence of objects on `keyPath`.
      */
-    public func observeWeakly<E>(_ type: E.Type, _ keyPath: String, options: NSKeyValueObservingOptions = [.new, .initial]) -> Observable<E?> {
+    public func observeWeakly<E>(_ type: E.Type, _ keyPath: String, options: KeyValueObservingOptions = [.new, .initial]) -> Observable<E?> {
         return observeWeaklyKeyPathFor(base, keyPath: keyPath, options: options)
             .map { n in
                 return n as? E
@@ -133,7 +131,7 @@ extension Reactive where Base: AnyObject {
      
      In case some argument is `nil`, instance of `NSNull()` will be sent.
 
-     - returns: Observable sequence of object deallocating events.
+     - returns: Observable sequence of arguments passed to `selector` method.
      */
     public func sentMessage(_ selector: Selector) -> Observable<[Any]> {
         return synchronized {
@@ -162,7 +160,7 @@ extension Reactive where Base: AnyObject {
 
      In case some argument is `nil`, instance of `NSNull()` will be sent.
 
-     - returns: Observable sequence of object deallocating events.
+     - returns: Observable sequence of arguments passed to `selector` method.
      */
     public func methodInvoked(_ selector: Selector) -> Observable<[Any]> {
         return synchronized {
@@ -270,7 +268,7 @@ extension Reactive where Base: AnyObject {
         }
 
         @objc func deallocating() -> Void {
-            messageSent.on(.next())
+            messageSent.on(.next(()))
         }
 
         deinit {
@@ -332,7 +330,7 @@ fileprivate protocol KVOObservableProtocol {
     var target: AnyObject { get }
     var keyPath: String { get }
     var retainTarget: Bool { get }
-    var options: NSKeyValueObservingOptions { get }
+    var options: KeyValueObservingOptions { get }
 }
 
 fileprivate final class KVOObserver
@@ -347,7 +345,7 @@ fileprivate final class KVOObserver
             _ = Resources.incrementTotal()
         #endif
 
-        super.init(target: parent.target, retainTarget: parent.retainTarget, keyPath: parent.keyPath, options: parent.options, callback: callback)
+        super.init(target: parent.target, retainTarget: parent.retainTarget, keyPath: parent.keyPath, options: parent.options.nsOptions, callback: callback)
         self.retainSelf = self
     }
 
@@ -372,10 +370,10 @@ fileprivate final class KVOObservable<Element>
     var strongTarget: AnyObject?
 
     var keyPath: String
-    var options: NSKeyValueObservingOptions
+    var options: KeyValueObservingOptions
     var retainTarget: Bool
 
-    init(object: AnyObject, keyPath: String, options: NSKeyValueObservingOptions, retainTarget: Bool) {
+    init(object: AnyObject, keyPath: String, options: KeyValueObservingOptions, retainTarget: Bool) {
         self.target = object
         self.keyPath = keyPath
         self.options = options
@@ -403,7 +401,7 @@ fileprivate final class KVOObservable<Element>
 
 #if !DISABLE_SWIZZLING && !os(Linux)
 
-    fileprivate func observeWeaklyKeyPathFor(_ target: NSObject, keyPath: String, options: NSKeyValueObservingOptions) -> Observable<AnyObject?> {
+    fileprivate func observeWeaklyKeyPathFor(_ target: NSObject, keyPath: String, options: KeyValueObservingOptions) -> Observable<AnyObject?> {
         let components = keyPath.components(separatedBy: ".").filter { $0 != "self" }
 
         let observable = observeWeaklyKeyPathFor(target, keyPathSections: components, options: options)
@@ -440,10 +438,24 @@ fileprivate final class KVOObservable<Element>
         }
     }
 
+    fileprivate extension KeyValueObservingOptions {
+        fileprivate var nsOptions: NSKeyValueObservingOptions {
+            var result: UInt = 0
+            if self.contains(.new) {
+                result |= NSKeyValueObservingOptions.new.rawValue
+            }
+            if self.contains(.initial) {
+                result |= NSKeyValueObservingOptions.initial.rawValue
+            }
+
+            return NSKeyValueObservingOptions(rawValue: result)
+        }
+    }
+    
     fileprivate func observeWeaklyKeyPathFor(
         _ target: NSObject,
         keyPathSections: [String],
-        options: NSKeyValueObservingOptions
+        options: KeyValueObservingOptions
         ) -> Observable<AnyObject?> {
 
         weak var weakTarget: AnyObject? = target
@@ -455,7 +467,7 @@ fileprivate final class KVOObservable<Element>
         if property == nil {
             return Observable.error(RxCocoaError.invalidPropertyName(object: target, propertyName: propertyName))
         }
-        let propertyAttributes = property_getAttributes(property)
+        let propertyAttributes = property_getAttributes(property!)
 
         // should dealloc hook be in place if week property, or just create strong reference because it doesn't matter
         let isWeak = isWeakProperty(propertyAttributes.map(String.init) ?? "")

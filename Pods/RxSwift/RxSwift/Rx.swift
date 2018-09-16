@@ -93,7 +93,7 @@ func decrementChecked(_ i: inout Int) throws -> Int {
 
             if count > 1 {
                 synchronizationError(
-                    "⚠️ Reentrancy anomaly was detected. ⚠️\n" +
+                    "⚠️ Reentrancy anomaly was detected.\n" +
                     "  > Debugging: To debug this issue you can set a breakpoint in \(#file):\(#line) and observe the call stack.\n" +
                     "  > Problem: This behavior is breaking the observable sequence grammar. `next (error | completed)?`\n" +
                     "    This behavior breaks the grammar because there is overlapping between sequence events.\n" +
@@ -109,7 +109,7 @@ func decrementChecked(_ i: inout Int) throws -> Int {
 
             if _threads.count > 1 {
                 synchronizationError(
-                    "⚠️ Synchronization anomaly was detected. ⚠️\n" +
+                    "⚠️ Synchronization anomaly was detected.\n" +
                     "  > Debugging: To debug this issue you can set a breakpoint in \(#file):\(#line) and observe the call stack.\n" +
                     "  > Problem: This behavior is breaking the observable sequence grammar. `next (error | completed)?`\n" +
                     "    This behavior breaks the grammar because there is overlapping between sequence events.\n" +
@@ -132,3 +132,11 @@ func decrementChecked(_ i: inout Int) throws -> Int {
     }
 
 #endif
+
+/// RxSwift global hooks
+public enum Hooks {
+    
+    // Should capture call stack
+    public static var recordCallStackOnError: Bool = false
+
+}

@@ -22,7 +22,7 @@ extension ObservableType {
     }
 
     /**
-     Merges two observable sequences into one observable sequence by using latest element from the second sequence every time when `self` emitts an element.
+     Merges two observable sequences into one observable sequence by using latest element from the second sequence every time when `self` emits an element.
 
      - seealso: [combineLatest operator on reactivex.io](http://reactivex.io/documentation/operators/combinelatest.html)
 

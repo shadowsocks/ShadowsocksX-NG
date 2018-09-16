@@ -1,7 +1,7 @@
 //
 //  DispatchQueue+Alamofire.swift
 //
-//  Copyright (c) 2014-2016 Alamofire Software Foundation (http://alamofire.org/)
+//  Copyright (c) 2014-2018 Alamofire Software Foundation (http://alamofire.org/)
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -33,11 +33,5 @@ extension DispatchQueue {
 
     func after(_ delay: TimeInterval, execute closure: @escaping () -> Void) {
         asyncAfter(deadline: .now() + delay, execute: closure)
-    }
-
-    func syncResult<T>(_ closure: () -> T) -> T {
-        var result: T!
-        sync { result = closure() }
-        return result
     }
 }

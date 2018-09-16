@@ -26,8 +26,6 @@
 		9B3546721E802B1200B510B4 /* ToastWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B3546701E802B1200B510B4 /* ToastWindowController.swift */; };
 		9B3546731E802B1200B510B4 /* ToastWindowController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9B3546711E802B1200B510B4 /* ToastWindowController.xib */; };
 		9B3F7BFF1E82BF5B00C68B75 /* libev.4.dylib in Resources */ = {isa = PBXBuildFile; fileRef = 9B3F7BF71E82BF2D00C68B75 /* libev.4.dylib */; };
-		9B3F7C001E82BF5B00C68B75 /* libmbedcrypto.2.4.2.dylib in Resources */ = {isa = PBXBuildFile; fileRef = 9B3F7BF81E82BF2D00C68B75 /* libmbedcrypto.2.4.2.dylib */; };
-		9B3F7C021E82BF5B00C68B75 /* libudns.0.dylib in Resources */ = {isa = PBXBuildFile; fileRef = 9B3F7BFA1E82BF2E00C68B75 /* libudns.0.dylib */; };
 		9B3FFF0D1D05FEB30019A709 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B3FFF0C1D05FEB30019A709 /* Utils.swift */; };
 		9B3FFF141D0705810019A709 /* Notifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B3FFF131D0705810019A709 /* Notifications.swift */; };
 		9B3FFF171D072FDE0019A709 /* LaunchAtLoginController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9B3FFF161D072FDE0019A709 /* LaunchAtLoginController.m */; };
@@ -48,11 +46,11 @@
 		9B5832031E741F8D009D5B7D /* command-512.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B5832021E741F8D009D5B7D /* command-512.png */; };
 		9B5832071E7421B2009D5B7D /* virtual-server-icon-3.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B5832061E7421B2009D5B7D /* virtual-server-icon-3.png */; };
 		9B58320B1E7422DB009D5B7D /* http.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B58320A1E7422DB009D5B7D /* http.png */; };
-		9B5832111E742632009D5B7D /* kcptun_1.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B5832101E742632009D5B7D /* kcptun_1.png */; };
-		9B5AA0A1209C100C00E8B659 /* libsodium.23.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B5AA09F209C100C00E8B659 /* libsodium.23.dylib */; };
-		9B5AA0A3209C103900E8B659 /* libcares.2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B5AA0A2209C103900E8B659 /* libcares.2.dylib */; };
-		9B5AA0A5209C115B00E8B659 /* libmbedcrypto.2.8.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B5AA0A4209C115B00E8B659 /* libmbedcrypto.2.8.0.dylib */; };
+		9B5AA0AC209C43C200E8B659 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 9B5AA0AB209C43C200E8B659 /* Credits.rtf */; };
 		9B6BF9541E27B2570061B9A7 /* ServiceManagement.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B6BF9531E27B2570061B9A7 /* ServiceManagement.framework */; };
+		9B7297E7214D69C300FD24AA /* libmbedcrypto.2.12.0.dylib in Resources */ = {isa = PBXBuildFile; fileRef = 9B7297E5214D68F800FD24AA /* libmbedcrypto.2.12.0.dylib */; };
+		9B7297EA214D7C6B00FD24AA /* ShareServerProfilesWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B7297E8214D7C6B00FD24AA /* ShareServerProfilesWindowController.swift */; };
+		9B7297EC214DA88A00FD24AA /* ShareServerProfilesWindowController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9B7297EE214DA88A00FD24AA /* ShareServerProfilesWindowController.xib */; };
 		9B86459D1E7C2CAD00A84029 /* ProxyInterfacesViewCtrl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B86459C1E7C2CAD00A84029 /* ProxyInterfacesViewCtrl.swift */; };
 		9B938D991E864B38005F5636 /* menu_g_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B938D931E864B38005F5636 /* menu_g_icon.png */; };
 		9B938D9A1E864B38005F5636 /* menu_g_icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B938D941E864B38005F5636 /* menu_g_icon@2x.png */; };
@@ -60,18 +58,15 @@
 		9B938D9C1E864B38005F5636 /* menu_m_icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B938D961E864B38005F5636 /* menu_m_icon@2x.png */; };
 		9B938D9D1E864B38005F5636 /* menu_p_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B938D971E864B38005F5636 /* menu_p_icon.png */; };
 		9B938D9E1E864B38005F5636 /* menu_p_icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B938D981E864B38005F5636 /* menu_p_icon@2x.png */; };
-		9B9CBCA61E25E1DB00FC61AA /* KcptunProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B9CBCA51E25E1DB00FC61AA /* KcptunProfile.swift */; };
-		9B9CBCA81E26312E00FC61AA /* install_kcptun.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9B9CBCA71E26310E00FC61AA /* install_kcptun.sh */; };
-		9B9CBCAA1E2633CB00FC61AA /* kcptun_client in Resources */ = {isa = PBXBuildFile; fileRef = 9B9CBCA91E2633CB00FC61AA /* kcptun_client */; };
 		9B9CBCAF1E263B1600FC61AA /* libpcre.1.dylib in Resources */ = {isa = PBXBuildFile; fileRef = 9B9CBCAD1E263A6600FC61AA /* libpcre.1.dylib */; };
-		9B9CBCB41E26453C00FC61AA /* start_kcptun.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9B9CBCB01E2644DC00FC61AA /* start_kcptun.sh */; };
-		9B9CBCB51E26453C00FC61AA /* stop_kcptun.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9B9CBCB11E26450D00FC61AA /* stop_kcptun.sh */; };
 		9B9F13A71E8A28B300DE4794 /* LaunchHelper.app in CopyFiles */ = {isa = PBXBuildFile; fileRef = 9B9F13A61E8A282D00DE4794 /* LaunchHelper.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		9BA04B231D23D5A5005AAD7F /* ProxyConfTool.m in Sources */ = {isa = PBXBuildFile; fileRef = 9BA04B221D23D5A5005AAD7F /* ProxyConfTool.m */; };
 		9BAFE2E21E83ED7F00F71CCE /* PreferencesWinController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9BAFE2E41E83ED7F00F71CCE /* PreferencesWinController.xib */; };
 		9BB706A71D1B982300551F0E /* SWBApplication.m in Sources */ = {isa = PBXBuildFile; fileRef = 9BB706A51D1B982300551F0E /* SWBApplication.m */; };
 		9BBE7B751F508A0E00E8FFE5 /* fix_dir_owner.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9BBE7B711F50790500E8FFE5 /* fix_dir_owner.sh */; };
 		9BC70EDC1D2E3E3100EDA4CA /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 9B172A6C1D0ADDDD00B87B9A /* Localizable.strings */; };
+		9BCB1D6C20A15B0E005BABE7 /* libsodium.23.dylib in Resources */ = {isa = PBXBuildFile; fileRef = 9B5AA09F209C100C00E8B659 /* libsodium.23.dylib */; };
+		9BCB1D6D20A15B0E005BABE7 /* libcares.2.dylib in Resources */ = {isa = PBXBuildFile; fileRef = 9B5AA0A2209C103900E8B659 /* libcares.2.dylib */; };
 		9BEEF0691D04D4D500FC52B3 /* install_ss_local.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9BEEF0651D04CB8500FC52B3 /* install_ss_local.sh */; };
 		9BEEF06A1D04D4D500FC52B3 /* start_ss_local.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9BEEF0661D04CE8D00FC52B3 /* start_ss_local.sh */; };
 		9BEEF06B1D04D4D500FC52B3 /* stop_ss_local.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9BEEF0671D04CE9A00FC52B3 /* stop_ss_local.sh */; };
@@ -172,8 +167,6 @@
 		9B3546701E802B1200B510B4 /* ToastWindowController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ToastWindowController.swift; sourceTree = "<group>"; };
 		9B3546711E802B1200B510B4 /* ToastWindowController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ToastWindowController.xib; sourceTree = "<group>"; };
 		9B3F7BF71E82BF2D00C68B75 /* libev.4.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libev.4.dylib; sourceTree = "<group>"; };
-		9B3F7BF81E82BF2D00C68B75 /* libmbedcrypto.2.4.2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libmbedcrypto.2.4.2.dylib; sourceTree = "<group>"; };
-		9B3F7BFA1E82BF2E00C68B75 /* libudns.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libudns.0.dylib; sourceTree = "<group>"; };
 		9B3FFF0C1D05FEB30019A709 /* Utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		9B3FFF131D0705810019A709 /* Notifications.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Notifications.swift; sourceTree = "<group>"; };
 		9B3FFF151D072FDE0019A709 /* LaunchAtLoginController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LaunchAtLoginController.h; sourceTree = "<group>"; };
@@ -203,11 +196,14 @@
 		9B5832021E741F8D009D5B7D /* command-512.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "command-512.png"; sourceTree = "<group>"; };
 		9B5832061E7421B2009D5B7D /* virtual-server-icon-3.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "virtual-server-icon-3.png"; sourceTree = "<group>"; };
 		9B58320A1E7422DB009D5B7D /* http.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = http.png; sourceTree = "<group>"; };
-		9B5832101E742632009D5B7D /* kcptun_1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = kcptun_1.png; sourceTree = "<group>"; };
 		9B5AA09F209C100C00E8B659 /* libsodium.23.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libsodium.23.dylib; sourceTree = "<group>"; };
 		9B5AA0A2209C103900E8B659 /* libcares.2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libcares.2.dylib; sourceTree = "<group>"; };
-		9B5AA0A4209C115B00E8B659 /* libmbedcrypto.2.8.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libmbedcrypto.2.8.0.dylib; sourceTree = "<group>"; };
+		9B5AA0AB209C43C200E8B659 /* Credits.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = Credits.rtf; sourceTree = "<group>"; };
 		9B6BF9531E27B2570061B9A7 /* ServiceManagement.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ServiceManagement.framework; path = System/Library/Frameworks/ServiceManagement.framework; sourceTree = SDKROOT; };
+		9B7297E5214D68F800FD24AA /* libmbedcrypto.2.12.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libmbedcrypto.2.12.0.dylib; sourceTree = "<group>"; };
+		9B7297E8214D7C6B00FD24AA /* ShareServerProfilesWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareServerProfilesWindowController.swift; sourceTree = "<group>"; };
+		9B7297ED214DA88A00FD24AA /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/ShareServerProfilesWindowController.xib; sourceTree = "<group>"; };
+		9B7297F0214DA89000FD24AA /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/ShareServerProfilesWindowController.strings"; sourceTree = "<group>"; };
 		9B86459C1E7C2CAD00A84029 /* ProxyInterfacesViewCtrl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ProxyInterfacesViewCtrl.swift; sourceTree = "<group>"; };
 		9B938D931E864B38005F5636 /* menu_g_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = menu_g_icon.png; sourceTree = "<group>"; };
 		9B938D941E864B38005F5636 /* menu_g_icon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "menu_g_icon@2x.png"; sourceTree = "<group>"; };
@@ -215,12 +211,7 @@
 		9B938D961E864B38005F5636 /* menu_m_icon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "menu_m_icon@2x.png"; sourceTree = "<group>"; };
 		9B938D971E864B38005F5636 /* menu_p_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = menu_p_icon.png; sourceTree = "<group>"; };
 		9B938D981E864B38005F5636 /* menu_p_icon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "menu_p_icon@2x.png"; sourceTree = "<group>"; };
-		9B9CBCA51E25E1DB00FC61AA /* KcptunProfile.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KcptunProfile.swift; sourceTree = "<group>"; };
-		9B9CBCA71E26310E00FC61AA /* install_kcptun.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = install_kcptun.sh; sourceTree = "<group>"; };
-		9B9CBCA91E2633CB00FC61AA /* kcptun_client */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = kcptun_client; sourceTree = "<group>"; };
 		9B9CBCAD1E263A6600FC61AA /* libpcre.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libpcre.1.dylib; sourceTree = "<group>"; };
-		9B9CBCB01E2644DC00FC61AA /* start_kcptun.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = start_kcptun.sh; sourceTree = "<group>"; };
-		9B9CBCB11E26450D00FC61AA /* stop_kcptun.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = stop_kcptun.sh; sourceTree = "<group>"; };
 		9B9F13A11E8A282C00DE4794 /* LaunchHelper.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = LaunchHelper.xcodeproj; path = LaunchHelper/LaunchHelper.xcodeproj; sourceTree = "<group>"; };
 		9BA04B211D23D5A5005AAD7F /* ProxyConfTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ProxyConfTool.h; sourceTree = "<group>"; };
 		9BA04B221D23D5A5005AAD7F /* ProxyConfTool.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ProxyConfTool.m; sourceTree = "<group>"; };
@@ -257,12 +248,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9B5AA0A3209C103900E8B659 /* libcares.2.dylib in Frameworks */,
 				9B6BF9541E27B2570061B9A7 /* ServiceManagement.framework in Frameworks */,
 				9B3FFF3E1D08D9910019A709 /* SystemConfiguration.framework in Frameworks */,
-				9B5AA0A5209C115B00E8B659 /* libmbedcrypto.2.8.0.dylib in Frameworks */,
 				258E511BA910B0521B24DAB8 /* Pods_ShadowsocksX_NG.framework in Frameworks */,
-				9B5AA0A1209C100C00E8B659 /* libsodium.23.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -312,11 +300,10 @@
 		9B07EFB01D048E900052D9DF /* Support Files */ = {
 			isa = PBXGroup;
 			children = (
-				9B5AA09F209C100C00E8B659 /* libsodium.23.dylib */,
-				9B5AA0A2209C103900E8B659 /* libcares.2.dylib */,
-				9B5AA0A4209C115B00E8B659 /* libmbedcrypto.2.8.0.dylib */,
+				9B5AA0A9209C41EC00E8B659 /* ss-local */,
 				1C82DBA31FA96C7400B32551 /* simple-obfs */,
 				9B16E5991F99FD0700E54DC5 /* icons8-Blind Filled-50.png */,
+				9B5AA0AA209C42A900E8B659 /* privoxy */,
 				9B16E5971F99FD0700E54DC5 /* icons8-Eye Filled-50.png */,
 				9B938D931E864B38005F5636 /* menu_g_icon.png */,
 				9B938D941E864B38005F5636 /* menu_g_icon@2x.png */,
@@ -324,38 +311,21 @@
 				9B938D961E864B38005F5636 /* menu_m_icon@2x.png */,
 				9B938D971E864B38005F5636 /* menu_p_icon.png */,
 				9B938D981E864B38005F5636 /* menu_p_icon@2x.png */,
-				9B3F7BF71E82BF2D00C68B75 /* libev.4.dylib */,
-				9B3F7BF81E82BF2D00C68B75 /* libmbedcrypto.2.4.2.dylib */,
-				9B3F7BFA1E82BF2E00C68B75 /* libudns.0.dylib */,
-				9B5832101E742632009D5B7D /* kcptun_1.png */,
 				9B58320A1E7422DB009D5B7D /* http.png */,
 				9B5832061E7421B2009D5B7D /* virtual-server-icon-3.png */,
 				9B5832021E741F8D009D5B7D /* command-512.png */,
-				9B9CBCAD1E263A6600FC61AA /* libpcre.1.dylib */,
-				9B9CBCA91E2633CB00FC61AA /* kcptun_client */,
 				08FCA0FE1E24BE1A0070984F /* example-gui-config.json */,
-				C6D4298E1DA75988002A5711 /* install_privoxy.sh */,
-				C6D4298F1DA75988002A5711 /* privoxy */,
-				C6D429911DA75988002A5711 /* start_privoxy.sh */,
-				C6D429921DA75988002A5711 /* stop_privoxy.sh */,
 				9B172A6C1D0ADDDD00B87B9A /* Localizable.strings */,
 				9B3FFF4B1D09D8F70019A709 /* install_helper.sh */,
 				9B3FFF281D08A1DF0019A709 /* user-rule.txt */,
 				9B3FFF261D0898EB0019A709 /* gfwlist.txt */,
 				9B3FFF221D088E8D0019A709 /* abp.js */,
-				9B07EFA61D048BBB0052D9DF /* ss-local */,
 				9B07EFA81D048E880052D9DF /* menu_icon@2x.png */,
 				9B07EFA91D048E880052D9DF /* menu_icon.png */,
 				9B07EFAA1D048E880052D9DF /* menu_icon_disabled.png */,
 				9B07EFAB1D048E880052D9DF /* menu_icon_disabled@2x.png */,
-				9BEEF0651D04CB8500FC52B3 /* install_ss_local.sh */,
-				9B9CBCA71E26310E00FC61AA /* install_kcptun.sh */,
-				9BEEF0661D04CE8D00FC52B3 /* start_ss_local.sh */,
-				9BEEF0671D04CE9A00FC52B3 /* stop_ss_local.sh */,
-				C6D429981DA76FBC002A5711 /* privoxy.config.example */,
-				9B9CBCB01E2644DC00FC61AA /* start_kcptun.sh */,
-				9B9CBCB11E26450D00FC61AA /* stop_kcptun.sh */,
 				9BBE7B711F50790500E8FFE5 /* fix_dir_owner.sh */,
+				9B5AA0AB209C43C200E8B659 /* Credits.rtf */,
 			);
 			name = "Support Files";
 			sourceTree = "<group>";
@@ -400,7 +370,6 @@
 				9B0BFFEC1D0460A70040E62B /* MainMenu.xib */,
 				9B0BFFEF1D0460A70040E62B /* Info.plist */,
 				9BEEF06D1D04DCE400FC52B3 /* ServerProfile.swift */,
-				9B9CBCA51E25E1DB00FC61AA /* KcptunProfile.swift */,
 				9BEEF06F1D04DDB100FC52B3 /* ServerProfileManager.swift */,
 				9BEEF0771D04FE8A00FC52B3 /* LaunchAgentUtils.swift */,
 				9B3FFF0C1D05FEB30019A709 /* Utils.swift */,
@@ -444,6 +413,8 @@
 				9B86459C1E7C2CAD00A84029 /* ProxyInterfacesViewCtrl.swift */,
 				9B3546701E802B1200B510B4 /* ToastWindowController.swift */,
 				9B3546711E802B1200B510B4 /* ToastWindowController.xib */,
+				9B7297E8214D7C6B00FD24AA /* ShareServerProfilesWindowController.swift */,
+				9B7297EE214DA88A00FD24AA /* ShareServerProfilesWindowController.xib */,
 			);
 			name = UI;
 			sourceTree = "<group>";
@@ -454,6 +425,34 @@
 				9B3FFF461D09CD3B0019A709 /* main.m */,
 			);
 			path = proxy_conf_helper;
+			sourceTree = "<group>";
+		};
+		9B5AA0A9209C41EC00E8B659 /* ss-local */ = {
+			isa = PBXGroup;
+			children = (
+				9B7297E5214D68F800FD24AA /* libmbedcrypto.2.12.0.dylib */,
+				9B3F7BF71E82BF2D00C68B75 /* libev.4.dylib */,
+				9B5AA09F209C100C00E8B659 /* libsodium.23.dylib */,
+				9B5AA0A2209C103900E8B659 /* libcares.2.dylib */,
+				9B9CBCAD1E263A6600FC61AA /* libpcre.1.dylib */,
+				9B07EFA61D048BBB0052D9DF /* ss-local */,
+				9BEEF0651D04CB8500FC52B3 /* install_ss_local.sh */,
+				9BEEF0661D04CE8D00FC52B3 /* start_ss_local.sh */,
+				9BEEF0671D04CE9A00FC52B3 /* stop_ss_local.sh */,
+			);
+			name = "ss-local";
+			sourceTree = "<group>";
+		};
+		9B5AA0AA209C42A900E8B659 /* privoxy */ = {
+			isa = PBXGroup;
+			children = (
+				C6D429981DA76FBC002A5711 /* privoxy.config.example */,
+				C6D4298F1DA75988002A5711 /* privoxy */,
+				C6D4298E1DA75988002A5711 /* install_privoxy.sh */,
+				C6D429911DA75988002A5711 /* start_privoxy.sh */,
+				C6D429921DA75988002A5711 /* stop_privoxy.sh */,
+			);
+			name = privoxy;
 			sourceTree = "<group>";
 		};
 		9B9F13A21E8A282C00DE4794 /* Products */ = {
@@ -550,7 +549,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0730;
-				LastUpgradeCheck = 0900;
+				LastUpgradeCheck = 0930;
 				ORGANIZATIONNAME = qiuyuzhou;
 				TargetAttributes = {
 					9B0BFFE41D0460A70040E62B = {
@@ -609,19 +608,16 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9B7297E7214D69C300FD24AA /* libmbedcrypto.2.12.0.dylib in Resources */,
+				9BCB1D6C20A15B0E005BABE7 /* libsodium.23.dylib in Resources */,
+				9BCB1D6D20A15B0E005BABE7 /* libcares.2.dylib in Resources */,
 				9BBE7B751F508A0E00E8FFE5 /* fix_dir_owner.sh in Resources */,
 				9B3F7BFF1E82BF5B00C68B75 /* libev.4.dylib in Resources */,
 				1C82DBAA1FA96FB600B32551 /* install_simple_obfs.sh in Resources */,
-				9B3F7C001E82BF5B00C68B75 /* libmbedcrypto.2.4.2.dylib in Resources */,
-				9B3F7C021E82BF5B00C68B75 /* libudns.0.dylib in Resources */,
-				9B9CBCB41E26453C00FC61AA /* start_kcptun.sh in Resources */,
-				9B9CBCB51E26453C00FC61AA /* stop_kcptun.sh in Resources */,
 				9B938D9A1E864B38005F5636 /* menu_g_icon@2x.png in Resources */,
 				9B938D9E1E864B38005F5636 /* menu_p_icon@2x.png in Resources */,
 				9B9CBCAF1E263B1600FC61AA /* libpcre.1.dylib in Resources */,
-				9B9CBCA81E26312E00FC61AA /* install_kcptun.sh in Resources */,
 				9B5832031E741F8D009D5B7D /* command-512.png in Resources */,
-				9B9CBCAA1E2633CB00FC61AA /* kcptun_client in Resources */,
 				9B3FFF541D09E2D10019A709 /* proxy_conf_helper in Resources */,
 				9B5832071E7421B2009D5B7D /* virtual-server-icon-3.png in Resources */,
 				9BEEF0691D04D4D500FC52B3 /* install_ss_local.sh in Resources */,
@@ -630,7 +626,6 @@
 				C6D429971DA75988002A5711 /* stop_privoxy.sh in Resources */,
 				C8E42A6E1D4F2CAF0074C7EA /* UserRulesController.xib in Resources */,
 				9BEEF06A1D04D4D500FC52B3 /* start_ss_local.sh in Resources */,
-				9B5832111E742632009D5B7D /* kcptun_1.png in Resources */,
 				9B16E59A1F99FD0700E54DC5 /* icons8-Eye Filled-50.png in Resources */,
 				9B938D9C1E864B38005F5636 /* menu_m_icon@2x.png in Resources */,
 				9B3546731E802B1200B510B4 /* ToastWindowController.xib in Resources */,
@@ -646,6 +641,7 @@
 				1C82DBA81FA96C7500B32551 /* obfs-local in Resources */,
 				9B938D9D1E864B38005F5636 /* menu_p_icon.png in Resources */,
 				9B938D9B1E864B38005F5636 /* menu_m_icon.png in Resources */,
+				9B7297EC214DA88A00FD24AA /* ShareServerProfilesWindowController.xib in Resources */,
 				9B3FFF271D0898EB0019A709 /* gfwlist.txt in Resources */,
 				C6D429931DA75988002A5711 /* install_privoxy.sh in Resources */,
 				9B58320B1E7422DB009D5B7D /* http.png in Resources */,
@@ -655,6 +651,7 @@
 				9B3FFF4C1D09D8F70019A709 /* install_helper.sh in Resources */,
 				C6D429961DA75988002A5711 /* start_privoxy.sh in Resources */,
 				9B07EFAC1D048E880052D9DF /* menu_icon@2x.png in Resources */,
+				9B5AA0AC209C43C200E8B659 /* Credits.rtf in Resources */,
 				9B07EFA71D048BBB0052D9DF /* ss-local in Resources */,
 				9B07EFAF1D048E880052D9DF /* menu_icon_disabled@2x.png in Resources */,
 				9B07EFAE1D048E880052D9DF /* menu_icon_disabled.png in Resources */,
@@ -825,6 +822,7 @@
 				9B5831F61E7302F8009D5B7D /* ShortcutsController.m in Sources */,
 				9BB706A71D1B982300551F0E /* SWBApplication.m in Sources */,
 				9B3FFF1E1D0732660019A709 /* Utils.m in Sources */,
+				9B7297EA214D7C6B00FD24AA /* ShareServerProfilesWindowController.swift in Sources */,
 				9B3FFF321D08CEE40019A709 /* SWBQRCodeWindowController.m in Sources */,
 				9B3FFF211D08826E0019A709 /* PACUtils.swift in Sources */,
 				9B3FFF141D0705810019A709 /* Notifications.swift in Sources */,
@@ -837,7 +835,6 @@
 				9B5831FF1E741969009D5B7D /* PreferencesWinController.swift in Sources */,
 				9BEEF0781D04FE8A00FC52B3 /* LaunchAgentUtils.swift in Sources */,
 				9B3546721E802B1200B510B4 /* ToastWindowController.swift in Sources */,
-				9B9CBCA61E25E1DB00FC61AA /* KcptunProfile.swift in Sources */,
 				C8E42A6C1D4F270A0074C7EA /* UserRulesController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -902,6 +899,15 @@
 			name = PreferencesWindowController.xib;
 			sourceTree = "<group>";
 		};
+		9B7297EE214DA88A00FD24AA /* ShareServerProfilesWindowController.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				9B7297ED214DA88A00FD24AA /* Base */,
+				9B7297F0214DA89000FD24AA /* zh-Hans */,
+			);
+			name = ShareServerProfilesWindowController.xib;
+			sourceTree = "<group>";
+		};
 		9BAFE2E41E83ED7F00F71CCE /* PreferencesWinController.xib */ = {
 			isa = PBXVariantGroup;
 			children = (
@@ -937,12 +943,14 @@
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
@@ -991,12 +999,14 @@
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;

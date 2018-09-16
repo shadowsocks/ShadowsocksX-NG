@@ -17,6 +17,8 @@
 
 #if !DISABLE_SWIZZLING
 
+#define NSErrorParam NSError *__autoreleasing __nullable * __nullable
+
 // self + cmd
 #define HIDDEN_ARGUMENT_COUNT   2
 
@@ -31,7 +33,7 @@ typedef unsigned short      rx_ushort;
 typedef unsigned int        rx_uint;
 typedef unsigned long       rx_ulong;
 typedef id (^rx_block)(id);
-typedef BOOL (^RXInterceptWithOptimizedObserver)(RXObjCRuntime * __nonnull self, Class __nonnull class, SEL __nonnull selector, NSError ** __nonnull error);
+typedef BOOL (^RXInterceptWithOptimizedObserver)(RXObjCRuntime * __nonnull self, Class __nonnull class, SEL __nonnull selector, NSErrorParam error);
 
 static CFTypeID  defaultTypeID;
 static SEL       deallocSelector;
@@ -75,7 +77,7 @@ static supported_type_t supported_types[] = {
     { .encoding = @encode(void)},
     { .encoding = @encode(id)},
     { .encoding = @encode(Class)},
-    { .encoding = @encode(void (^)())},
+    { .encoding = @encode(void (^)(void))},
     { .encoding = @encode(char)},
     { .encoding = @encode(short)},
     { .encoding = @encode(int)},
@@ -153,7 +155,7 @@ id __nonnull RX_extract_argument_at_index(NSInvocation * __nonnull invocation, N
     
     if (strcmp(argumentType, @encode(id)) == 0
         || strcmp(argumentType, @encode(Class)) == 0
-        || strcmp(argumentType, @encode(void (^)())) == 0
+        || strcmp(argumentType, @encode(void (^)(void))) == 0
     ) {
         __unsafe_unretained id argument = nil;
         [invocation getArgument:&argument atIndex:index];
@@ -272,12 +274,12 @@ static NSString * __nonnull RX_method_encoding(Method __nonnull method) {
 +(RXObjCRuntime*)instance;
 
 -(void)performLocked:(void (^)(RXObjCRuntime* __nonnull))action;
--(IMP __nullable)ensurePrepared:(id __nonnull)target forObserving:(SEL __nonnull)selector error:(NSError** __nonnull)error;
+-(IMP __nullable)ensurePrepared:(id __nonnull)target forObserving:(SEL __nonnull)selector error:(NSErrorParam)error;
 -(BOOL)ensureSwizzledSelector:(SEL __nonnull)selector
                       ofClass:(Class __nonnull)class
-   newImplementationGenerator:(IMP(^)())newImplementationGenerator
+   newImplementationGenerator:(IMP(^)(void))newImplementationGenerator
 replacementImplementationGenerator:(IMP (^)(IMP originalImplementation))replacementImplementationGenerator
-                        error:(NSError ** __nonnull)error;
+                        error:(NSErrorParam)error;
 
 
 +(void)registerOptimizedObserver:(RXInterceptWithOptimizedObserver)registration encodedAs:(SEL)selector;
@@ -288,7 +290,7 @@ replacementImplementationGenerator:(IMP (^)(IMP originalImplementation))replacem
  All API methods perform work on locked instance of `RXObjCRuntime`. In that way it's easy to prove
  that every action is properly locked.
  */
-IMP __nullable RX_ensure_observing(id __nonnull target, SEL __nonnull selector, NSError ** __nonnull error) {
+IMP __nullable RX_ensure_observing(id __nonnull target, SEL __nonnull selector, NSErrorParam error) {
     __block IMP targetImplementation = nil;
     // Target is the second object that needs to be synchronized to TRY to make sure other swizzling framework
     // won't do something in parallel.
@@ -313,7 +315,7 @@ IMP __nullable RX_ensure_observing(id __nonnull target, SEL __nonnull selector, 
     return targetImplementation;
 }
 
-IMP __nonnull RX_default_target_implementation() {
+IMP __nonnull RX_default_target_implementation(void) {
     return _objc_msgForward;
 }
 
@@ -376,7 +378,7 @@ IMP __nonnull RX_default_target_implementation() {
 #define GENERATE_OBSERVE_METHOD_DECLARATION(...)                                 \
     -(BOOL)GENERATE_METHOD_IDENTIFIER(__VA_ARGS__):(Class __nonnull)class        \
                                           selector:(SEL)selector                 \
-                                             error:(NSError ** __nonnull)error { \
+                                             error:(NSErrorParam)error {         \
 
 
 #define BUILD_EXAMPLE_METHOD(return_value, ...) \
@@ -396,7 +398,7 @@ IMP __nonnull RX_default_target_implementation() {
     +(void)load {                                                                                                                                       \
        __unused SEL exampleSelector = @selector(BUILD_EXAMPLE_METHOD_SELECTOR(return_value, ## __VA_ARGS__));                                           \
        [self registerOptimizedObserver:^BOOL(RXObjCRuntime * __nonnull self, Class __nonnull class,                                                     \
-            SEL __nonnull selector, NSError **__nonnull error) {                                                                                        \
+            SEL __nonnull selector, NSErrorParam error) {                                                                                               \
             return [self GENERATE_METHOD_IDENTIFIER(return_value, ## __VA_ARGS__):class selector:selector error:error];                                 \
        } encodedAs:exampleSelector];                                                                                                                    \
     }                                                                                                                                                   \
@@ -408,9 +410,9 @@ IMP __nonnull RX_default_target_implementation() {
 #define NO_BODY(...)
 
 #define SWIZZLE_INFRASTRUCTURE_METHOD(return_value, method_name, parameters, method_selector, body, ...)               \
-    SWIZZLE_METHOD(return_value, -(BOOL)method_name:(Class __nonnull)class parameters error:(NSError **__nonnull)error \
+    SWIZZLE_METHOD(return_value, -(BOOL)method_name:(Class __nonnull)class parameters error:(NSErrorParam)error        \
         {                                                                                                              \
-            SEL selector = method_selector; , body, NO_BODY, __VA_ARGS__)                                                       \
+            SEL selector = method_selector; , body, NO_BODY, __VA_ARGS__)                                              \
 
 
 // common base
@@ -418,7 +420,7 @@ IMP __nonnull RX_default_target_implementation() {
 #define SWIZZLE_METHOD(return_value, method_prototype, body, invoked_body, ...)                                          \
 method_prototype                                                                                                         \
     __unused SEL rxSelector = RX_selector(selector);                                                                     \
-    IMP (^newImplementationGenerator)() = ^() {                                                                          \
+    IMP (^newImplementationGenerator)(void) = ^() {                                                                          \
         __block IMP thisIMP = nil;                                                                                       \
         id newImplementation = ^return_value(__unsafe_unretained id self DECLARE_ARGUMENTS(__VA_ARGS__)) {               \
             body(__VA_ARGS__)                                                                                            \
@@ -606,7 +608,7 @@ static NSMutableDictionary<NSString *, RXInterceptWithOptimizedObserver> *optimi
 /**
  This is the main entry point for observing messages sent to arbitrary objects.
  */
--(IMP __nullable)ensurePrepared:(id __nonnull)target forObserving:(SEL __nonnull)selector error:(NSError** __nonnull)error {
+-(IMP __nullable)ensurePrepared:(id __nonnull)target forObserving:(SEL __nonnull)selector error:(NSErrorParam)error {
     Method instanceMethod = class_getInstanceMethod([target class], selector);
     if (instanceMethod == nil) {
         RX_THROW_ERROR([NSError errorWithDomain:RXObjCRuntimeErrorDomain
@@ -700,7 +702,7 @@ static NSMutableDictionary<NSString *, RXInterceptWithOptimizedObserver> *optimi
                                    userInfo:nil], nil);
 }
 
--(Class __nullable)prepareTargetClassForObserving:(id __nonnull)target error:(NSError **__nonnull)error {
+-(Class __nullable)prepareTargetClassForObserving:(id __nonnull)target error:(NSErrorParam)error {
     Class swizzlingClass = objc_getAssociatedObject(target, &RxSwizzlingTargetClassKey);
     if (swizzlingClass != nil) {
         return swizzlingClass;
@@ -796,7 +798,7 @@ static NSMutableDictionary<NSString *, RXInterceptWithOptimizedObserver> *optimi
 -(BOOL)observeByForwardingMessages:(Class __nonnull)swizzlingImplementorClass
                           selector:(SEL)selector
                             target:(id __nonnull)target
-                             error:(NSError **__nonnull)error {
+                             error:(NSErrorParam)error {
     if (![self ensureForwardingMethodsAreSwizzled:swizzlingImplementorClass error:error]) {
         return NO;
     }
@@ -856,7 +858,7 @@ static NSMutableDictionary<NSString *, RXInterceptWithOptimizedObserver> *optimi
  but to know when instance of a `NSString` was deallocated, performance hit will be only felt on a 
  single instance of `NSString`, not all instances of `NSString`s.
  */
--(Class __nullable)ensureHasDynamicFakeSubclass:(Class __nonnull)class error:(NSError **)error {
+-(Class __nullable)ensureHasDynamicFakeSubclass:(Class __nonnull)class error:(NSErrorParam)error {
     Class dynamicFakeSubclass = self.dynamicSubclassByRealClass[CLASS_VALUE(class)];
     if (dynamicFakeSubclass != nil) {
         return dynamicFakeSubclass;
@@ -879,7 +881,7 @@ static NSMutableDictionary<NSString *, RXInterceptWithOptimizedObserver> *optimi
     return dynamicFakeSubclass;
 }
 
--(BOOL)ensureForwardingMethodsAreSwizzled:(Class __nonnull)class error:(NSError ** __nonnull)error {
+-(BOOL)ensureForwardingMethodsAreSwizzled:(Class __nonnull)class error:(NSErrorParam)error {
     NSValue *classValue = CLASS_VALUE(class);
     if ([self.classesThatSupportObservingByForwarding containsObject:classValue]) {
         return YES;
@@ -922,9 +924,9 @@ static NSMutableDictionary<NSString *, RXInterceptWithOptimizedObserver> *optimi
 
 -(BOOL)ensureSwizzledSelector:(SEL __nonnull)selector
                       ofClass:(Class __nonnull)class
-   newImplementationGenerator:(IMP(^)())newImplementationGenerator
+   newImplementationGenerator:(IMP(^)(void))newImplementationGenerator
 replacementImplementationGenerator:(IMP (^)(IMP originalImplementation))replacementImplementationGenerator
-                        error:(NSError ** __nonnull)error {
+                        error:(NSErrorParam)error {
     if ([self interceptorImplementationForSelector:selector forClass:class] != nil) {
         DLOG(@"Trying to register same intercept at least once, this sounds like a possible bug");
         return YES;

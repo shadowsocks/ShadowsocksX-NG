@@ -2,6 +2,9 @@
 /* Class = "NSMenuItem"; title = "Preferences..."; ObjectID = "4CS-qD-zW5"; */
 "4CS-qD-zW5.title" = "偏好设置...";
 
+/* Class = "NSMenuItem"; title = "Import Server URLs From Pasteboard"; ObjectID = "7Eq-XD-K5c"; */
+"7Eq-XD-K5c.title" = "从剪贴板导入服务器配置链接";
+
 /* Class = "NSMenuItem"; title = "应用用户自定规则到 PAC"; ObjectID = "6qf-cg-HXc"; */
 "6qf-cg-HXc.title" = "应用用户自定规则到 PAC";
 
@@ -30,7 +33,7 @@
 "Mw3-Jm-eXA.title" = "全局模式";
 
 /* Class = "NSMenuItem"; title = "扫描屏幕上的二维码..."; ObjectID = "Qe6-bF-paT"; */
-"Qe6-bF-paT.title" = "扫描屏幕上的二维码...";
+"Qe6-bF-paT.title" = "扫描屏幕上的二维码";
 
 /* Class = "NSMenuItem"; title = "显示当前服务器的二维码..."; ObjectID = "R6A-96-Zcb"; */
 "R6A-96-Zcb.title" = "显示当前服务器的二维码...";
@@ -98,4 +101,12 @@
 /* Class = "NSMenuItem"; title = "Preferences"; ObjectID = "iVn-LD-Ynd"; */
 "iVn-LD-Ynd.title" = "偏好设置";
 
+/* Class = "NSMenuItem"; title = "Share Server Profiles..."; ObjectID = "r5z-RB-LIZ"; */
+"r5z-RB-LIZ.title" = "分享服务器配置...";
+
+/* Class = "NSMenuItem"; title = "Help"; ObjectID = "Xg8-er-4Ov"; */
+"Xg8-er-4Ov.title" = "帮助";
+
+/* Class = "NSMenuItem"; title = "Check for Updates..."; ObjectID = "hLv-bp-doM"; */
+"hLv-bp-doM.title" = "检查更新...";
 

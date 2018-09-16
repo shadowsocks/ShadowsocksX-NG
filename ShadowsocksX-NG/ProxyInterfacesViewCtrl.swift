@@ -28,7 +28,7 @@ class ProxyInterfacesViewCtrl: NSViewController, NSTableViewDataSource, NSTableV
             selectedNetworkServices = NSMutableSet()
         }
         
-        networkServices = ProxyConfTool.networkServicesList() as NSArray!
+        networkServices = ProxyConfTool.networkServicesList() as NSArray?
         tableView.reloadData()
     }
 

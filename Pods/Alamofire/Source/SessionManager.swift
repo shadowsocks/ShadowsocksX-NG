@@ -1,7 +1,7 @@
 //
 //  SessionManager.swift
 //
-//  Copyright (c) 2014-2016 Alamofire Software Foundation (http://alamofire.org/)
+//  Copyright (c) 2014-2018 Alamofire Software Foundation (http://alamofire.org/)
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -249,6 +249,7 @@ open class SessionManager {
     /// - parameter urlRequest: The URL request.
     ///
     /// - returns: The created `DataRequest`.
+    @discardableResult
     open func request(_ urlRequest: URLRequestConvertible) -> DataRequest {
         var originalRequest: URLRequest?
 
@@ -847,6 +848,10 @@ open class SessionManager {
         do {
             let task = try originalTask.task(session: session, adapter: adapter, queue: queue)
 
+            if let originalTask = request.task {
+                delegate[originalTask] = nil // removes the old request to avoid endless growth
+            }
+
             request.delegate.task = task // resets all task delegate data
 
             request.retryCount += 1
@@ -874,12 +879,16 @@ open class SessionManager {
                     return
                 }
 
-                let retrySucceeded = strongSelf.retry(request)
+                DispatchQueue.utility.after(timeDelay) {
+                    guard let strongSelf = self else { return }
 
-                if retrySucceeded, let task = request.task {
-                    strongSelf.delegate[task] = request
-                } else {
-                    if strongSelf.startRequestsImmediately { request.resume() }
+                    let retrySucceeded = strongSelf.retry(request)
+
+                    if retrySucceeded, let task = request.task {
+                        strongSelf.delegate[task] = request
+                    } else {
+                        if strongSelf.startRequestsImmediately { request.resume() }
+                    }
                 }
             }
         }

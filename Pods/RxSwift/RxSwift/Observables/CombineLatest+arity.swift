@@ -11,7 +11,7 @@
 
 // 2
 
-extension Observable {
+extension ObservableType {
     /**
     Merges the specified observable sequences into one observable sequence by using the selector function whenever any of the observable sequences produces an element.
 
@@ -109,7 +109,7 @@ final class CombineLatest2<E1, E2, R> : Producer<R> {
 
 // 3
 
-extension Observable {
+extension ObservableType {
     /**
     Merges the specified observable sequences into one observable sequence by using the selector function whenever any of the observable sequences produces an element.
 
@@ -214,7 +214,7 @@ final class CombineLatest3<E1, E2, E3, R> : Producer<R> {
 
 // 4
 
-extension Observable {
+extension ObservableType {
     /**
     Merges the specified observable sequences into one observable sequence by using the selector function whenever any of the observable sequences produces an element.
 
@@ -326,7 +326,7 @@ final class CombineLatest4<E1, E2, E3, E4, R> : Producer<R> {
 
 // 5
 
-extension Observable {
+extension ObservableType {
     /**
     Merges the specified observable sequences into one observable sequence by using the selector function whenever any of the observable sequences produces an element.
 
@@ -445,7 +445,7 @@ final class CombineLatest5<E1, E2, E3, E4, E5, R> : Producer<R> {
 
 // 6
 
-extension Observable {
+extension ObservableType {
     /**
     Merges the specified observable sequences into one observable sequence by using the selector function whenever any of the observable sequences produces an element.
 
@@ -571,7 +571,7 @@ final class CombineLatest6<E1, E2, E3, E4, E5, E6, R> : Producer<R> {
 
 // 7
 
-extension Observable {
+extension ObservableType {
     /**
     Merges the specified observable sequences into one observable sequence by using the selector function whenever any of the observable sequences produces an element.
 
@@ -704,7 +704,7 @@ final class CombineLatest7<E1, E2, E3, E4, E5, E6, E7, R> : Producer<R> {
 
 // 8
 
-extension Observable {
+extension ObservableType {
     /**
     Merges the specified observable sequences into one observable sequence by using the selector function whenever any of the observable sequences produces an element.
 

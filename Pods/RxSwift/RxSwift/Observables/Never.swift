@@ -6,7 +6,7 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-extension Observable {
+extension ObservableType {
 
     /**
      Returns a non-terminating observable sequence, which can be used to denote an infinite duration.

@@ -6,9 +6,7 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-#if !RX_NO_MODULE
 import RxSwift
-#endif
 
 /// Protocol that enables extension of `ControlProperty`.
 public protocol ControlPropertyType : ObservableType, ObserverType {
@@ -40,7 +38,7 @@ public protocol ControlPropertyType : ObservableType, ObserverType {
     **If they aren't, then using this trait communicates wrong properties and could potentially break someone's code.**
 
     **In case `values` observable sequence that is being passed into initializer doesn't satisfy all enumerated
-    properties, please don't use this unit.**
+    properties, please don't use this trait.**
 */
 public struct ControlProperty<PropertyType> : ControlPropertyType {
     public typealias E = PropertyType
@@ -102,7 +100,7 @@ public struct ControlProperty<PropertyType> : ControlPropertyType {
     public func on(_ event: Event<E>) {
         switch event {
         case .error(let error):
-            bindingErrorToInterface(error)
+            bindingError(error)
         case .next:
             _valueSink.on(event)
         case .completed:

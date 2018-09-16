@@ -60,7 +60,7 @@ extension ObservableType {
     - returns: A connectable observable sequence that shares a single subscription to the underlying sequence.
     */
     public func publish() -> ConnectableObservable<E> {
-        return self.multicast(PublishSubject())
+        return self.multicast { PublishSubject() }
     }
 }
 
@@ -78,7 +78,7 @@ extension ObservableType {
      */
     public func replay(_ bufferSize: Int)
         -> ConnectableObservable<E> {
-        return self.multicast(ReplaySubject.create(bufferSize: bufferSize))
+        return self.multicast { ReplaySubject.create(bufferSize: bufferSize) }
     }
 
     /**
@@ -92,7 +92,7 @@ extension ObservableType {
      */
     public func replayAll()
         -> ConnectableObservable<E> {
-        return self.multicast(ReplaySubject.createUnbounded())
+        return self.multicast { ReplaySubject.createUnbounded() }
     }
 }
 
@@ -101,28 +101,12 @@ extension ConnectableObservableType {
     /**
     Returns an observable sequence that stays connected to the source as long as there is at least one subscription to the observable sequence.
 
-    - seealso: [refCount operator on reactivex.io](http://reactivex.io/documentation/operators/refCount.html)
+    - seealso: [refCount operator on reactivex.io](http://reactivex.io/documentation/operators/refcount.html)
     
     - returns: An observable sequence that stays connected to the source as long as there is at least one subscription to the observable sequence.
     */
     public func refCount() -> Observable<E> {
         return RefCount(source: self)
-    }
-}
-
-extension ObservableType {
-
-    /**
-     Returns an observable sequence that shares a single subscription to the underlying sequence.
-
-     This operator is a specialization of publish which creates a subscription when the number of observers goes from zero to one, then shares that subscription with all subsequent observers until the number of observers returns to zero, at which point the subscription is disposed.
-
-     - seealso: [share operator on reactivex.io](http://reactivex.io/documentation/operators/refcount.html)
-
-     - returns: An observable sequence that contains the elements of a sequence produced by multicasting the source sequence.
-     */
-    public func share() -> Observable<E> {
-        return self.publish().refCount()
     }
 }
 

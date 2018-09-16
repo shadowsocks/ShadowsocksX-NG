@@ -6,7 +6,7 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-extension Observable {
+extension ObservableType {
     /**
      Merges the specified observable sequences into one observable sequence by using the selector function whenever all of the observable sequences have produced an element at a corresponding index.
 
@@ -15,7 +15,7 @@ extension Observable {
      - parameter resultSelector: Function to invoke for each series of elements at corresponding indexes in the sources.
      - returns: An observable sequence containing the result of combining elements of the sources using the specified result selector function.
      */
-    public static func zip<C: Collection>(_ collection: C, _ resultSelector: @escaping ([C.Iterator.Element.E]) throws -> Element) -> Observable<Element>
+    public static func zip<C: Collection>(_ collection: C, _ resultSelector: @escaping ([C.Iterator.Element.E]) throws -> E) -> Observable<E>
         where C.Iterator.Element: ObservableType {
         return ZipCollectionType(sources: collection, resultSelector: resultSelector)
     }
@@ -27,8 +27,8 @@ extension Observable {
 
      - returns: An observable sequence containing the result of combining elements of the sources.
      */
-    public static func zip<C: Collection>(_ collection: C) -> Observable<[Element]>
-        where C.Iterator.Element: ObservableType, C.Iterator.Element.E == Element {
+    public static func zip<C: Collection>(_ collection: C) -> Observable<[E]>
+        where C.Iterator.Element: ObservableType, C.Iterator.Element.E == E {
         return ZipCollectionType(sources: collection, resultSelector: { $0 })
     }
     
@@ -158,7 +158,7 @@ final fileprivate class ZipCollectionType<C: Collection, R> : Producer<R> where 
     init(sources: C, resultSelector: @escaping ResultSelector) {
         self.sources = sources
         self.resultSelector = resultSelector
-        self.count = Int(self.sources.count.toIntMax())
+        self.count = Int(Int64(self.sources.count))
     }
     
     override func run<O : ObserverType>(_ observer: O, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where O.E == R {

@@ -143,6 +143,7 @@ class TailRecursiveSink<S: Sequence, O: ObserverType>
         super.dispose()
         
         _subscription.dispose()
+        _gate.dispose()
         
         schedule(.dispose)
     }

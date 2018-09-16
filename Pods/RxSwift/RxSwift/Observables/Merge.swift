@@ -21,18 +21,6 @@ extension ObservableType {
             return FlatMap(source: asObservable(), selector: selector)
     }
 
-    /**
-     Projects each element of an observable sequence to an observable sequence by incorporating the element's index and merges the resulting observable sequences into one observable sequence.
-
-     - seealso: [flatMap operator on reactivex.io](http://reactivex.io/documentation/operators/flatmap.html)
-
-     - parameter selector: A transform function to apply to each element; the second parameter of the function represents the index of the source element.
-     - returns: An observable sequence whose elements are the result of invoking the one-to-many transform function on each element of the input sequence.
-     */
-    public func flatMapWithIndex<O: ObservableConvertibleType>(_ selector: @escaping (E, Int) throws -> O)
-        -> Observable<O.E> {
-            return FlatMapWithIndex(source: asObservable(), selector: selector)
-    }
 }
 
 extension ObservableType {
@@ -93,7 +81,7 @@ extension ObservableType where E : ObservableConvertibleType {
     }
 }
 
-extension Observable {
+extension ObservableType {
     /**
      Merges elements from all observable sequences from collection into a single observable sequence.
 
@@ -367,22 +355,6 @@ fileprivate final class FlatMapSink<SourceElement, SourceSequence: ObservableCon
     }
 }
 
-fileprivate final class FlatMapWithIndexSink<SourceElement, SourceSequence: ObservableConvertibleType, Observer: ObserverType> : MergeSink<SourceElement, SourceSequence, Observer> where Observer.E == SourceSequence.E {
-    typealias Selector = (SourceElement, Int) throws -> SourceSequence
-
-    private var _index = 0
-    private let _selector: Selector
-
-    init(selector: @escaping Selector, observer: Observer, cancel: Cancelable) {
-        _selector = selector
-        super.init(observer: observer, cancel: cancel)
-    }
-
-    override func performMap(_ element: SourceElement) throws -> SourceSequence {
-        return try _selector(element, try incrementChecked(&_index))
-    }
-}
-
 // MARK: FlatMapFirst
 
 fileprivate final class FlatMapFirstSink<SourceElement, SourceSequence: ObservableConvertibleType, Observer: ObserverType> : MergeSink<SourceElement, SourceSequence, Observer> where Observer.E == SourceSequence.E {
@@ -560,26 +532,6 @@ final fileprivate class FlatMap<SourceElement, SourceSequence: ObservableConvert
         let subscription = sink.run(_source)
         return (sink: sink, subscription: subscription)
     }
-}
-
-final fileprivate class FlatMapWithIndex<SourceElement, SourceSequence: ObservableConvertibleType>: Producer<SourceSequence.E> {
-    typealias Selector = (SourceElement, Int) throws -> SourceSequence
-
-    private let _source: Observable<SourceElement>
-    
-    private let _selector: Selector
-
-    init(source: Observable<SourceElement>, selector: @escaping Selector) {
-        _source = source
-        _selector = selector
-    }
-    
-    override func run<O: ObserverType>(_ observer: O, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where O.E == SourceSequence.E {
-        let sink = FlatMapWithIndexSink<SourceElement, SourceSequence, O>(selector: _selector, observer: observer, cancel: cancel)
-        let subscription = sink.run(_source)
-        return (sink: sink, subscription: subscription)
-    }
-
 }
 
 final fileprivate class FlatMapFirst<SourceElement, SourceSequence: ObservableConvertibleType>: Producer<SourceSequence.E> {

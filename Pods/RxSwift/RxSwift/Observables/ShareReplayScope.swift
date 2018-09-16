@@ -138,13 +138,13 @@ extension ObservableType {
 
      - returns: An observable sequence that contains the elements of a sequence produced by multicasting the source sequence.
      */
-    public func share(replay: Int = 0, scope: SubjectLifetimeScope)
+    public func share(replay: Int = 0, scope: SubjectLifetimeScope = .whileConnected)
         -> Observable<E> {
         switch scope {
         case .forever:
             switch replay {
             case 0: return self.multicast(PublishSubject()).refCount()
-            default: return shareReplay(replay)
+            default: return self.multicast(ReplaySubject.create(bufferSize: replay)).refCount()
             }
         case .whileConnected:
             switch replay {
@@ -153,44 +153,6 @@ extension ObservableType {
             default: return self.multicast(makeSubject: { ReplaySubject.create(bufferSize: replay) }).refCount()
             }
         }
-    }
-}
-
-extension ObservableType {
-
-    /**
-     Returns an observable sequence that shares a single subscription to the underlying sequence, and immediately upon subscription replays latest element in buffer.
-
-     This operator is a specialization of replay which creates a subscription when the number of observers goes from zero to one, then shares that subscription with all subsequent observers until the number of observers returns to zero, at which point the subscription is disposed.
-
-     Unlike `shareReplay(bufferSize: Int)`, this operator will clear latest element from replay buffer in case number of subscribers drops from one to zero. In case sequence
-     completes or errors out replay buffer is also cleared.
-
-     - seealso: [shareReplay operator on reactivex.io](http://reactivex.io/documentation/operators/replay.html)
-
-     - returns: An observable sequence that contains the elements of a sequence produced by multicasting the source sequence.
-     */
-    public func shareReplayLatestWhileConnected()
-        -> Observable<E> {
-        return ShareReplay1WhileConnected(source: self.asObservable())
-    }
-}
-
-extension ObservableType {
-
-    /**
-     Returns an observable sequence that shares a single subscription to the underlying sequence, and immediately upon subscription replays maximum number of elements in buffer.
-
-     This operator is a specialization of replay which creates a subscription when the number of observers goes from zero to one, then shares that subscription with all subsequent observers until the number of observers returns to zero, at which point the subscription is disposed.
-
-     - seealso: [shareReplay operator on reactivex.io](http://reactivex.io/documentation/operators/replay.html)
-
-     - parameter bufferSize: Maximum element count of the replay buffer.
-     - returns: An observable sequence that contains the elements of a sequence produced by multicasting the source sequence.
-     */
-    public func shareReplay(_ bufferSize: Int)
-        -> Observable<E> {
-        return self.replay(bufferSize).refCount()
     }
 }
 

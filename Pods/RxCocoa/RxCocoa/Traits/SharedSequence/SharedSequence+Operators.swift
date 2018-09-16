@@ -6,9 +6,7 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-#if !RX_NO_MODULE
 import RxSwift
-#endif
 
 // MARK: map
 extension SharedSequenceConvertibleType {
@@ -44,7 +42,7 @@ extension SharedSequenceConvertibleType {
 }
 
 // MARK: switchLatest
-extension SharedSequenceConvertibleType where E : SharedSequenceConvertibleType, E.SharingStrategy == SharingStrategy {
+extension SharedSequenceConvertibleType where E : SharedSequenceConvertibleType {
     
     /**
     Transforms an observable sequence of observable sequences into an observable sequence
@@ -55,12 +53,12 @@ extension SharedSequenceConvertibleType where E : SharedSequenceConvertibleType,
     
     - returns: The observable sequence that at any point in time produces the elements of the most recent inner observable sequence that has been received.
     */
-    public func switchLatest() -> SharedSequence<SharingStrategy, E.E> {
+    public func switchLatest() -> SharedSequence<E.SharingStrategy, E.E> {
         let source: Observable<E.E> = self
             .asObservable()
             .map { $0.asSharedSequence() }
             .switchLatest()
-        return SharedSequence<SharingStrategy, E.E>(source)
+        return SharedSequence<E.SharingStrategy, E.E>(source)
     }
 }
 
@@ -76,12 +74,12 @@ extension SharedSequenceConvertibleType {
      - returns: An observable sequence whose elements are the result of invoking the transform function on each element of source producing an
      Observable of Observable sequences and that at any point in time produces the elements of the most recent inner observable sequence that has been received.
      */
-    public func flatMapLatest<R>(_ selector: @escaping (E) -> SharedSequence<SharingStrategy, R>)
-        -> SharedSequence<SharingStrategy, R> {
+    public func flatMapLatest<Sharing, R>(_ selector: @escaping (E) -> SharedSequence<Sharing, R>)
+        -> SharedSequence<Sharing, R> {
         let source: Observable<R> = self
             .asObservable()
             .flatMapLatest(selector)
-        return SharedSequence<SharingStrategy, R>(source)
+        return SharedSequence<Sharing, R>(source)
     }
 }
 
@@ -95,12 +93,12 @@ extension SharedSequenceConvertibleType {
      - parameter selector: A transform function to apply to element that was observed while no observable is executing in parallel.
      - returns: An observable sequence whose elements are the result of invoking the one-to-many transform function on each element of the input sequence that was received while no other sequence was being calculated.
      */
-    public func flatMapFirst<R>(_ selector: @escaping (E) -> SharedSequence<SharingStrategy, R>)
-        -> SharedSequence<SharingStrategy, R> {
+    public func flatMapFirst<Sharing, R>(_ selector: @escaping (E) -> SharedSequence<Sharing, R>)
+        -> SharedSequence<Sharing, R> {
         let source: Observable<R> = self
             .asObservable()
             .flatMapFirst(selector)
-        return SharedSequence<SharingStrategy, R>(source)
+        return SharedSequence<Sharing, R>(source)
     }
 }
 
@@ -112,13 +110,14 @@ extension SharedSequenceConvertibleType {
      - parameter onNext: Action to invoke for each element in the observable sequence.
      - parameter onCompleted: Action to invoke upon graceful termination of the observable sequence.
      - parameter onSubscribe: Action to invoke before subscribing to source observable sequence.
+     - parameter onSubscribed: Action to invoke after subscribing to source observable sequence.
      - parameter onDispose: Action to invoke after subscription to source observable has been disposed for any reason. It can be either because sequence terminates for some reason or observer subscription being disposed.
      - returns: The source sequence with the side-effecting behavior applied.
      */
-    public func `do`(onNext: ((E) -> Void)? = nil, onCompleted: (() -> Void)? = nil, onSubscribe: (() -> ())? = nil, onDispose: (() -> ())? = nil)
+    public func `do`(onNext: ((E) -> Void)? = nil, onCompleted: (() -> Void)? = nil, onSubscribe: (() -> ())? = nil, onSubscribed: (() -> ())? = nil, onDispose: (() -> ())? = nil)
         -> SharedSequence<SharingStrategy, E> {
         let source = self.asObservable()
-            .do(onNext: onNext, onCompleted: onCompleted, onSubscribe: onSubscribe, onDispose: onDispose)
+            .do(onNext: onNext, onCompleted: onCompleted, onSubscribe: onSubscribe, onSubscribed: onSubscribed, onDispose: onDispose)
 
         return SharedSequence(source)
     }
@@ -207,7 +206,7 @@ extension SharedSequenceConvertibleType {
     - parameter selector: A transform function to apply to each element.
     - returns: An observable sequence whose elements are the result of invoking the one-to-many transform function on each element of the input sequence.
     */
-    public func flatMap<R>(_ selector: @escaping (E) -> SharedSequence<SharingStrategy, R>) -> SharedSequence<SharingStrategy, R> {
+    public func flatMap<Sharing, R>(_ selector: @escaping (E) -> SharedSequence<Sharing, R>) -> SharedSequence<Sharing, R> {
         let source = self.asObservable()
             .flatMap(selector)
         
@@ -260,17 +259,17 @@ extension SharedSequenceConvertibleType {
 }
 
 // MARK: merge
-extension SharedSequenceConvertibleType where E : SharedSequenceConvertibleType, E.SharingStrategy == SharingStrategy {
+extension SharedSequenceConvertibleType where E : SharedSequenceConvertibleType {
     /**
     Merges elements from all observable sequences in the given enumerable sequence into a single observable sequence.
     
     - returns: The observable sequence that merges the elements of the observable sequences.
     */
-    public func merge() -> SharedSequence<SharingStrategy, E.E> {
+    public func merge() -> SharedSequence<E.SharingStrategy, E.E> {
         let source = self.asObservable()
             .map { $0.asSharedSequence() }
             .merge()
-        return SharedSequence<SharingStrategy, E.E>(source)
+        return SharedSequence<E.SharingStrategy, E.E>(source)
     }
     
     /**
@@ -280,11 +279,11 @@ extension SharedSequenceConvertibleType where E : SharedSequenceConvertibleType,
     - returns: The observable sequence that merges the elements of the inner sequences.
     */
     public func merge(maxConcurrent: Int)
-        -> SharedSequence<SharingStrategy, E.E> {
+        -> SharedSequence<E.SharingStrategy, E.E> {
         let source = self.asObservable()
             .map { $0.asSharedSequence() }
             .merge(maxConcurrent: maxConcurrent)
-        return SharedSequence<SharingStrategy, E.E>(source)
+        return SharedSequence<E.SharingStrategy, E.E>(source)
     }
 }
 
@@ -434,7 +433,7 @@ extension SharedSequenceConvertibleType {
     - parameter resultSelector: Function to invoke for each element from the self combined with the latest element from the second source, if any.
     - returns: An observable sequence containing the result of combining each element of the self  with the latest element from the second source, if any, using the specified result selector function.
     */
-    public func withLatestFrom<SecondO: SharedSequenceConvertibleType, ResultType>(_ second: SecondO, resultSelector: @escaping (E, SecondO.E) -> ResultType) -> SharedSequence<SharingStrategy, ResultType> where SecondO.SharingStrategy == SecondO.SharingStrategy {
+    public func withLatestFrom<SecondO: SharedSequenceConvertibleType, ResultType>(_ second: SecondO, resultSelector: @escaping (E, SecondO.E) -> ResultType) -> SharedSequence<SharingStrategy, ResultType> where SecondO.SharingStrategy == SharingStrategy {
         let source = self.asObservable()
             .withLatestFrom(second.asSharedSequence(), resultSelector: resultSelector)
 
@@ -442,7 +441,7 @@ extension SharedSequenceConvertibleType {
     }
 
     /**
-    Merges two observable sequences into one observable sequence by using latest element from the second sequence every time when `self` emitts an element.
+    Merges two observable sequences into one observable sequence by using latest element from the second sequence every time when `self` emits an element.
 
     - parameter second: Second observable source.
     - returns: An observable sequence containing the result of combining each element of the self  with the latest element from the second source, if any, using the specified result selector function.

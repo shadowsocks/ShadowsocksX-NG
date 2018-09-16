@@ -1,10 +1,11 @@
 #!/bin/sh
+# v0.0.5 https://bintray.com/homebrew/bottles/simple-obfs
 
 FILE_DIR=`dirname "${BASH_SOURCE[0]}"`
 cd "$FILE_DIR"
 
 NGDir="$HOME/Library/Application Support/ShadowsocksX-NG"
-TargetDir="$NGDir/simple-obfs-0.0.2"
+TargetDir="$NGDir/simple-obfs-0.0.5"
 PluginDir="$NGDir/plugins"
 
 echo ngdir: ${NGDir}
@@ -14,6 +15,6 @@ mkdir -p "$PluginDir"
 
 cp -f obfs-local "$TargetDir"
 
-ln -sfh "$TargetDir/obfs-local" "$PluginDir"
+ln -sfh "$TargetDir/obfs-local" "$PluginDir/simple-obfs"
 
 echo done

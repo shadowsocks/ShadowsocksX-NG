@@ -9,9 +9,7 @@
 #if os(macOS)
 
 import Cocoa
-#if !RX_NO_MODULE
 import RxSwift
-#endif
 
 fileprivate var rx_value_key: UInt8 = 0
 fileprivate var rx_control_events_key: UInt8 = 0
@@ -19,7 +17,7 @@ fileprivate var rx_control_events_key: UInt8 = 0
 extension Reactive where Base: NSControl {
 
     /// Reactive wrapper for control event.
-    public var controlEvent: ControlEvent<Void> {
+    public var controlEvent: ControlEvent<()> {
         MainScheduler.ensureExecutingOnScheduler()
 
         let source = lazyInstanceObservable(&rx_control_events_key) { () -> Observable<Void> in
@@ -32,52 +30,65 @@ extension Reactive where Base: NSControl {
                 }
 
                 let observer = ControlTarget(control: control) { control in
-                    observer.on(.next())
-                }
-                
-                return observer
-            }.takeUntil(self.deallocated)
-        }
-        
-        return ControlEvent(events: source)
-    }
-
-    /// You might be wondering why the ugly `as!` casts etc, well, for some reason if
-    /// Swift compiler knows C is UIControl type and optimizations are turned on, it will crash.
-    static func value<C: AnyObject, T>(_ control: C, getter: @escaping (C) -> T, setter: @escaping (C, T) -> Void) -> ControlProperty<T> {
-        MainScheduler.ensureExecutingOnScheduler()
-
-        let source = (control as! NSObject).rx.lazyInstanceObservable(&rx_value_key) { () -> Observable<T> in
-            return Observable.create { [weak weakControl = control] (observer: AnyObserver<T>) in
-                guard let control = weakControl else {
-                    observer.on(.completed)
-                    return Disposables.create()
-                }
-
-                observer.on(.next(getter(control)))
-
-                let observer = ControlTarget(control: control as! NSControl) { _ in
-                    if let control = weakControl {
-                        observer.on(.next(getter(control)))
-                    }
+                    observer.on(.next(()))
                 }
                 
                 return observer
             }
-            .takeUntil((control as! NSObject).rx.deallocated)
+			.takeUntil(self.deallocated)
+			.share()
         }
 
-        let bindingObserver = UIBindingObserver(UIElement: control, binding: setter)
+        return ControlEvent(events: source)
+    }
+
+    /// Creates a `ControlProperty` that is triggered by target/action pattern value updates.
+    ///
+    /// - parameter getter: Property value getter.
+    /// - parameter setter: Property value setter.
+    public func controlProperty<T>(
+        getter: @escaping (Base) -> T,
+        setter: @escaping (Base, T) -> ()
+    ) -> ControlProperty<T> {
+        MainScheduler.ensureExecutingOnScheduler()
+
+        let source = base.rx.lazyInstanceObservable(&rx_value_key) { () -> Observable<()> in
+                return Observable.create { [weak weakControl = self.base] (observer: AnyObserver<()>) in
+                    guard let control = weakControl else {
+                        observer.on(.completed)
+                        return Disposables.create()
+                    }
+
+                    observer.on(.next(()))
+
+                    let observer = ControlTarget(control: control) { _ in
+                        if weakControl != nil {
+                            observer.on(.next(()))
+                        }
+                    }
+
+                    return observer
+                }
+                .takeUntil(deallocated)
+                .share(replay: 1, scope: .whileConnected)
+            }
+            .flatMap { [weak base] _ -> Observable<T> in
+                guard let control = base else { return Observable.empty() }
+                return Observable.just(getter(control))
+            }
+
+        let bindingObserver = Binder(base, binding: setter)
 
         return ControlProperty(values: source, valueSink: bindingObserver)
     }
 
     /// Bindable sink for `enabled` property.
-    public var isEnabled: UIBindingObserver<Base, Bool> {
-        return UIBindingObserver(UIElement: self.base) { (owner, value) in
+    public var isEnabled: Binder<Bool> {
+        return Binder(self.base) { (owner, value) in
             owner.isEnabled = value
         }
     }
 }
+
 
 #endif
