@@ -103,3 +103,10 @@
 
 /* Class = "NSMenuItem"; title = "Share Server Profiles..."; ObjectID = "r5z-RB-LIZ"; */
 "r5z-RB-LIZ.title" = "分享服务器配置...";
+
+/* Class = "NSMenuItem"; title = "Help"; ObjectID = "Xg8-er-4Ov"; */
+"Xg8-er-4Ov.title" = "帮助";
+
+/* Class = "NSMenuItem"; title = "Check for Updates..."; ObjectID = "hLv-bp-doM"; */
+"hLv-bp-doM.title" = "检查更新...";
+
