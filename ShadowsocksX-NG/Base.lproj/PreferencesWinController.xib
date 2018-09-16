@@ -542,11 +542,6 @@
                             <action selector="toolbarActionWithSender:" target="-2" id="W2m-K9-R3F"/>
                         </connections>
                     </toolbarItem>
-                    <toolbarItem implicitItemIdentifier="606CACB6-02E1-4472-B422-0D19BE6A4D7C" explicitItemIdentifier="kcptun" label="Kcptun" paletteLabel="Kcptun" tag="-1" image="kcptun_1" selectable="YES" id="CIc-BO-xjN">
-                        <connections>
-                            <action selector="toolbarActionWithSender:" target="-2" id="aAq-xr-Teq"/>
-                        </connections>
-                    </toolbarItem>
                     <toolbarItem implicitItemIdentifier="6CA73D5D-9BB2-495A-8658-D0A96900A764" explicitItemIdentifier="http" label="HTTP" paletteLabel="HTTP" tag="-1" image="http" selectable="YES" id="D0F-6S-Ztu">
                         <connections>
                             <action selector="toolbarActionWithSender:" target="-2" id="tnS-2P-ws4"/>
@@ -562,7 +557,6 @@
                     <toolbarItem reference="Mp8-cF-kQ7"/>
                     <toolbarItem reference="kuN-wm-bl5"/>
                     <toolbarItem reference="D0F-6S-Ztu"/>
-                    <toolbarItem reference="CIc-BO-xjN"/>
                     <toolbarItem reference="Bdm-pj-Ckd"/>
                     <toolbarItem reference="hy4-IW-j13"/>
                 </defaultToolbarItems>
@@ -598,6 +592,5 @@
         <image name="NSNetwork" width="32" height="32"/>
         <image name="NSPreferencesGeneral" width="32" height="32"/>
         <image name="http" width="512" height="512"/>
-        <image name="kcptun_1" width="136" height="136"/>
     </resources>
 </document>
