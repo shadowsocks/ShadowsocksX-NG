@@ -38,7 +38,6 @@ class ServerProfileTests: XCTestCase {
         XCTAssertEqual(newProfile?.method, profile.method)
         XCTAssertEqual(newProfile?.password, profile.password)
         XCTAssertEqual(newProfile?.remark, profile.remark)
-        XCTAssertEqual(newProfile?.ota, profile.ota)
     }
 
     func testInitWithPlainURL() {
@@ -53,7 +52,6 @@ class ServerProfileTests: XCTestCase {
         XCTAssertEqual(profile?.method, "aes-256-cfb")
         XCTAssertEqual(profile?.password, "password")
         XCTAssertEqual(profile?.remark, "")
-        XCTAssertEqual(profile?.ota, false)
     }
 
     func testInitWithPlainURLandQuery() {
@@ -68,7 +66,6 @@ class ServerProfileTests: XCTestCase {
         XCTAssertEqual(profile?.method, "aes-256-cfb")
         XCTAssertEqual(profile?.password, "password")
         XCTAssertEqual(profile?.remark, "Prism")
-        XCTAssertEqual(profile?.ota, true)
     }
 
     func testInitWithPlainURLandAnotherQuery() {
@@ -83,7 +80,6 @@ class ServerProfileTests: XCTestCase {
         XCTAssertEqual(profile?.method, "aes-256-cfb")
         XCTAssertEqual(profile?.password, "password")
         XCTAssertEqual(profile?.remark, "Prism")
-        XCTAssertEqual(profile?.ota, false)
     }
 
     func testInitWithBase64EncodedURL() {
@@ -99,7 +95,6 @@ class ServerProfileTests: XCTestCase {
         XCTAssertEqual(profile?.method, "aes-256-cfb")
         XCTAssertEqual(profile?.password, "password")
         XCTAssertEqual(profile?.remark, "")
-        XCTAssertEqual(profile?.ota, false)
     }
 
     func testInitWithBase64EncodedURLandQuery() {
@@ -115,7 +110,6 @@ class ServerProfileTests: XCTestCase {
         XCTAssertEqual(profile?.method, "aes-256-cfb")
         XCTAssertEqual(profile?.password, "password")
         XCTAssertEqual(profile?.remark, "Prism")
-        XCTAssertEqual(profile?.ota, true)
     }
 
     func testInitWithEmptyURL() {
@@ -148,7 +142,6 @@ class ServerProfileTests: XCTestCase {
         XCTAssertEqual(profile?.method, "aes-256-cfb")
         XCTAssertEqual(profile?.password, "password")
         XCTAssertEqual(profile?.remark, "Prism")
-        XCTAssertEqual(profile?.ota, true)
     }
 
     func testInitWithSIP002URLProfileName() {
