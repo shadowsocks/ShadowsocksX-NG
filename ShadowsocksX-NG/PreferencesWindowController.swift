@@ -36,8 +36,6 @@ class PreferencesWindowController: NSWindowController
     var profileMgr: ServerProfileManager!
     
     var editingProfile: ServerProfile!
-    
-    var enabledKcptunSubDisosable: Disposable?
 
 
     override func windowDidLoad() {
@@ -207,10 +205,7 @@ class PreferencesWindowController: NSWindowController
     
     func bindProfile(_ index:Int) {
         NSLog("bind profile \(index)")
-        if let dis = enabledKcptunSubDisosable {
-            dis.dispose()
-            enabledKcptunSubDisosable = Optional.none
-        }
+
         if index >= 0 && index < profileMgr.profiles.count {
             editingProfile = profileMgr.profiles[index]
             

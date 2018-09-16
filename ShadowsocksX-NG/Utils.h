@@ -11,4 +11,6 @@
 
 void ScanQRCodeOnScreen();
 
+NSImage* createQRImage(NSString *string, NSSize size);
+
 #endif /* QRCodeUtils_h */

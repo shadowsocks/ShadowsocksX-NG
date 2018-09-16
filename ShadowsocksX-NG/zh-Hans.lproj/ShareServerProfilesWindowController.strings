@@ -1,0 +1,19 @@
+
+/* Class = "NSButtonCell"; title = "Save All Server URLs As File"; ObjectID = "9OS-xy-GB1"; */
+"9OS-xy-GB1.title" = "保存所有服务器链接到文件";
+
+/* Class = "NSWindow"; title = "Share Server Profiles"; ObjectID = "F0z-JX-Cv5"; */
+"F0z-JX-Cv5.title" = "分享服务器配置";
+
+/* Class = "NSButtonCell"; title = "Save QRCode As File"; ObjectID = "IaI-Rj-Kss"; */
+"IaI-Rj-Kss.title" = "保存二维码到文件";
+
+/* Class = "NSButtonCell"; title = "Copy URL"; ObjectID = "PHX-gY-lZe"; */
+"PHX-gY-lZe.title" = "复制链接";
+
+/* Class = "NSButtonCell"; title = "Copy QRCode"; ObjectID = "PrW-s6-Uab"; */
+"PrW-s6-Uab.title" = "复制二维码";
+
+/* Class = "NSButtonCell"; title = "Copy All Server URLs"; ObjectID = "Yt2-p1-4w0"; */
+"Yt2-p1-4w0.title" = "复制所有服务器链接";
+

@@ -46,10 +46,11 @@
 		9B5832031E741F8D009D5B7D /* command-512.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B5832021E741F8D009D5B7D /* command-512.png */; };
 		9B5832071E7421B2009D5B7D /* virtual-server-icon-3.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B5832061E7421B2009D5B7D /* virtual-server-icon-3.png */; };
 		9B58320B1E7422DB009D5B7D /* http.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B58320A1E7422DB009D5B7D /* http.png */; };
-		9B5832111E742632009D5B7D /* kcptun_1.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B5832101E742632009D5B7D /* kcptun_1.png */; };
 		9B5AA0AC209C43C200E8B659 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 9B5AA0AB209C43C200E8B659 /* Credits.rtf */; };
 		9B6BF9541E27B2570061B9A7 /* ServiceManagement.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B6BF9531E27B2570061B9A7 /* ServiceManagement.framework */; };
 		9B7297E7214D69C300FD24AA /* libmbedcrypto.2.12.0.dylib in Resources */ = {isa = PBXBuildFile; fileRef = 9B7297E5214D68F800FD24AA /* libmbedcrypto.2.12.0.dylib */; };
+		9B7297EA214D7C6B00FD24AA /* ShareServerProfilesWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B7297E8214D7C6B00FD24AA /* ShareServerProfilesWindowController.swift */; };
+		9B7297EC214DA88A00FD24AA /* ShareServerProfilesWindowController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9B7297EE214DA88A00FD24AA /* ShareServerProfilesWindowController.xib */; };
 		9B86459D1E7C2CAD00A84029 /* ProxyInterfacesViewCtrl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B86459C1E7C2CAD00A84029 /* ProxyInterfacesViewCtrl.swift */; };
 		9B938D991E864B38005F5636 /* menu_g_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B938D931E864B38005F5636 /* menu_g_icon.png */; };
 		9B938D9A1E864B38005F5636 /* menu_g_icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B938D941E864B38005F5636 /* menu_g_icon@2x.png */; };
@@ -195,12 +196,14 @@
 		9B5832021E741F8D009D5B7D /* command-512.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "command-512.png"; sourceTree = "<group>"; };
 		9B5832061E7421B2009D5B7D /* virtual-server-icon-3.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "virtual-server-icon-3.png"; sourceTree = "<group>"; };
 		9B58320A1E7422DB009D5B7D /* http.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = http.png; sourceTree = "<group>"; };
-		9B5832101E742632009D5B7D /* kcptun_1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = kcptun_1.png; sourceTree = "<group>"; };
 		9B5AA09F209C100C00E8B659 /* libsodium.23.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libsodium.23.dylib; sourceTree = "<group>"; };
 		9B5AA0A2209C103900E8B659 /* libcares.2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libcares.2.dylib; sourceTree = "<group>"; };
 		9B5AA0AB209C43C200E8B659 /* Credits.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = Credits.rtf; sourceTree = "<group>"; };
 		9B6BF9531E27B2570061B9A7 /* ServiceManagement.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ServiceManagement.framework; path = System/Library/Frameworks/ServiceManagement.framework; sourceTree = SDKROOT; };
 		9B7297E5214D68F800FD24AA /* libmbedcrypto.2.12.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libmbedcrypto.2.12.0.dylib; sourceTree = "<group>"; };
+		9B7297E8214D7C6B00FD24AA /* ShareServerProfilesWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareServerProfilesWindowController.swift; sourceTree = "<group>"; };
+		9B7297ED214DA88A00FD24AA /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/ShareServerProfilesWindowController.xib; sourceTree = "<group>"; };
+		9B7297F0214DA89000FD24AA /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/ShareServerProfilesWindowController.strings"; sourceTree = "<group>"; };
 		9B86459C1E7C2CAD00A84029 /* ProxyInterfacesViewCtrl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ProxyInterfacesViewCtrl.swift; sourceTree = "<group>"; };
 		9B938D931E864B38005F5636 /* menu_g_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = menu_g_icon.png; sourceTree = "<group>"; };
 		9B938D941E864B38005F5636 /* menu_g_icon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "menu_g_icon@2x.png"; sourceTree = "<group>"; };
@@ -308,7 +311,6 @@
 				9B938D961E864B38005F5636 /* menu_m_icon@2x.png */,
 				9B938D971E864B38005F5636 /* menu_p_icon.png */,
 				9B938D981E864B38005F5636 /* menu_p_icon@2x.png */,
-				9B5832101E742632009D5B7D /* kcptun_1.png */,
 				9B58320A1E7422DB009D5B7D /* http.png */,
 				9B5832061E7421B2009D5B7D /* virtual-server-icon-3.png */,
 				9B5832021E741F8D009D5B7D /* command-512.png */,
@@ -411,6 +413,8 @@
 				9B86459C1E7C2CAD00A84029 /* ProxyInterfacesViewCtrl.swift */,
 				9B3546701E802B1200B510B4 /* ToastWindowController.swift */,
 				9B3546711E802B1200B510B4 /* ToastWindowController.xib */,
+				9B7297E8214D7C6B00FD24AA /* ShareServerProfilesWindowController.swift */,
+				9B7297EE214DA88A00FD24AA /* ShareServerProfilesWindowController.xib */,
 			);
 			name = UI;
 			sourceTree = "<group>";
@@ -622,7 +626,6 @@
 				C6D429971DA75988002A5711 /* stop_privoxy.sh in Resources */,
 				C8E42A6E1D4F2CAF0074C7EA /* UserRulesController.xib in Resources */,
 				9BEEF06A1D04D4D500FC52B3 /* start_ss_local.sh in Resources */,
-				9B5832111E742632009D5B7D /* kcptun_1.png in Resources */,
 				9B16E59A1F99FD0700E54DC5 /* icons8-Eye Filled-50.png in Resources */,
 				9B938D9C1E864B38005F5636 /* menu_m_icon@2x.png in Resources */,
 				9B3546731E802B1200B510B4 /* ToastWindowController.xib in Resources */,
@@ -638,6 +641,7 @@
 				1C82DBA81FA96C7500B32551 /* obfs-local in Resources */,
 				9B938D9D1E864B38005F5636 /* menu_p_icon.png in Resources */,
 				9B938D9B1E864B38005F5636 /* menu_m_icon.png in Resources */,
+				9B7297EC214DA88A00FD24AA /* ShareServerProfilesWindowController.xib in Resources */,
 				9B3FFF271D0898EB0019A709 /* gfwlist.txt in Resources */,
 				C6D429931DA75988002A5711 /* install_privoxy.sh in Resources */,
 				9B58320B1E7422DB009D5B7D /* http.png in Resources */,
@@ -818,6 +822,7 @@
 				9B5831F61E7302F8009D5B7D /* ShortcutsController.m in Sources */,
 				9BB706A71D1B982300551F0E /* SWBApplication.m in Sources */,
 				9B3FFF1E1D0732660019A709 /* Utils.m in Sources */,
+				9B7297EA214D7C6B00FD24AA /* ShareServerProfilesWindowController.swift in Sources */,
 				9B3FFF321D08CEE40019A709 /* SWBQRCodeWindowController.m in Sources */,
 				9B3FFF211D08826E0019A709 /* PACUtils.swift in Sources */,
 				9B3FFF141D0705810019A709 /* Notifications.swift in Sources */,
@@ -892,6 +897,15 @@
 				9BE8FBC11D0B71CF00CAFD01 /* zh-Hans */,
 			);
 			name = PreferencesWindowController.xib;
+			sourceTree = "<group>";
+		};
+		9B7297EE214DA88A00FD24AA /* ShareServerProfilesWindowController.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				9B7297ED214DA88A00FD24AA /* Base */,
+				9B7297F0214DA89000FD24AA /* zh-Hans */,
+			);
+			name = ShareServerProfilesWindowController.xib;
 			sourceTree = "<group>";
 		};
 		9BAFE2E41E83ED7F00F71CCE /* PreferencesWinController.xib */ = {
