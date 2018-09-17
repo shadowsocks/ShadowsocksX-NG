@@ -11,6 +11,9 @@
 		1C82DBA81FA96C7500B32551 /* obfs-local in Resources */ = {isa = PBXBuildFile; fileRef = 1C82DBA51FA96C7400B32551 /* obfs-local */; };
 		1C82DBAA1FA96FB600B32551 /* install_simple_obfs.sh in Resources */ = {isa = PBXBuildFile; fileRef = 1C82DBA91FA96F0300B32551 /* install_simple_obfs.sh */; };
 		258E511BA910B0521B24DAB8 /* Pods_ShadowsocksX_NG.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 283ED1A8E9B711AC65670031 /* Pods_ShadowsocksX_NG.framework */; };
+		8EE2EDD8214F7CEC00FB4562 /* AppleScriptUserProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EE2EDD4214F7CEC00FB4562 /* AppleScriptUserProxy.swift */; };
+		8EE2EDD9214F7CEC00FB4562 /* HTTPUserProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EE2EDD6214F7CEC00FB4562 /* HTTPUserProxy.swift */; };
+		8EE2EDDA214F7CEC00FB4562 /* AppleScriptDefinition.sdef in Resources */ = {isa = PBXBuildFile; fileRef = 8EE2EDD7214F7CEC00FB4562 /* AppleScriptDefinition.sdef */; };
 		9B07EFA71D048BBB0052D9DF /* ss-local in Resources */ = {isa = PBXBuildFile; fileRef = 9B07EFA61D048BBB0052D9DF /* ss-local */; };
 		9B07EFAC1D048E880052D9DF /* menu_icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B07EFA81D048E880052D9DF /* menu_icon@2x.png */; };
 		9B07EFAD1D048E880052D9DF /* menu_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B07EFA91D048E880052D9DF /* menu_icon.png */; };
@@ -145,6 +148,9 @@
 		50D54926AA21B0D4D8DD9C4F /* Pods-ShadowsocksX-NGUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ShadowsocksX-NGUITests.release.xcconfig"; path = "Pods/Target Support Files/Pods-ShadowsocksX-NGUITests/Pods-ShadowsocksX-NGUITests.release.xcconfig"; sourceTree = "<group>"; };
 		58907E7F50405104B42CB189 /* Pods-ShadowsocksX-NGUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ShadowsocksX-NGUITests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-ShadowsocksX-NGUITests/Pods-ShadowsocksX-NGUITests.debug.xcconfig"; sourceTree = "<group>"; };
 		5B6203C1228FCD3D365814AC /* Pods-ShadowsocksX-NGTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ShadowsocksX-NGTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-ShadowsocksX-NGTests/Pods-ShadowsocksX-NGTests.debug.xcconfig"; sourceTree = "<group>"; };
+		8EE2EDD4214F7CEC00FB4562 /* AppleScriptUserProxy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppleScriptUserProxy.swift; sourceTree = "<group>"; };
+		8EE2EDD6214F7CEC00FB4562 /* HTTPUserProxy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HTTPUserProxy.swift; sourceTree = "<group>"; };
+		8EE2EDD7214F7CEC00FB4562 /* AppleScriptDefinition.sdef */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = AppleScriptDefinition.sdef; sourceTree = "<group>"; };
 		9B07EFA61D048BBB0052D9DF /* ss-local */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = "ss-local"; sourceTree = "<group>"; };
 		9B07EFA81D048E880052D9DF /* menu_icon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "menu_icon@2x.png"; sourceTree = "<group>"; };
 		9B07EFA91D048E880052D9DF /* menu_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = menu_icon.png; sourceTree = "<group>"; };
@@ -359,6 +365,9 @@
 			isa = PBXGroup;
 			children = (
 				9BB706A51D1B982300551F0E /* SWBApplication.m */,
+				8EE2EDD7214F7CEC00FB4562 /* AppleScriptDefinition.sdef */,
+				8EE2EDD4214F7CEC00FB4562 /* AppleScriptUserProxy.swift */,
+				8EE2EDD6214F7CEC00FB4562 /* HTTPUserProxy.swift */,
 				9BB706A61D1B982300551F0E /* SWBApplication.h */,
 				9B3FFF511D09DBA20019A709 /* ShadowsocksX-NG-Bridging-Header.h */,
 				9B3FFF151D072FDE0019A709 /* LaunchAtLoginController.h */,
@@ -635,6 +644,7 @@
 				9B3FFF341D08CEF70019A709 /* SWBQRCodeWindowController.xib in Resources */,
 				9B3FFF231D088E8D0019A709 /* abp.js in Resources */,
 				9B07EFAD1D048E880052D9DF /* menu_icon.png in Resources */,
+				8EE2EDDA214F7CEC00FB4562 /* AppleScriptDefinition.sdef in Resources */,
 				9BAFE2E21E83ED7F00F71CCE /* PreferencesWinController.xib in Resources */,
 				9B0BFFEB1D0460A70040E62B /* Assets.xcassets in Resources */,
 				08FCA0FF1E24BE1A0070984F /* example-gui-config.json in Resources */,
@@ -823,10 +833,12 @@
 				9BB706A71D1B982300551F0E /* SWBApplication.m in Sources */,
 				9B3FFF1E1D0732660019A709 /* Utils.m in Sources */,
 				9B7297EA214D7C6B00FD24AA /* ShareServerProfilesWindowController.swift in Sources */,
+				8EE2EDD9214F7CEC00FB4562 /* HTTPUserProxy.swift in Sources */,
 				9B3FFF321D08CEE40019A709 /* SWBQRCodeWindowController.m in Sources */,
 				9B3FFF211D08826E0019A709 /* PACUtils.swift in Sources */,
 				9B3FFF141D0705810019A709 /* Notifications.swift in Sources */,
 				9BEEF0701D04DDB100FC52B3 /* ServerProfileManager.swift in Sources */,
+				8EE2EDD8214F7CEC00FB4562 /* AppleScriptUserProxy.swift in Sources */,
 				9BEEF06E1D04DCE400FC52B3 /* ServerProfile.swift in Sources */,
 				9B3FFF0D1D05FEB30019A709 /* Utils.swift in Sources */,
 				9BEEF0751D04EF3E00FC52B3 /* PreferencesWindowController.swift in Sources */,

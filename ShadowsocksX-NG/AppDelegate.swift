@@ -40,12 +40,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     
     @IBOutlet weak var lanchAtLoginMenuItem: NSMenuItem!
 
+    
     @IBOutlet weak var hudWindow: NSPanel!
     @IBOutlet weak var panelView: NSView!
     @IBOutlet weak var isNameTextField: NSTextField!
-
+    
     let kProfileMenuItemIndexBase = 100
-
+    
     var statusItem: NSStatusItem!
     static let StatusItemIconWidth: CGFloat = NSStatusItem.variableLength
     
@@ -133,7 +134,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                 self.updateServersMenu()
                 self.updateRunningModeMenu()
                 SyncSSLocal()
-            }
+        }
         )
         _ = notifyCenter.rx.notification(NOTIFY_TOGGLE_RUNNING_SHORTCUT)
             .subscribe(onNext: { noti in
@@ -180,9 +181,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         ProxyConfHelper.install()
         ProxyConfHelper.startMonitorPAC()
         applyConfig()
-
+        
         // Register global hotkey
         ShortcutsController.bindShortcuts()
+        
+        // Start API Server
+        HTTPUserProxy.shard.start()
     }
     
     func applicationWillTerminate(_ aNotification: Notification) {
@@ -191,7 +195,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         StopPrivoxy()
         ProxyConfHelper.disableProxy()
     }
-
+    
     func applyConfig() {
         SyncSSLocal()
         
@@ -211,7 +215,21 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             ProxyConfHelper.disableProxy()
         }
     }
-
+    
+    func changeMode(mode:String!) {
+        let defaults = UserDefaults.standard
+        
+        switch mode{
+        case "auto":defaults.setValue("auto", forKey: "ShadowsocksRunningMode")
+        case "global":defaults.setValue("global", forKey: "ShadowsocksRunningMode")
+        case "manual":defaults.setValue("manual", forKey: "ShadowsocksRunningMode")
+        default: fatalError()
+        }
+        
+        updateRunningModeMenu()
+        applyConfig()
+    }
+    
     // MARK: - UI Methods
     @IBAction func toggleRunning(_ sender: NSMenuItem) {
         self.doToggleRunning(showToast: false)
@@ -324,26 +342,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                     ])
         }
     }
-
+    
     @IBAction func selectPACMode(_ sender: NSMenuItem) {
-        let defaults = UserDefaults.standard
-        defaults.setValue("auto", forKey: "ShadowsocksRunningMode")
-        updateRunningModeMenu()
-        applyConfig()
+        changeMode(mode: "auto")
     }
     
     @IBAction func selectGlobalMode(_ sender: NSMenuItem) {
-        let defaults = UserDefaults.standard
-        defaults.setValue("global", forKey: "ShadowsocksRunningMode")
-        updateRunningModeMenu()
-        applyConfig()
+        changeMode(mode: "global")
     }
     
     @IBAction func selectManualMode(_ sender: NSMenuItem) {
-        let defaults = UserDefaults.standard
-        defaults.setValue("manual", forKey: "ShadowsocksRunningMode")
-        updateRunningModeMenu()
-        applyConfig()
+        changeMode(mode: "manual")
     }
     
     @IBAction func editServerPreferences(_ sender: NSMenuItem) {
@@ -369,17 +378,25 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         allInOnePreferencesWinCtrl.window?.makeKeyAndOrderFront(self)
     }
     
-    @IBAction func selectServer(_ sender: NSMenuItem) {
-        let index = sender.tag - kProfileMenuItemIndexBase
+    func changeServer(@objc uuid: String) {
         let spMgr = ServerProfileManager.instance
-        let newProfile = spMgr.profiles[index]
-        if newProfile.uuid != spMgr.activeProfileId {
-            spMgr.setActiveProfiledId(newProfile.uuid)
+        
+        if uuid != spMgr.activeProfileId {
+            spMgr.setActiveProfiledId(uuid)
             updateServersMenu()
             SyncSSLocal()
             applyConfig()
         }
+        
         updateRunningModeMenu()
+    }
+    
+    @IBAction func selectServer(_ sender: NSMenuItem) {
+        let index = sender.tag - kProfileMenuItemIndexBase
+        let spMgr = ServerProfileManager.instance
+        let newProfileId = spMgr.profiles[index].uuid
+        
+        changeServer(uuid:newProfileId)
     }
     
     @IBAction func copyExportCommand(_ sender: NSMenuItem) {
@@ -427,7 +444,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     
     func updateRunningModeMenu() {
         let defaults = UserDefaults.standard
-        let mode = defaults.string(forKey: "ShadowsocksRunningMode")
+        let mode = defaults.string(forKey: "ShadowsocksRunningMosde")
         
         var serverMenuText = "Servers".localized
 
@@ -468,12 +485,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         if isOn {
             if let m = mode {
                 switch m {
-                    case "auto":
-                        statusItem.image = NSImage(named: NSImage.Name(rawValue: "menu_p_icon"))
-                    case "global":
-                        statusItem.image = NSImage(named: NSImage.Name(rawValue: "menu_g_icon"))
-                    case "manual":
-                        statusItem.image = NSImage(named: NSImage.Name(rawValue: "menu_m_icon"))
+                case "auto":
+                    statusItem.image = NSImage(named: NSImage.Name(rawValue: "menu_p_icon"))
+                case "global":
+                    statusItem.image = NSImage(named: NSImage.Name(rawValue: "menu_g_icon"))
+                case "manual":
+                    statusItem.image = NSImage(named: NSImage.Name(rawValue: "menu_m_icon"))
                 default: break
                 }
                 statusItem.image?.isTemplate = true
@@ -512,9 +529,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     func updateServersMenu() {
         guard let menu = serversMenuItem.submenu else { return }
 
+        
         let mgr = ServerProfileManager.instance
         let profiles = mgr.profiles
-
         // Remove all profile menu items
         let beginIndex = menu.index(of: serverProfilesBeginSeparatorMenuItem) + 1
         let endIndex = menu.index(of: serverProfilesEndSeparatorMenuItem)
@@ -522,7 +539,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         for index in (beginIndex..<endIndex).reversed() {
             menu.removeItem(at: index)
         }
-
+        
         // Insert all profile menu items
         for (i, profile) in profiles.enumerated().reversed() {
             let item = NSMenuItem()
@@ -534,7 +551,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             
             menu.insertItem(item, at: beginIndex)
         }
-
+        
         // End separator is redundant if profile section is empty
         serverProfilesEndSeparatorMenuItem.isHidden = profiles.isEmpty
     }
