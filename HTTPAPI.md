@@ -3,13 +3,12 @@
 * Check current status (on/off)
 
 - Toggle the client
-
 - Get server list
-
-- Switch server
-
+- Get current server
+- Select server
+- Add new / modify existing server
+- Delete server
 - Get current mode
-
 - Switch mode
 
 # Specification
@@ -26,60 +25,124 @@ URL: http://localhost:9528/
 }
 ```
 
-- #### Toggle the client  `POST /toggle`
+- #### Toggle the client  `POST /status`
 
 ###### Sample Return
 
 ```
 {
     "status": 1
-    // 1 for toggle succeed, 0 for fail  
 }
 ```
 
-- #### Get server list  `GET /servers`
+`1` for success, `0` for failure.
+
+- #### Get server list  `GET /server/list`
 
 ###### Sample Return
 
 ```
 [
-	{
-		"active": 1,
-   		"id": "93C547E0-49C9-1234-9CAD-EE8D5C4A1A8F",
-    	"remark": "us1",
-		// remark: as in Server Preferences Panel of the app.
-	},
-	{
-    	"active" : 0,
-    	"id" : "71552DCD-B298-495E-904E-82DA4B07AEF8",
-    	"remark" : "hk2"
-  	},
-  	{
-    	"active" : 0,
-    	"id" : "E8879F3D-95AE-4714-BC04-9B271C2BC52D",
-    	"remark" : "jp1"
-  	},...
+  {
+    "Id" : "93C127E0-49C9-4332-9CAD-EE6B9A3D1A8F",
+    "Method" : "chacha20-ietf-poly1305",
+    "Password" : "password",
+    "Plugin" : "",
+    "PluginOptions" : "",
+    "Remark" : "jp1",
+    "ServerHost" : "jp1-sta40.somehost.com",
+    "ServerPort" : 49234
+  },
+  {
+    "Id" : "71552DCD-B298-4591-B59A-82DA4B07AEF8",
+    "Method" : "chacha20-ietf-poly1305",
+    "Password" : "password",
+    "Plugin" : "",
+    "PluginOptions" : "",
+    "Remark" : "us1",
+    "ServerHost" : "us1-sta40.somehost.com",
+    "ServerPort" : 49234
+  },...
 ]
 ```
 
-- #### Switch server  `POST /servers`
+- #### Get current server `GET /server/current`
+
+###### Sample Return
+
+```
+{
+  "Id" : "93C127E0-49C9-4332-9CAD-EE6B9A3D1A8F"
+}
+```
+
+- #### Select server  `POST /server/current`
 
 ###### Argument
 
-| Name | Description                   | Sample                                 |
-| ---- | ----------------------------- | -------------------------------------- |
-| id   | As returned in `GET /servers` | "E8879F3D-95AE-4714-BC04-9B271C2BC52D" |
+| Name | Description                       | Sample                                 |
+| ---- | --------------------------------- | -------------------------------------- |
+| Id   | As returned in `GET /server/list` | "71552DCD-B298-4591-B59A-82DA4B07AEF8" |
 
 ###### Sample Return
 
 ```
 {
     "status": 1
-    // 1 for succeed, 0 for fail
 }
 ```
 
-If the `id` is invalid or fail to match any `id` in config, "status" = 0. 
+If the `Id` is invalid or fail to match any id in config, `"status": 0`. 
+
+- #### Add Server / Modify Existing Server  `POST /server `
+
+###### Argument
+
+| Name          | Sample                 |
+| ------------- | ---------------------- |
+| ServerPort    | 49234                  |
+| ServerHost    | jp1-sta40.somehost.com |
+| Remark        | jp1                    |
+| PluginOptions |                        |
+| Plugin        |                        |
+| Password      | Password               |
+| Method        | chacha20-ietf-poly1305 |
+
+To indicate modification, pass `Id`  in addition.
+
+| Name | Description                       | Sample                                 |
+| ---- | --------------------------------- | -------------------------------------- |
+| Id   | As returned in `GET /server/list` | "71552DCD-B298-4591-B59A-82DA4B07AEF8" |
+
+For meaning of the arguments, refer to `GET /server/list` and the Server Perferences Panel of the app.
+
+###### Sample Return
+
+```
+{
+    "status": 1
+}
+```
+
+- #### Delete Server  `DELETE /server`
+
+###### Argument
+
+| Name | Description                       | Sample                                 |
+| ---- | --------------------------------- | -------------------------------------- |
+| Id   | As returned in `GET /server/list` | "71552DCD-B298-4591-B59A-82DA4B07AEF8" |
+
+###### Sample Return
+
+```
+{
+    "status": 1
+}
+```
+
+If `Id` == id of current server, operation will no effect, `"status":0`.
+
+If `Id` not match, `"status":0`.
 
 - #### Get current mode  `GET /mode`
 
@@ -95,6 +158,12 @@ If the `id` is invalid or fail to match any `id` in config, "status" = 0.
 
 - #### Switch mode  `POST /mode`
 
+###### Argument
+
+| Name | Description                | Sample   |
+| ---- | -------------------------- | -------- |
+| mode | As returned in `GET /mode` | "global" |
+
 ###### Sample Return
 
 ```
@@ -104,4 +173,7 @@ If the `id` is invalid or fail to match any `id` in config, "status" = 0.
 }
 ```
 
-If the `mode`∉ {"auto", "global", "manual"}, "status" = 0. 
+---
+
+All json names are case sensitive. Be careful.
+
