@@ -6,7 +6,7 @@ Current version is 1.8.0
 
 Next Generation of [ShadowsocksX](https://github.com/shadowsocks/shadowsocks-iOS)
 
-## Why?
+## Why a new implementation?
 
 It's hard to maintain the original implementation as there is too much unused code in it.
 It also embeds the `ss-local` source. It's crazy to maintain dependencies of `ss-local`.
@@ -24,8 +24,8 @@ Then I will rewrite the GUI code in Swift.
 
 ### Building
 
-- Xcode 9.3+
-- CocoaPods 1.3.1+
+- Xcode 9.4.1+
+- CocoaPods 1.5.3+
 
 ## Download
 
@@ -33,26 +33,15 @@ From [here](https://github.com/shadowsocks/ShadowsocksX-NG/releases/)
 
 ## Features
 
-- `ss-local` from shadowsocks-libev 3.1.3
+- `ss-local` from shadowsocks-libev 3.2.0
 - Support SIP003 plugins. Embed `kcptun` and `simple-obfs`.
 - Could update PAC by download GFW List from GitHub.
-- Shows QRCode for current server profile.
-- Scans QRCode from screen.
-- Auto launch at login.
-- User rules for PAC.
+- Share your server profiles by qrcode or url.
+- Import server profile urls from pasteboard.
+- Import server profile by scan QRCode on screen.
+- Custom rules for PAC.
 - Support for [AEAD Ciphers](https://shadowsocks.org/en/spec/AEAD-Ciphers.html)
 - HTTP Proxy by [privoxy](http://www.privoxy.org/)
-- Over [kcptun](https://github.com/xtaci/kcptun). Version 20170322
-- Export/Import configure file.
-- An advanced preferences panel for configuring:
-	- Local SOCKS5 listen address.
-	- Local SOCKS5 listen port.
-	- Local SOCKS5 timeout.
-	- If enable UDP relay.
-	- GFW List URL.
-- Manually specify network service profiles which would be used to configure the proxy.
-- Could reorder shadowsocks profiles by drag-&-dropping in servers preferences panel.
-- Configurable global shortcuts for toggle running and switch proxy mode.
 
 ## Difference from original ShadowsocksX
 

@@ -18,10 +18,6 @@ class ServerProfile: NSObject, NSCopying {
     @objc var method:String = "aes-128-gcm"
     @objc var password:String = ""
     @objc var remark:String = ""
-    @objc var ota: Bool = false // onetime authentication
-    
-    @objc var enabledKcptun: Bool = false
-    @objc var kcptunProfile = KcptunProfile()
     
     // SIP003 Plugin
     @objc var plugin: String = ""  // empty string disables plugin
@@ -103,21 +99,6 @@ class ServerProfile: NSObject, NSCopying {
             }
         }
 
-        if let otaStr = parsedUrl.queryItems?
-            .filter({ $0.name == "OTA" }).first?.value {
-            ota = NSString(string: otaStr).boolValue
-        }
-        if let enabledKcptunStr = parsedUrl.queryItems?
-            .filter({ $0.name == "Kcptun" }).first?.value {
-            enabledKcptun = NSString(string: enabledKcptunStr).boolValue
-        }
-        
-        if enabledKcptun {
-            if let items = parsedUrl.queryItems {
-                self.kcptunProfile.loadUrlQueryItems(items: items)
-            }
-        }
-
         if let pluginStr = parsedUrl.queryItems?
             .filter({ $0.name == "plugin" }).first?.value {
             let parts = pluginStr.split(separator: ";", maxSplits: 1)
@@ -135,10 +116,7 @@ class ServerProfile: NSObject, NSCopying {
         copy.method = self.method
         copy.password = self.password
         copy.remark = self.remark
-        copy.ota = self.ota
         
-        copy.enabledKcptun = self.enabledKcptun
-        copy.kcptunProfile = self.kcptunProfile.copy() as! KcptunProfile
         copy.plugin = self.plugin
         copy.pluginOptions = self.pluginOptions
         return copy;
@@ -153,15 +131,6 @@ class ServerProfile: NSObject, NSCopying {
             profile.password = data["Password"] as! String
             if let remark = data["Remark"] {
                 profile.remark = remark as! String
-            }
-            if let ota = data["OTA"] {
-                profile.ota = ota as! Bool
-            }
-            if let enabledKcptun = data["EnabledKcptun"] {
-                profile.enabledKcptun = enabledKcptun as! Bool
-            }
-            if let kcptunData = data["KcptunProfile"] {
-                profile.kcptunProfile =  KcptunProfile.fromDictionary(kcptunData as! [String:Any?])
             }
             if let plugin = data["Plugin"] as? String {
                 profile.plugin = plugin
@@ -190,9 +159,6 @@ class ServerProfile: NSObject, NSCopying {
         d["Method"] = method as AnyObject?
         d["Password"] = password as AnyObject?
         d["Remark"] = remark as AnyObject?
-        d["OTA"] = ota as AnyObject?
-        d["EnabledKcptun"] = NSNumber(value: enabledKcptun)
-        d["KcptunProfile"] = kcptunProfile.toDictionary() as AnyObject
         d["Plugin"] = plugin as AnyObject
         d["PluginOptions"] = pluginOptions as AnyObject
         return d
@@ -206,37 +172,14 @@ class ServerProfile: NSObject, NSCopying {
         conf["local_port"] = NSNumber(value: UInt16(defaults.integer(forKey: "LocalSocks5.ListenPort")) as UInt16)
         conf["local_address"] = defaults.string(forKey: "LocalSocks5.ListenAddress") as AnyObject?
         conf["timeout"] = NSNumber(value: UInt32(defaults.integer(forKey: "LocalSocks5.Timeout")) as UInt32)
-        if ota {
-            conf["auth"] = NSNumber(value: ota as Bool)
-        }
-        
-        if enabledKcptun {
-            let localHost = defaults.string(forKey: "Kcptun.LocalHost")
-            let localPort = uint16(defaults.integer(forKey: "Kcptun.LocalPort"))
-            
-            conf["server"] = localHost as AnyObject
-            conf["server_port"] = NSNumber(value: localPort as UInt16)
-        } else {
-            conf["server"] = serverHost as AnyObject
-            conf["server_port"] = NSNumber(value: serverPort as UInt16)
-        }
+        conf["server"] = serverHost as AnyObject
+        conf["server_port"] = NSNumber(value: serverPort as UInt16)
 
         if !plugin.isEmpty {
             // all plugin binaries should be located in the plugins dir
             // so that we don't have to mess up with PATH envvars
             conf["plugin"] = "plugins/\(plugin)" as AnyObject
             conf["plugin_opts"] = pluginOptions as AnyObject
-        }
-
-        return conf
-    }
-    
-    func toKcptunJsonConfig() -> [String: AnyObject] {
-        var conf = kcptunProfile.toJsonConfig()
-        if serverHost.contains(Character(":")) {
-            conf["remoteaddr"] = "[\(serverHost)]:\(serverPort)" as AnyObject
-        } else {
-            conf["remoteaddr"] = "\(serverHost):\(serverPort)" as AnyObject
         }
 
         return conf
@@ -289,14 +232,7 @@ class ServerProfile: NSObject, NSCopying {
         url.password = password
         url.port = Int(serverPort)
 
-        url.queryItems = [URLQueryItem(name: "Remark", value: remark),
-                          URLQueryItem(name: "OTA", value: ota.description)]
-        if enabledKcptun {
-            url.queryItems?.append(contentsOf: [
-                URLQueryItem(name: "Kcptun", value: enabledKcptun.description),
-                ])
-            url.queryItems?.append(contentsOf: kcptunProfile.urlQueryItems())
-        }
+        url.queryItems = [URLQueryItem(name: "Remark", value: remark)]
 
         let parts = url.string?.replacingOccurrences(
             of: "//", with: "",
@@ -322,11 +258,7 @@ class ServerProfile: NSObject, NSCopying {
         }
         let userInfo = rawUserInfo.base64EncodedString()
 
-        var items = [URLQueryItem(name: "OTA", value: ota.description)]
-        if enabledKcptun {
-            items.append(URLQueryItem(name: "Kcptun", value: enabledKcptun.description))
-            items.append(contentsOf: kcptunProfile.urlQueryItems())
-        }
+        var items: [URLQueryItem] = []
         if !plugin.isEmpty {
             let value = "\(plugin);\(pluginOptions)"
             items.append(URLQueryItem(name: "plugin", value: value))

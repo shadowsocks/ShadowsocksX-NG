@@ -16,11 +16,9 @@ class PreferencesWindowController: NSWindowController
     @IBOutlet weak var profilesTableView: NSTableView!
     
     @IBOutlet weak var profileBox: NSBox!
-    @IBOutlet weak var kcptunProfileBox: NSBox!
     
     @IBOutlet weak var hostTextField: NSTextField!
     @IBOutlet weak var portTextField: NSTextField!
-    @IBOutlet weak var kcptunPortTextField: NSTextField!
     @IBOutlet weak var methodTextField: NSComboBox!
     
     @IBOutlet weak var passwordTabView: NSTabView!
@@ -29,30 +27,15 @@ class PreferencesWindowController: NSWindowController
     @IBOutlet weak var togglePasswordVisibleButton: NSButton!
     @IBOutlet weak var pluginTextField: NSTextField!
     @IBOutlet weak var pluginOptionsTextField: NSTextField!
-    
     @IBOutlet weak var remarkTextField: NSTextField!
-    
-    @IBOutlet weak var otaCheckBoxBtn: NSButton!
-    
-    @IBOutlet weak var kcptunCheckBoxBtn: NSButton!
-    @IBOutlet weak var kcptunCryptComboBox: NSComboBox!
-    @IBOutlet weak var kcptunKeyTextField: NSTextField!
-    @IBOutlet weak var kcptunModeComboBox: NSComboBox!
-    @IBOutlet weak var kcptunNocompCheckBoxBtn: NSButton!
-    @IBOutlet weak var kcptunDatashardTextField: NSTextField!
-    @IBOutlet weak var kcptunParityshardTextField: NSTextField!
-    @IBOutlet weak var kcptunMTUTextField: NSTextField!
-    @IBOutlet weak var kcptunArgumentsTextField: NSTextField!
-    
     @IBOutlet weak var removeButton: NSButton!
+    
     let tableViewDragType: String = "ss.server.profile.data"
     
     var defaults: UserDefaults!
     var profileMgr: ServerProfileManager!
     
     var editingProfile: ServerProfile!
-    
-    var enabledKcptunSubDisosable: Disposable?
 
 
     override func windowDidLoad() {
@@ -83,29 +66,6 @@ class PreferencesWindowController: NSWindowController
             "chacha20",
             "chacha20-ietf",
             "rc4-md5",
-            ])
-        
-        kcptunCryptComboBox.addItems(withObjectValues: [
-            "none",
-            "aes",
-            "aes-128",
-            "aes-192",
-            "salsa20",
-            "blowfish",
-            "twofish",
-            "cast5",
-            "3des",
-            "tea",
-            "xtea",
-            "xor",
-            ])
-        
-        kcptunModeComboBox.addItems(withObjectValues: [
-            "default",
-            "normal",
-            "fast",
-            "fast2",
-            "fast3",
             ])
         
         profilesTableView.reloadData()
@@ -165,7 +125,6 @@ class PreferencesWindowController: NSWindowController
         profileMgr.save()
         window?.performClose(nil)
 
-        
         NotificationCenter.default
             .post(name: NOTIFY_SERVER_PROFILES_CHANGED, object: nil)
     }
@@ -246,20 +205,9 @@ class PreferencesWindowController: NSWindowController
     
     func bindProfile(_ index:Int) {
         NSLog("bind profile \(index)")
-        if let dis = enabledKcptunSubDisosable {
-            dis.dispose()
-            enabledKcptunSubDisosable = Optional.none
-        }
+
         if index >= 0 && index < profileMgr.profiles.count {
             editingProfile = profileMgr.profiles[index]
-            
-            
-            enabledKcptunSubDisosable = editingProfile.rx.observeWeakly(Bool.self, "enabledKcptun")
-                .subscribe(onNext: { v in
-                    if let enabled = v {
-                        self.portTextField.isEnabled = !enabled
-                    }
-            })
             
             hostTextField.bind(NSBindingName(rawValue: "value"), to: editingProfile, withKeyPath: "serverHost"
                 , options: [NSBindingOption.continuouslyUpdatesValue: true])
@@ -280,43 +228,6 @@ class PreferencesWindowController: NSWindowController
             
             remarkTextField.bind(NSBindingName(rawValue: "value"), to: editingProfile, withKeyPath: "remark"
                 , options: [NSBindingOption.continuouslyUpdatesValue: true])
-            
-            otaCheckBoxBtn.bind(NSBindingName(rawValue: "value"), to: editingProfile, withKeyPath: "ota"
-                , options: [NSBindingOption.continuouslyUpdatesValue: true])
-            
-            // --------------------------------------------------
-            // Kcptun
-            kcptunCheckBoxBtn.bind(NSBindingName(rawValue: "value"), to: editingProfile, withKeyPath: "enabledKcptun"
-                , options: [NSBindingOption.continuouslyUpdatesValue: true])
-            
-            kcptunPortTextField.bind(NSBindingName(rawValue: "value"), to: editingProfile, withKeyPath: "serverPort"
-                , options: [NSBindingOption.continuouslyUpdatesValue: true])
-            
-            kcptunProfileBox.bind(NSBindingName(rawValue: "Hidden"), to: editingProfile, withKeyPath: "enabledKcptun"
-                , options: [NSBindingOption.continuouslyUpdatesValue: false,
-                            NSBindingOption.valueTransformerName: NSValueTransformerName.negateBooleanTransformerName])
-            
-            kcptunNocompCheckBoxBtn.bind(NSBindingName(rawValue: "value"), to: editingProfile, withKeyPath: "kcptunProfile.nocomp", options: nil)
-            
-            kcptunModeComboBox.bind(NSBindingName(rawValue: "value"), to: editingProfile, withKeyPath: "kcptunProfile.mode", options: nil)
-            
-            kcptunCryptComboBox.bind(NSBindingName(rawValue: "value"), to: editingProfile, withKeyPath: "kcptunProfile.crypt", options: nil)
-            
-            kcptunKeyTextField.bind(NSBindingName(rawValue: "value"), to: editingProfile, withKeyPath: "kcptunProfile.key"
-                , options: [NSBindingOption.continuouslyUpdatesValue: true])
-            
-            kcptunDatashardTextField.bind(NSBindingName(rawValue: "value"), to: editingProfile, withKeyPath: "kcptunProfile.datashard"
-                , options: [NSBindingOption.continuouslyUpdatesValue: true])
-            
-            kcptunParityshardTextField.bind(NSBindingName(rawValue: "value"), to: editingProfile, withKeyPath: "kcptunProfile.parityshard"
-                , options: [NSBindingOption.continuouslyUpdatesValue: true])
-            
-            kcptunMTUTextField.bind(NSBindingName(rawValue: "value"), to: editingProfile, withKeyPath: "kcptunProfile.mtu"
-                , options: [NSBindingOption.continuouslyUpdatesValue: true])
-            
-            kcptunArgumentsTextField.bind(NSBindingName(rawValue: "value"), to: editingProfile, withKeyPath: "kcptunProfile.arguments"
-                , options: [NSBindingOption.continuouslyUpdatesValue: true])
-            
         } else {
             editingProfile = nil
             hostTextField.unbind(NSBindingName(rawValue: "value"))
@@ -326,10 +237,6 @@ class PreferencesWindowController: NSWindowController
             passwordTextField.unbind(NSBindingName(rawValue: "value"))
             
             remarkTextField.unbind(NSBindingName(rawValue: "value"))
-            
-            otaCheckBoxBtn.unbind(NSBindingName(rawValue: "value"))
-            
-            kcptunCheckBoxBtn.unbind(NSBindingName(rawValue: "value"))
         }
     }
     

@@ -8,6 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import <CoreImage/CoreImage.h>
+#import <AppKit/AppKit.h>
 
 void ScanQRCodeOnScreen() {
     /* displays[] Quartz display ID's */
@@ -74,4 +75,43 @@ void ScanQRCodeOnScreen() {
                   @"source": @"qrcode"
                  }
      ];
+}
+
+NSImage* createQRImage(NSString *string, NSSize size) {
+    NSImage *outputImage = [[NSImage alloc]initWithSize:size];
+    [outputImage lockFocus];
+    
+    // Setup the QR filter with our string
+    CIFilter *filter = [CIFilter filterWithName:@"CIQRCodeGenerator"];
+    [filter setDefaults];
+    
+    NSData *data = [string dataUsingEncoding:NSUTF8StringEncoding];
+    [filter setValue:data forKey:@"inputMessage"];
+    /*
+     L: 7%
+     M: 15%
+     Q: 25%
+     H: 30%
+     */
+    [filter setValue:@"Q" forKey:@"inputCorrectionLevel"];
+    
+    CIImage *image = [filter valueForKey:@"outputImage"];
+    
+    // Calculate the size of the generated image and the scale for the desired image size
+    CGRect extent = CGRectIntegral(image.extent);
+    CGFloat scale = MIN(size.width / CGRectGetWidth(extent), size.height / CGRectGetHeight(extent));
+    
+    CGImageRef bitmapImage = [NSGraphicsContext.currentContext.CIContext createCGImage:image fromRect:extent];
+    
+    CGContextRef graphicsContext = NSGraphicsContext.currentContext.CGContext;
+    
+    CGContextSetInterpolationQuality(graphicsContext, kCGInterpolationNone);
+    CGContextScaleCTM(graphicsContext, scale, scale);
+    CGContextDrawImage(graphicsContext, extent, bitmapImage);
+    
+    // Cleanup
+    CGImageRelease(bitmapImage);
+    
+    [outputImage unlockFocus];
+    return outputImage;
 }

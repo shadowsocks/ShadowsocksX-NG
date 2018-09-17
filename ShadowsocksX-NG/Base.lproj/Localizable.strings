@@ -20,7 +20,9 @@
  * ./AppDelegate.swift
  */
 
-"Add Shadowsocks Server Profile" = "Add Shadowsocks Server Profile";
+"Add \(addCount) Shadowsocks Server Profile" = "Add \(addCount) Shadowsocks Server Profile";
+
+"Not found valid qrcode or url of shadowsocks profile" = "Not found valid qrcode or url of shadowsocks profile";
 
 "By scan QR Code" = "By scan QR Code";
 

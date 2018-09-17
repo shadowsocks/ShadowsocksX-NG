@@ -59,13 +59,18 @@ func generateSSLocalLauchAgentPlist() -> Bool {
     arguments.append("--reuse-port")
     
     // For a complete listing of the keys, see the launchd.plist manual page.
+    let dyld_library_paths = [
+        NSHomeDirectory() + APP_SUPPORT_DIR + "ss-local-latest/",
+        NSHomeDirectory() + APP_SUPPORT_DIR + "plugins/",
+        ]
+    
     let dict: NSMutableDictionary = [
         "Label": "com.qiuyuzhou.shadowsocksX-NG.local",
         "WorkingDirectory": NSHomeDirectory() + APP_SUPPORT_DIR,
         "StandardOutPath": logFilePath,
         "StandardErrorPath": logFilePath,
         "ProgramArguments": arguments,
-        "EnvironmentVariables": ["DYLD_LIBRARY_PATH": NSHomeDirectory() + APP_SUPPORT_DIR + "ss-local-latest/"]
+        "EnvironmentVariables": ["DYLD_LIBRARY_PATH": dyld_library_paths.joined(separator: ":")]
     ]
     dict.write(toFile: plistFilepath, atomically: true)
     let Sha1Sum = getFileSHA1Sum(plistFilepath)
@@ -182,7 +187,6 @@ func SyncSSLocal() {
     }
     SyncPac()
     SyncPrivoxy()
-    SyncKcptun()
 }
 
 // --------------------------------------------------------------------------------
@@ -346,164 +350,4 @@ func SyncPrivoxy() {
         removePrivoxyConfFile()
         StopPrivoxy()
     }
-}
-
-// --------------------------------------------------------------------------------
-// kcptun
-
-func generateKcptunLauchAgentPlist() -> Bool {
-    let sslocalPath = NSHomeDirectory() + APP_SUPPORT_DIR + "kcptun_client"
-    let logFilePath = NSHomeDirectory() + "/Library/Logs/kcptun_client.log"
-    let launchAgentDirPath = NSHomeDirectory() + LAUNCH_AGENT_DIR
-    let plistFilepath = launchAgentDirPath + LAUNCH_AGENT_CONF_KCPTUN_NAME
-    
-    // Ensure launch agent directory is existed.
-    let fileMgr = FileManager.default
-    if !fileMgr.fileExists(atPath: launchAgentDirPath) {
-        try! fileMgr.createDirectory(atPath: launchAgentDirPath, withIntermediateDirectories: true, attributes: nil)
-    }
-    
-    let oldSha1Sum = getFileSHA1Sum(plistFilepath)
-    
-    var arguments = [sslocalPath, "-c", "kcptun-config.json"]
-    
-    let mgr = ServerProfileManager.instance
-    if let profile = mgr.getActiveProfile() {
-        if profile.enabledKcptun {
-            let otherArgumentsLine = profile.kcptunProfile.arguments.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
-            if !otherArgumentsLine.isEmpty {
-                // TOFIX: Don't support space between quotation marks
-                let otherArguments = otherArgumentsLine.components(separatedBy: " ")
-                arguments.append(contentsOf: otherArguments.filter { !$0.isEmpty })
-            }
-        }
-    }
-    
-    // For a complete listing of the keys, see the launchd.plist manual page.
-    let dict: NSMutableDictionary = [
-        "Label": "com.qiuyuzhou.shadowsocksX-NG.kcptun",
-        "WorkingDirectory": NSHomeDirectory() + APP_SUPPORT_DIR,
-        "StandardOutPath": logFilePath,
-        "StandardErrorPath": logFilePath,
-        "ProgramArguments": arguments,
-        "EnvironmentVariables": ["DYLD_LIBRARY_PATH": NSHomeDirectory() + APP_SUPPORT_DIR]
-    ]
-    dict.write(toFile: plistFilepath, atomically: true)
-    let Sha1Sum = getFileSHA1Sum(plistFilepath)
-    if oldSha1Sum != Sha1Sum {
-        return true
-    } else {
-        return false
-    }
-}
-
-func InstallKcptunClient() {
-    let fileMgr = FileManager.default
-    let homeDir = NSHomeDirectory()
-    let appSupportDir = homeDir+APP_SUPPORT_DIR
-    if !fileMgr.fileExists(atPath: appSupportDir + "kcptun_\(KCPTUN_CLIENT_VERSION)/kcptun_client") {
-        let bundle = Bundle.main
-        let installerPath = bundle.path(forResource: "install_kcptun", ofType: "sh")
-        let task = Process.launchedProcess(launchPath: installerPath!, arguments: [""])
-        task.waitUntilExit()
-        if task.terminationStatus == 0 {
-            NSLog("Install kcptun succeeded.")
-        } else {
-            NSLog("Install kcptun failed.")
-        }
-    }
-}
-
-func writeKcptunConfFile(_ conf:[String:AnyObject]) -> Bool {
-    do {
-        let filepath = NSHomeDirectory() + APP_SUPPORT_DIR + "kcptun-config.json"
-        let data: Data = try JSONSerialization.data(withJSONObject: conf, options: .prettyPrinted)
-        
-        let oldSum = getFileSHA1Sum(filepath)
-        try data.write(to: URL(fileURLWithPath: filepath), options: .atomic)
-        let newSum = getFileSHA1Sum(filepath)
-        
-        if oldSum == newSum {
-            return false
-        }
-        
-        return true
-    } catch {
-        NSLog("Write kcptun config file failed.")
-    }
-    return false
-}
-
-func isEnabledKcptun() -> Bool {
-    let mgr = ServerProfileManager.instance
-    if let profile = mgr.getActiveProfile() {
-        return profile.enabledKcptun
-    }
-    return false
-}
-
-func removeKcptunConfFile() {
-    do {
-        let filepath = NSHomeDirectory() + APP_SUPPORT_DIR + "kcptun-config.json"
-        try FileManager.default.removeItem(atPath: filepath)
-    } catch {
-        
-    }
-}
-
-func StartKcptun() {
-    if isEnabledKcptun() {
-        let bundle = Bundle.main
-        let installerPath = bundle.path(forResource: "start_kcptun.sh", ofType: nil)
-        let task = Process.launchedProcess(launchPath: installerPath!, arguments: [""])
-        task.waitUntilExit()
-        if task.terminationStatus == 0 {
-            NSLog("Start kcptun succeeded.")
-        } else {
-            NSLog("Start kcptun failed.")
-        }
-    }
-}
-
-func StopKcptun() {
-    let bundle = Bundle.main
-    let installerPath = bundle.path(forResource: "stop_kcptun.sh", ofType: nil)
-    let task = Process.launchedProcess(launchPath: installerPath!, arguments: [""])
-    task.waitUntilExit()
-    if task.terminationStatus == 0 {
-        NSLog("Stop kcptun succeeded.")
-    } else {
-        NSLog("Stop kcptun failed.")
-    }
-}
-
-func SyncKcptun() {
-    var changed: Bool = false
-    changed = changed || generateKcptunLauchAgentPlist()
-    let mgr = ServerProfileManager.instance
-    if let profile = mgr.getActiveProfile() {
-        if profile.enabledKcptun {
-            changed = changed || writeKcptunConfFile(profile.toKcptunJsonConfig())
-            
-            let on = UserDefaults.standard.bool(forKey: "ShadowsocksOn")
-            if on {
-                if changed {
-                    StopKcptun()
-                    DispatchQueue.main.asyncAfter(
-                        deadline: DispatchTime.now() + DispatchTimeInterval.seconds(1),
-                        execute: {
-                            () in
-                            StartKcptun()
-                    })
-                } else {
-                    StartKcptun()
-                }
-            } else {
-                StopKcptun()
-            }
-            return
-        }
-    }
-    StopKcptun()
-    removeKcptunConfFile()
 }

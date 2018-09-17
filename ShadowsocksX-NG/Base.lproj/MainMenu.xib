@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="14109" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="14113" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14109"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14113"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="NSApplication">
@@ -23,7 +23,6 @@
                 <outlet property="serverProfilesBeginSeparatorMenuItem" destination="4iN-w2-but" id="Jyu-48-AzD"/>
                 <outlet property="serverProfilesEndSeparatorMenuItem" destination="3cf-dF-7dx" id="eyc-6W-nWV"/>
                 <outlet property="serversMenuItem" destination="u5M-hQ-VSc" id="8gp-SY-Y4U"/>
-                <outlet property="showQRCodeMenuItem" destination="R6A-96-Zcb" id="XHz-pz-nCz"/>
                 <outlet property="statusMenu" destination="Hob-KD-bx9" id="clA-ZW-0pT"/>
                 <outlet property="toggleRunningMenuItem" destination="GSu-Tf-StS" id="XHw-pU-nCa"/>
             </connections>
@@ -72,37 +71,25 @@
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="4iN-w2-but"/>
                             <menuItem isSeparatorItem="YES" id="3cf-dF-7dx"/>
-                            <menuItem title="Show Bunch Json Example File..." id="pdy-JE-50Q">
-                                <modifierMask key="keyEquivalentModifierMask"/>
-                                <connections>
-                                    <action selector="showBunchJsonExampleFileWithSender:" target="Voe-Tx-rLC" id="lMy-Lo-OyB"/>
-                                </connections>
-                            </menuItem>
-                            <menuItem title="Import Bunch Json File..." id="T9g-gy-gvv">
-                                <modifierMask key="keyEquivalentModifierMask"/>
-                                <connections>
-                                    <action selector="importBunchJsonFileWithSender:" target="Voe-Tx-rLC" id="bRk-cg-9yn"/>
-                                </connections>
-                            </menuItem>
-                            <menuItem title="Export All Server To Json..." id="6k0-gn-DQv">
-                                <modifierMask key="keyEquivalentModifierMask"/>
-                                <connections>
-                                    <action selector="exportAllServerProfileWithSender:" target="Voe-Tx-rLC" id="0ip-dJ-juc"/>
-                                </connections>
-                            </menuItem>
                         </items>
                     </menu>
                 </menuItem>
-                <menuItem title="Scan QR Code From Screen ..." id="Qe6-bF-paT">
+                <menuItem title="Scan QR Code From Screen" id="Qe6-bF-paT">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
                         <action selector="scanQRCodeFromScreen:" target="Voe-Tx-rLC" id="zQZ-IT-H4a"/>
                     </connections>
                 </menuItem>
-                <menuItem title="Show QR Code For Current Server..." id="R6A-96-Zcb">
+                <menuItem title="Import Server URLs From Pasteboard" id="7Eq-XD-K5c">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
-                        <action selector="showQRCodeForCurrentServer:" target="Voe-Tx-rLC" id="t45-Zk-cai"/>
+                        <action selector="importProfileURLFromPasteboard:" target="Voe-Tx-rLC" id="RwL-Ms-BaC"/>
+                    </connections>
+                </menuItem>
+                <menuItem title="Share Server Profiles..." id="r5z-RB-LIZ">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <connections>
+                        <action selector="showShareServerProfiles:" target="Voe-Tx-rLC" id="3Qv-n1-5h1"/>
                     </connections>
                 </menuItem>
                 <menuItem isSeparatorItem="YES" id="vwY-hQ-ZIz"/>

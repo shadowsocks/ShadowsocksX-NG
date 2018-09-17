@@ -10,7 +10,7 @@
 cd `dirname "${BASH_SOURCE[0]}"`
 
 NGDir="$HOME/Library/Application Support/ShadowsocksX-NG"
-TargetDir="$NGDir/ss-local-3.1.3"
+TargetDir="$NGDir/ss-local-3.2.0"
 LatestTargetDir="$NGDir/ss-local-latest"
 
 echo ngdir: ${NGDir}
@@ -23,8 +23,9 @@ ln -s "$TargetDir" "$LatestTargetDir"
 cp -f libev.4.dylib "$TargetDir"
 
 # 2.8.0 https://bintray.com/homebrew/bottles/mbedtls
-cp -f libmbedcrypto.2.8.0.dylib "$TargetDir"
-ln -sfh  "$TargetDir/libmbedcrypto.2.8.0.dylib" "$TargetDir/libmbedcrypto.1.dylib"
+cp -f libmbedcrypto.2.12.0.dylib "$TargetDir"
+ln -sfh  "$TargetDir/libmbedcrypto.2.12.0.dylib" "$TargetDir/libmbedcrypto.2.dylib"
+ln -sfh  "$TargetDir/libmbedcrypto.2.12.0.dylib" "$TargetDir/libmbedcrypto.3.dylib"
 
 # 8.42 https://bintray.com/homebrew/bottles/pcre
 cp -f libpcre.1.dylib "$TargetDir"
