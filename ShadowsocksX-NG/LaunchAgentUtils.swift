@@ -211,6 +211,26 @@ func InstallSimpleObfs() {
 }
 
 // --------------------------------------------------------------------------------
+//  MARK: kcptun
+
+func InstallKcptun() {
+    let fileMgr = FileManager.default
+    let homeDir = NSHomeDirectory()
+    let appSupportDir = homeDir+APP_SUPPORT_DIR
+    if !fileMgr.fileExists(atPath: appSupportDir + "kcptun_\(KCPTUN_CLIENT_VERSION)/kcptun_client") {
+        let bundle = Bundle.main
+        let installerPath = bundle.path(forResource: "install_kcptun", ofType: "sh")
+        let task = Process.launchedProcess(launchPath: "/bin/sh", arguments: [installerPath!])
+        task.waitUntilExit()
+        if task.terminationStatus == 0 {
+            NSLog("Install kcptun succeeded.")
+        } else {
+            NSLog("Install kcptun failed.")
+        }
+    }
+}
+
+// --------------------------------------------------------------------------------
 //  MARK: privoxy
 
 func generatePrivoxyLauchAgentPlist() -> Bool {
