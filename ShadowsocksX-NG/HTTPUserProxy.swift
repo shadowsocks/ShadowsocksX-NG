@@ -36,7 +36,19 @@ class HTTPUserProxy{
         })
         
         apiserver.addHandler(forMethod: "POST", path: "/status", request: GCDWebServerURLEncodedFormRequest.self, processBlock: {request in
-            self.appdeleget.doToggleRunning(showToast: false)
+            if let enable = ((request as! GCDWebServerURLEncodedFormRequest).arguments["enable"])as? String {
+                if (enable != "true" && enable != "false") {
+                    return GCDWebServerDataResponse(jsonObject: ["status":0], contentType: "json")
+                }
+                
+                let isOn = self.defaults.bool(forKey: "ShadowsocksOn")
+                if (Bool(enable) != isOn) {
+                    self.appdeleget.doToggleRunning(showToast: false)
+                }
+            }
+            else {
+                self.appdeleget.doToggleRunning(showToast: false)
+            }
             return GCDWebServerDataResponse(jsonObject: ["status":1], contentType: "json")
         })
         
