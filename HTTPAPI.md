@@ -2,7 +2,7 @@
 
 * Check current status (on/off)
 
-- Toggle the client
+- Turn on/off or toggle the client
 - Get server list
 - Get current server
 - Select server
@@ -29,7 +29,7 @@ $ curl -X GET http://localhost:9528/status
 {"enable": true}
 ```
 
-- #### Turn on/off the client  `POST /status`
+- #### Turn on/off or toggle the client  `POST /status`
 
 ###### Sample Shell command
 
