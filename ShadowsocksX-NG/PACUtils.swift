@@ -21,6 +21,13 @@ let GFWListFilePath = PACRulesDirPath + "gfwlist.txt"
 func SyncPac() {
     var needGenerate = false
     
+    let nowSocks5Address = UserDefaults.standard.string(forKey: "LocalSocks5.ListenAddress")
+    let oldSocks5Address = UserDefaults.standard.string(forKey: "LocalSocks5.ListenAddress.Old")
+    if nowSocks5Address != oldSocks5Address {
+        needGenerate = true
+        UserDefaults.standard.set(nowSocks5Address, forKey: "LocalSocks5.ListenAddress.Old")
+    }
+    
     let nowSocks5Port = UserDefaults.standard.integer(forKey: "LocalSocks5.ListenPort")
     let oldSocks5Port = UserDefaults.standard.integer(forKey: "LocalSocks5.ListenPort.Old")
     if nowSocks5Port != oldSocks5Port {
@@ -65,6 +72,7 @@ func GeneratePACFile() -> Bool {
         try! fileMgr.copyItem(atPath: src!, toPath: PACUserRuleFilePath)
     }
     
+    let socks5Address = UserDefaults.standard.string(forKey: "LocalSocks5.ListenAddress")!
     let socks5Port = UserDefaults.standard.integer(forKey: "LocalSocks5.ListenPort")
     
     do {
@@ -109,11 +117,20 @@ func GeneratePACFile() -> Bool {
                 jsStr = jsStr!.replacingOccurrences(of: "__RULES__"
                     , with: rulesJsonStr!)
                 // Replace __SOCKS5PORT__ palcholder in pac js
-                let result = jsStr!.replacingOccurrences(of: "__SOCKS5PORT__"
+                jsStr = jsStr!.replacingOccurrences(of: "__SOCKS5PORT__"
                     , with: "\(socks5Port)")
+                // Replace __SOCKS5ADDR__ palcholder in pac js
+                var sin6 = sockaddr_in6()
+                if socks5Address.withCString({ cstring in inet_pton(AF_INET6, cstring, &sin6.sin6_addr) }) == 1 {
+                    jsStr = jsStr!.replacingOccurrences(of: "__SOCKS5ADDR__"
+                        , with: "[\(socks5Address)]")
+                } else {
+                    jsStr = jsStr!.replacingOccurrences(of: "__SOCKS5ADDR__"
+                        , with: socks5Address)
+                }
                 
                 // Write the pac js to file.
-                try result.data(using: String.Encoding.utf8)?
+                try jsStr!.data(using: String.Encoding.utf8)?
                     .write(to: URL(fileURLWithPath: PACFilePath), options: .atomic)
                 
                 return true

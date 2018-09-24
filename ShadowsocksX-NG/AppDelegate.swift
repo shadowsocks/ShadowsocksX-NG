@@ -84,6 +84,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         InstallSSLocal()
         InstallPrivoxy()
         InstallSimpleObfs()
+        InstallKcptun()
+        
         // Prepare defaults
         let defaults = UserDefaults.standard
         defaults.register(defaults: [
@@ -270,34 +272,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         ctrl.window?.makeKeyAndOrderFront(self)
     }
     
-    @IBAction func showQRCodeForCurrentServer(_ sender: NSMenuItem) {
-        var errMsg: String?
-        if let profile = ServerProfileManager.instance.getActiveProfile() {
-            if profile.isValid() {
-                // Show window
-                if qrcodeWinCtrl != nil{
-                    qrcodeWinCtrl.close()
-                }
-                qrcodeWinCtrl = SWBQRCodeWindowController(windowNibName: NSNib.Name(rawValue: "SWBQRCodeWindowController"))
-                qrcodeWinCtrl.qrCode = profile.URL()!.absoluteString
-                qrcodeWinCtrl.legacyQRCode = profile.URL(legacy: true)!.absoluteString
-                qrcodeWinCtrl.title = profile.title()
-                qrcodeWinCtrl.showWindow(self)
-                NSApp.activate(ignoringOtherApps: true)
-                qrcodeWinCtrl.window?.makeKeyAndOrderFront(nil)
-                
-                return
-            } else {
-                errMsg = "Current server profile is not valid.".localized
-            }
-        } else {
-            errMsg = "No current server profile.".localized
-        }
-        if let msg = errMsg {
-            self.makeToast(msg)
-        }
-    }
-    
     @IBAction func showShareServerProfiles(_ sender: NSMenuItem) {
         if shareWinCtrl != nil {
             shareWinCtrl.close()
@@ -363,7 +337,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         
         preferencesWinCtrl.showWindow(self)
         NSApp.activate(ignoringOtherApps: true)
-        preferencesWinCtrl.window?.makeKeyAndOrderFront(self)
     }
     
     @IBAction func showAllInOnePreferences(_ sender: NSMenuItem) {
