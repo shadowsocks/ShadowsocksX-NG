@@ -44,21 +44,28 @@ class ServerProfile: NSObject, NSCopying {
             }
         }
 
-        func decodeUrl(url: URL) -> String? {
+        func decodeUrl(url: URL) -> (String?,String?) {
             let urlStr = url.absoluteString
-            let index = urlStr.index(urlStr.startIndex, offsetBy: 5)
-            let encodedStr = urlStr[index...]
-            guard let data = Data(base64Encoded: padBase64(string: String(encodedStr))) else {
-                return url.absoluteString
+            let base64Begin = urlStr.index(urlStr.startIndex, offsetBy: 5)
+            let base64End = urlStr.firstIndex(of: "#")
+            let encodedStr = String(urlStr[base64Begin..<(base64End ?? urlStr.endIndex)])
+            guard let data = Data(base64Encoded: padBase64(string: encodedStr)) else {
+                return (url.absoluteString, nil)
             }
             guard let decoded = String(data: data, encoding: String.Encoding.utf8) else {
-                return nil
+                return (nil, nil)
             }
             let s = decoded.trimmingCharacters(in: CharacterSet(charactersIn: "\n"))
-            return "ss://\(s)"
+            
+            if let index = base64End {
+                let i = urlStr.index(index, offsetBy: 1)
+                let fragment = String(urlStr[i...])
+                return ("ss://\(s)", fragment)
+            }
+            return ("ss://\(s)", nil)
         }
-
-        guard let decodedUrl = decodeUrl(url: url) else {
+        let (_decodedUrl, _tag) = decodeUrl(url: url)
+        guard let decodedUrl = _decodedUrl else {
             return nil
         }
         guard var parsedUrl = URLComponents(string: decodedUrl) else {
@@ -79,6 +86,9 @@ class ServerProfile: NSObject, NSCopying {
         if let password = parsedUrl.password {
             self.method = user.lowercased()
             self.password = password
+            if let tag = _tag {
+                remark = tag
+            }
         } else {
             // SIP002 URL have no password section
             guard let data = Data(base64Encoded: padBase64(string: user)),
@@ -232,7 +242,7 @@ class ServerProfile: NSObject, NSCopying {
         url.password = password
         url.port = Int(serverPort)
 
-        url.queryItems = [URLQueryItem(name: "Remark", value: remark)]
+        url.fragment = remark
 
         let parts = url.string?.replacingOccurrences(
             of: "//", with: "",
