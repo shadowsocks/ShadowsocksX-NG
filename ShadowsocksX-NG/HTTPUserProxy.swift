@@ -33,7 +33,7 @@ class HTTPUserProxy{
         addHandler_getStatus()
         // PUT /status
         addHandler_setStatus()
-        
+
         // GET /servers
         addHandler_getServerList()
         // GET /current
@@ -110,7 +110,7 @@ class HTTPUserProxy{
             if var server = ((request as? GCDWebServerURLEncodedFormRequest)?.arguments) as? [String: Any] {
                 if (server["ServerPort"] != nil) {
                     server["ServerPort"] = UInt16(server["ServerPort"] as! String)
-                    if (self.adapter.validate(server: server)) {
+                    if (true) { // validate
                         self.adapter.addServer(server: server)
                         return GCDWebServerResponse();
                     }
@@ -128,9 +128,14 @@ class HTTPUserProxy{
                     server["ServerPort"] = UInt16(server["ServerPort"] as! String)
                 }
                 if (self.adapter.getServer(uuid: id) != nil) {
-                    if (self.adapter.validate(server: server)) {
-                        self.adapter.modifyServer(uuid: id, server: server)
-                        return GCDWebServerResponse();
+                    if (true) { // validate
+                        if (self.adapter.getCurrentServerId() != id) {
+                            self.adapter.modifyServer(uuid: id, server: server)
+                            return GCDWebServerResponse()
+                        }
+                        else {
+                            return GCDWebServerResponse(statusCode: 400);
+                        }
                     }
                 } else {
                     return GCDWebServerResponse(statusCode: 404)
@@ -145,8 +150,12 @@ class HTTPUserProxy{
             , processBlock: {request in
                 let id = String(request.path.dropFirst("/servers/".count))
                 if((self.adapter.getServer(uuid: id)) != nil) {
-                    self.adapter.deleteServer(uuid: id)
-                    return GCDWebServerResponse(statusCode: 200)
+                    if (self.adapter.getCurrentServerId() != id) {
+                        self.adapter.deleteServer(uuid: id)
+                        return GCDWebServerResponse()
+                    } else {
+                        return GCDWebServerResponse(statusCode: 400)
+                    }
                 }
                 else {
                     return GCDWebServerResponse(statusCode: 404)
@@ -166,7 +175,7 @@ class HTTPUserProxy{
                 if let mode = APIAdapter.Mode(rawValue: mode_str) {
                     self.adapter.setMode(mode: mode);
                     
-                    return GCDWebServerResponse(statusCode: 200)
+                    return GCDWebServerResponse()
                 }
             }
             return GCDWebServerResponse(statusCode: 400)
@@ -293,18 +302,5 @@ class APIAdapter {
         
         self.appdeleget.updateRunningModeMenu()
         self.appdeleget.applyConfig()
-    }
-    
-    func validate(server:Dictionary<String, Any>) -> Bool {
-        let serverHost = server["ServerHost"] as? String
-        let serverPort = server["ServerPort"] as? uint16
-        let method = server["Method"] as? String
-        let password = server["Password"] as? String
-        
-        if (serverHost != nil && serverPort != nil && method != nil && password != nil) {
-            return ServerProfile.fromDictionary(server).isValid()
-        }
-        
-        return false;
     }
 }
