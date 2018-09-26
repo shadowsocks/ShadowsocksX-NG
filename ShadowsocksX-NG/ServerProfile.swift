@@ -44,21 +44,28 @@ class ServerProfile: NSObject, NSCopying {
             }
         }
 
-        func decodeUrl(url: URL) -> String? {
+        func decodeUrl(url: URL) -> (String?,String?) {
             let urlStr = url.absoluteString
-            let index = urlStr.index(urlStr.startIndex, offsetBy: 5)
-            let encodedStr = urlStr[index...]
-            guard let data = Data(base64Encoded: padBase64(string: String(encodedStr))) else {
-                return url.absoluteString
+            let base64Begin = urlStr.index(urlStr.startIndex, offsetBy: 5)
+            let base64End = urlStr.firstIndex(of: "#")
+            let encodedStr = String(urlStr[base64Begin..<(base64End ?? urlStr.endIndex)])
+            guard let data = Data(base64Encoded: padBase64(string: encodedStr)) else {
+                return (url.absoluteString, nil)
             }
             guard let decoded = String(data: data, encoding: String.Encoding.utf8) else {
-                return nil
+                return (nil, nil)
             }
             let s = decoded.trimmingCharacters(in: CharacterSet(charactersIn: "\n"))
-            return "ss://\(s)"
+            
+            if let index = base64End {
+                let i = urlStr.index(index, offsetBy: 1)
+                let fragment = String(urlStr[i...])
+                return ("ss://\(s)", fragment)
+            }
+            return ("ss://\(s)", nil)
         }
-
-        guard let decodedUrl = decodeUrl(url: url) else {
+        let (_decodedUrl, _tag) = decodeUrl(url: url)
+        guard let decodedUrl = _decodedUrl else {
             return nil
         }
         guard var parsedUrl = URLComponents(string: decodedUrl) else {
@@ -79,6 +86,9 @@ class ServerProfile: NSObject, NSCopying {
         if let password = parsedUrl.password {
             self.method = user.lowercased()
             self.password = password
+            if let tag = _tag {
+                remark = tag
+            }
         } else {
             // SIP002 URL have no password section
             guard let data = Data(base64Encoded: padBase64(string: user)),
@@ -122,34 +132,31 @@ class ServerProfile: NSObject, NSCopying {
         return copy;
     }
     
-    static func copy(fromDict:[String:Any?], toProfile:ServerProfile) {
+    static func fromDictionary(_ data:[String:Any?]) -> ServerProfile {
         let cp = {
             (profile: ServerProfile) in
-            profile.serverHost = fromDict["ServerHost"] as! String
-            profile.serverPort = (fromDict["ServerPort"] as! NSNumber).uint16Value
-            profile.method = fromDict["Method"] as! String
-            profile.password = fromDict["Password"] as! String
-            if let remark = fromDict["Remark"] {
+            profile.serverHost = data["ServerHost"] as! String
+            profile.serverPort = (data["ServerPort"] as! NSNumber).uint16Value
+            profile.method = data["Method"] as! String
+            profile.password = data["Password"] as! String
+            if let remark = data["Remark"] {
                 profile.remark = remark as! String
             }
-            if let plugin = fromDict["Plugin"] as? String {
+            if let plugin = data["Plugin"] as? String {
                 profile.plugin = plugin
             }
-            if let pluginOptions = fromDict["PluginOptions"] as? String {
+            if let pluginOptions = data["PluginOptions"] as? String {
                 profile.pluginOptions = pluginOptions
             }
         }
-        cp(toProfile)
-    }
-    
-    static func fromDictionary(_ data:[String:Any?]) -> ServerProfile {
+
         if let id = data["Id"] as? String {
             let profile = ServerProfile(uuid: id)
-            copy(fromDict: data, toProfile: profile)
+            cp(profile)
             return profile
         } else {
             let profile = ServerProfile()
-            copy(fromDict: data, toProfile: profile)
+            cp(profile)
             return profile
         }
     }
@@ -235,7 +242,7 @@ class ServerProfile: NSObject, NSCopying {
         url.password = password
         url.port = Int(serverPort)
 
-        url.queryItems = [URLQueryItem(name: "Remark", value: remark)]
+        url.fragment = remark
 
         let parts = url.string?.replacingOccurrences(
             of: "//", with: "",

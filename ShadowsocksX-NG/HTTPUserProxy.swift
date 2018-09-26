@@ -1,5 +1,5 @@
 //
-//  ApiServer.swift
+//  HTTPUserProxy.swift
 //  ShadowsocksX-R
 //
 //  Created by CYC on 2016/10/9.
@@ -9,148 +9,298 @@
 import Foundation
 import GCDWebServer
 
-
-
 class HTTPUserProxy{
     static let shard = HTTPUserProxy()
     
-    let apiserver = GCDWebServer()
-    let SerMgr = ServerProfileManager.instance
-    let defaults = UserDefaults.standard
-    let appdeleget = NSApplication.shared.delegate as! AppDelegate
+    let adapter = APIAdapter()
+    
+    let server = GCDWebServer()
     let api_port:UInt = 9528
+    
+    let UUID_REGEX:String = "[\\w\\d-]*"
     
     func start(){
         setRouter()
         do{
-            try apiserver.start(options: [GCDWebServerOption_Port:api_port,"BindToLocalhost":true])
+            try server.start(options: [GCDWebServerOption_Port:api_port,"BindToLocalhost":true])
         }catch{
-            NSLog("Error:ApiServ start fail")
+            NSLog("Error:HTTPUserProxy start fail")
         }
     }
     
     func setRouter(){
-        apiserver.addHandler(forMethod: "GET", path: "/status", request: GCDWebServerRequest.self, processBlock: {request in
-            let isOn = self.defaults.bool(forKey: "ShadowsocksOn")
-            return GCDWebServerDataResponse(jsonObject: ["enable":isOn], contentType: "json")
-        })
+        // GET /status
+        addHandler_getStatus()
+        // PUT /status
+        addHandler_setStatus()
+
+        // GET /servers
+        addHandler_getServerList()
+        // GET /current
+        addHandler_getCurrentServer()
+        // PUT /current
+        addHandler_setCurrentServer()
+        // POST /servers
+        addHandler_addServer()
+        // PATCH /servers/{uuid}
+        addHandler_modifyServer()
+        // DELETE /servers/{uuid}
+        addHandler_deleteServer()
         
-        apiserver.addHandler(forMethod: "POST", path: "/status", request: GCDWebServerURLEncodedFormRequest.self, processBlock: {request in
-            if let enable = ((request as! GCDWebServerURLEncodedFormRequest).arguments["enable"])as? String {
-                if (enable != "true" && enable != "false") {
-                    return GCDWebServerDataResponse(jsonObject: ["status":0], contentType: "json")
-                }
-                
-                let isOn = self.defaults.bool(forKey: "ShadowsocksOn")
-                if (Bool(enable) != isOn) {
-                    self.appdeleget.doToggleRunning(showToast: false)
+        // GET /mode
+        addHandler_getMode()
+        // PUT /mode
+        addHandler_setMode()
+    }
+    
+    func addHandler_getStatus() {
+        server.addHandler(forMethod: "GET", path: "/status", request: GCDWebServerRequest.self, processBlock: {request in
+            return GCDWebServerDataResponse(jsonObject: ["Enable":self.adapter.getStatus()], contentType: "json")
+        })
+    }
+    
+    func addHandler_setStatus() {
+        server.addHandler(forMethod: "PUT", path: "/status", request: GCDWebServerURLEncodedFormRequest.self, processBlock: {request in
+            if let targetStatus_str = (request as? GCDWebServerURLEncodedFormRequest)?.arguments["Enable"] as? String{
+                if let targetStatus = Bool(targetStatus_str) {
+                    self.adapter.setStatus(status: targetStatus)
+                    return GCDWebServerResponse()
                 }
             }
             else {
-                self.appdeleget.doToggleRunning(showToast: false)
+                self.adapter.toggleStatus()
+                return GCDWebServerResponse()
             }
-            return GCDWebServerDataResponse(jsonObject: ["status":1], contentType: "json")
+            return GCDWebServerResponse(statusCode: 400)
         })
-        
-        apiserver.addHandler(forMethod: "GET", path: "/server/list", request: GCDWebServerRequest.self, processBlock: {request in
-            
-            var data = [[String:Any]]()
-            
-            for each in self.SerMgr.profiles{
-                data.append(each.toDictionary())
+    }
+    
+    func addHandler_getServerList() {
+        server.addHandler(forMethod: "GET", path: "/servers", request: GCDWebServerRequest.self, processBlock: {request in
+            return GCDWebServerDataResponse(jsonObject: self.adapter.getServerList(), contentType: "json")
+        })
+    }
+    
+    func addHandler_getCurrentServer() {
+        server.addHandler(forMethod: "GET", path: "/current", request: GCDWebServerRequest.self, processBlock: {request in
+            if let activeId = self.adapter.getCurrentServerId() {
+                return GCDWebServerDataResponse(jsonObject: self.adapter.getServer(uuid: activeId), contentType: "json")
             }
-            
-            return GCDWebServerDataResponse(jsonObject: data, contentType: "json")
+            else {
+                return GCDWebServerResponse(statusCode: 404);
+            }
         })
-        
-        apiserver.addHandler(forMethod: "GET", path: "/server/current", request: GCDWebServerRequest.self, processBlock: {request in
+    }
+    
+    func addHandler_setCurrentServer() {
+        server.addHandler(forMethod: "PUT", path: "/current", request: GCDWebServerURLEncodedFormRequest.self, processBlock: {request in
             
-            return GCDWebServerDataResponse(jsonObject: ["Id":self.SerMgr.activeProfileId], contentType: "json")
-        })
-        
-        apiserver.addHandler(forMethod: "POST", path: "/server/current", request: GCDWebServerURLEncodedFormRequest.self, processBlock: {request in
-            
-            let uuid = ((request as! GCDWebServerURLEncodedFormRequest).arguments["Id"])as? String
-            for each in self.SerMgr.profiles{
-                if (each.uuid == uuid) {
-                    self.appdeleget.changeServer(uuid: uuid!)
-                    return GCDWebServerDataResponse(jsonObject: ["status":1], contentType: "json")
-                    
+            if let targetId = (request as? GCDWebServerURLEncodedFormRequest)?.arguments["Id"] as? String{
+                if self.adapter.getServer(uuid: targetId) != nil {
+                    self.adapter.setCurrentServer(uuid: targetId);
+                    return GCDWebServerResponse()
                 }
             }
-            return GCDWebServerDataResponse(jsonObject: ["status":0], contentType: "json")
+            return GCDWebServerResponse(statusCode: 400)
         })
-        
-        apiserver.addHandler(forMethod: "POST", path: "/server", request: GCDWebServerURLEncodedFormRequest.self, processBlock: {request in
-            
-            var data = ((request as! GCDWebServerURLEncodedFormRequest).arguments) as! [String: Any]
-            data["ServerPort"] = Double(data["ServerPort"] as! String)
-            let id = data["Id"] as? String
-            if (id != nil) {
-                for each in self.SerMgr.profiles{
-                    if (each.uuid == id) {
-                        ServerProfile.copy(fromDict: data, toProfile: each)
-                        if (each.isValid()) {
-                            self.SerMgr.save()
-                            self.appdeleget.updateServersMenu()
-                            return GCDWebServerDataResponse(jsonObject: ["status":1], contentType: "json")
+    }
+    
+    func addHandler_addServer() {
+        server.addHandler(forMethod: "POST", path: "/servers", request: GCDWebServerURLEncodedFormRequest.self, processBlock: {request in
+            if var server = ((request as? GCDWebServerURLEncodedFormRequest)?.arguments) as? [String: Any] {
+                if (server["ServerPort"] != nil) {
+                    server["ServerPort"] = UInt16(server["ServerPort"] as! String)
+                    if (true) { // validate
+                        self.adapter.addServer(server: server)
+                        return GCDWebServerResponse();
+                    }
+                }
+            }
+            return GCDWebServerResponse(statusCode: 400)
+        });
+    }
+    
+    func addHandler_modifyServer() {
+        server.addHandler(forMethod: "PATCH", pathRegex: "/servers/"+self.UUID_REGEX, request: GCDWebServerURLEncodedFormRequest.self, processBlock: {request in
+            let id = String(request.path.dropFirst("/servers/".count))
+            if var server = ((request as? GCDWebServerURLEncodedFormRequest)?.arguments) as? [String: Any] {
+                if (server["ServerPort"] != nil) {
+                    server["ServerPort"] = UInt16(server["ServerPort"] as! String)
+                }
+                if (self.adapter.getServer(uuid: id) != nil) {
+                    if (true) { // validate
+                        if (self.adapter.getCurrentServerId() != id) {
+                            self.adapter.modifyServer(uuid: id, server: server)
+                            return GCDWebServerResponse()
+                        }
+                        else {
+                            return GCDWebServerResponse(statusCode: 400);
                         }
                     }
+                } else {
+                    return GCDWebServerResponse(statusCode: 404)
                 }
             }
-            else {
-                let profile = ServerProfile.fromDictionary(data)
-                if (profile.isValid()) {
-                    self.SerMgr.profiles.append(profile)
-                    self.SerMgr.save()
-                    self.appdeleget.updateServersMenu()
-                    return GCDWebServerDataResponse(jsonObject: ["status":1], contentType: "json")
-                }
-            }
-            
-            return GCDWebServerDataResponse(jsonObject: ["status":0], contentType: "json")
+            return GCDWebServerResponse(statusCode: 400)
         })
-        
-        apiserver.addHandler(forMethod: "DELETE", path: "/server", request: GCDWebServerRequest.self
+    }
+    
+    func addHandler_deleteServer() {
+        server.addHandler(forMethod: "DELETE", pathRegex: "/servers/"+self.UUID_REGEX, request: GCDWebServerRequest.self
             , processBlock: {request in
-                
-                let uuid = (request.query?["Id"])as! String
-                
-                if (uuid == self.SerMgr.activeProfileId) {
-                    return GCDWebServerDataResponse(jsonObject: ["status":0], contentType: "json")
-                }
-                
-                for i in 0..<self.SerMgr.profiles.count{
-                    if (self.SerMgr.profiles[i].uuid == uuid) {
-                        self.SerMgr.profiles.remove(at: i)
-                        
-                        self.SerMgr.save()
-                        self.appdeleget.updateServersMenu()
-                        
-                        return GCDWebServerDataResponse(jsonObject: ["status":1], contentType: "json")
+                let id = String(request.path.dropFirst("/servers/".count))
+                if((self.adapter.getServer(uuid: id)) != nil) {
+                    if (self.adapter.getCurrentServerId() != id) {
+                        self.adapter.deleteServer(uuid: id)
+                        return GCDWebServerResponse()
+                    } else {
+                        return GCDWebServerResponse(statusCode: 400)
                     }
                 }
-                
-                return GCDWebServerDataResponse(jsonObject: ["status":0], contentType: "json")
+                else {
+                    return GCDWebServerResponse(statusCode: 404)
+                }
         })
-        
-        apiserver.addHandler(forMethod: "GET", path: "/mode", request: GCDWebServerRequest.self, processBlock: {request in
-            if let current = self.defaults.string(forKey: "ShadowsocksRunningMode"){
-                return GCDWebServerDataResponse(jsonObject: ["mode":current], contentType: "json")
+    }
+    
+    func addHandler_getMode() {
+        server.addHandler(forMethod: "GET", path: "/mode", request: GCDWebServerRequest.self, processBlock: {request in
+            return GCDWebServerDataResponse(jsonObject: ["Mode":self.adapter.getMode().rawValue], contentType: "json")
+        })
+    }
+    
+    func addHandler_setMode() {
+        server.addHandler(forMethod: "PUT", path: "/mode", request: GCDWebServerURLEncodedFormRequest.self, processBlock: {request in
+            if let mode_str = (request as? GCDWebServerURLEncodedFormRequest)?.arguments["Mode"] as? String{
+                if let mode = APIAdapter.Mode(rawValue: mode_str) {
+                    self.adapter.setMode(mode: mode);
+                    
+                    return GCDWebServerResponse()
+                }
             }
-            return GCDWebServerDataResponse(jsonObject: ["mode":"unknow"], contentType: "json")
+            return GCDWebServerResponse(statusCode: 400)
         })
+    }
+}
+
+class APIAdapter {
+    enum Mode:String {case auto="auto", global="global", manual="manual"};
+    
+    let SerMgr = ServerProfileManager.instance
+    let defaults = UserDefaults.standard
+    let appdeleget = NSApplication.shared.delegate as! AppDelegate
+    
+    func getStatus()->Bool {
+        return self.defaults.bool(forKey: "ShadowsocksOn");
+    }
+    
+    func setStatus(status:Bool) {
+        if (status == self.defaults.bool(forKey: "ShadowsocksOn")) {
+            return;
+        }
+        else {
+            appdeleget.doToggleRunning(showToast: false)
+        }
+    }
+    
+    func toggleStatus() {
+        appdeleget.doToggleRunning(showToast: false)
+    }
+    
+    func getServerList()->[Dictionary<String, Any>] {
+        return self.SerMgr.profiles.map {$0.toDictionary()}
+    }
+    
+    func getCurrentServerId()->String? {
+        return self.SerMgr.activeProfileId;
+    }
+    
+    func setCurrentServer(uuid:String) {
+        self.SerMgr.setActiveProfiledId(uuid)
+        self.appdeleget.updateServersMenu()
+        SyncSSLocal()
+        self.appdeleget.applyConfig()
+        self.appdeleget.updateRunningModeMenu()
+    }
+    
+    func getServer(uuid:String)->Dictionary<String, Any>? {
+        if let i = self.SerMgr.profiles.index(where: {$0.uuid == uuid}) {
+            return self.SerMgr.profiles[i].toDictionary()
+        }
+        else {
+            return nil;
+        }
+    }
+    
+    func addServer(server:Dictionary<String, Any>) {
+        let profile = ServerProfile.fromDictionary(server)
         
-        apiserver.addHandler(forMethod: "POST", path: "/mode", request: GCDWebServerURLEncodedFormRequest.self, processBlock: {request in
-            let arg = ((request as! GCDWebServerURLEncodedFormRequest).arguments["mode"])as? String
+        self.SerMgr.profiles.append(profile)
+        self.SerMgr.save()
+        self.appdeleget.updateServersMenu()
+    }
+    
+    func modifyServer(uuid:String, server:Dictionary<String, Any>) {
+        let index = self.SerMgr.profiles.index(where: {$0.uuid == uuid})!
+        let profile = self.SerMgr.profiles[index]
+        
+        if (server["ServerHost"] != nil) {
+            profile.serverHost = server["ServerHost"] as! String;
+        }
+        if (server["ServerPort"] != nil) {
+            profile.serverPort = server["ServerPort"] as! uint16;
+        }
+        if (server["Method"] != nil) {
+            profile.method = server["Method"] as! String;
             
-            if (arg != "auto" && arg != "global" && arg != "manual") {
-                return GCDWebServerDataResponse(jsonObject: ["status":0], contentType: "json")
-            }
+        }
+        if (server["Password"] != nil) {
+            profile.password = server["Password"] as! String;
+        }
+        if (server["Remark"] != nil) {
+            profile.remark = server["Remark"] as! String;
+        }
+        if (server["Plugin"] != nil) {
+            profile.plugin = server["Plugin"] as! String;
             
-            self.appdeleget.changeMode(mode: arg!)
-            
-            return GCDWebServerDataResponse(jsonObject: ["status":1], contentType: "json")
-        })
+        }
+        if (server["PluginOptions"] != nil) {
+            profile.pluginOptions = server["PluginOptions"] as! String;
+        }
+        
+        self.SerMgr.save()
+        self.appdeleget.updateServersMenu()
+    }
+    
+    func deleteServer(uuid:String) {
+        let index = self.SerMgr.profiles.index(where: {$0.uuid == uuid})!
+        
+        self.SerMgr.profiles.remove(at: index)
+        
+        self.SerMgr.save()
+        self.appdeleget.updateServersMenu()
+    }
+    
+    func getMode()->Mode {
+        let mode_str = self.defaults.string(forKey: "ShadowsocksRunningMode");
+        switch mode_str {
+        case "auto": return .auto
+        case "global": return .global;
+        case "manual": return .manual
+        default:fatalError()
+        }
+    }
+    
+    func setMode(mode:Mode) {
+        let defaults = UserDefaults.standard
+        
+        switch mode{
+        case .auto:defaults.setValue("auto", forKey: "ShadowsocksRunningMode")
+        case .global:defaults.setValue("global", forKey: "ShadowsocksRunningMode")
+        case .manual:defaults.setValue("manual", forKey: "ShadowsocksRunningMode")
+        }
+        
+        self.appdeleget.updateRunningModeMenu()
+        self.appdeleget.applyConfig()
     }
 }

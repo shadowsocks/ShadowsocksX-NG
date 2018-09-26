@@ -5,15 +5,27 @@
 - Turn on/off or toggle the client
 - Get server list
 - Get current server
-- Select server
-- Add new / modify existing server
+- Activate server
+- Add new server
+- Modify server
 - Delete server
 - Get current mode
 - Switch mode
 
 # Specification
 
-baseURL: http://localhost:9528/
+**PORT:** 9528
+
+### HTTP Status Code
+
+- 200 - Succeed
+- 400 - Fail
+- 404 (For `PATCH /servers/{ID}` and `DELETE /servers/{ID}`) - `{ID}` Not found 
+- 404 (For `GET /current`) No server is activated
+
+### Methods
+
+Note: To run the sample shell commands, replace the `Id` (if any) below for your own ones.
 
 - #### Check current status (on/off)  `GET /status`
 
@@ -26,39 +38,25 @@ $ curl -X GET http://localhost:9528/status
 ###### Sample Return
 
 ```json
-{"enable": true}
+{"Enable": true}
 ```
 
-- #### Turn on/off or toggle the client  `POST /status`
+- #### Turn on/off or toggle the client  `PUT /status`
 
 ###### Sample Shell command
 
 ```shell
-$ curl -X POST http://localhost:9528/status
+curl -X PUT http://localhost:9528/status -d 'Enable=false'
 ```
 
-The command above will toggle the client.
+Omit the argument `Enable` to **toggle**.
 
-Or you may want to specify the argument
-
-```shell
-$ curl -X POST -d 'enable=false' http://localhost:9528/status 
-```
-
-###### Sample Return
-
-```json
-{"status": 1}
-```
-
-**Note**: `1` for command succeed, `0` for fail.
-
-- #### Get server list  `GET /server/list`
+- #### Get server list  `GET /servers`
 
 ###### Sample Shell command
 
 ```shell
-$ curl -X GET http://localhost:9528/server/list
+$ curl -X GET http://localhost:9528/servers
 ```
 
 ###### Sample Return
@@ -88,77 +86,60 @@ $ curl -X GET http://localhost:9528/server/list
 ]
 ```
 
-- #### Get current server `GET /server/current`
+- #### Get current server `GET /current`
 
 ###### Sample Shell command
 
 ```shell
-$ curl -X GET http://localhost:9528/server/current
+$ curl -X GET http://localhost:9528/current
 ```
 
 ###### Sample Return
 
 ```json
-{"Id" : "93C127E0-49C9-4332-9CAD-EE6B9A3D1A8F"}
+{
+    "Id" : "93C127E0-49C9-4332-9CAD-EE6B9A3D1A8F",
+    "Method" : "chacha20-ietf-poly1305",
+    "Password" : "password",
+    "Plugin" : "",
+    "PluginOptions" : "",
+    "Remark" : "jp1",
+    "ServerHost" : "jp1-sta40.somehost.com",
+    "ServerPort" : 49234
+  }
 ```
 
-- #### Select server  `POST /server/current`
+- #### Activate server  `PUT /current`
 
 ###### Sample Shell command
 
 ```shell
-$ curl -X POST -d 'Id=71552DCD-B298-4591-B59A-82DA4B07AEF8' http://localhost:9528/server/current
+$ curl -X PUT http://localhost:9528/current -d 'Id=71552DCD-B298-4591-B59A-82DA4B07AEF8'
 ```
 
-###### Sample Return
+- #### Add Server  `POST /servers `
 
-```json
-{"status": 1}
-```
-
-If the `Id` is invalid or fail to match any id in config, `"status": 0`. 
-
-- #### Add Server / Modify Existing Server  `POST /server `
-
-Sample Shell command
+###### Sample Shell command
 
 ```shell
-$ curl -X POST -d \
-'ServerPort=49234&ServerHost=tw1-sta40.somehost.com&Remark=someRemark&PluginOptions=&Plugin=&Password=myPassword&Method=chacha20-ietf-poly1305' http://localhost:9528/server
+$ curl -X POST http://localhost:9528/servers -d 'ServerPort=6666&ServerHost=tw1-sta40.somehost.com&Remark=someRemark&PluginOptions=&Plugin=&Password=myPassword&Method=chacha20-ietf-poly1305'
 ```
 
-To indicate modification, pass `Id`  in addition.
+- #### Modify Server  `PATCH /servers/{ID} `
+
+###### Sample Shell command
 
 ```shell
-$ curl -X POST -d \
-'Id=71552DCD-B298-4591-B59A-82DA4B07AEF8&ServerPort=49234&ServerHost=tw1-sta40.somehost.com&Remark=someRemark&PluginOptions=&Plugin=&Password=myPassword&Method=chacha20-ietf-poly1305' http://localhost:9528/server
+$ curl -X PATCH http://localhost:9528/servers/71552DCD-B298-4591-B59A-82DA4B07AEF8 -d 'ServerPort=6666&Remark=someRemark'
 ```
 
-For meaning of the arguments, refer to `GET /server/list` and the Server Perferences Panel of the app.
+- #### Delete Server  `DELETE /server/{ID}`
 
-###### Sample Return
-
-```json
-{"status": 1}
-```
-
-- #### Delete Server  `DELETE /server`
-
-Sample Shell command
+###### Sample Shell command
 
 ```shell
-$ curl -X POST -d 'Id=71552DCD-B298-4591-B59A-82DA4B07AEF8' http://localhost:9528/server
+$ curl -X DELETE http://localhost:9528/servers/71552DCD-B298-4591-B59A-82DA4B07AEF8
 ```
-
-Sample Return
-
-```json
-{"status": 1}
-```
-
-If `Id` == id of current server, operation will no effect, `"status":0`.
-
-If `Id` not match, `"status":0`.
 
 - #### Get current mode  `GET /mode`
 
@@ -171,21 +152,15 @@ $ curl -X GET http://localhost:9528/mode
 ###### Sample Return
 
 ```json
-{"mode": "auto"}
+{"Mode": "auto"}
 ```
 
  `mode`∈ {"auto", "global", "manual"}.
 
-- #### Switch mode  `POST /mode`
+- #### Switch mode  `PUT /mode`
 
 ###### Sample Shell command
 
 ```shell
-$ curl -X POST -d 'mode=global' http://localhost:9528/status
-```
-
-###### Sample Return
-
-```json
-{"status": 1}
+$ curl -X PUT http://localhost:9528/status -d 'Mode=global'
 ```

@@ -111,6 +111,15 @@ class ServerProfileTests: XCTestCase {
         XCTAssertEqual(profile?.password, "password")
         XCTAssertEqual(profile?.remark, "Prism")
     }
+    
+    func testInitWithLegacyBase64EncodedURLWithTag() {
+        let url = URL(string: "ss://YmYtY2ZiOnRlc3RAMTkyLjE2OC4xMDAuMTo4ODg4Cg#example-server")!
+        
+        let profile = ServerProfile(url: url)
+        
+        XCTAssertNotNil(profile)
+        XCTAssertEqual(profile?.remark, "example-server")
+    }
 
     func testInitWithEmptyURL() {
         let url = URL(string: "ss://")!
