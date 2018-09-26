@@ -132,34 +132,31 @@ class ServerProfile: NSObject, NSCopying {
         return copy;
     }
     
-    static func copy(fromDict:[String:Any?], toProfile:ServerProfile) {
+    static func fromDictionary(_ data:[String:Any?]) -> ServerProfile {
         let cp = {
             (profile: ServerProfile) in
-            profile.serverHost = fromDict["ServerHost"] as! String
-            profile.serverPort = (fromDict["ServerPort"] as! NSNumber).uint16Value
-            profile.method = fromDict["Method"] as! String
-            profile.password = fromDict["Password"] as! String
-            if let remark = fromDict["Remark"] {
+            profile.serverHost = data["ServerHost"] as! String
+            profile.serverPort = (data["ServerPort"] as! NSNumber).uint16Value
+            profile.method = data["Method"] as! String
+            profile.password = data["Password"] as! String
+            if let remark = data["Remark"] {
                 profile.remark = remark as! String
             }
-            if let plugin = fromDict["Plugin"] as? String {
+            if let plugin = data["Plugin"] as? String {
                 profile.plugin = plugin
             }
-            if let pluginOptions = fromDict["PluginOptions"] as? String {
+            if let pluginOptions = data["PluginOptions"] as? String {
                 profile.pluginOptions = pluginOptions
             }
         }
-        cp(toProfile)
-    }
-    
-    static func fromDictionary(_ data:[String:Any?]) -> ServerProfile {
+
         if let id = data["Id"] as? String {
             let profile = ServerProfile(uuid: id)
-            copy(fromDict: data, toProfile: profile)
+            cp(profile)
             return profile
         } else {
             let profile = ServerProfile()
-            copy(fromDict: data, toProfile: profile)
+            cp(profile)
             return profile
         }
     }
