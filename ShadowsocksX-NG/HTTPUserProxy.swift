@@ -108,10 +108,12 @@ class HTTPUserProxy{
     func addHandler_addServer() {
         server.addHandler(forMethod: "POST", path: "/servers", request: GCDWebServerURLEncodedFormRequest.self, processBlock: {request in
             if var server = ((request as? GCDWebServerURLEncodedFormRequest)?.arguments) as? [String: Any] {
-                server["ServerPort"] = UInt16(server["ServerPort"] as! String)
-                if (self.adapter.validate(server: server)) {
-                    self.adapter.addServer(server: server)
-                    return GCDWebServerResponse();
+                if (server["ServerPort"] != nil) {
+                    server["ServerPort"] = UInt16(server["ServerPort"] as! String)
+                    if (self.adapter.validate(server: server)) {
+                        self.adapter.addServer(server: server)
+                        return GCDWebServerResponse();
+                    }
                 }
             }
             return GCDWebServerResponse(statusCode: 400)
@@ -122,7 +124,9 @@ class HTTPUserProxy{
         server.addHandler(forMethod: "PATCH", pathRegex: "/servers/"+self.UUID_REGEX, request: GCDWebServerURLEncodedFormRequest.self, processBlock: {request in
             let id = String(request.path.dropFirst("/servers/".count))
             if var server = ((request as? GCDWebServerURLEncodedFormRequest)?.arguments) as? [String: Any] {
-                server["ServerPort"] = UInt16(server["ServerPort"] as! String)
+                if (server["ServerPort"] != nil) {
+                    server["ServerPort"] = UInt16(server["ServerPort"] as! String)
+                }
                 if (self.adapter.getServer(uuid: id) != nil) {
                     if (self.adapter.validate(server: server)) {
                         self.adapter.modifyServer(uuid: id, server: server)
