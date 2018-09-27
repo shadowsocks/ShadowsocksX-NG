@@ -48,7 +48,7 @@ class ShareServerProfilesWindowController: NSWindowController
         if profile.isValid(), let url = profile.URL() {
             let pb = NSPasteboard.general
             pb.clearContents()
-            if pb.writeObjects([url as NSPasteboardWriting]) {
+            if pb.writeObjects([url.absoluteString as NSPasteboardWriting]) {
                 NSLog("Copy URL to clipboard")
             } else {
                 NSLog("Failed to copy URL to clipboard")
