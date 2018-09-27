@@ -13,6 +13,7 @@ class HTTPUserProxy{
     static let shard = HTTPUserProxy()
     
     let adapter = APIAdapter()
+    let v = Validator()
     
     let server = GCDWebServer()
     let api_port:UInt = 9528
@@ -84,7 +85,7 @@ class HTTPUserProxy{
     func addHandler_getCurrentServer() {
         server.addHandler(forMethod: "GET", path: "/current", request: GCDWebServerRequest.self, processBlock: {request in
             if let activeId = self.adapter.getCurrentServerId() {
-                return GCDWebServerDataResponse(jsonObject: self.adapter.getServer(uuid: activeId), contentType: "json")
+                return GCDWebServerDataResponse(jsonObject: self.adapter.getServer(uuid: activeId)!, contentType: "json")
             }
             else {
                 return GCDWebServerResponse(statusCode: 404);
@@ -110,7 +111,7 @@ class HTTPUserProxy{
             if var server = ((request as? GCDWebServerURLEncodedFormRequest)?.arguments) as? [String: Any] {
                 if (server["ServerPort"] != nil) {
                     server["ServerPort"] = UInt16(server["ServerPort"] as! String)
-                    if (true) { // validate
+                    if (Validator.integrity(server) && Validator.existAttributes(server)) { // validate
                         self.adapter.addServer(server: server)
                         return GCDWebServerResponse();
                     }
@@ -128,7 +129,7 @@ class HTTPUserProxy{
                     server["ServerPort"] = UInt16(server["ServerPort"] as! String)
                 }
                 if (self.adapter.getServer(uuid: id) != nil) {
-                    if (true) { // validate
+                    if (Validator.existAttributes(server)) {
                         if (self.adapter.getCurrentServerId() != id) {
                             self.adapter.modifyServer(uuid: id, server: server)
                             return GCDWebServerResponse()
@@ -185,7 +186,7 @@ class HTTPUserProxy{
 
 class APIAdapter {
     enum Mode:String {case auto="auto", global="global", manual="manual"};
-    
+
     let SerMgr = ServerProfileManager.instance
     let defaults = UserDefaults.standard
     let appdeleget = NSApplication.shared.delegate as! AppDelegate
@@ -262,7 +263,6 @@ class APIAdapter {
         }
         if (server["Plugin"] != nil) {
             profile.plugin = server["Plugin"] as! String;
-            
         }
         if (server["PluginOptions"] != nil) {
             profile.pluginOptions = server["PluginOptions"] as! String;
@@ -302,5 +302,122 @@ class APIAdapter {
         
         self.appdeleget.updateRunningModeMenu()
         self.appdeleget.applyConfig()
+    }
+}
+
+class Validator {
+    static func integrity(_ data: Dictionary<String, Any>) -> Bool {
+        if (data["ServerHost"] == nil || data["ServerPort"] as? NSNumber == nil
+            || data["Method"] == nil || data["Password"] == nil) {
+            return false;
+        }
+        return true;
+    }
+    
+    static func existAttributes(_ server:Dictionary<String, Any>) -> Bool {
+        var result = true;
+        
+        if (server["ServerHost"] != nil) {
+            result = result && serverHost(server["ServerHost"] as! String);
+        }
+        if (server["ServerPort"] != nil) {
+            result = result && serverPort(server["ServerPort"] as! uint16);
+        }
+        if (server["Method"] != nil) {
+            result = result && method(server["Method"] as! String);
+        }
+        if (server["Password"] != nil) {
+            result = result && password(server["Password"] as! String);
+        }
+        if (server["Remark"] != nil) {
+            result = result && remark(server["Remark"] as! String);
+        }
+        if (server["Plugin"] != nil) {
+            result = result && plugin(server["Plugin"] as! String);
+        }
+        if (server["PluginOptions"] != nil) {
+            result = result && pluginOptions(server["PluginOptions"] as! String);
+        }
+        
+        return result;
+    }
+    
+    static func serverHost(_ str:String) -> Bool {
+        return validateIpAddress(str) || validateDomainName(str);
+    }
+    
+    static func serverPort(_ str:uint16) -> Bool {
+        return true;
+    }
+    
+    static func method(_ str:String)  -> Bool {
+        // Copy from PreferencesWindowController.swift
+        // Better to make valid methods enumeration type.
+        return [
+            "aes-128-gcm",
+            "aes-192-gcm",
+            "aes-256-gcm",
+            "aes-128-cfb",
+            "aes-192-cfb",
+            "aes-256-cfb",
+            "aes-128-ctr",
+            "aes-192-ctr",
+            "aes-256-ctr",
+            "camellia-128-cfb",
+            "camellia-192-cfb",
+            "camellia-256-cfb",
+            "bf-cfb",
+            "chacha20-ietf-poly1305",
+            "xchacha20-ietf-poly1305",
+            "salsa20",
+            "chacha20",
+            "chacha20-ietf",
+            "rc4-md5",
+        ].contains(str);
+    }
+    
+    static func password(_ str:String)  -> Bool  {
+        return true;
+    }
+    
+    static func remark(_ str:String)  -> Bool  {
+        return true;
+    }
+    
+    static func plugin(_ str:String) -> Bool  {
+        return true;
+    }
+    
+    static func pluginOptions(_ str:String)  -> Bool {
+        return true;
+    }
+    
+    // Copy from ServerProfile.swift
+    private static func validateIpAddress(_ ipToValidate: String) -> Bool {
+        
+        var sin = sockaddr_in()
+        var sin6 = sockaddr_in6()
+        
+        if ipToValidate.withCString({ cstring in inet_pton(AF_INET6, cstring, &sin6.sin6_addr) }) == 1 {
+            // IPv6 peer.
+            return true
+        }
+        else if ipToValidate.withCString({ cstring in inet_pton(AF_INET, cstring, &sin.sin_addr) }) == 1 {
+            // IPv4 peer.
+            return true
+        }
+        
+        return false;
+    }
+    
+    // Copy from ServerProfile.swift
+    private static func validateDomainName(_ value: String) -> Bool {
+        let validHostnameRegex = "^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])$"
+        
+        if (value.range(of: validHostnameRegex, options: .regularExpression) != nil) {
+            return true
+        } else {
+            return false
+        }
     }
 }
