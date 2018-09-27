@@ -12,8 +12,7 @@ import GCDWebServer
 class HTTPUserProxy{
     static let shard = HTTPUserProxy()
     
-    let adapter = APIAdapter()
-    let v = Validator()
+    let app = AppFacade()
     
     let server = GCDWebServer()
     let api_port:UInt = 9528
@@ -56,7 +55,7 @@ class HTTPUserProxy{
     
     func addHandler_getStatus() {
         server.addHandler(forMethod: "GET", path: "/status", request: GCDWebServerRequest.self, processBlock: {request in
-            return GCDWebServerDataResponse(jsonObject: ["Enable":self.adapter.getStatus()], contentType: "json")
+            return GCDWebServerDataResponse(jsonObject: ["Enable":self.app.getStatus()], contentType: "json")
         })
     }
     
@@ -64,12 +63,12 @@ class HTTPUserProxy{
         server.addHandler(forMethod: "PUT", path: "/status", request: GCDWebServerURLEncodedFormRequest.self, processBlock: {request in
             if let targetStatus_str = (request as? GCDWebServerURLEncodedFormRequest)?.arguments["Enable"] as? String{
                 if let targetStatus = Bool(targetStatus_str) {
-                    self.adapter.setStatus(status: targetStatus)
+                    self.app.setStatus(status: targetStatus)
                     return GCDWebServerResponse()
                 }
             }
             else {
-                self.adapter.toggleStatus()
+                self.app.toggleStatus()
                 return GCDWebServerResponse()
             }
             return GCDWebServerResponse(statusCode: 400)
@@ -78,14 +77,14 @@ class HTTPUserProxy{
     
     func addHandler_getServerList() {
         server.addHandler(forMethod: "GET", path: "/servers", request: GCDWebServerRequest.self, processBlock: {request in
-            return GCDWebServerDataResponse(jsonObject: self.adapter.getServerList(), contentType: "json")
+            return GCDWebServerDataResponse(jsonObject: self.app.getServerList(), contentType: "json")
         })
     }
     
     func addHandler_getCurrentServer() {
         server.addHandler(forMethod: "GET", path: "/current", request: GCDWebServerRequest.self, processBlock: {request in
-            if let activeId = self.adapter.getCurrentServerId() {
-                return GCDWebServerDataResponse(jsonObject: self.adapter.getServer(uuid: activeId)!, contentType: "json")
+            if let activeId = self.app.getCurrentServerId() {
+                return GCDWebServerDataResponse(jsonObject: self.app.getServer(uuid: activeId)!, contentType: "json")
             }
             else {
                 return GCDWebServerResponse(statusCode: 404);
@@ -97,8 +96,8 @@ class HTTPUserProxy{
         server.addHandler(forMethod: "PUT", path: "/current", request: GCDWebServerURLEncodedFormRequest.self, processBlock: {request in
             
             if let targetId = (request as? GCDWebServerURLEncodedFormRequest)?.arguments["Id"] as? String{
-                if self.adapter.getServer(uuid: targetId) != nil {
-                    self.adapter.setCurrentServer(uuid: targetId);
+                if self.app.getServer(uuid: targetId) != nil {
+                    self.app.setCurrentServer(uuid: targetId);
                     return GCDWebServerResponse()
                 }
             }
@@ -111,8 +110,8 @@ class HTTPUserProxy{
             if var server = ((request as? GCDWebServerURLEncodedFormRequest)?.arguments) as? [String: Any] {
                 if (server["ServerPort"] != nil) {
                     server["ServerPort"] = UInt16(server["ServerPort"] as! String)
-                    if (Validator.integrity(server) && Validator.existAttributes(server)) { // validate
-                        self.adapter.addServer(server: server)
+                    if (Validator.profile(server)) { // validate
+                        self.app.addServer(server: server)
                         return GCDWebServerResponse();
                     }
                 }
@@ -128,10 +127,10 @@ class HTTPUserProxy{
                 if (server["ServerPort"] != nil) {
                     server["ServerPort"] = UInt16(server["ServerPort"] as! String)
                 }
-                if (self.adapter.getServer(uuid: id) != nil) {
+                if (self.app.getServer(uuid: id) != nil) {
                     if (Validator.existAttributes(server)) {
-                        if (self.adapter.getCurrentServerId() != id) {
-                            self.adapter.modifyServer(uuid: id, server: server)
+                        if (self.app.getCurrentServerId() != id) {
+                            self.app.modifyServer(uuid: id, server: server)
                             return GCDWebServerResponse()
                         }
                         else {
@@ -150,9 +149,9 @@ class HTTPUserProxy{
         server.addHandler(forMethod: "DELETE", pathRegex: "/servers/"+self.UUID_REGEX, request: GCDWebServerRequest.self
             , processBlock: {request in
                 let id = String(request.path.dropFirst("/servers/".count))
-                if((self.adapter.getServer(uuid: id)) != nil) {
-                    if (self.adapter.getCurrentServerId() != id) {
-                        self.adapter.deleteServer(uuid: id)
+                if((self.app.getServer(uuid: id)) != nil) {
+                    if (self.app.getCurrentServerId() != id) {
+                        self.app.deleteServer(uuid: id)
                         return GCDWebServerResponse()
                     } else {
                         return GCDWebServerResponse(statusCode: 400)
@@ -166,15 +165,15 @@ class HTTPUserProxy{
     
     func addHandler_getMode() {
         server.addHandler(forMethod: "GET", path: "/mode", request: GCDWebServerRequest.self, processBlock: {request in
-            return GCDWebServerDataResponse(jsonObject: ["Mode":self.adapter.getMode().rawValue], contentType: "json")
+            return GCDWebServerDataResponse(jsonObject: ["Mode":self.app.getMode().rawValue], contentType: "json")
         })
     }
     
     func addHandler_setMode() {
         server.addHandler(forMethod: "PUT", path: "/mode", request: GCDWebServerURLEncodedFormRequest.self, processBlock: {request in
             if let mode_str = (request as? GCDWebServerURLEncodedFormRequest)?.arguments["Mode"] as? String{
-                if let mode = APIAdapter.Mode(rawValue: mode_str) {
-                    self.adapter.setMode(mode: mode);
+                if let mode = ProxyType(rawValue: mode_str) {
+                    self.app.setMode(mode: mode);
                     
                     return GCDWebServerResponse()
                 }
@@ -184,12 +183,10 @@ class HTTPUserProxy{
     }
 }
 
-class APIAdapter {
-    enum Mode:String {case auto="auto", global="global", manual="manual"};
-
-    let SerMgr = ServerProfileManager.instance
-    let defaults = UserDefaults.standard
-    let appdeleget = NSApplication.shared.delegate as! AppDelegate
+class AppFacade {
+    private let SerMgr = ServerProfileManager.instance
+    private let defaults = UserDefaults.standard
+    private let appdeleget = NSApplication.shared.delegate as! AppDelegate
     
     func getStatus()->Bool {
         return self.defaults.bool(forKey: "ShadowsocksOn");
@@ -281,24 +278,26 @@ class APIAdapter {
         self.appdeleget.updateServersMenu()
     }
     
-    func getMode()->Mode {
+    func getMode()->ProxyType {
         let mode_str = self.defaults.string(forKey: "ShadowsocksRunningMode");
         switch mode_str {
-        case "auto": return .auto
+        case "auto": return .pac
         case "global": return .global;
         case "manual": return .manual
         default:fatalError()
         }
     }
     
-    func setMode(mode:Mode) {
+    func setMode(mode:ProxyType) {
         let defaults = UserDefaults.standard
         
         switch mode{
-        case .auto:defaults.setValue("auto", forKey: "ShadowsocksRunningMode")
+        case .pac:defaults.setValue("auto", forKey: "ShadowsocksRunningMode")
         case .global:defaults.setValue("global", forKey: "ShadowsocksRunningMode")
         case .manual:defaults.setValue("manual", forKey: "ShadowsocksRunningMode")
         }
+        
+        Globals.proxyType = mode
         
         self.appdeleget.updateRunningModeMenu()
         self.appdeleget.applyConfig()
@@ -306,12 +305,13 @@ class APIAdapter {
 }
 
 class Validator {
-    static func integrity(_ data: Dictionary<String, Any>) -> Bool {
+    // Check if a ServerProfile can be constructed from input dictionary
+    static func profile(_ data: Dictionary<String, Any>) -> Bool {
         if (data["ServerHost"] == nil || data["ServerPort"] as? NSNumber == nil
             || data["Method"] == nil || data["Password"] == nil) {
             return false;
         }
-        return true;
+        return existAttributes(data);
     }
     
     static func existAttributes(_ server:Dictionary<String, Any>) -> Bool {
@@ -352,7 +352,6 @@ class Validator {
     
     static func method(_ str:String)  -> Bool {
         // Copy from PreferencesWindowController.swift
-        // Better to make valid methods enumeration type.
         return [
             "aes-128-gcm",
             "aes-192-gcm",
@@ -373,11 +372,11 @@ class Validator {
             "chacha20",
             "chacha20-ietf",
             "rc4-md5",
-        ].contains(str);
+            ].contains(str)
     }
     
     static func password(_ str:String)  -> Bool  {
-        return true;
+        return !str.isEmpty;
     }
     
     static func remark(_ str:String)  -> Bool  {
