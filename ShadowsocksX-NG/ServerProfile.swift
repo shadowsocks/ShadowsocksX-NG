@@ -194,6 +194,17 @@ class ServerProfile: NSObject, NSCopying {
 
         return conf
     }
+    
+    func debugString() -> String {
+        var buf = ""
+        print("ServerHost=\(String(repeating: "*", count: serverHost.count))", to: &buf)
+        print("ServerPort=\(serverPort)", to: &buf)
+        print("Method=\(method)", to: &buf)
+        print("Password=\(String(repeating: "*", count: password.count))", to: &buf)
+        print("Plugin=\(plugin)", to: &buf)
+        print("PluginOptions=\(pluginOptions)", to: &buf)
+        return buf
+    }
 
     func isValid() -> Bool {
         func validateIpAddress(_ ipToValidate: String) -> Bool {

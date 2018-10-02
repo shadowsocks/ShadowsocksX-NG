@@ -386,6 +386,29 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         NSWorkspace.shared.open(URL(string: "https://github.com/shadowsocks/ShadowsocksX-NG/releases")!)
     }
     
+    @IBAction func exportDiagnosis(_ sender: NSMenuItem) {
+        let savePanel = NSSavePanel()
+        savePanel.title = "Save All Server URLs To File".localized
+        savePanel.canCreateDirectories = true
+        savePanel.allowedFileTypes = ["txt"]
+        savePanel.isExtensionHidden = false
+        
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyyMMdd_HHmmss"
+        let dateString = formatter.string(from: Date())
+        
+        savePanel.nameFieldStringValue = "ShadowsocksX-NG_diagnose_\(dateString)"
+        
+        savePanel.becomeKey()
+        let result = savePanel.runModal()
+        if (result.rawValue == NSFileHandlingPanelOKButton) {
+            if let url = savePanel.url {
+                let diagnosisText = diagnose()
+                try! diagnosisText.write(to: url, atomically: false, encoding: String.Encoding.utf8)
+            }
+        }
+    }
+    
     @IBAction func showHelp(_ sender: NSMenuItem) {
         NSWorkspace.shared.open(URL(string: "https://github.com/shadowsocks/ShadowsocksX-NG/wiki")!)
     }
