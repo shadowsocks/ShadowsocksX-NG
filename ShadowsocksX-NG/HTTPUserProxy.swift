@@ -302,6 +302,8 @@ class AppFacade {
         self.appdeleget.updateRunningModeMenu()
         self.appdeleget.applyConfig()
     }
+    
+
 }
 
 class Validator {

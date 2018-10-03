@@ -1,6 +1,6 @@
 # ShadowsocksX-NG, API Supported
 
-Current version: 1.8.1
+Current version is 1.8.2 develop.
 
 This is a fork with minor feature added. All credits go to the **original authors**.
 

@@ -102,10 +102,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             "LocalHTTP.ListenPort": NSNumber(value: 1087 as UInt16),
             "LocalHTTPOn": true,
             "LocalHTTP.FollowGlobal": true,
-            "Kcptun.LocalHost": "127.0.0.1",
-            "Kcptun.LocalPort": NSNumber(value: 8388),
-            "Kcptun.Conn": NSNumber(value: 1),
-            "ProxyExceptions": "127.0.0.1, localhost, 192.168.0.0/16, 10.0.0.0/8",
+            "ProxyExceptions": "127.0.0.1, localhost, 192.168.0.0/16, 10.0.0.0/8, FE80::/64, ::1, FD00::/8",
             ])
         
         statusItem = NSStatusBar.system.statusItem(withLength: AppDelegate.StatusItemIconWidth)
@@ -390,6 +387,29 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     
     @IBAction func checkForUpdates(_ sender: NSMenuItem) {
         NSWorkspace.shared.open(URL(string: "https://github.com/shadowsocks/ShadowsocksX-NG/releases")!)
+    }
+    
+    @IBAction func exportDiagnosis(_ sender: NSMenuItem) {
+        let savePanel = NSSavePanel()
+        savePanel.title = "Save All Server URLs To File".localized
+        savePanel.canCreateDirectories = true
+        savePanel.allowedFileTypes = ["txt"]
+        savePanel.isExtensionHidden = false
+        
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyyMMdd_HHmmss"
+        let dateString = formatter.string(from: Date())
+        
+        savePanel.nameFieldStringValue = "ShadowsocksX-NG_diagnose_\(dateString)"
+        
+        savePanel.becomeKey()
+        let result = savePanel.runModal()
+        if (result.rawValue == NSFileHandlingPanelOKButton) {
+            if let url = savePanel.url {
+                let diagnosisText = diagnose()
+                try! diagnosisText.write(to: url, atomically: false, encoding: String.Encoding.utf8)
+            }
+        }
     }
     
     @IBAction func showHelp(_ sender: NSMenuItem) {
