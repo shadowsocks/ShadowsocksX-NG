@@ -77,6 +77,8 @@
 		9BEEF0701D04DDB100FC52B3 /* ServerProfileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BEEF06F1D04DDB100FC52B3 /* ServerProfileManager.swift */; };
 		9BEEF0751D04EF3E00FC52B3 /* PreferencesWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BEEF0731D04EF3E00FC52B3 /* PreferencesWindowController.swift */; };
 		9BEEF0781D04FE8A00FC52B3 /* LaunchAgentUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BEEF0771D04FE8A00FC52B3 /* LaunchAgentUtils.swift */; };
+		B5A2AB03221A72EC003F77B7 /* v2ray-plugin in Resources */ = {isa = PBXBuildFile; fileRef = B5A2AB01221A72EC003F77B7 /* v2ray-plugin */; };
+		B5A2AB04221A72EC003F77B7 /* install_v2ray_plugin.sh in Resources */ = {isa = PBXBuildFile; fileRef = B5A2AB02221A72EC003F77B7 /* install_v2ray_plugin.sh */; };
 		C6D429931DA75988002A5711 /* install_privoxy.sh in Resources */ = {isa = PBXBuildFile; fileRef = C6D4298E1DA75988002A5711 /* install_privoxy.sh */; };
 		C6D429941DA75988002A5711 /* privoxy in Resources */ = {isa = PBXBuildFile; fileRef = C6D4298F1DA75988002A5711 /* privoxy */; };
 		C6D429961DA75988002A5711 /* start_privoxy.sh in Resources */ = {isa = PBXBuildFile; fileRef = C6D429911DA75988002A5711 /* start_privoxy.sh */; };
@@ -236,6 +238,8 @@
 		9BEEF0731D04EF3E00FC52B3 /* PreferencesWindowController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreferencesWindowController.swift; sourceTree = "<group>"; };
 		9BEEF0771D04FE8A00FC52B3 /* LaunchAgentUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LaunchAgentUtils.swift; sourceTree = "<group>"; };
 		B4E6A97CA843F3943524B686 /* Pods-proxy_conf_helper.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-proxy_conf_helper.debug.xcconfig"; path = "Pods/Target Support Files/Pods-proxy_conf_helper/Pods-proxy_conf_helper.debug.xcconfig"; sourceTree = "<group>"; };
+		B5A2AB01221A72EC003F77B7 /* v2ray-plugin */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = "v2ray-plugin"; sourceTree = "<group>"; };
+		B5A2AB02221A72EC003F77B7 /* install_v2ray_plugin.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = install_v2ray_plugin.sh; sourceTree = "<group>"; };
 		C6D4298E1DA75988002A5711 /* install_privoxy.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = install_privoxy.sh; sourceTree = "<group>"; };
 		C6D4298F1DA75988002A5711 /* privoxy */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = privoxy; sourceTree = "<group>"; };
 		C6D429911DA75988002A5711 /* start_privoxy.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = start_privoxy.sh; sourceTree = "<group>"; };
@@ -306,6 +310,7 @@
 		9B07EFB01D048E900052D9DF /* Support Files */ = {
 			isa = PBXGroup;
 			children = (
+				B5A2AB00221A72EC003F77B7 /* v2ray-plugin */,
 				9B5D13252154A4B400F99F03 /* kcptun */,
 				9B5AA0A9209C41EC00E8B659 /* ss-local */,
 				1C82DBA31FA96C7400B32551 /* simple-obfs */,
@@ -480,6 +485,15 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		B5A2AB00221A72EC003F77B7 /* v2ray-plugin */ = {
+			isa = PBXGroup;
+			children = (
+				B5A2AB01221A72EC003F77B7 /* v2ray-plugin */,
+				B5A2AB02221A72EC003F77B7 /* install_v2ray_plugin.sh */,
+			);
+			path = "v2ray-plugin";
+			sourceTree = "<group>";
+		};
 		D3CE66CC039F651F28057DDB /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -635,6 +649,7 @@
 				9B938D9A1E864B38005F5636 /* menu_g_icon@2x.png in Resources */,
 				9B938D9E1E864B38005F5636 /* menu_p_icon@2x.png in Resources */,
 				9B9CBCAF1E263B1600FC61AA /* libpcre.1.dylib in Resources */,
+				B5A2AB03221A72EC003F77B7 /* v2ray-plugin in Resources */,
 				9B5832031E741F8D009D5B7D /* command-512.png in Resources */,
 				9B3FFF541D09E2D10019A709 /* proxy_conf_helper in Resources */,
 				9B5832071E7421B2009D5B7D /* virtual-server-icon-3.png in Resources */,
@@ -656,6 +671,7 @@
 				9BAFE2E21E83ED7F00F71CCE /* PreferencesWinController.xib in Resources */,
 				9B0BFFEB1D0460A70040E62B /* Assets.xcassets in Resources */,
 				08FCA0FF1E24BE1A0070984F /* example-gui-config.json in Resources */,
+				B5A2AB04221A72EC003F77B7 /* install_v2ray_plugin.sh in Resources */,
 				9B5D13292154A57C00F99F03 /* kcptun_client in Resources */,
 				1C82DBA81FA96C7500B32551 /* obfs-local in Resources */,
 				9B938D9D1E864B38005F5636 /* menu_p_icon.png in Resources */,
