@@ -10,6 +10,7 @@ import Foundation
 
 let SS_LOCAL_VERSION = "3.1.3"
 let KCPTUN_CLIENT_VERSION = "v20170718"
+let V2RAY_PLUGIN_VERSION = "master"
 let PRIVOXY_VERSION = "3.0.26.static"
 let SIMPLE_OBFS_VERSION = "0.0.5_1"
 let APP_SUPPORT_DIR = "/Library/Application Support/ShadowsocksX-NG/"
@@ -226,6 +227,26 @@ func InstallKcptun() {
             NSLog("Install kcptun succeeded.")
         } else {
             NSLog("Install kcptun failed.")
+        }
+    }
+}
+
+// --------------------------------------------------------------------------------
+//  MARK: v2ray-plugin
+
+func InstallV2rayPlugin() {
+    let fileMgr = FileManager.default
+    let homeDir = NSHomeDirectory()
+    let appSupportDir = homeDir+APP_SUPPORT_DIR
+    if !fileMgr.fileExists(atPath: appSupportDir + "v2ray-plugin_\(V2RAY_PLUGIN_VERSION)/v2ray-plugin") {
+        let bundle = Bundle.main
+        let installerPath = bundle.path(forResource: "install_v2ray_plugin", ofType: "sh")
+        let task = Process.launchedProcess(launchPath: "/bin/sh", arguments: [installerPath!])
+        task.waitUntilExit()
+        if task.terminationStatus == 0 {
+            NSLog("Install v2ray-plugin succeeded.")
+        } else {
+            NSLog("Install v2ray-plugin failed.")
         }
     }
 }
