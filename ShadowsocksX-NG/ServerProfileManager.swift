@@ -7,16 +7,24 @@
 //
 
 import Cocoa
+import CloudKit
+
+typealias DictionaryArray = [[String: Any]]
+
+let recordId = CKRecordID(recordName: "UserDefaults")
+var record = CKRecord(recordType: "UserDefaults", recordID: recordId)
+
+let database = CKContainer.default().privateCloudDatabase
 
 class ServerProfileManager: NSObject {
     
     static let instance:ServerProfileManager = ServerProfileManager()
     
-    var profiles:[ServerProfile]
+    var profiles:[ServerProfile] = []
     var activeProfileId: String?
     
     fileprivate override init() {
-        profiles = [ServerProfile]()
+        super.init()
         
         let defaults = UserDefaults.standard
         if let _profiles = defaults.array(forKey: "ServerProfiles") {
@@ -26,6 +34,8 @@ class ServerProfileManager: NSObject {
             }
         }
         activeProfileId = defaults.string(forKey: "ActiveServerProfileId")
+        
+        fetchCloudKitData()
     }
     
     func setActiveProfiledId(_ id: String) {
@@ -35,15 +45,8 @@ class ServerProfileManager: NSObject {
     }
     
     func save() {
-        let defaults = UserDefaults.standard
-        var _profiles = [AnyObject]()
-        for profile in profiles {
-            if profile.isValid() {
-                let _profile = profile.toDictionary()
-                _profiles.append(_profile as AnyObject)
-            }
-        }
-        defaults.set(_profiles, forKey: "ServerProfiles")
+        profiles.saveToLocal()
+        profiles.saveToCloud()
         
         if getActiveProfile() == nil {
             activeProfileId = nil
@@ -61,5 +64,74 @@ class ServerProfileManager: NSObject {
         } else {
             return nil
         }
+    }
+    
+    // MARK: - Helpers
+    func profilesDictionaryArray() -> DictionaryArray {
+        return profiles.filter({ $0.isValid() }).map({ $0.toDictionary() })
+    }
+    
+    func fetchCloudKitData() {
+        database.fetch(withRecordID: recordId) { (record, error) in
+            if let error = error {
+                print(error)
+                
+                // Sync to Cloud
+                if !self.profiles.isEmpty {
+                    self.profiles.saveToCloud()
+                }
+                
+                return
+            }
+            
+            guard let record = record,
+                let profilesString = record["ServerProfiles"] as? String,
+                let dictionaryArray = profilesString.jsonDictionaryArray(),
+                !dictionaryArray.isEmpty else { return }
+            
+            let _profiles = dictionaryArray.map({ ServerProfile.fromDictionary($0) })
+            
+            if self.profiles.isEmpty || UserDefaults.standard.value(forKey: "Date") == nil {
+                self.profiles = _profiles
+                
+                // Sync to local
+                self.profiles.saveToLocal(date: record.modificationDate)
+                
+                return
+            }
+            
+            if let remoteDate = record.modificationDate,
+                let localDate = UserDefaults.standard.value(forKey: "Date") as? Date {
+                
+                // Sync latest data
+                if remoteDate > localDate {
+                    self.profiles = _profiles
+                    self.profiles.saveToLocal(date: remoteDate)
+                } else if remoteDate < localDate {
+                    self.profiles.saveToCloud()
+                }
+            }
+        }
+    }
+}
+
+extension Array where Element: ServerProfile {
+    func dictionaryArray() -> DictionaryArray {
+        return filter({ $0.isValid() }).map({ $0.toDictionary() })
+    }
+    
+    func saveToCloud() {
+        record["ServerProfiles"] = dictionaryArray().toJSONString()
+        database.save(record) { (record, error) in
+            if let error = error {
+                print(error)
+            }
+        }
+    }
+    
+    func saveToLocal(date: Date? = Date()) {
+        let _profiles: DictionaryArray = dictionaryArray()
+        UserDefaults.standard.set(_profiles, forKey: "ServerProfiles")
+        UserDefaults.standard.set(date, forKey: "Date")
     }
 }
