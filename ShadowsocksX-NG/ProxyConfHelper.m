@@ -193,7 +193,7 @@ GCDWebServer *webServer =nil;
     
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
 
-    NSString * address = @"127.0.0.1";
+    NSString * address = [defaults stringForKey:@"PacServer.ListenAddress"];
     int port = (short)[defaults integerForKey:@"PacServer.ListenPort"];
     
     return [NSString stringWithFormat:@"%@%@:%d%@",@"http://",address,port,routerPath];
@@ -207,6 +207,8 @@ GCDWebServer *webServer =nil;
     NSData* originalPACData = [NSData dataWithContentsOfFile:PACFilePath];
     
     webServer = [[GCDWebServer alloc] init];
+    
+
     [webServer addHandlerForMethod:@"GET"
                               path:routerPath
                       requestClass:[GCDWebServerRequest class]
@@ -220,9 +222,10 @@ GCDWebServer *webServer =nil;
     
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     
+    NSString * address = [defaults stringForKey:@"PacServer.ListenAddress"];
     int port = (short)[defaults integerForKey:@"PacServer.ListenPort"];
     
-    [webServer startWithOptions:@{@"BindToLocalhost":@YES, @"Port":@(port)} error:nil];
+    [webServer startWithOptions:@{@"ServerName":address,@"Port":@(port)} error:nil];
 }
 
 + (void)stopPACServer {

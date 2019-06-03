@@ -41,6 +41,7 @@ func diagnose() -> String {
         "ShadowsocksRunningMode",
         "LocalSocks5.ListenPort",
         "LocalSocks5.ListenAddress",
+        "PacServer.ListenAddress",
         "PacServer.ListenPort",
         "LocalSocks5.Timeout",
         "LocalSocks5.EnableUDPRelay",
