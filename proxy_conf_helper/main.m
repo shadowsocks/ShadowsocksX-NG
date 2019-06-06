@@ -170,14 +170,14 @@ int main(int argc, const char * argv[])
                     [proxies setObject:[proxyExceptions allObjects] forKey:(NSString *)kCFNetworkProxiesExceptionsList];
                     
                     if (privoxyPort != 0) {
-                        [proxies setObject:@"127.0.0.1" forKey:(NSString *)
+                        [proxies setObject:privoxyListenAddress forKey:(NSString *)
                          kCFNetworkProxiesHTTPProxy];
                         [proxies setObject:[NSNumber numberWithInteger:privoxyPort] forKey:(NSString*)
                          kCFNetworkProxiesHTTPPort];
                         [proxies setObject:[NSNumber numberWithInt:1] forKey:(NSString*)
                          kCFNetworkProxiesHTTPEnable];
                         
-                        [proxies setObject:@"127.0.0.1" forKey:(NSString *)
+                        [proxies setObject:privoxyListenAddress forKey:(NSString *)
                          kCFNetworkProxiesHTTPSProxy];
                         [proxies setObject:[NSNumber numberWithInteger:privoxyPort] forKey:(NSString*)
                          kCFNetworkProxiesHTTPSPort];
