@@ -1,3 +1,4 @@
+os: osx
 language: objective-c
 osx_image: xcode10
 xcode_workspace: ShadowsocksX-NG.xcworkspace
