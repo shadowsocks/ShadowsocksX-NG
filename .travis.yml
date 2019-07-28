@@ -7,8 +7,6 @@ script:
   - set -o pipefail
   - xcodebuild -workspace ShadowsocksX-NG.xcworkspace -scheme ShadowsocksX-NG -configuration Debug clean build CONFIGURATION_BUILD_DIR=/tmp/
   - cd /tmp && ls
-  - travis setup releases
-  
 before_deploy:
   - git config --local user.name "Unbinilium"
   - git config --local user.email "unbinilium@outlook.com"
