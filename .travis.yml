@@ -8,3 +8,10 @@ script:
   - set -o pipefail
   - xcodebuild -workspace ShadowsocksX-NG.xcworkspace -scheme ShadowsocksX-NG -configuration Debug clean build CONFIGURATION_BUILD_DIR=/tmp/
   - cd /tmp && ls
+deploy:
+  provider: releases
+  api_key: f78b08fc24fa71026b8696f04334439bf8f73737
+  file: "/tmp/ShadowsocksX-NG.app"
+  skip_cleanup: true
+  on:
+    tags: false
