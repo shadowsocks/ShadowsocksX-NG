@@ -13,4 +13,5 @@ deploy:
   file: "/tmp/ShadowsocksX-NG.app"
   skip_cleanup: true
   on:
+    branch: master
     tags: false
