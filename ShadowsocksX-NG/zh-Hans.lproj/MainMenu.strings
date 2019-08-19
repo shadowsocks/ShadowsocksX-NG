@@ -32,6 +32,9 @@
 /* Class = "NSMenuItem"; title = "全局模式"; ObjectID = "Mw3-Jm-eXA"; */
 "Mw3-Jm-eXA.title" = "全局模式";
 
+/* Class = "NSMenuItem"; title = "超级全局模式"; ObjectID = "9i6-lq-4gH"; */
+"9i6-lq-4gH.title" = "超级全局模式";
+
 /* Class = "NSMenuItem"; title = "扫描屏幕上的二维码..."; ObjectID = "Qe6-bF-paT"; */
 "Qe6-bF-paT.title" = "扫描屏幕上的二维码";
 

@@ -18,6 +18,8 @@
 
 + (void)enableGlobalProxy;
 
++ (void)enableSuperGlobalProxy;
+
 + (void)disableProxy;
 
 + (void)startMonitorPAC;

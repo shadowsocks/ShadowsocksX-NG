@@ -24,6 +24,7 @@
                 <outlet property="serverProfilesEndSeparatorMenuItem" destination="3cf-dF-7dx" id="eyc-6W-nWV"/>
                 <outlet property="serversMenuItem" destination="u5M-hQ-VSc" id="8gp-SY-Y4U"/>
                 <outlet property="statusMenu" destination="Hob-KD-bx9" id="clA-ZW-0pT"/>
+                <outlet property="superGlobalModeMenuItem" destination="9i6-lq-4gH" id="Vvo-47-Mve"/>
                 <outlet property="toggleRunningMenuItem" destination="GSu-Tf-StS" id="XHw-pU-nCa"/>
             </connections>
         </customObject>
@@ -50,6 +51,12 @@
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
                         <action selector="selectGlobalMode:" target="Voe-Tx-rLC" id="7QH-HB-B2e"/>
+                    </connections>
+                </menuItem>
+                <menuItem title="Super Global Mode" id="9i6-lq-4gH">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <connections>
+                        <action selector="selectSuperGlobalUploadMode:" target="Voe-Tx-rLC" id="R00-ak-L75"/>
                     </connections>
                 </menuItem>
                 <menuItem title="Manual Mode" id="8PR-gs-c5N">

@@ -173,6 +173,25 @@ GCDWebServer *webServer =nil;
     [self stopPACServer];
 }
 
++ (void)enableSuperGlobalProxy {
+    NSUInteger port = [[NSUserDefaults standardUserDefaults]integerForKey:@"LocalSocks5.ListenPort"];
+    
+    NSMutableArray* args = [@[@"--mode", @"global", @"--port"
+                              , [NSString stringWithFormat:@"%lu", (unsigned long)port]]mutableCopy];
+    
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"LocalHTTPOn"] && [[NSUserDefaults standardUserDefaults] boolForKey:@"LocalHTTP.FollowGlobal"]) {
+        NSUInteger privoxyPort = [[NSUserDefaults standardUserDefaults]integerForKey:@"LocalHTTP.ListenPort"];
+
+        [args addObject:@"--privoxy-port"];
+        [args addObject:[NSString stringWithFormat:@"%lu", (unsigned long)privoxyPort]];
+    }
+    
+    [self addArguments4ManualSpecifyNetworkServices:args];
+    [self addArguments4ManualSpecifyProxyExceptions:args];
+    [self callHelper:args];
+    [self stopPACServer];
+}
+
 + (void)disableProxy {
     // 带上所有参数是为了判断是否原有代理设置是否由ssx-ng设置的。如果是用户手工设置的其他配置，则不进行清空。
     NSURL* url = [NSURL URLWithString: [self getHttpPACUrl]];
