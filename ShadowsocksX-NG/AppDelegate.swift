@@ -29,6 +29,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     @IBOutlet weak var autoModeMenuItem: NSMenuItem!
     @IBOutlet weak var globalModeMenuItem: NSMenuItem!
     @IBOutlet weak var manualModeMenuItem: NSMenuItem!
+    @IBOutlet weak var superGlobalModeMenuItem: NSMenuItem!
     
     @IBOutlet weak var serversMenuItem: NSMenuItem!
     @IBOutlet var showQRCodeMenuItem: NSMenuItem!
@@ -206,6 +207,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                 ProxyConfHelper.enableGlobalProxy()
             } else if mode == "manual" {
                 ProxyConfHelper.disableProxy()
+            } else if mode == "super_global" {
+                ProxyConfHelper.enableSuperGlobalProxy()
             }
         } else {
             ProxyConfHelper.disableProxy()
@@ -314,6 +317,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     @IBAction func selectManualMode(_ sender: NSMenuItem) {
         let defaults = UserDefaults.standard
         defaults.setValue("manual", forKey: "ShadowsocksRunningMode")
+        updateRunningModeMenu()
+        applyConfig()
+    }
+    
+    @IBAction func selectSuperGlobalUploadMode(_ sender: NSMenuItem) {
+        let defaults = UserDefaults.standard
+        defaults.setValue("super_global", forKey: "ShadowsocksRunningMode")
         updateRunningModeMenu()
         applyConfig()
     }
@@ -443,14 +453,22 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             autoModeMenuItem.state = .on
             globalModeMenuItem.state = .off
             manualModeMenuItem.state = .off
+            superGlobalModeMenuItem.state = .off
         } else if mode == "global" {
             autoModeMenuItem.state = .off
             globalModeMenuItem.state = .on
             manualModeMenuItem.state = .off
+            superGlobalModeMenuItem.state = .off
         } else if mode == "manual" {
             autoModeMenuItem.state = .off
             globalModeMenuItem.state = .off
             manualModeMenuItem.state = .on
+            superGlobalModeMenuItem.state = .off
+        } else if mode == "super_global" {
+            autoModeMenuItem.state = .off
+            globalModeMenuItem.state = .off
+            manualModeMenuItem.state = .off
+            superGlobalModeMenuItem.state = .on
         }
         updateStatusMenuImage()
     }
@@ -468,6 +486,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                         statusItem.image = NSImage(named: NSImage.Name(rawValue: "menu_g_icon"))
                     case "manual":
                         statusItem.image = NSImage(named: NSImage.Name(rawValue: "menu_m_icon"))
+                    case "super_global":
+                        statusItem.image = NSImage(named: NSImage.Name(rawValue: "menu_g_icon"))
                 default: break
                 }
                 statusItem.image?.isTemplate = true
