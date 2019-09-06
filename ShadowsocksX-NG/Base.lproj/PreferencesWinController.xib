@@ -19,7 +19,7 @@
             <windowStyleMask key="styleMask" titled="YES" closable="YES"/>
             <windowPositionMask key="initialPositionMask" topStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="609" y="533" width="480" height="326"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1920" height="1177"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1680" height="1027"/>
             <view key="contentView" wantsLayer="YES" id="se5-gp-TjO">
                 <rect key="frame" x="0.0" y="0.0" width="480" height="326"/>
                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -383,7 +383,7 @@
                                             </connections>
                                         </textField>
                                         <button translatesAutoresizingMaskIntoConstraints="NO" id="xWf-Bw-9V9">
-                                            <rect key="frame" x="245" y="228" width="217" height="18"/>
+                                            <rect key="frame" x="30" y="218" width="217" height="18"/>
                                             <constraints>
                                                 <constraint firstAttribute="width" constant="213" id="Ung-wK-BL7"/>
                                             </constraints>
@@ -395,22 +395,37 @@
                                                 <binding destination="uQz-5y-ZL2" name="value" keyPath="values.LocalHTTPOn" id="Be3-2x-hs4"/>
                                             </connections>
                                         </button>
+                                        <button translatesAutoresizingMaskIntoConstraints="NO" id="Ee3-wg-WSi">
+                                            <rect key="frame" x="30" y="184" width="371" height="18"/>
+                                            <constraints>
+                                                <constraint firstAttribute="width" constant="367" id="MQA-EC-I0f"/>
+                                            </constraints>
+                                            <buttonCell key="cell" type="check" title="Set HTTP proxy to system proxy configure in global mode" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="m8L-D6-ye3">
+                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <binding destination="uQz-5y-ZL2" name="value" keyPath="values.LocalHTTP.FollowGlobal" id="J5j-AM-zeV"/>
+                                            </connections>
+                                        </button>
                                     </subviews>
                                     <constraints>
                                         <constraint firstItem="A8G-1x-YxA" firstAttribute="top" secondItem="kK3-29-KeI" secondAttribute="top" constant="20" symbolic="YES" id="02x-RO-tGC"/>
                                         <constraint firstItem="URa-Z3-BgW" firstAttribute="centerY" secondItem="OoG-C4-oji" secondAttribute="centerY" id="0uL-he-BqO"/>
                                         <constraint firstItem="XI2-x3-9ie" firstAttribute="leading" secondItem="URa-Z3-BgW" secondAttribute="leading" id="34E-fy-3Lj"/>
-                                        <constraint firstItem="xWf-Bw-9V9" firstAttribute="top" secondItem="OoG-C4-oji" secondAttribute="bottom" constant="8" symbolic="YES" id="71e-eT-Iyc"/>
+                                        <constraint firstItem="xWf-Bw-9V9" firstAttribute="top" secondItem="OoG-C4-oji" secondAttribute="bottom" constant="18" id="71e-eT-Iyc"/>
                                         <constraint firstItem="XI2-x3-9ie" firstAttribute="leading" secondItem="kK3-29-KeI" secondAttribute="leading" constant="20" symbolic="YES" id="LgM-ig-Rik"/>
                                         <constraint firstItem="A8G-1x-YxA" firstAttribute="leading" secondItem="XI2-x3-9ie" secondAttribute="trailing" constant="14" id="NLO-Id-IsN"/>
                                         <constraint firstAttribute="trailing" secondItem="A8G-1x-YxA" secondAttribute="trailing" constant="20" symbolic="YES" id="OUP-Ip-QJc"/>
-                                        <constraint firstItem="xWf-Bw-9V9" firstAttribute="leading" secondItem="OoG-C4-oji" secondAttribute="leading" id="OwQ-CM-Wh2"/>
+                                        <constraint firstItem="xWf-Bw-9V9" firstAttribute="leading" secondItem="OoG-C4-oji" secondAttribute="leading" constant="-215" id="OwQ-CM-Wh2"/>
                                         <constraint firstItem="A8G-1x-YxA" firstAttribute="leading" secondItem="OoG-C4-oji" secondAttribute="leading" id="SdK-j6-hDp"/>
                                         <constraint firstItem="OoG-C4-oji" firstAttribute="top" secondItem="A8G-1x-YxA" secondAttribute="bottom" constant="10" symbolic="YES" id="U3H-rt-7Xd"/>
                                         <constraint firstItem="XI2-x3-9ie" firstAttribute="trailing" secondItem="URa-Z3-BgW" secondAttribute="trailing" id="aDF-tw-Xjq"/>
                                         <constraint firstItem="XI2-x3-9ie" firstAttribute="centerY" secondItem="A8G-1x-YxA" secondAttribute="centerY" id="bc0-WT-4zf"/>
                                         <constraint firstItem="A8G-1x-YxA" firstAttribute="trailing" secondItem="OoG-C4-oji" secondAttribute="trailing" constant="143" id="mSz-1z-FKy"/>
-                                        <constraint firstItem="xWf-Bw-9V9" firstAttribute="trailing" secondItem="A8G-1x-YxA" secondAttribute="trailing" id="rwG-hB-G5h"/>
+                                        <constraint firstItem="Ee3-wg-WSi" firstAttribute="leading" secondItem="xWf-Bw-9V9" secondAttribute="leading" id="ojv-Rv-Mql"/>
+                                        <constraint firstItem="xWf-Bw-9V9" firstAttribute="trailing" secondItem="A8G-1x-YxA" secondAttribute="trailing" constant="-215" id="rwG-hB-G5h"/>
+                                        <constraint firstItem="Ee3-wg-WSi" firstAttribute="top" secondItem="xWf-Bw-9V9" secondAttribute="bottom" constant="20" id="ywT-aN-4wh"/>
                                     </constraints>
                                 </view>
                             </tabViewItem>
@@ -436,7 +451,7 @@
                                             <rect key="frame" x="20" y="111" width="440" height="119"/>
                                             <clipView key="contentView" id="9Wy-0J-wQ8">
                                                 <rect key="frame" x="1" y="1" width="438" height="117"/>
-                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                <autoresizingMask key="autoresizingMask"/>
                                                 <subviews>
                                                     <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" columnSelection="YES" multipleSelection="NO" autosaveColumns="NO" id="Vp3-dp-iqv">
                                                         <rect key="frame" x="0.0" y="0.0" width="438" height="117"/>

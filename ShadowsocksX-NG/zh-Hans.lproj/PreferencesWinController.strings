@@ -132,3 +132,6 @@
 
 /* Class = "NSTabViewItem"; label = "General"; ObjectID = "xbG-eW-Prj"; */
 "xbG-eW-Prj.label" = "常规";
+
+/* Class = "NSButtonCell"; title = "Set HTTP proxy to system proxy configure in global mode"; ObjectID = "m8L-D6-ye3"; */
+"m8L-D6-ye3.title" = "全局模式时，在系统代理中设置HTTP代理服务器";
