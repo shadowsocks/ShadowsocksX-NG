@@ -110,3 +110,5 @@
 /* Class = "NSMenuItem"; title = "Check for Updates..."; ObjectID = "hLv-bp-doM"; */
 "hLv-bp-doM.title" = "检查更新...";
 
+/* Class = "NSMenuItem"; title = "Export Diagnosis..."; ObjectID = "eNh-vY-utd"; */
+"eNh-vY-utd.title" = "导出诊断信息...";
