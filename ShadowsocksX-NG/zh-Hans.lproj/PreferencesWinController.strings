@@ -1,4 +1,3 @@
-
 /* Class = "NSTextFieldCell"; title = "Seconds"; ObjectID = "4R2-UO-qs7"; */
 "4R2-UO-qs7.title" = "秒";
 
@@ -52,6 +51,9 @@
 
 /* Class = "NSTextFieldCell"; title = "Num of Kcptun connections:"; ObjectID = "FSi-9j-QBe"; */
 "FSi-9j-QBe.title" = "Num of Kcptun connections:";
+
+/* Class = "NSTextFieldCell"; title = "Local PAC Server Listen Address:"; ObjectID = "80e-Qu-r2S"; */
+"80e-Qu-r2S.title" = "本地PAC服务器监听地址:";
 
 /* Class = "NSTextFieldCell"; title = "Local PAC Server Listen Port:"; ObjectID = "IMQ-c4-gmc"; */
 "IMQ-c4-gmc.title" = "本地PAC服务器监听端口:";
