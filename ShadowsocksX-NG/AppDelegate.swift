@@ -150,6 +150,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                     defaults.setValue("global", forKey: "ShadowsocksRunningMode")
                     toastMessage = "Global Mode".localized
                 case "global":
+                    defaults.setValue("manual", forKey: "ShadowsocksRunningMode")
+                    toastMessage = "Manual Mode".localized
+                case "manual":
                     defaults.setValue("auto", forKey: "ShadowsocksRunningMode")
                     toastMessage = "Auto Mode By PAC".localized
                 default:
