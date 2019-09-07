@@ -9,7 +9,7 @@
 
 VERSION="1.1.0"
 
-cd `dirname "${BASH_SOURCE[0]}"`
+cd "$(dirname "${BASH_SOURCE[0]}")"
 
 mkdir -p "$HOME/Library/Application Support/ShadowsocksX-NG/v2ray-plugin_$VERSION"
 cp -f v2ray-plugin "$HOME/Library/Application Support/ShadowsocksX-NG/v2ray-plugin_$VERSION/"

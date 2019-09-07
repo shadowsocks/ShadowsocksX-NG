@@ -7,7 +7,7 @@
 #  Copyright © 2016年 qiuyuzhou. All rights reserved.
 
 
-cd `dirname "${BASH_SOURCE[0]}"`
+cd "$(dirname "${BASH_SOURCE[0]}")"
 
 NGDir="$HOME/Library/Application Support/ShadowsocksX-NG"
 TargetDir="$NGDir/ss-local-3.2.5"

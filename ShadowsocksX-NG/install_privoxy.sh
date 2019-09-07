@@ -7,7 +7,8 @@
 #  Copyright © 2016年 zhfish. All rights reserved.
 
 
-cd `dirname "${BASH_SOURCE[0]}"`
+cd "$(dirname "${BASH_SOURCE[0]}")"
+
 privoxyVersion=3.0.26.static
 mkdir -p "$HOME/Library/Application Support/ShadowsocksX-NG/privoxy-$privoxyVersion"
 cp -f privoxy "$HOME/Library/Application Support/ShadowsocksX-NG/privoxy-$privoxyVersion/"

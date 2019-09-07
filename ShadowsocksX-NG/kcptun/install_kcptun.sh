@@ -10,7 +10,7 @@
 
 VERSION="v20170718"
 
-cd `dirname "${BASH_SOURCE[0]}"`
+cd "$(dirname "${BASH_SOURCE[0]}")"
 
 mkdir -p "$HOME/Library/Application Support/ShadowsocksX-NG/kcptun_$VERSION"
 cp -f kcptun_client "$HOME/Library/Application Support/ShadowsocksX-NG/kcptun_$VERSION/"
