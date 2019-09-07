@@ -67,6 +67,7 @@
 		9BAFE2E21E83ED7F00F71CCE /* PreferencesWinController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9BAFE2E41E83ED7F00F71CCE /* PreferencesWinController.xib */; };
 		9BB706A71D1B982300551F0E /* SWBApplication.m in Sources */ = {isa = PBXBuildFile; fileRef = 9BB706A51D1B982300551F0E /* SWBApplication.m */; };
 		9BBE7B751F508A0E00E8FFE5 /* fix_dir_owner.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9BBE7B711F50790500E8FFE5 /* fix_dir_owner.sh */; };
+		9BBECA07232404FB00C632DB /* terminal-logo.png in Resources */ = {isa = PBXBuildFile; fileRef = 9BBECA06232404FB00C632DB /* terminal-logo.png */; };
 		9BC70EDC1D2E3E3100EDA4CA /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 9B172A6C1D0ADDDD00B87B9A /* Localizable.strings */; };
 		9BCB1D6C20A15B0E005BABE7 /* libsodium.23.dylib in Resources */ = {isa = PBXBuildFile; fileRef = 9B5AA09F209C100C00E8B659 /* libsodium.23.dylib */; };
 		9BCB1D6D20A15B0E005BABE7 /* libcares.2.dylib in Resources */ = {isa = PBXBuildFile; fileRef = 9B5AA0A2209C103900E8B659 /* libcares.2.dylib */; };
@@ -229,6 +230,7 @@
 		9BB706A51D1B982300551F0E /* SWBApplication.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SWBApplication.m; sourceTree = "<group>"; };
 		9BB706A61D1B982300551F0E /* SWBApplication.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SWBApplication.h; sourceTree = "<group>"; };
 		9BBE7B711F50790500E8FFE5 /* fix_dir_owner.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = fix_dir_owner.sh; sourceTree = "<group>"; };
+		9BBECA06232404FB00C632DB /* terminal-logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "terminal-logo.png"; sourceTree = "<group>"; };
 		9BE8FBC11D0B71CF00CAFD01 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/PreferencesWindowController.strings"; sourceTree = "<group>"; };
 		9BEEF0651D04CB8500FC52B3 /* install_ss_local.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = install_ss_local.sh; sourceTree = "<group>"; };
 		9BEEF0661D04CE8D00FC52B3 /* start_ss_local.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = start_ss_local.sh; sourceTree = "<group>"; };
@@ -326,6 +328,7 @@
 				9B58320A1E7422DB009D5B7D /* http.png */,
 				9B5832061E7421B2009D5B7D /* virtual-server-icon-3.png */,
 				9B5832021E741F8D009D5B7D /* command-512.png */,
+				9BBECA06232404FB00C632DB /* terminal-logo.png */,
 				08FCA0FE1E24BE1A0070984F /* example-gui-config.json */,
 				9B172A6C1D0ADDDD00B87B9A /* Localizable.strings */,
 				9B3FFF4B1D09D8F70019A709 /* install_helper.sh */,
@@ -648,6 +651,7 @@
 				9B3F7BFF1E82BF5B00C68B75 /* libev.4.dylib in Resources */,
 				1C82DBAA1FA96FB600B32551 /* install_simple_obfs.sh in Resources */,
 				9B938D9A1E864B38005F5636 /* menu_g_icon@2x.png in Resources */,
+				9BBECA07232404FB00C632DB /* terminal-logo.png in Resources */,
 				9B938D9E1E864B38005F5636 /* menu_p_icon@2x.png in Resources */,
 				9B9CBCAF1E263B1600FC61AA /* libpcre.1.dylib in Resources */,
 				B5A2AB03221A72EC003F77B7 /* v2ray-plugin in Resources */,

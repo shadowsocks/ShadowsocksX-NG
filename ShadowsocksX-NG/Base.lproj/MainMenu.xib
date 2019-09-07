@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="14313.18" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="14490.70" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14313.18"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14490.70"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="NSApplication">
@@ -86,7 +86,7 @@
                         <action selector="importProfileURLFromPasteboard:" target="Voe-Tx-rLC" id="RwL-Ms-BaC"/>
                     </connections>
                 </menuItem>
-                <menuItem title="Share Server Profiles..." id="r5z-RB-LIZ">
+                <menuItem title="Share Server Profiles..." image="NSShareTemplate" id="r5z-RB-LIZ">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
                         <action selector="showShareServerProfiles:" target="Voe-Tx-rLC" id="3Qv-n1-5h1"/>
@@ -98,7 +98,7 @@
                         <action selector="showAllInOnePreferences:" target="Voe-Tx-rLC" id="2of-nZ-atc"/>
                     </connections>
                 </menuItem>
-                <menuItem title="Copy HTTP Proxy Shell Export Line" id="lg6-To-GZA">
+                <menuItem title="Copy HTTP Proxy Shell Export Line" image="terminal-logo" id="lg6-To-GZA">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
                         <action selector="copyExportCommand:" target="Voe-Tx-rLC" id="2U4-3M-sAK"/>
@@ -157,4 +157,8 @@
             <point key="canvasLocation" x="-2367" y="-139"/>
         </menu>
     </objects>
+    <resources>
+        <image name="NSShareTemplate" width="11" height="16"/>
+        <image name="terminal-logo" width="22.695652008056641" height="17.217391967773438"/>
+    </resources>
 </document>
