@@ -43,3 +43,6 @@
 
 /* Class = "NSTextFieldCell"; title = "Plugin Opts:"; ObjectID = "orT-7j-dxE"; */
 "orT-7j-dxE.title" = "插件选项:";
+
+/* Class = "NSButtonCell"; title = "Open Plugin Folder..."; ObjectID = "T8q-g1-qjN"; */
+"T8q-g1-qjN.title" = "打开插件目录...";
