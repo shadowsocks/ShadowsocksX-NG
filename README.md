@@ -1,63 +1,28 @@
-# ShadowsocksX-NG
+# ShadowsocksX-NG, API Supported
 
-Current version is 1.8.2
+Current version is 1.8.2 develop.
 
-[![Build Status](https://travis-ci.org/shadowsocks/ShadowsocksX-NG.svg?branch=develop)](https://travis-ci.org/shadowsocks/ShadowsocksX-NG)
+This is a fork with minor feature added. All credits go to the **original authors**.
 
-Next Generation of [ShadowsocksX](https://github.com/shadowsocks/shadowsocks-iOS)
+## Introduction
 
-## Why a new implementation?
+[shadowsocks/**ShadowsocksX-NG**](https://github.com/shadowsocks/ShadowsocksX-NG) doesn't support Alfred control. So I copy code from its obsolete fork [yichengchen/**ShadowsocksX-R**](https://github.com/yichengchen/ShadowsocksX-R/blob/42b409beb85aee19a4852e09e7c3e4c2f73f49d3/ShadowsocksX-NG/ApiServer.swift) to euip the app with **HTTP API**, enabling Alfred Control. You may want to download the **Alfred workflow** from [yangziy/Alfred_ShadowsocksController](https://github.com/yangziy/Alfred_ShadowsocksController).
 
-It's hard to maintain the original implementation as there is too much unused code in it.
-It also embeds the `ss-local` source. It's crazy to maintain dependencies of `ss-local`.
-So it's hard to update the `ss-local` version.
+With the **HTTP API** you could also control the app with **curl** in **terminal**.
 
-Now I just copied the `ss-local` from Homebrew. Run `ss-local` executable as a Launch Agent in the background.
-Serve PAC JS file as a file URL. So there is only some source code related to GUI left.
-Then I will rewrite the GUI code in Swift.
+## Feature
 
-## Requirements
+The **HTTP API** enables users to do the following:
 
-### Running
+- Check current status (on/off)
+- Turn on/off or toggle the client
+- Get server list
+- Add new server
+- Modify server
+- Delete server
+- Get current server
+- Select server
+- Get current mode
+- Switch mode
 
-- macOS 10.11+
-
-### Building
-
-- Xcode 10.0+
-- CocoaPods 1.5.3+
-
-## Download
-
-From [here](https://github.com/shadowsocks/ShadowsocksX-NG/releases/)
-
-## Features
-
-- `ss-local` from shadowsocks-libev 3.2.0
-- Support SIP003 plugins. Embed `kcptun` and `simple-obfs`.
-- Could update PAC by download GFW List from GitHub.
-- Share your server profiles by qrcode or url.
-- Import server profile urls from pasteboard.
-- Import server profile by scan QRCode on screen.
-- Custom rules for PAC.
-- Support for [AEAD Ciphers](https://shadowsocks.org/en/spec/AEAD-Ciphers.html)
-- HTTP Proxy by [privoxy](http://www.privoxy.org/)
-
-## Difference from original ShadowsocksX
-
-`ss-local` is run as a background service through launchd, not as an in-app process.
-So after you quit the app, the `ss-local` might be still running.
-
-Added a manual mode which won't configure the system proxy settings,
-so that you could configure your apps to use the SOCKS5 proxy manually.
-
-## Contributing
-
-Contributions must be available on a separately named branch based on the latest version of the main branch `develop`.
-
-ref: [GitFlow](http://nvie.com/posts/a-successful-git-branching-model/)
-
-## License
-
-The project is released under the terms of the GPLv3.
-
+For usage, consult [HTTP API Specification](https://github.com/yangziy/ShadowsocksX-NG_WithAPI/blob/master/HTTPAPI.md) .

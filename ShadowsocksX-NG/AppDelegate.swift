@@ -187,6 +187,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
 
         // Register global hotkey
         ShortcutsController.bindShortcuts()
+        
+        // Start HTTP API Server
+        HTTPUserProxy.shard.start()
     }
     
     func applicationWillTerminate(_ aNotification: Notification) {

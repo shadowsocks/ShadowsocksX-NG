@@ -24,9 +24,10 @@ extension Data {
     }
 }
 
-enum ProxyType {
-    case pac
-    case global
+enum ProxyType:String {
+    case pac = "auto"
+    case global = "global"
+    case manual = "manual"
 }
 
 struct Globals {
