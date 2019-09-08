@@ -30,6 +30,7 @@ class ShareServerProfilesWindowController: NSWindowController
         
         defaults = UserDefaults.standard
         profileMgr = ServerProfileManager.instance
+        profilesTableView.reloadData()
         
         if !profileMgr.profiles.isEmpty {
             let index = IndexSet(integer: 0)
