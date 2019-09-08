@@ -129,7 +129,14 @@ func InstallSSLocal() {
 func writeSSLocalConfFile(_ conf:[String:AnyObject]) -> Bool {
     do {
         let filepath = NSHomeDirectory() + APP_SUPPORT_DIR + "ss-local-config.json"
-        let data: Data = try JSONSerialization.data(withJSONObject: conf, options: .prettyPrinted)
+        var data: Data = try JSONSerialization.data(withJSONObject: conf, options: .prettyPrinted)
+
+        // https://github.com/shadowsocks/ShadowsocksX-NG/issues/1104
+        // This is NSJSONSerialization.dataWithJSONObject that likes to insert additional backslashes.
+        // Escaped forward slashes is also valid json.
+        // Workaround:
+        let s = String(data:data, encoding: .utf8)!
+        data = s.replacingOccurrences(of: "\\/", with: "/").data(using: .utf8)!
         
         let oldSum = getFileSHA1Sum(filepath)
         try data.write(to: URL(fileURLWithPath: filepath), options: .atomic)
