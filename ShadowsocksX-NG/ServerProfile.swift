@@ -50,20 +50,46 @@ class ServerProfile: NSObject, NSCopying {
             let base64End = urlStr.firstIndex(of: "#")
             let encodedStr = String(urlStr[base64Begin..<(base64End ?? urlStr.endIndex)])
             guard let data = Data(base64Encoded: padBase64(string: encodedStr)) else {
+                // Not legacy format URI
                 return (url.absoluteString, nil)
             }
             guard let decoded = String(data: data, encoding: String.Encoding.utf8) else {
                 return (nil, nil)
             }
-            let s = decoded.trimmingCharacters(in: CharacterSet(charactersIn: "\n"))
+            var s = decoded.trimmingCharacters(in: CharacterSet(charactersIn: "\n"))
+            
+            // May be legacy format URI
+            // Note that the legacy URI doesn't follow RFC3986. It means the password here
+            // should be plain text, not percent-encoded.
+            // Ref: https://shadowsocks.org/en/config/quick-guide.html
+            let parser = try? NSRegularExpression(
+                pattern: "(.+):(.+)@(.+)", options: .init())
+            if let match = parser?.firstMatch(in:s, options: [], range: NSRange(location: 0, length: s.utf16.count)) {
+                // Convert legacy format to SIP002 format
+                let r1 = Range(match.range(at: 1), in: s)!
+                let r2 = Range(match.range(at: 2), in: s)!
+                let r3 = Range(match.range(at: 3), in: s)!
+                let user = String(s[r1])
+                let password = String(s[r2])
+                let hostAndPort = String(s[r3])
+                
+                let rawUserInfo = "\(user):\(password)".data(using: .utf8)!
+                let userInfo = rawUserInfo.base64EncodedString()
+                
+                s = "ss://\(userInfo)@\(hostAndPort)"
+            }
             
             if let index = base64End {
                 let i = urlStr.index(index, offsetBy: 1)
                 let fragment = String(urlStr[i...])
-                return ("ss://\(s)", fragment)
+                return (s, fragment)
             }
-            return ("ss://\(s)", nil)
+            return (s, nil)
         }
+        func decodeLegacyFormat(url: String) -> (URL?,String?) {
+            return (nil, nil)
+        }
+        
         let (_decodedUrl, _tag) = decodeUrl(url: url)
         guard let decodedUrl = _decodedUrl else {
             return nil
@@ -82,31 +108,27 @@ class ServerProfile: NSObject, NSCopying {
         // This can be overriden by the fragment part of SIP002 URL
         remark = parsedUrl.queryItems?
             .filter({ $0.name == "Remark" }).first?.value ?? ""
+        
+        if let tag = _tag {
+            remark = tag
+        }
 
-        if let password = parsedUrl.password {
-            self.method = user.lowercased()
-            self.password = password
-            if let tag = _tag {
-                remark = tag
-            }
-        } else {
-            // SIP002 URL have no password section
-            guard let data = Data(base64Encoded: padBase64(string: user)),
-                let userInfo = String(data: data, encoding: .utf8) else {
-                return nil
-            }
+        // SIP002 URL have no password section
+        guard let data = Data(base64Encoded: padBase64(string: user)),
+            let userInfo = String(data: data, encoding: .utf8) else {
+            return nil
+        }
 
-            let parts = userInfo.split(separator: ":", maxSplits: 1, omittingEmptySubsequences: false)
-            if parts.count != 2 {
-                return nil
-            }
-            self.method = String(parts[0]).lowercased()
-            self.password = String(parts[1])
+        let parts = userInfo.split(separator: ":", maxSplits: 1, omittingEmptySubsequences: false)
+        if parts.count != 2 {
+            return nil
+        }
+        self.method = String(parts[0]).lowercased()
+        self.password = String(parts[1])
 
-            // SIP002 defines where to put the profile name
-            if let profileName = parsedUrl.fragment {
-                self.remark = profileName
-            }
+        // SIP002 defines where to put the profile name
+        if let profileName = parsedUrl.fragment {
+            self.remark = profileName
         }
 
         if let pluginStr = parsedUrl.queryItems?
