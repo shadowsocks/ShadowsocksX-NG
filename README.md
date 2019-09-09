@@ -1,6 +1,6 @@
 # ShadowsocksX-NG
 
-Current version is 1.8.2
+Current version is v1.9.0
 
 [![Build Status](https://travis-ci.org/shadowsocks/ShadowsocksX-NG.svg?branch=develop)](https://travis-ci.org/shadowsocks/ShadowsocksX-NG)
 
@@ -9,22 +9,22 @@ Next Generation of [ShadowsocksX](https://github.com/shadowsocks/shadowsocks-iOS
 ## Why a new implementation?
 
 It's hard to maintain the original implementation as there is too much unused code in it.
-It also embeds the `ss-local` source. It's crazy to maintain dependencies of `ss-local`.
+It also embeds the `ss-local` source code. It's crazy to maintain dependencies of `ss-local`.
 So it's hard to update the `ss-local` version.
 
 Now I just copied the `ss-local` from Homebrew. Run `ss-local` executable as a Launch Agent in the background.
-Serve PAC JS file as a file URL. So there is only some source code related to GUI left.
-Then I will rewrite the GUI code in Swift.
+So there is only some source code related to GUI left.
+Then I have rewrited the GUI code in Swift.
 
 ## Requirements
 
 ### Running
 
-- macOS 10.11+
+macOS 10.12+
 
 ### Building
 
-- Xcode 10.0+
+- Xcode 10.3+
 - CocoaPods 1.5.3+
 
 ## Download
@@ -34,7 +34,7 @@ From [here](https://github.com/shadowsocks/ShadowsocksX-NG/releases/)
 ## Features
 
 - `ss-local` from shadowsocks-libev 3.2.0
-- Support SIP003 plugins. Embed `kcptun` and `simple-obfs`.
+- Support SIP003 plugins. Embed `kcptun`,  `simple-obfs` and `v2ray-plugin`.
 - Could update PAC by download GFW List from GitHub.
 - Share your server profiles by qrcode or url.
 - Import server profile urls from pasteboard.
