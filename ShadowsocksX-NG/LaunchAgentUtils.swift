@@ -9,7 +9,7 @@
 import Foundation
 
 let SS_LOCAL_VERSION = "3.2.5"
-let KCPTUN_CLIENT_VERSION = "v20170718"
+let KCPTUN_CLIENT_VERSION = "v20190905"
 let V2RAY_PLUGIN_VERSION = "1.1.0"
 let PRIVOXY_VERSION = "3.0.26.static"
 let SIMPLE_OBFS_VERSION = "0.0.5_1"
@@ -225,7 +225,7 @@ func InstallKcptun() {
     let fileMgr = FileManager.default
     let homeDir = NSHomeDirectory()
     let appSupportDir = homeDir+APP_SUPPORT_DIR
-    if !fileMgr.fileExists(atPath: appSupportDir + "kcptun_\(KCPTUN_CLIENT_VERSION)/kcptun_client") {
+    if !fileMgr.fileExists(atPath: appSupportDir + "kcptun_\(KCPTUN_CLIENT_VERSION)/client") {
         let bundle = Bundle.main
         let installerPath = bundle.path(forResource: "install_kcptun", ofType: "sh")
         let task = Process.launchedProcess(launchPath: "/bin/sh", arguments: [installerPath!])
