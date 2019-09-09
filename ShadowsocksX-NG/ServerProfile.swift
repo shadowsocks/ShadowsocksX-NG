@@ -137,6 +137,8 @@ class ServerProfile: NSObject, NSCopying {
             if parts.count == 2 {
                 plugin = String(parts[0])
                 pluginOptions = String(parts[1])
+            } else if parts.count == 1 {
+                plugin = String(parts[0])
             }
         }
     }

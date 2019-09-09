@@ -141,6 +141,24 @@ class ServerProfileTests: XCTestCase {
         XCTAssertNotNil(profile)
         XCTAssertEqual(profile?.remark, "Overriden")
     }
+    
+    func testInitWithSIP002URLProfileWithSIP003PluginNoPluginOpts() {
+        let url = URL(string: "ss://YWVzLTI1Ni1jZmI6cGFzc3dvcmQ=@134.209.56.100:8088/?plugin=v2ray-plugin;#moon-v2ray")!
+        
+        let profile = ServerProfile(url: url)
+        
+        XCTAssertNotNil(profile)
+        XCTAssertEqual(profile?.plugin, "v2ray-plugin")
+    }
+    
+    func testInitWithSIP002URLProfileWithSIP003Plugin() {
+        let url = URL(string: "ss://YWVzLTI1Ni1jZmI6cGFzc3dvcmQ=@134.209.56.100:8088/?plugin=v2ray-plugin;tls#moon-v2ray")!
+        
+        let profile = ServerProfile(url: url)
+        
+        XCTAssertNotNil(profile)
+        XCTAssertEqual(profile?.plugin, "v2ray-plugin")
+    }
 
     func testPerformanceExample() {
         // This is an example of a performance test case.
@@ -148,5 +166,6 @@ class ServerProfileTests: XCTestCase {
             // Put the code you want to measure the time of here.
         }
     }
+    
 
 }
