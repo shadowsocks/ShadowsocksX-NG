@@ -2,7 +2,7 @@
 
 Current version is [v1.9.2](https://github.com/shadowsocks/ShadowsocksX-NG/releases/tag/v1.9.2)
 
-[![Actions Status](https://github.com/shadowsocks/ShadowsocksX-NG/workflows/main/badge.svg)](https://github.com/shadowsocks/ShadowsocksX-NG/actions)
+[![Actions Status](https://github.com/shadowsocks/ShadowsocksX-NG/workflows/CI/badge.svg)](https://github.com/shadowsocks/ShadowsocksX-NG/actions)
 
 Next Generation of [ShadowsocksX](https://github.com/shadowsocks/shadowsocks-iOS)
 
