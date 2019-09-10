@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2012-2015, Pierre-Olivier Latour
+ Copyright (c) 2012-2019, Pierre-Olivier Latour
  All rights reserved.
  
  Redistribution and use in source and binary forms, with or without
@@ -150,12 +150,12 @@
 
 @implementation GCDWebServerResponse {
   BOOL _opened;
-  NSMutableArray* _encoders;
+  NSMutableArray<GCDWebServerBodyEncoder*>* _encoders;
   id<GCDWebServerBodyReader> __unsafe_unretained _reader;
 }
 
 + (instancetype)response {
-  return [[[self class] alloc] init];
+  return [(GCDWebServerResponse*)[[self class] alloc] init];
 }
 
 - (instancetype)init {
@@ -259,11 +259,11 @@
 @implementation GCDWebServerResponse (Extensions)
 
 + (instancetype)responseWithStatusCode:(NSInteger)statusCode {
-  return [[self alloc] initWithStatusCode:statusCode];
+  return [(GCDWebServerResponse*)[self alloc] initWithStatusCode:statusCode];
 }
 
 + (instancetype)responseWithRedirect:(NSURL*)location permanent:(BOOL)permanent {
-  return [[self alloc] initWithRedirect:location permanent:permanent];
+  return [(GCDWebServerResponse*)[self alloc] initWithRedirect:location permanent:permanent];
 }
 
 - (instancetype)initWithStatusCode:(NSInteger)statusCode {

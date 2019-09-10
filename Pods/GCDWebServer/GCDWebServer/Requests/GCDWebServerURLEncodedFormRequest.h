@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2012-2015, Pierre-Olivier Latour
+ Copyright (c) 2012-2019, Pierre-Olivier Latour
  All rights reserved.
  
  Redistribution and use in source and binary forms, with or without
@@ -42,7 +42,7 @@ NS_ASSUME_NONNULL_BEGIN
  *  The text encoding used to interpret the data is extracted from the
  *  "Content-Type" header or defaults to UTF-8.
  */
-@property(nonatomic, readonly) NSDictionary* arguments;
+@property(nonatomic, readonly) NSDictionary<NSString*, NSString*>* arguments;
 
 /**
  *  Returns the MIME type for URL encoded forms

@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2012-2015, Pierre-Olivier Latour
+ Copyright (c) 2012-2019, Pierre-Olivier Latour
  All rights reserved.
  
  Redistribution and use in source and binary forms, with or without
@@ -102,7 +102,7 @@ extern NSString* const GCDWebServerRequestAttribute_RegexCaptures;
 /**
  *  Returns the HTTP headers for the request.
  */
-@property(nonatomic, readonly) NSDictionary* headers;
+@property(nonatomic, readonly) NSDictionary<NSString*, NSString*>* headers;
 
 /**
  *  Returns the path component of the URL for the request.
@@ -114,7 +114,7 @@ extern NSString* const GCDWebServerRequestAttribute_RegexCaptures;
  *
  *  @warning This property will be nil if there is no query in the URL.
  */
-@property(nonatomic, readonly, nullable) NSDictionary* query;
+@property(nonatomic, readonly, nullable) NSDictionary<NSString*, NSString*>* query;
 
 /**
  *  Returns the content type for the body of the request parsed from the
@@ -186,7 +186,7 @@ extern NSString* const GCDWebServerRequestAttribute_RegexCaptures;
 /**
  *  This method is the designated initializer for the class.
  */
-- (instancetype)initWithMethod:(NSString*)method url:(NSURL*)url headers:(NSDictionary*)headers path:(NSString*)path query:(nullable NSDictionary*)query;
+- (instancetype)initWithMethod:(NSString*)method url:(NSURL*)url headers:(NSDictionary<NSString*, NSString*>*)headers path:(NSString*)path query:(nullable NSDictionary<NSString*, NSString*>*)query;
 
 /**
  *  Convenience method that checks if the contentType property is defined.

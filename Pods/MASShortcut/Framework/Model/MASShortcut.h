@@ -16,14 +16,14 @@
  Hardware independent, same as in `NSEvent`. See `Events.h` in the HIToolbox
  framework for a complete list, or Command-click this symbol: `kVK_ANSI_A`.
 */
-@property (nonatomic, readonly) NSUInteger keyCode;
+@property (nonatomic, readonly) NSInteger keyCode;
 
 /**
  Cocoa keyboard modifier flags.
 
  Same as in `NSEvent`: `NSCommandKeyMask`, `NSAlternateKeyMask`, etc.
 */
-@property (nonatomic, readonly) NSUInteger modifierFlags;
+@property (nonatomic, readonly) NSEventModifierFlags modifierFlags;
 
 /**
  Same as `keyCode`, just a different type.
@@ -68,8 +68,8 @@
 */
 @property (nonatomic, readonly) NSString *modifierFlagsString;
 
-- (instancetype)initWithKeyCode:(NSUInteger)code modifierFlags:(NSUInteger)flags;
-+ (instancetype)shortcutWithKeyCode:(NSUInteger)code modifierFlags:(NSUInteger)flags;
+- (instancetype)initWithKeyCode:(NSInteger)code modifierFlags:(NSEventModifierFlags)flags;
++ (instancetype)shortcutWithKeyCode:(NSInteger)code modifierFlags:(NSEventModifierFlags)flags;
 
 /**
  Creates a new shortcut from an `NSEvent` object.

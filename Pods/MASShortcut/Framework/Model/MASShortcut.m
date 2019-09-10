@@ -8,7 +8,7 @@ static NSString *const MASShortcutModifierFlags = @"ModifierFlags";
 
 #pragma mark Initialization
 
-- (instancetype)initWithKeyCode:(NSUInteger)code modifierFlags:(NSUInteger)flags
+- (instancetype)initWithKeyCode:(NSInteger)code modifierFlags:(NSEventModifierFlags)flags
 {
     self = [super init];
     if (self) {
@@ -18,7 +18,7 @@ static NSString *const MASShortcutModifierFlags = @"ModifierFlags";
     return self;
 }
 
-+ (instancetype)shortcutWithKeyCode:(NSUInteger)code modifierFlags:(NSUInteger)flags
++ (instancetype)shortcutWithKeyCode:(NSInteger)code modifierFlags:(NSEventModifierFlags)flags
 {
     return [[self alloc] initWithKeyCode:code modifierFlags:flags];
 }
@@ -48,33 +48,34 @@ static NSString *const MASShortcutModifierFlags = @"ModifierFlags";
 - (NSString *)keyCodeStringForKeyEquivalent
 {
     NSString *keyCodeString = self.keyCodeString;
-    if (keyCodeString.length > 1) {
-        switch (self.keyCode) {
-            case kVK_F1: return NSStringFromMASKeyCode(0xF704);
-            case kVK_F2: return NSStringFromMASKeyCode(0xF705);
-            case kVK_F3: return NSStringFromMASKeyCode(0xF706);
-            case kVK_F4: return NSStringFromMASKeyCode(0xF707);
-            case kVK_F5: return NSStringFromMASKeyCode(0xF708);
-            case kVK_F6: return NSStringFromMASKeyCode(0xF709);
-            case kVK_F7: return NSStringFromMASKeyCode(0xF70a);
-            case kVK_F8: return NSStringFromMASKeyCode(0xF70b);
-            case kVK_F9: return NSStringFromMASKeyCode(0xF70c);
-            case kVK_F10: return NSStringFromMASKeyCode(0xF70d);
-            case kVK_F11: return NSStringFromMASKeyCode(0xF70e);
-            case kVK_F12: return NSStringFromMASKeyCode(0xF70f);
-            // From this point down I am guessing F13 etc come sequentially, I don't have a keyboard to test.
-            case kVK_F13: return NSStringFromMASKeyCode(0xF710);
-            case kVK_F14: return NSStringFromMASKeyCode(0xF711);
-            case kVK_F15: return NSStringFromMASKeyCode(0xF712);
-            case kVK_F16: return NSStringFromMASKeyCode(0xF713);
-            case kVK_F17: return NSStringFromMASKeyCode(0xF714);
-            case kVK_F18: return NSStringFromMASKeyCode(0xF715);
-            case kVK_F19: return NSStringFromMASKeyCode(0xF716);
-            case kVK_Space: return NSStringFromMASKeyCode(0x20);
-            default: return @"";
-        }
+
+    if (keyCodeString.length <= 1) {
+        return keyCodeString.lowercaseString;
     }
-    return keyCodeString.lowercaseString;
+
+    switch (self.keyCode) {
+        case kVK_F1: return NSStringFromMASKeyCode(NSF1FunctionKey);
+        case kVK_F2: return NSStringFromMASKeyCode(NSF2FunctionKey);
+        case kVK_F3: return NSStringFromMASKeyCode(NSF3FunctionKey);
+        case kVK_F4: return NSStringFromMASKeyCode(NSF4FunctionKey);
+        case kVK_F5: return NSStringFromMASKeyCode(NSF5FunctionKey);
+        case kVK_F6: return NSStringFromMASKeyCode(NSF6FunctionKey);
+        case kVK_F7: return NSStringFromMASKeyCode(NSF7FunctionKey);
+        case kVK_F8: return NSStringFromMASKeyCode(NSF8FunctionKey);
+        case kVK_F9: return NSStringFromMASKeyCode(NSF9FunctionKey);
+        case kVK_F10: return NSStringFromMASKeyCode(NSF10FunctionKey);
+        case kVK_F11: return NSStringFromMASKeyCode(NSF11FunctionKey);
+        case kVK_F12: return NSStringFromMASKeyCode(NSF12FunctionKey);
+        case kVK_F13: return NSStringFromMASKeyCode(NSF13FunctionKey);
+        case kVK_F14: return NSStringFromMASKeyCode(NSF14FunctionKey);
+        case kVK_F15: return NSStringFromMASKeyCode(NSF15FunctionKey);
+        case kVK_F16: return NSStringFromMASKeyCode(NSF16FunctionKey);
+        case kVK_F17: return NSStringFromMASKeyCode(NSF17FunctionKey);
+        case kVK_F18: return NSStringFromMASKeyCode(NSF18FunctionKey);
+        case kVK_F19: return NSStringFromMASKeyCode(NSF19FunctionKey);
+        case kVK_Space: return NSStringFromMASKeyCode(0x20);
+        default: return @"";
+    }
 }
 
 - (NSString *)keyCodeString
@@ -132,7 +133,7 @@ static NSString *const MASShortcutModifierFlags = @"ModifierFlags";
         case kVK_ANSI_KeypadClear: return NSStringFromMASKeyCode(kMASShortcutGlyphPadClear);
         case kVK_ANSI_KeypadDivide: return @"/";
         case kVK_ANSI_KeypadEnter: return NSStringFromMASKeyCode(kMASShortcutGlyphReturn);
-        case kVK_ANSI_KeypadMinus: return @"–";
+        case kVK_ANSI_KeypadMinus: return @"-";
         case kVK_ANSI_KeypadEquals: return @"=";
             
         // Hardcode
@@ -210,7 +211,7 @@ static NSString *const MASShortcutModifierFlags = @"ModifierFlags";
 
 - (void)encodeWithCoder:(NSCoder *)coder
 {
-    [coder encodeInteger:(self.keyCode != NSNotFound ? (NSInteger)self.keyCode : - 1) forKey:MASShortcutKeyCode];
+    [coder encodeInteger:(self.keyCode != NSNotFound ? self.keyCode : - 1) forKey:MASShortcutKeyCode];
     [coder encodeInteger:(NSInteger)self.modifierFlags forKey:MASShortcutModifierFlags];
 }
 
@@ -219,7 +220,7 @@ static NSString *const MASShortcutModifierFlags = @"ModifierFlags";
     self = [super init];
     if (self) {
         NSInteger code = [decoder decodeIntegerForKey:MASShortcutKeyCode];
-        _keyCode = (code < 0 ? NSNotFound : (NSUInteger)code);
+        _keyCode = (code < 0) ? NSNotFound : code;
         _modifierFlags = [decoder decodeIntegerForKey:MASShortcutModifierFlags];
     }
     return self;

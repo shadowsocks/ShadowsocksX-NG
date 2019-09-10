@@ -3,7 +3,7 @@
 #import "MASKeyMasks.h"
 
 // These glyphs are missed in Carbon.h
-enum {
+typedef NS_ENUM(unsigned short, kMASShortcutGlyph) {
     kMASShortcutGlyphEject = 0x23CF,
     kMASShortcutGlyphClear = 0x2715,
     kMASShortcutGlyphDeleteLeft = 0x232B,

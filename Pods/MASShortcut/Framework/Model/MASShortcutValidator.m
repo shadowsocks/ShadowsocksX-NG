@@ -15,8 +15,8 @@
 
 - (BOOL) isShortcutValid: (MASShortcut*) shortcut
 {
-    NSUInteger keyCode = [shortcut keyCode];
-    NSUInteger modifiers = [shortcut modifierFlags];
+    NSInteger keyCode = [shortcut keyCode];
+    NSEventModifierFlags modifiers = [shortcut modifierFlags];
 
     // Allow any function key with any combination of modifiers
     BOOL includesFunctionKey = ((keyCode == kVK_F1) || (keyCode == kVK_F2) || (keyCode == kVK_F3) || (keyCode == kVK_F4) ||
@@ -53,7 +53,7 @@
 - (BOOL) isShortcut: (MASShortcut*) shortcut alreadyTakenInMenu: (NSMenu*) menu explanation: (NSString**) explanation
 {
     NSString *keyEquivalent = [shortcut keyCodeStringForKeyEquivalent];
-    NSUInteger flags = [shortcut modifierFlags];
+    NSEventModifierFlags flags = [shortcut modifierFlags];
 
     for (NSMenuItem *menuItem in menu.itemArray) {
         if (menuItem.hasSubmenu && [self isShortcut:shortcut alreadyTakenInMenu:[menuItem submenu] explanation:explanation]) return YES;
@@ -91,7 +91,7 @@
             CFNumberRef flags = CFDictionaryGetValue(hotKeyInfo, kHISymbolicHotKeyModifiers);
             CFNumberRef enabled = CFDictionaryGetValue(hotKeyInfo, kHISymbolicHotKeyEnabled);
 
-            if (([(__bridge NSNumber *)code unsignedIntegerValue] == [shortcut keyCode]) &&
+            if (([(__bridge NSNumber *)code integerValue] == [shortcut keyCode]) &&
                 ([(__bridge NSNumber *)flags unsignedIntegerValue] == [shortcut carbonFlags]) &&
                 ([(__bridge NSNumber *)enabled boolValue])) {
 
