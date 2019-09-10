@@ -61,7 +61,7 @@ extension SchedulerType {
         return schedule.start()
     }
 
-    func scheduleRecursive<State>(_ state: State, dueTime: RxTimeInterval, action: @escaping (State, AnyRecursiveScheduler<State>) -> ()) -> Disposable {
+    func scheduleRecursive<State>(_ state: State, dueTime: RxTimeInterval, action: @escaping (State, AnyRecursiveScheduler<State>) -> Void) -> Disposable {
         let scheduler = AnyRecursiveScheduler(scheduler: self, action: action)
          
         scheduler.schedule(state, dueTime: dueTime)

@@ -25,7 +25,7 @@ extension ObservableType {
      - seealso: [just operator on reactivex.io](http://reactivex.io/documentation/operators/just.html)
 
      - parameter element: Single element in the resulting observable sequence.
-     - parameter: Scheduler to send the single element on.
+     - parameter scheduler: Scheduler to send the single element on.
      - returns: An observable sequence containing the single specified element.
      */
     public static func just(_ element: E, scheduler: ImmediateSchedulerType) -> Observable<E> {
@@ -33,19 +33,19 @@ extension ObservableType {
     }
 }
 
-final fileprivate class JustScheduledSink<O: ObserverType> : Sink<O> {
+final private class JustScheduledSink<O: ObserverType>: Sink<O> {
     typealias Parent = JustScheduled<O.E>
 
     private let _parent: Parent
 
     init(parent: Parent, observer: O, cancel: Cancelable) {
-        _parent = parent
+        self._parent = parent
         super.init(observer: observer, cancel: cancel)
     }
 
     func run() -> Disposable {
-        let scheduler = _parent._scheduler
-        return scheduler.schedule(_parent._element) { element in
+        let scheduler = self._parent._scheduler
+        return scheduler.schedule(self._parent._element) { element in
             self.forwardOn(.next(element))
             return scheduler.schedule(()) { _ in
                 self.forwardOn(.completed)
@@ -56,13 +56,13 @@ final fileprivate class JustScheduledSink<O: ObserverType> : Sink<O> {
     }
 }
 
-final fileprivate class JustScheduled<Element> : Producer<Element> {
+final private class JustScheduled<Element>: Producer<Element> {
     fileprivate let _scheduler: ImmediateSchedulerType
     fileprivate let _element: Element
 
     init(element: Element, scheduler: ImmediateSchedulerType) {
-        _scheduler = scheduler
-        _element = element
+        self._scheduler = scheduler
+        self._element = element
     }
 
     override func run<O : ObserverType>(_ observer: O, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where O.E == E {
@@ -72,15 +72,15 @@ final fileprivate class JustScheduled<Element> : Producer<Element> {
     }
 }
 
-final fileprivate class Just<Element> : Producer<Element> {
+final private class Just<Element>: Producer<Element> {
     private let _element: Element
     
     init(element: Element) {
-        _element = element
+        self._element = element
     }
     
-    override func subscribe<O : ObserverType>(_ observer: O) -> Disposable where O.E == Element {
-        observer.on(.next(_element))
+    override func subscribe<O: ObserverType>(_ observer: O) -> Disposable where O.E == Element {
+        observer.on(.next(self._element))
         observer.on(.completed)
         return Disposables.create()
     }

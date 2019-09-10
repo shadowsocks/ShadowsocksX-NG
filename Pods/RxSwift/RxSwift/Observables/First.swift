@@ -13,16 +13,16 @@ fileprivate final class FirstSink<Element, O: ObserverType> : Sink<O>, ObserverT
     func on(_ event: Event<E>) {
         switch event {
         case .next(let value):
-            forwardOn(.next(value))
-            forwardOn(.completed)
-            dispose()
+            self.forwardOn(.next(value))
+            self.forwardOn(.completed)
+            self.dispose()
         case .error(let error):
-            forwardOn(.error(error))
-            dispose()
+            self.forwardOn(.error(error))
+            self.dispose()
         case .completed:
-            forwardOn(.next(nil))
-            forwardOn(.completed)
-            dispose()
+            self.forwardOn(.next(nil))
+            self.forwardOn(.completed)
+            self.dispose()
         }
     }
 }
@@ -31,12 +31,12 @@ final class First<Element>: Producer<Element?> {
     fileprivate let _source: Observable<Element>
 
     init(source: Observable<Element>) {
-        _source = source
+        self._source = source
     }
 
     override func run<O : ObserverType>(_ observer: O, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where O.E == Element? {
         let sink = FirstSink(observer: observer, cancel: cancel)
-        let subscription = _source.subscribe(sink)
+        let subscription = self._source.subscribe(sink)
         return (sink: sink, subscription: subscription)
     }
 }

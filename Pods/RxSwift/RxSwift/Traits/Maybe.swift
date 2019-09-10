@@ -26,8 +26,8 @@ public enum MaybeEvent<Element> {
     case completed
 }
 
-public extension PrimitiveSequenceType where TraitType == MaybeTrait {
-    public typealias MaybeObserver = (MaybeEvent<ElementType>) -> ()
+extension PrimitiveSequenceType where TraitType == MaybeTrait {
+    public typealias MaybeObserver = (MaybeEvent<ElementType>) -> Void
     
     /**
      Creates an observable sequence from a specified subscribe method implementation.
@@ -60,7 +60,7 @@ public extension PrimitiveSequenceType where TraitType == MaybeTrait {
      
      - returns: Subscription for `observer` that can be used to cancel production of sequence elements and free resources.
      */
-    public func subscribe(_ observer: @escaping (MaybeEvent<ElementType>) -> ()) -> Disposable {
+    public func subscribe(_ observer: @escaping (MaybeEvent<ElementType>) -> Void) -> Disposable {
         var stopped = false
         return self.primitiveSequence.asObservable().subscribe { event in
             if stopped { return }
@@ -111,7 +111,7 @@ public extension PrimitiveSequenceType where TraitType == MaybeTrait {
     }
 }
 
-public extension PrimitiveSequenceType where TraitType == MaybeTrait {    
+extension PrimitiveSequenceType where TraitType == MaybeTrait {
     /**
      Returns an observable sequence that contains a single element.
      
@@ -130,7 +130,7 @@ public extension PrimitiveSequenceType where TraitType == MaybeTrait {
      - seealso: [just operator on reactivex.io](http://reactivex.io/documentation/operators/just.html)
      
      - parameter element: Single element in the resulting observable sequence.
-     - parameter: Scheduler to send the single element on.
+     - parameter scheduler: Scheduler to send the single element on.
      - returns: An observable sequence containing the single specified element.
      */
     public static func just(_ element: ElementType, scheduler: ImmediateSchedulerType) -> Maybe<ElementType> {
@@ -171,7 +171,7 @@ public extension PrimitiveSequenceType where TraitType == MaybeTrait {
     }
 }
 
-public extension PrimitiveSequenceType where TraitType == MaybeTrait {
+extension PrimitiveSequenceType where TraitType == MaybeTrait {
     /**
      Invokes an action for each event in the observable sequence, and propagates all observer messages through the result sequence.
      
@@ -188,11 +188,11 @@ public extension PrimitiveSequenceType where TraitType == MaybeTrait {
     public func `do`(onNext: ((ElementType) throws -> Void)? = nil,
                      onError: ((Swift.Error) throws -> Void)? = nil,
                      onCompleted: (() throws -> Void)? = nil,
-                     onSubscribe: (() -> ())? = nil,
-                     onSubscribed: (() -> ())? = nil,
-                     onDispose: (() -> ())? = nil)
+                     onSubscribe: (() -> Void)? = nil,
+                     onSubscribed: (() -> Void)? = nil,
+                     onDispose: (() -> Void)? = nil)
         -> Maybe<ElementType> {
-            return Maybe(raw: primitiveSequence.source.do(
+            return Maybe(raw: self.primitiveSequence.source.do(
                 onNext: onNext,
                 onError: onError,
                 onCompleted: onCompleted,
@@ -212,7 +212,7 @@ public extension PrimitiveSequenceType where TraitType == MaybeTrait {
      */
     public func filter(_ predicate: @escaping (ElementType) throws -> Bool)
         -> Maybe<ElementType> {
-            return Maybe(raw: primitiveSequence.source.filter(predicate))
+            return Maybe(raw: self.primitiveSequence.source.filter(predicate))
     }
     
     /**
@@ -226,7 +226,7 @@ public extension PrimitiveSequenceType where TraitType == MaybeTrait {
      */
     public func map<R>(_ transform: @escaping (ElementType) throws -> R)
         -> Maybe<R> {
-            return Maybe(raw: primitiveSequence.source.map(transform))
+            return Maybe(raw: self.primitiveSequence.source.map(transform))
     }
 
     /**
@@ -239,6 +239,55 @@ public extension PrimitiveSequenceType where TraitType == MaybeTrait {
      */
     public func flatMap<R>(_ selector: @escaping (ElementType) throws -> Maybe<R>)
         -> Maybe<R> {
-            return Maybe<R>(raw: primitiveSequence.source.flatMap(selector))
+            return Maybe<R>(raw: self.primitiveSequence.source.flatMap(selector))
+    }
+
+    /**
+     Emits elements from the source observable sequence, or a default element if the source observable sequence is empty.
+
+     - seealso: [DefaultIfEmpty operator on reactivex.io](http://reactivex.io/documentation/operators/defaultifempty.html)
+
+     - parameter default: Default element to be sent if the source does not emit any elements
+     - returns: An observable sequence which emits default element end completes in case the original sequence is empty
+     */
+    public func ifEmpty(default: ElementType) -> Single<ElementType> {
+        return Single(raw: self.primitiveSequence.source.ifEmpty(default: `default`))
+    }
+
+    /**
+     Returns the elements of the specified sequence or `switchTo` sequence if the sequence is empty.
+
+     - seealso: [DefaultIfEmpty operator on reactivex.io](http://reactivex.io/documentation/operators/defaultifempty.html)
+
+     - parameter switchTo: Observable sequence being returned when source sequence is empty.
+     - returns: Observable sequence that contains elements from switchTo sequence if source is empty, otherwise returns source sequence elements.
+     */
+    public func ifEmpty(switchTo other: Maybe<ElementType>) -> Maybe<ElementType> {
+        return Maybe(raw: self.primitiveSequence.source.ifEmpty(switchTo: other.primitiveSequence.source))
+    }
+
+    /**
+     Returns the elements of the specified sequence or `switchTo` sequence if the sequence is empty.
+
+     - seealso: [DefaultIfEmpty operator on reactivex.io](http://reactivex.io/documentation/operators/defaultifempty.html)
+
+     - parameter switchTo: Observable sequence being returned when source sequence is empty.
+     - returns: Observable sequence that contains elements from switchTo sequence if source is empty, otherwise returns source sequence elements.
+     */
+    public func ifEmpty(switchTo other: Single<ElementType>) -> Single<ElementType> {
+        return Single(raw: self.primitiveSequence.source.ifEmpty(switchTo: other.primitiveSequence.source))
+    }
+
+    /**
+     Continues an observable sequence that is terminated by an error with a single element.
+
+     - seealso: [catch operator on reactivex.io](http://reactivex.io/documentation/operators/catch.html)
+
+     - parameter element: Last element in an observable sequence in case error occurs.
+     - returns: An observable sequence containing the source sequence's elements, followed by the `element` in case an error occurred.
+     */
+    public func catchErrorJustReturn(_ element: ElementType)
+        -> PrimitiveSequence<TraitType, ElementType> {
+        return PrimitiveSequence(raw: self.primitiveSequence.source.catchErrorJustReturn(element))
     }
 }

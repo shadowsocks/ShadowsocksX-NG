@@ -19,7 +19,7 @@ public protocol ControlPropertyType : ObservableType, ObserverType {
     Trait for `Observable`/`ObservableType` that represents property of UI element.
  
     Sequence of values only represents initial control value and user initiated value changes.
-    Programatic value changes won't be reported.
+    Programmatic value changes won't be reported.
 
     It's properties are:
 
@@ -54,37 +54,35 @@ public struct ControlProperty<PropertyType> : ControlPropertyType {
     /// - returns: Control property created with a observable sequence of values and an observer that enables binding values
     /// to property.
     public init<V: ObservableType, S: ObserverType>(values: V, valueSink: S) where E == V.E, E == S.E {
-        _values = values.subscribeOn(ConcurrentMainScheduler.instance)
-        _valueSink = valueSink.asObserver()
+        self._values = values.subscribeOn(ConcurrentMainScheduler.instance)
+        self._valueSink = valueSink.asObserver()
     }
 
     /// Subscribes an observer to control property values.
     ///
     /// - parameter observer: Observer to subscribe to property values.
     /// - returns: Disposable object that can be used to unsubscribe the observer from receiving control property values.
-    public func subscribe<O : ObserverType>(_ observer: O) -> Disposable where O.E == E {
-        return _values.subscribe(observer)
+    public func subscribe<O: ObserverType>(_ observer: O) -> Disposable where O.E == E {
+        return self._values.subscribe(observer)
     }
 
     /// `ControlEvent` of user initiated value changes. Every time user updates control value change event
     /// will be emitted from `changed` event.
     ///
-    /// Programatic changes to control value won't be reported.
+    /// Programmatic changes to control value won't be reported.
     ///
     /// It contains all control property values except for first one.
     ///
     /// The name only implies that sequence element will be generated once user changes a value and not that
-    /// adjacent sequence values need to be different (e.g. because of interaction between programatic and user updates,
+    /// adjacent sequence values need to be different (e.g. because of interaction between programmatic and user updates,
     /// or for any other reason).
     public var changed: ControlEvent<PropertyType> {
-        get {
-            return ControlEvent(events: _values.skip(1))
-        }
+        return ControlEvent(events: self._values.skip(1))
     }
 
     /// - returns: `Observable` interface.
     public func asObservable() -> Observable<E> {
-        return _values
+        return self._values
     }
 
     /// - returns: `ControlProperty` interface.
@@ -102,9 +100,9 @@ public struct ControlProperty<PropertyType> : ControlPropertyType {
         case .error(let error):
             bindingError(error)
         case .next:
-            _valueSink.on(event)
+            self._valueSink.on(event)
         case .completed:
-            _valueSink.on(event)
+            self._valueSink.on(event)
         }
     }
 }

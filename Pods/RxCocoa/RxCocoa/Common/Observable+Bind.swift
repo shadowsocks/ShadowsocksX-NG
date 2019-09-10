@@ -47,7 +47,7 @@ extension ObservableType {
      - returns: Disposable object that can be used to unsubscribe the observer.
      */
     public func bind(to relay: PublishRelay<E>) -> Disposable {
-        return subscribe { e in
+        return self.subscribe { e in
             switch e {
             case let .next(element):
                 relay.accept(element)
@@ -82,7 +82,7 @@ extension ObservableType {
      - returns: Disposable object that can be used to unsubscribe the observer.
      */
     public func bind(to relay: BehaviorRelay<E>) -> Disposable {
-        return subscribe { e in
+        return self.subscribe { e in
             switch e {
             case let .next(element):
                 relay.accept(element)
@@ -144,7 +144,7 @@ extension ObservableType {
     - returns: Subscription object used to unsubscribe from the observable sequence.
     */
     public func bind(onNext: @escaping (E) -> Void) -> Disposable {
-        return subscribe(onNext: onNext, onError: { error in
+        return self.subscribe(onNext: onNext, onError: { error in
             rxFatalErrorInDebug("Binding error: \(error)")
         })
     }

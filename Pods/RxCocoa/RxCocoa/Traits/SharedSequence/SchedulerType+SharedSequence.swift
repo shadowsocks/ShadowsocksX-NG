@@ -18,7 +18,7 @@ public enum SharingScheduler {
 
      **This shouldn't be used in normal release builds.**
     */
-    static public func mock(scheduler: SchedulerType, action: () -> ()) {
+    static public func mock(scheduler: SchedulerType, action: () -> Void) {
         return mock(makeScheduler: { scheduler }, action: action)
     }
 
@@ -28,7 +28,7 @@ public enum SharingScheduler {
 
      **This shouldn't be used in normal release builds.**
      */
-    static public func mock(makeScheduler: @escaping () -> SchedulerType, action: () -> ()) {
+    static public func mock(makeScheduler: @escaping () -> SchedulerType, action: () -> Void) {
         let originalMake = make
         make = makeScheduler
 

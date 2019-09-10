@@ -22,7 +22,7 @@ extension ObservableType {
     }
 }
 
-final fileprivate class StartWith<Element>: Producer<Element> {
+final private class StartWith<Element>: Producer<Element> {
     let elements: [Element]
     let source: Observable<Element>
 
@@ -32,11 +32,11 @@ final fileprivate class StartWith<Element>: Producer<Element> {
         super.init()
     }
 
-    override func run<O : ObserverType>(_ observer: O, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where O.E == Element {
-        for e in elements {
+    override func run<O: ObserverType>(_ observer: O, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where O.E == Element {
+        for e in self.elements {
             observer.on(.next(e))
         }
 
-        return (sink: Disposables.create(), subscription: source.subscribe(observer))
+        return (sink: Disposables.create(), subscription: self.source.subscribe(observer))
     }
 }

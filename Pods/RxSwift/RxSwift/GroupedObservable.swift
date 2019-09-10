@@ -32,6 +32,6 @@ public struct GroupedObservable<Key, Element> : ObservableType {
 
     /// Converts `self` to `Observable` sequence. 
     public func asObservable() -> Observable<Element> {
-        return source
+        return self.source
     }
 }

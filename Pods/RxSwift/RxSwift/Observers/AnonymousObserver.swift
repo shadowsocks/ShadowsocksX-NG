@@ -15,18 +15,18 @@ final class AnonymousObserver<ElementType> : ObserverBase<ElementType> {
     
     init(_ eventHandler: @escaping EventHandler) {
 #if TRACE_RESOURCES
-        let _ = Resources.incrementTotal()
+        _ = Resources.incrementTotal()
 #endif
-        _eventHandler = eventHandler
+        self._eventHandler = eventHandler
     }
 
     override func onCore(_ event: Event<Element>) {
-        return _eventHandler(event)
+        return self._eventHandler(event)
     }
     
 #if TRACE_RESOURCES
     deinit {
-        let _ = Resources.decrementTotal()
+        _ = Resources.decrementTotal()
     }
 #endif
 }

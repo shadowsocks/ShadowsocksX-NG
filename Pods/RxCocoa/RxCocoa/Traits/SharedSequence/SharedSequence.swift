@@ -49,7 +49,7 @@ public struct SharedSequence<S: SharingStrategyProtocol, Element> : SharedSequen
     - returns: Built observable sequence.
     */
     public func asObservable() -> Observable<E> {
-        return _source
+        return self._source
     }
 
     /**
@@ -93,7 +93,7 @@ public protocol SharedSequenceConvertibleType : ObservableConvertibleType {
 
 extension SharedSequenceConvertibleType {
     public func asObservable() -> Observable<E> {
-        return asSharedSequence().asObservable()
+        return self.asSharedSequence().asObservable()
     }
 }
 

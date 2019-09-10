@@ -10,26 +10,26 @@ fileprivate final class AsMaybeSink<O: ObserverType> : Sink<O>, ObserverType {
     typealias ElementType = O.E
     typealias E = ElementType
 
-    private var _element: Event<E>? = nil
+    private var _element: Event<E>?
 
     func on(_ event: Event<E>) {
         switch event {
         case .next:
-            if _element != nil {
-                forwardOn(.error(RxError.moreThanOneElement))
-                dispose()
+            if self._element != nil {
+                self.forwardOn(.error(RxError.moreThanOneElement))
+                self.dispose()
             }
 
-            _element = event
+            self._element = event
         case .error:
-            forwardOn(event)
-            dispose()
+            self.forwardOn(event)
+            self.dispose()
         case .completed:
-            if let element = _element {
-                forwardOn(element)
+            if let element = self._element {
+                self.forwardOn(element)
             }
-            forwardOn(.completed)
-            dispose()
+            self.forwardOn(.completed)
+            self.dispose()
         }
     }
 }
@@ -38,12 +38,12 @@ final class AsMaybe<Element>: Producer<Element> {
     fileprivate let _source: Observable<Element>
 
     init(source: Observable<Element>) {
-        _source = source
+        self._source = source
     }
 
     override func run<O : ObserverType>(_ observer: O, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where O.E == Element {
         let sink = AsMaybeSink(observer: observer, cancel: cancel)
-        let subscription = _source.subscribe(sink)
+        let subscription = self._source.subscribe(sink)
         return (sink: sink, subscription: subscription)
     }
 }

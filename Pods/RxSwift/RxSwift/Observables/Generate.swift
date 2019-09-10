@@ -24,7 +24,7 @@ extension ObservableType {
     }
 }
 
-final fileprivate class GenerateSink<S, O: ObserverType> : Sink<O> {
+final private class GenerateSink<S, O: ObserverType>: Sink<O> {
     typealias Parent = Generate<S, O.E>
     
     private let _parent: Parent
@@ -32,13 +32,13 @@ final fileprivate class GenerateSink<S, O: ObserverType> : Sink<O> {
     private var _state: S
     
     init(parent: Parent, observer: O, cancel: Cancelable) {
-        _parent = parent
-        _state = parent._initialState
+        self._parent = parent
+        self._state = parent._initialState
         super.init(observer: observer, cancel: cancel)
     }
     
     func run() -> Disposable {
-        return _parent._scheduler.scheduleRecursive(true) { (isFirst, recurse) -> Void in
+        return self._parent._scheduler.scheduleRecursive(true) { isFirst, recurse -> Void in
             do {
                 if !isFirst {
                     self._state = try self._parent._iterate(self._state)
@@ -63,7 +63,7 @@ final fileprivate class GenerateSink<S, O: ObserverType> : Sink<O> {
     }
 }
 
-final fileprivate class Generate<S, E> : Producer<E> {
+final private class Generate<S, E>: Producer<E> {
     fileprivate let _initialState: S
     fileprivate let _condition: (S) throws -> Bool
     fileprivate let _iterate: (S) throws -> S
@@ -71,11 +71,11 @@ final fileprivate class Generate<S, E> : Producer<E> {
     fileprivate let _scheduler: ImmediateSchedulerType
     
     init(initialState: S, condition: @escaping (S) throws -> Bool, iterate: @escaping (S) throws -> S, resultSelector: @escaping (S) throws -> E, scheduler: ImmediateSchedulerType) {
-        _initialState = initialState
-        _condition = condition
-        _iterate = iterate
-        _resultSelector = resultSelector
-        _scheduler = scheduler
+        self._initialState = initialState
+        self._condition = condition
+        self._iterate = iterate
+        self._resultSelector = resultSelector
+        self._scheduler = scheduler
         super.init()
     }
     

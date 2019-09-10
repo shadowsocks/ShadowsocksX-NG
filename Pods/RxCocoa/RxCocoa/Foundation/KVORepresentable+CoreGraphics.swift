@@ -17,7 +17,7 @@ import class Foundation.NSValue
 	let CGRectType = "{CGRect={CGPoint=dd}{CGSize=dd}}"
     let CGSizeType = "{CGSize=dd}"
     let CGPointType = "{CGPoint=dd}"
-#elseif arch(i386) || arch(arm)
+#elseif arch(i386) || arch(arm) || arch(arm64_32)
     let CGRectType = "{CGRect={CGPoint=ff}{CGSize=ff}}"
     let CGSizeType = "{CGSize=ff}"
     let CGPointType = "{CGPoint=ff}"

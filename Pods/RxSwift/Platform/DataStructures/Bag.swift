@@ -25,7 +25,7 @@ Data structure that represents a bag of elements typed `T`.
 
 Single element can be stored multiple times.
 
-Time and space complexity of insertion an deletion is O(n). 
+Time and space complexity of insertion and deletion is O(n). 
 
 It is suitable for storing small number of elements.
 */
@@ -40,14 +40,14 @@ struct Bag<T> : CustomDebugStringConvertible {
     // data
 
     // first fill inline variables
-    var _key0: BagKey? = nil
-    var _value0: T? = nil
+    var _key0: BagKey?
+    var _value0: T?
 
     // then fill "array dictionary"
     var _pairs = ContiguousArray<Entry>()
 
     // last is sparse dictionary
-    var _dictionary: [BagKey : T]? = nil
+    var _dictionary: [BagKey: T]?
 
     var _onlyFastPath = true
 
@@ -122,12 +122,10 @@ struct Bag<T> : CustomDebugStringConvertible {
             return existingObject
         }
 
-        for i in 0 ..< _pairs.count {
-            if _pairs[i].key == key {
-                let value = _pairs[i].value
-                _pairs.remove(at: i)
-                return value
-            }
+        for i in 0 ..< _pairs.count where _pairs[i].key == key {
+            let value = _pairs[i].value
+            _pairs.remove(at: i)
+            return value
         }
 
         return nil
@@ -173,9 +171,15 @@ extension Bag {
 }
 
 extension BagKey: Hashable {
+    #if swift(>=4.2)
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(rawValue)
+    }
+    #else
     var hashValue: Int {
         return rawValue.hashValue
     }
+    #endif
 }
 
 func ==(lhs: BagKey, rhs: BagKey) -> Bool {

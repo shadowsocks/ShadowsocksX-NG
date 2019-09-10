@@ -76,9 +76,9 @@ extension ObservableType {
     }
 }
 
-final fileprivate class ConcatSink<S: Sequence, O: ObserverType>
+final private class ConcatSink<S: Sequence, O: ObserverType>
     : TailRecursiveSink<S, O>
-    , ObserverType where S.Iterator.Element : ObservableConvertibleType, S.Iterator.Element.E == O.E {
+    , ObserverType where S.Iterator.Element: ObservableConvertibleType, S.Iterator.Element.E == O.E {
     typealias Element = O.E
     
     override init(observer: O, cancel: Cancelable) {
@@ -88,12 +88,12 @@ final fileprivate class ConcatSink<S: Sequence, O: ObserverType>
     func on(_ event: Event<Element>){
         switch event {
         case .next:
-            forwardOn(event)
+            self.forwardOn(event)
         case .error:
-            forwardOn(event)
-            dispose()
+            self.forwardOn(event)
+            self.dispose()
         case .completed:
-            schedule(.moveNext)
+            self.schedule(.moveNext)
         }
     }
 
@@ -111,20 +111,20 @@ final fileprivate class ConcatSink<S: Sequence, O: ObserverType>
     }
 }
 
-final fileprivate class Concat<S: Sequence> : Producer<S.Iterator.Element.E> where S.Iterator.Element : ObservableConvertibleType {
+final private class Concat<S: Sequence>: Producer<S.Iterator.Element.E> where S.Iterator.Element: ObservableConvertibleType {
     typealias Element = S.Iterator.Element.E
     
     fileprivate let _sources: S
     fileprivate let _count: IntMax?
 
     init(sources: S, count: IntMax?) {
-        _sources = sources
-        _count = count
+        self._sources = sources
+        self._count = count
     }
     
     override func run<O: ObserverType>(_ observer: O, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where O.E == Element {
         let sink = ConcatSink<S, O>(observer: observer, cancel: cancel)
-        let subscription = sink.run((_sources.makeIterator(), _count))
+        let subscription = sink.run((self._sources.makeIterator(), self._count))
         return (sink: sink, subscription: subscription)
     }
 }

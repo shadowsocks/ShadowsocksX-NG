@@ -21,7 +21,7 @@ import Dispatch
         fileprivate static let instance = "RxSwift.CurrentThreadScheduler.Queue"
     }
 #else
-    fileprivate class CurrentThreadSchedulerQueueKey: NSObject, NSCopying {
+    private class CurrentThreadSchedulerQueueKey: NSObject, NSCopying {
         static let instance = CurrentThreadSchedulerQueueKey()
         private override init() {
             super.init()
@@ -51,7 +51,11 @@ public class CurrentThreadScheduler : ImmediateSchedulerType {
     private static var isScheduleRequiredKey: pthread_key_t = { () -> pthread_key_t in
         let key = UnsafeMutablePointer<pthread_key_t>.allocate(capacity: 1)
         defer {
+#if swift(>=4.1)
+            key.deallocate()
+#else
             key.deallocate(capacity: 1)
+#endif
         }
                                                                
         guard pthread_key_create(key, nil) == 0 else {

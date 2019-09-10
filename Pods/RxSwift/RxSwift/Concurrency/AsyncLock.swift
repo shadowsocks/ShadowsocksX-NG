@@ -31,45 +31,45 @@ final class AsyncLock<I: InvocableType>
 
     // lock {
     func lock() {
-        _lock.lock()
+        self._lock.lock()
     }
 
     func unlock() {
-        _lock.unlock()
+        self._lock.unlock()
     }
     // }
 
     private func enqueue(_ action: I) -> I? {
-        _lock.lock(); defer { _lock.unlock() } // {
-            if _hasFaulted {
+        self._lock.lock(); defer { self._lock.unlock() } // {
+            if self._hasFaulted {
                 return nil
             }
 
-            if _isExecuting {
-                _queue.enqueue(action)
+            if self._isExecuting {
+                self._queue.enqueue(action)
                 return nil
             }
 
-            _isExecuting = true
+            self._isExecuting = true
 
             return action
         // }
     }
 
     private func dequeue() -> I? {
-        _lock.lock(); defer { _lock.unlock() } // {
-            if _queue.count > 0 {
-                return _queue.dequeue()
+        self._lock.lock(); defer { self._lock.unlock() } // {
+            if !self._queue.isEmpty {
+                return self._queue.dequeue()
             }
             else {
-                _isExecuting = false
+                self._isExecuting = false
                 return nil
             }
         // }
     }
 
     func invoke(_ action: I) {
-        let firstEnqueuedAction = enqueue(action)
+        let firstEnqueuedAction = self.enqueue(action)
         
         if let firstEnqueuedAction = firstEnqueuedAction {
             firstEnqueuedAction.invoke()
@@ -80,7 +80,7 @@ final class AsyncLock<I: InvocableType>
         }
         
         while true {
-            let nextAction = dequeue()
+            let nextAction = self.dequeue()
 
             if let nextAction = nextAction {
                 nextAction.invoke()
@@ -92,11 +92,11 @@ final class AsyncLock<I: InvocableType>
     }
     
     func dispose() {
-        synchronizedDispose()
+        self.synchronizedDispose()
     }
 
     func _synchronized_dispose() {
-        _queue = Queue(capacity: 0)
-        _hasFaulted = true
+        self._queue = Queue(capacity: 0)
+        self._hasFaulted = true
     }
 }

@@ -38,8 +38,14 @@ public class SerialDispatchQueueScheduler : SchedulerType {
 
     let configuration: DispatchQueueConfiguration
     
+    /**
+    Constructs new `SerialDispatchQueueScheduler` that wraps `serialQueue`.
+
+    - parameter serialQueue: Target dispatch queue.
+    - parameter leeway: The amount of time, in nanoseconds, that the system will defer the timer.
+    */
     init(serialQueue: DispatchQueue, leeway: DispatchTimeInterval = DispatchTimeInterval.nanoseconds(0)) {
-        configuration = DispatchQueueConfiguration(queue: serialQueue, leeway: leeway)
+        self.configuration = DispatchQueueConfiguration(queue: serialQueue, leeway: leeway)
     }
 
     /**
@@ -49,6 +55,7 @@ public class SerialDispatchQueueScheduler : SchedulerType {
     
     - parameter internalSerialQueueName: Name of internal serial dispatch queue.
     - parameter serialQueueConfiguration: Additional configuration of internal serial dispatch queue.
+    - parameter leeway: The amount of time, in nanoseconds, that the system will defer the timer.
     */
     public convenience init(internalSerialQueueName: String, serialQueueConfiguration: ((DispatchQueue) -> Void)? = nil, leeway: DispatchTimeInterval = DispatchTimeInterval.nanoseconds(0)) {
         let queue = DispatchQueue(label: internalSerialQueueName, attributes: [])
@@ -61,6 +68,7 @@ public class SerialDispatchQueueScheduler : SchedulerType {
     
     - parameter queue: Possibly concurrent dispatch queue used to perform work.
     - parameter internalSerialQueueName: Name of internal serial dispatch queue proxy.
+    - parameter leeway: The amount of time, in nanoseconds, that the system will defer the timer.
     */
     public convenience init(queue: DispatchQueue, internalSerialQueueName: String, leeway: DispatchTimeInterval = DispatchTimeInterval.nanoseconds(0)) {
         // Swift 3.0 IUO
@@ -75,6 +83,7 @@ public class SerialDispatchQueueScheduler : SchedulerType {
      
      - parameter qos: Identifier for global dispatch queue with specified quality of service class.
      - parameter internalSerialQueueName: Custom name for internal serial dispatch queue proxy.
+     - parameter leeway: The amount of time, in nanoseconds, that the system will defer the timer.
      */
     @available(iOS 8, OSX 10.10, *)
     public convenience init(qos: DispatchQoS, internalSerialQueueName: String = "rx.global_dispatch_queue.serial", leeway: DispatchTimeInterval = DispatchTimeInterval.nanoseconds(0)) {
