@@ -12,6 +12,18 @@ extension String {
     var localized: String {
         return NSLocalizedString(self, tableName: nil, bundle: Bundle.main, value: "", comment: "")
     }
+    
+    func jsonDictionaryArray() -> [[String: Any]]? {
+        if let data = data(using: .utf8) {
+            do {
+                return try JSONSerialization.jsonObject(with: data, options: []) as? [[String:Any]]
+            } catch let error as NSError {
+                print(error)
+            }
+        }
+        
+        return nil
+    }
 }
 
 extension Data {
@@ -21,6 +33,19 @@ extension Data {
         CC_SHA1((data as NSData).bytes, CC_LONG(data.count), &digest)
         let hexBytes = digest.map { String(format: "%02hhx", $0) }
         return hexBytes.joined(separator: "")
+    }
+}
+
+extension Collection where Iterator.Element == [String: Any] {
+    func toJSONString(options: JSONSerialization.WritingOptions = .prettyPrinted) -> String {
+        if let array = self as? [[String: Any]],
+            let data = try? JSONSerialization.data(withJSONObject: array, options: options),
+            let string = String(data: data, encoding: String.Encoding.utf8) {
+            
+            return string
+        }
+        
+        return "[]"
     }
 }
 

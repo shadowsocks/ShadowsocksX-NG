@@ -11,6 +11,7 @@
 		1C82DBA81FA96C7500B32551 /* obfs-local in Resources */ = {isa = PBXBuildFile; fileRef = 1C82DBA51FA96C7400B32551 /* obfs-local */; };
 		1C82DBAA1FA96FB600B32551 /* install_simple_obfs.sh in Resources */ = {isa = PBXBuildFile; fileRef = 1C82DBA91FA96F0300B32551 /* install_simple_obfs.sh */; };
 		258E511BA910B0521B24DAB8 /* Pods_ShadowsocksX_NG.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 283ED1A8E9B711AC65670031 /* Pods_ShadowsocksX_NG.framework */; };
+		2CC36EB3222E14FA00D8A8F0 /* CloudKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2CC36EB2222E14FA00D8A8F0 /* CloudKit.framework */; };
 		9B07EFA71D048BBB0052D9DF /* ss-local in Resources */ = {isa = PBXBuildFile; fileRef = 9B07EFA61D048BBB0052D9DF /* ss-local */; };
 		9B07EFAC1D048E880052D9DF /* menu_icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B07EFA81D048E880052D9DF /* menu_icon@2x.png */; };
 		9B07EFAD1D048E880052D9DF /* menu_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B07EFA91D048E880052D9DF /* menu_icon.png */; };
@@ -147,6 +148,8 @@
 		1E7783AEDB4A3BDDC9FF16AC /* libPods-proxy_conf_helper.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-proxy_conf_helper.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		283ED1A8E9B711AC65670031 /* Pods_ShadowsocksX_NG.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ShadowsocksX_NG.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		297AF069022A197FD8E9D226 /* Pods-proxy_conf_helper.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-proxy_conf_helper.release.xcconfig"; path = "Pods/Target Support Files/Pods-proxy_conf_helper/Pods-proxy_conf_helper.release.xcconfig"; sourceTree = "<group>"; };
+		2CC36EB1222E14D000D8A8F0 /* ShadowsocksX-NG.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "ShadowsocksX-NG.entitlements"; sourceTree = "<group>"; };
+		2CC36EB2222E14FA00D8A8F0 /* CloudKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CloudKit.framework; path = System/Library/Frameworks/CloudKit.framework; sourceTree = SDKROOT; };
 		388120F062D7EB7DD0D8DDCA /* Pods_ShadowsocksX_NGTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ShadowsocksX_NGTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		3AC7CD9886196A997D6FC78D /* Pods-ShadowsocksX-NGTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ShadowsocksX-NGTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-ShadowsocksX-NGTests/Pods-ShadowsocksX-NGTests.release.xcconfig"; sourceTree = "<group>"; };
 		50D54926AA21B0D4D8DD9C4F /* Pods-ShadowsocksX-NGUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ShadowsocksX-NGUITests.release.xcconfig"; path = "Pods/Target Support Files/Pods-ShadowsocksX-NGUITests/Pods-ShadowsocksX-NGUITests.release.xcconfig"; sourceTree = "<group>"; };
@@ -263,6 +266,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				9B6BF9541E27B2570061B9A7 /* ServiceManagement.framework in Frameworks */,
+				2CC36EB3222E14FA00D8A8F0 /* CloudKit.framework in Frameworks */,
 				9B3FFF3E1D08D9910019A709 /* SystemConfiguration.framework in Frameworks */,
 				258E511BA910B0521B24DAB8 /* Pods_ShadowsocksX_NG.framework in Frameworks */,
 			);
@@ -375,6 +379,7 @@
 		9B0BFFE71D0460A70040E62B /* ShadowsocksX-NG */ = {
 			isa = PBXGroup;
 			children = (
+				2CC36EB1222E14D000D8A8F0 /* ShadowsocksX-NG.entitlements */,
 				9BB706A51D1B982300551F0E /* SWBApplication.m */,
 				9BB706A61D1B982300551F0E /* SWBApplication.h */,
 				9B3FFF511D09DBA20019A709 /* ShadowsocksX-NG-Bridging-Header.h */,
@@ -503,6 +508,7 @@
 		D3CE66CC039F651F28057DDB /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				2CC36EB2222E14FA00D8A8F0 /* CloudKit.framework */,
 				9B6BF9531E27B2570061B9A7 /* ServiceManagement.framework */,
 				9B3FFF3D1D08D9910019A709 /* SystemConfiguration.framework */,
 				9B3FFF3B1D08D93B0019A709 /* WebKit.framework */,
@@ -592,6 +598,15 @@
 					9B0BFFE41D0460A70040E62B = {
 						CreatedOnToolsVersion = 7.3.1;
 						LastSwiftMigration = 0900;
+						ProvisioningStyle = Automatic;
+						SystemCapabilities = {
+							com.apple.Push = {
+								enabled = 1;
+							};
+							com.apple.iCloud = {
+								enabled = 1;
+							};
+						};
 					};
 					9B0BFFF31D0460A70040E62B = {
 						CreatedOnToolsVersion = 7.3.1;
@@ -600,6 +615,7 @@
 					};
 					9B3FFF431D09CD3B0019A709 = {
 						CreatedOnToolsVersion = 7.3.1;
+						ProvisioningStyle = Manual;
 					};
 				};
 			};
@@ -1086,7 +1102,11 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = "ShadowsocksX-NG/ShadowsocksX-NG.entitlements";
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = "";
 				HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/libcork/include/",
 					"$(SRCROOT)/libipset/include/",
@@ -1102,6 +1122,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.qiuyuzhou.ShadowsocksX-NG";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "ShadowsocksX-NG/ShadowsocksX-NG-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
@@ -1116,7 +1137,11 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = "ShadowsocksX-NG/ShadowsocksX-NG.entitlements";
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = "";
 				HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/libcork/include/",
 					"$(SRCROOT)/libipset/include/",
@@ -1132,6 +1157,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.qiuyuzhou.ShadowsocksX-NG";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "ShadowsocksX-NG/ShadowsocksX-NG-Bridging-Header.h";
 				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
 				SWIFT_VERSION = 4.0;
