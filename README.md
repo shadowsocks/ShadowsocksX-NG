@@ -1,8 +1,8 @@
 # ShadowsocksX-NG
 
-Current version is [v1.9.2](https://github.com/shadowsocks/ShadowsocksX-NG/releases/tag/v1.9.1)
+Current version is [v1.9.2](https://github.com/shadowsocks/ShadowsocksX-NG/releases/tag/v1.9.2)
 
-[![Build Status](https://travis-ci.org/shadowsocks/ShadowsocksX-NG.svg?branch=develop)](https://travis-ci.org/shadowsocks/ShadowsocksX-NG)
+[![Actions Status](https://github.com/shadowsocks/ShadowsocksX-NG/workflows/main/badge.svg)](https://github.com/shadowsocks/ShadowsocksX-NG/actions)
 
 Next Generation of [ShadowsocksX](https://github.com/shadowsocks/shadowsocks-iOS)
 
