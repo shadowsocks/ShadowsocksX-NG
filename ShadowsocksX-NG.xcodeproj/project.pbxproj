@@ -169,7 +169,7 @@
 		9B16E5991F99FD0700E54DC5 /* icons8-Blind Filled-50.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icons8-Blind Filled-50.png"; sourceTree = "<group>"; };
 		9B172A601D0ADA5B00B87B9A /* genstrings.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = genstrings.py; sourceTree = "<group>"; };
 		9B172A6B1D0ADDDD00B87B9A /* Base */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Base; path = Base.lproj/Localizable.strings; sourceTree = "<group>"; };
-		9B172A6D1D0ADDE800B87B9A /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		9B172A6D1D0ADDE800B87B9A /* zh-Hans */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		9B2080482326AC460075386C /* kcptun.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = kcptun.sh; sourceTree = "<group>"; };
 		9B2080492326AC460075386C /* client */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = client; sourceTree = "<group>"; };
 		9B2491B51D0ACC3A003BBECC /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/PreferencesWindowController.xib; sourceTree = "<group>"; };
@@ -610,7 +610,6 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
-				English,
 				en,
 				Base,
 				"zh-Hans",

@@ -404,7 +404,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     
     @IBAction func exportDiagnosis(_ sender: NSMenuItem) {
         let savePanel = NSSavePanel()
-        savePanel.title = "Save All Server URLs To File".localized
+        savePanel.title = "Save Diagnosis to File".localized
         savePanel.canCreateDirectories = true
         savePanel.allowedFileTypes = ["txt"]
         savePanel.isExtensionHidden = false
@@ -438,7 +438,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         let defaults = UserDefaults.standard
         let mode = defaults.string(forKey: "ShadowsocksRunningMode")
         
-        var serverMenuText = "Servers".localized
+        var serverMenuText = "Servers - (No Selected)".localized
 
         let mgr = ServerProfileManager.instance
         for p in mgr.profiles {
@@ -449,7 +449,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                 } else {
                     profileName = p.serverHost
                 }
-                serverMenuText = "\(serverMenuText) - \(profileName)"
+                serverMenuText = "Servers".localized + " - \(profileName)"
+                break
             }
         }
         serversMenuItem.title = serverMenuText
@@ -581,22 +582,25 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             let urls: [URL] = userInfo["urls"] as! [URL]
             
             let mgr = ServerProfileManager.instance
-            
-            var subtitle: String = ""
-            if userInfo["source"] as! String == "qrcode" {
-                subtitle = "By scan QR Code".localized
-            } else if userInfo["source"] as! String == "url" {
-                subtitle = "By handle SS URL".localized
-            } else if userInfo["source"] as! String == "pasteboard" {
-                subtitle = "By import from pasteboard".localized
-            }
-            
             let addCount = mgr.addServerProfileByURL(urls: urls)
             
             if addCount > 0 {
+                var subtitle: String = ""
+                if userInfo["source"] as! String == "qrcode" {
+                    subtitle = "By scan QR Code".localized
+                } else if userInfo["source"] as! String == "url" {
+                    subtitle = "By handle SS URL".localized
+                } else if userInfo["source"] as! String == "pasteboard" {
+                    subtitle = "By import from pasteboard".localized
+                }
+                
                 sendNotify("Add \(addCount) Shadowsocks Server Profile".localized, subtitle, "")
             } else {
-                sendNotify("", "", "Not found valid qrcode or url of shadowsocks profile".localized)
+                if userInfo["source"] as! String == "qrcode" {
+                    sendNotify("", "", "Not found valid QRCode of shadowsocks profile".localized)
+                } else if userInfo["source"] as! String == "url" {
+                    sendNotify("", "", "Not found valid URL of shadowsocks profile".localized)
+                }
             }
         }
     }
