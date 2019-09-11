@@ -67,6 +67,7 @@
 		9BAA663423295FAC00F5CC99 /* menu_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 9BAA662423295FAB00F5CC99 /* menu_icon.png */; };
 		9BAA663523295FAC00F5CC99 /* virtual-server-icon-3.png in Resources */ = {isa = PBXBuildFile; fileRef = 9BAA662523295FAB00F5CC99 /* virtual-server-icon-3.png */; };
 		9BAA663623295FAC00F5CC99 /* menu_g_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 9BAA662623295FAB00F5CC99 /* menu_g_icon.png */; };
+		9BAA66382329636200F5CC99 /* user-privoxy.config in Resources */ = {isa = PBXBuildFile; fileRef = 9BAA66372329636200F5CC99 /* user-privoxy.config */; };
 		9BAFE2E21E83ED7F00F71CCE /* PreferencesWinController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9BAFE2E41E83ED7F00F71CCE /* PreferencesWinController.xib */; };
 		9BB706A71D1B982300551F0E /* SWBApplication.m in Sources */ = {isa = PBXBuildFile; fileRef = 9BB706A51D1B982300551F0E /* SWBApplication.m */; };
 		9BBE7B751F508A0E00E8FFE5 /* fix_dir_owner.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9BBE7B711F50790500E8FFE5 /* fix_dir_owner.sh */; };
@@ -86,7 +87,7 @@
 		C6D429941DA75988002A5711 /* privoxy in Resources */ = {isa = PBXBuildFile; fileRef = C6D4298F1DA75988002A5711 /* privoxy */; };
 		C6D429961DA75988002A5711 /* start_privoxy.sh in Resources */ = {isa = PBXBuildFile; fileRef = C6D429911DA75988002A5711 /* start_privoxy.sh */; };
 		C6D429971DA75988002A5711 /* stop_privoxy.sh in Resources */ = {isa = PBXBuildFile; fileRef = C6D429921DA75988002A5711 /* stop_privoxy.sh */; };
-		C6D429991DA76FBC002A5711 /* privoxy.config.example in Resources */ = {isa = PBXBuildFile; fileRef = C6D429981DA76FBC002A5711 /* privoxy.config.example */; };
+		C6D429991DA76FBC002A5711 /* privoxy.template.config in Resources */ = {isa = PBXBuildFile; fileRef = C6D429981DA76FBC002A5711 /* privoxy.template.config */; };
 		C8E42A6C1D4F270A0074C7EA /* UserRulesController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8E42A6A1D4F270A0074C7EA /* UserRulesController.swift */; };
 		C8E42A6E1D4F2CAF0074C7EA /* UserRulesController.xib in Resources */ = {isa = PBXBuildFile; fileRef = C8E42A701D4F2CAF0074C7EA /* UserRulesController.xib */; };
 		D8E3630B1E2072980027449B /* ServerProfileTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8E3630A1E2072980027449B /* ServerProfileTests.swift */; };
@@ -230,6 +231,7 @@
 		9BAA662423295FAB00F5CC99 /* menu_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = menu_icon.png; sourceTree = "<group>"; };
 		9BAA662523295FAB00F5CC99 /* virtual-server-icon-3.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "virtual-server-icon-3.png"; sourceTree = "<group>"; };
 		9BAA662623295FAB00F5CC99 /* menu_g_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = menu_g_icon.png; sourceTree = "<group>"; };
+		9BAA66372329636200F5CC99 /* user-privoxy.config */ = {isa = PBXFileReference; lastKnownFileType = text; path = "user-privoxy.config"; sourceTree = "<group>"; };
 		9BAFE2E31E83ED7F00F71CCE /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/PreferencesWinController.xib; sourceTree = "<group>"; };
 		9BAFE2E91E83EDDF00F71CCE /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/PreferencesWinController.strings"; sourceTree = "<group>"; };
 		9BAFE2EB1E83F91D00F71CCE /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/MainMenu.strings"; sourceTree = "<group>"; };
@@ -251,7 +253,7 @@
 		C6D4298F1DA75988002A5711 /* privoxy */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = privoxy; sourceTree = "<group>"; };
 		C6D429911DA75988002A5711 /* start_privoxy.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = start_privoxy.sh; sourceTree = "<group>"; };
 		C6D429921DA75988002A5711 /* stop_privoxy.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = stop_privoxy.sh; sourceTree = "<group>"; };
-		C6D429981DA76FBC002A5711 /* privoxy.config.example */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = privoxy.config.example; sourceTree = "<group>"; };
+		C6D429981DA76FBC002A5711 /* privoxy.template.config */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = privoxy.template.config; sourceTree = "<group>"; };
 		C8E42A6A1D4F270A0074C7EA /* UserRulesController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UserRulesController.swift; sourceTree = "<group>"; };
 		C8E42A6F1D4F2CAF0074C7EA /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/UserRulesController.xib; sourceTree = "<group>"; };
 		C8E42A721D4F2CB10074C7EA /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/UserRulesController.strings"; sourceTree = "<group>"; };
@@ -453,7 +455,8 @@
 		9B5AA0AA209C42A900E8B659 /* privoxy */ = {
 			isa = PBXGroup;
 			children = (
-				C6D429981DA76FBC002A5711 /* privoxy.config.example */,
+				C6D429981DA76FBC002A5711 /* privoxy.template.config */,
+				9BAA66372329636200F5CC99 /* user-privoxy.config */,
 				C6D4298F1DA75988002A5711 /* privoxy */,
 				C6D4298E1DA75988002A5711 /* install_privoxy.sh */,
 				C6D429911DA75988002A5711 /* start_privoxy.sh */,
@@ -660,6 +663,7 @@
 				9BCB1D6C20A15B0E005BABE7 /* libsodium.23.dylib in Resources */,
 				9BCB1D6D20A15B0E005BABE7 /* libcares.2.dylib in Resources */,
 				9BBE7B751F508A0E00E8FFE5 /* fix_dir_owner.sh in Resources */,
+				9BAA66382329636200F5CC99 /* user-privoxy.config in Resources */,
 				9B3F7BFF1E82BF5B00C68B75 /* libev.4.dylib in Resources */,
 				9BAA662D23295FAC00F5CC99 /* icons8-Blind Filled-50.png in Resources */,
 				9BAA663623295FAC00F5CC99 /* menu_g_icon.png in Resources */,
@@ -683,7 +687,7 @@
 				9B3546731E802B1200B510B4 /* ToastWindowController.xib in Resources */,
 				9BAA662923295FAB00F5CC99 /* menu_p_icon.png in Resources */,
 				C6D429941DA75988002A5711 /* privoxy in Resources */,
-				C6D429991DA76FBC002A5711 /* privoxy.config.example in Resources */,
+				C6D429991DA76FBC002A5711 /* privoxy.template.config in Resources */,
 				9BEEF06B1D04D4D500FC52B3 /* stop_ss_local.sh in Resources */,
 				9B3FFF341D08CEF70019A709 /* SWBQRCodeWindowController.xib in Resources */,
 				9B3FFF231D088E8D0019A709 /* abp.js in Resources */,

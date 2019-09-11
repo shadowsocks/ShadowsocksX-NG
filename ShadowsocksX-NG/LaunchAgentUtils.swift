@@ -14,6 +14,7 @@ let V2RAY_PLUGIN_VERSION = "1.1.0"
 let PRIVOXY_VERSION = "3.0.26.static"
 let SIMPLE_OBFS_VERSION = "0.0.5_1"
 let APP_SUPPORT_DIR = "/Library/Application Support/ShadowsocksX-NG/"
+let USER_CONFIG_DIR = "/.ShadowsocksX-NG/"
 let LAUNCH_AGENT_DIR = "/Library/LaunchAgents/"
 let LAUNCH_AGENT_CONF_SSLOCAL_NAME = "com.qiuyuzhou.shadowsocksX-NG.local.plist"
 let LAUNCH_AGENT_CONF_PRIVOXY_NAME = "com.qiuyuzhou.shadowsocksX-NG.http.plist"
@@ -333,18 +334,33 @@ func InstallPrivoxy() {
             NSLog("Install privoxy failed.")
         }
     }
+    
+    let userConfigPath = homeDir + USER_CONFIG_DIR + "user-privoxy.config"
+    if !fileMgr.fileExists(atPath: userConfigPath) {
+        let srcPath = Bundle.main.path(forResource: "user-privoxy", ofType: "config")!
+        try! fileMgr.copyItem(atPath: srcPath, toPath: userConfigPath)
+    }
 }
 
 func writePrivoxyConfFile() -> Bool {
     do {
         let defaults = UserDefaults.standard
         let bundle = Bundle.main
-        let examplePath = bundle.path(forResource: "privoxy.config.example", ofType: nil)
-        var example = try String(contentsOfFile: examplePath!, encoding: .utf8)
-        example = example.replacingOccurrences(of: "{http}", with: defaults.string(forKey: "LocalHTTP.ListenAddress")! + ":" + String(defaults.integer(forKey: "LocalHTTP.ListenPort")))
-        example = example.replacingOccurrences(of: "{socks5}", with: defaults.string(forKey: "LocalSocks5.ListenAddress")! + ":" + String(defaults.integer(forKey: "LocalSocks5.ListenPort")))
-        let data = example.data(using: .utf8)
+        let templatePath = bundle.path(forResource: "privoxy.template.config", ofType: nil)
         
+        // Read template file
+        var template = try String(contentsOfFile: templatePath!, encoding: .utf8)
+        
+        template = template.replacingOccurrences(of: "{http}", with: defaults.string(forKey: "LocalHTTP.ListenAddress")! + ":" + String(defaults.integer(forKey: "LocalHTTP.ListenPort")))
+        template = template.replacingOccurrences(of: "{socks5}", with: defaults.string(forKey: "LocalSocks5.ListenAddress")! + ":" + String(defaults.integer(forKey: "LocalSocks5.ListenPort")))
+        
+        // Append the user config file to the end
+        let userConfigPath = NSHomeDirectory() + USER_CONFIG_DIR + "user-privoxy.config"
+        let userConfig = try String(contentsOfFile: userConfigPath, encoding: .utf8)
+        template.append(contentsOf: userConfig)
+        
+        // Write to file
+        let data = template.data(using: .utf8)
         let filepath = NSHomeDirectory() + APP_SUPPORT_DIR + "privoxy.config"
         
         let oldSum = getFileSHA1Sum(filepath)
