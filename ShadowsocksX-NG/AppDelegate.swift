@@ -20,6 +20,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     var editUserRulesWinCtrl: UserRulesController!
     var allInOnePreferencesWinCtrl: PreferencesWinController!
     var toastWindowCtrl: ToastWindowController!
+    var importWinCtrl: ImportWindowController!
 
     @IBOutlet weak var window: NSWindow!
     @IBOutlet weak var statusMenu: NSMenu!
@@ -266,6 +267,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         shareWinCtrl.window?.makeKeyAndOrderFront(nil)
     }
     
+    @IBAction func showImportWindow(_ sender: NSMenuItem) {
+        if importWinCtrl != nil {
+            importWinCtrl.close()
+        }
+        importWinCtrl = ImportWindowController(windowNibName: .init(rawValue: "ImportWindowController"))
+        importWinCtrl.showWindow(self)
+        NSApp.activate(ignoringOtherApps: true)
+        importWinCtrl.window?.makeKeyAndOrderFront(nil)
+    }
+    
     @IBAction func scanQRCodeFromScreen(_ sender: NSMenuItem) {
         ScanQRCodeOnScreen()
     }
@@ -276,7 +287,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             if let text = pb.string(forType: NSPasteboard.PasteboardType.URL) {
                 if let url = URL(string: text) {
                     NotificationCenter.default.post(
-                        name: Notification.Name(rawValue: "NOTIFY_FOUND_SS_URL"), object: nil
+                        name: NOTIFY_FOUND_SS_URL, object: nil
                         , userInfo: [
                             "urls": [url],
                             "source": "pasteboard",
@@ -293,7 +304,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             urls = urls.filter { $0.scheme == "ss" }
             
             NotificationCenter.default.post(
-                name: Notification.Name(rawValue: "NOTIFY_FOUND_SS_URL"), object: nil
+                name: NOTIFY_FOUND_SS_URL, object: nil
                 , userInfo: [
                     "urls": urls,
                     "source": "pasteboard",
@@ -543,7 +554,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         if let urlString = event.paramDescriptor(forKeyword: AEKeyword(keyDirectObject))?.stringValue {
             if let url = URL(string: urlString) {
                 NotificationCenter.default.post(
-                    name: Notification.Name(rawValue: "NOTIFY_FOUND_SS_URL"), object: nil
+                    name: NOTIFY_FOUND_SS_URL, object: nil
                     , userInfo: [
                         "urls": [url],
                         "source": "url",
@@ -570,7 +581,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             let urls: [URL] = userInfo["urls"] as! [URL]
             
             let mgr = ServerProfileManager.instance
-            var addCount = 0
             
             var subtitle: String = ""
             if userInfo["source"] as! String == "qrcode" {
@@ -581,17 +591,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                 subtitle = "By import from pasteboard".localized
             }
             
-            for url in urls {
-                if let profile = ServerProfile(url: url) {
-                    mgr.profiles.append(profile)
-                    addCount = addCount + 1
-                }
-            }
+            let addCount = mgr.addServerProfileByURL(urls: urls)
             
             if addCount > 0 {
                 sendNotify("Add \(addCount) Shadowsocks Server Profile".localized, subtitle, "")
-                mgr.save()
-                self.updateServersMenu()
             } else {
                 sendNotify("", "", "Not found valid qrcode or url of shadowsocks profile".localized)
             }

@@ -54,6 +54,8 @@
 		9B7297E7214D69C300FD24AA /* libmbedcrypto.2.12.0.dylib in Resources */ = {isa = PBXBuildFile; fileRef = 9B7297E5214D68F800FD24AA /* libmbedcrypto.2.12.0.dylib */; };
 		9B7297EA214D7C6B00FD24AA /* ShareServerProfilesWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B7297E8214D7C6B00FD24AA /* ShareServerProfilesWindowController.swift */; };
 		9B7297EC214DA88A00FD24AA /* ShareServerProfilesWindowController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9B7297EE214DA88A00FD24AA /* ShareServerProfilesWindowController.xib */; };
+		9B72FB62232782A300C6AAAE /* ImportWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B72FB60232782A300C6AAAE /* ImportWindowController.swift */; };
+		9B74B5E9232949B100DEA386 /* ImportWindowController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9B74B5EB232949B100DEA386 /* ImportWindowController.xib */; };
 		9B84DAED2163A72F00DFF068 /* Diagnose.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B84DAEC2163A72F00DFF068 /* Diagnose.swift */; };
 		9B86459D1E7C2CAD00A84029 /* ProxyInterfacesViewCtrl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B86459C1E7C2CAD00A84029 /* ProxyInterfacesViewCtrl.swift */; };
 		9B938D991E864B38005F5636 /* menu_g_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B938D931E864B38005F5636 /* menu_g_icon.png */; };
@@ -214,6 +216,9 @@
 		9B7297E8214D7C6B00FD24AA /* ShareServerProfilesWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareServerProfilesWindowController.swift; sourceTree = "<group>"; };
 		9B7297ED214DA88A00FD24AA /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/ShareServerProfilesWindowController.xib; sourceTree = "<group>"; };
 		9B7297F0214DA89000FD24AA /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/ShareServerProfilesWindowController.strings"; sourceTree = "<group>"; };
+		9B72FB60232782A300C6AAAE /* ImportWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportWindowController.swift; sourceTree = "<group>"; };
+		9B74B5EF232949D400DEA386 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/ImportWindowController.xib; sourceTree = "<group>"; };
+		9B74B5F1232949E800DEA386 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/ImportWindowController.strings"; sourceTree = "<group>"; };
 		9B84DAEC2163A72F00DFF068 /* Diagnose.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Diagnose.swift; sourceTree = "<group>"; };
 		9B86459C1E7C2CAD00A84029 /* ProxyInterfacesViewCtrl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ProxyInterfacesViewCtrl.swift; sourceTree = "<group>"; };
 		9B938D931E864B38005F5636 /* menu_g_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = menu_g_icon.png; sourceTree = "<group>"; };
@@ -433,6 +438,8 @@
 				9B3546711E802B1200B510B4 /* ToastWindowController.xib */,
 				9B7297E8214D7C6B00FD24AA /* ShareServerProfilesWindowController.swift */,
 				9B7297EE214DA88A00FD24AA /* ShareServerProfilesWindowController.xib */,
+				9B72FB60232782A300C6AAAE /* ImportWindowController.swift */,
+				9B74B5EB232949B100DEA386 /* ImportWindowController.xib */,
 			);
 			name = UI;
 			sourceTree = "<group>";
@@ -652,6 +659,7 @@
 				9B3F7BFF1E82BF5B00C68B75 /* libev.4.dylib in Resources */,
 				1C82DBAA1FA96FB600B32551 /* install_simple_obfs.sh in Resources */,
 				9B938D9A1E864B38005F5636 /* menu_g_icon@2x.png in Resources */,
+				9B74B5E9232949B100DEA386 /* ImportWindowController.xib in Resources */,
 				9BBECA07232404FB00C632DB /* terminal-logo.png in Resources */,
 				9B938D9E1E864B38005F5636 /* menu_p_icon@2x.png in Resources */,
 				9B9CBCAF1E263B1600FC61AA /* libpcre.1.dylib in Resources */,
@@ -810,6 +818,7 @@
 				9B3FFF141D0705810019A709 /* Notifications.swift in Sources */,
 				9BEEF0701D04DDB100FC52B3 /* ServerProfileManager.swift in Sources */,
 				9BEEF06E1D04DCE400FC52B3 /* ServerProfile.swift in Sources */,
+				9B72FB62232782A300C6AAAE /* ImportWindowController.swift in Sources */,
 				9B3FFF0D1D05FEB30019A709 /* Utils.swift in Sources */,
 				9BEEF0751D04EF3E00FC52B3 /* PreferencesWindowController.swift in Sources */,
 				9B0BFFE91D0460A70040E62B /* AppDelegate.swift in Sources */,
@@ -889,6 +898,15 @@
 				9B7297F0214DA89000FD24AA /* zh-Hans */,
 			);
 			name = ShareServerProfilesWindowController.xib;
+			sourceTree = "<group>";
+		};
+		9B74B5EB232949B100DEA386 /* ImportWindowController.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				9B74B5EF232949D400DEA386 /* Base */,
+				9B74B5F1232949E800DEA386 /* zh-Hans */,
+			);
+			name = ImportWindowController.xib;
 			sourceTree = "<group>";
 		};
 		9BAFE2E41E83ED7F00F71CCE /* PreferencesWinController.xib */ = {

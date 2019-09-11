@@ -80,10 +80,10 @@
                         <action selector="scanQRCodeFromScreen:" target="Voe-Tx-rLC" id="zQZ-IT-H4a"/>
                     </connections>
                 </menuItem>
-                <menuItem title="Import Server URLs From Pasteboard" id="7Eq-XD-K5c">
+                <menuItem title="Import Server URLs..." id="geG-dQ-OYl">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
-                        <action selector="importProfileURLFromPasteboard:" target="Voe-Tx-rLC" id="RwL-Ms-BaC"/>
+                        <action selector="showImportWindow:" target="-1" id="CsE-vW-Wcn"/>
                     </connections>
                 </menuItem>
                 <menuItem title="Share Server Profiles..." image="NSShareTemplate" id="r5z-RB-LIZ">
@@ -98,7 +98,7 @@
                         <action selector="showAllInOnePreferences:" target="Voe-Tx-rLC" id="2of-nZ-atc"/>
                     </connections>
                 </menuItem>
-                <menuItem title="Copy HTTP Proxy Shell Export Line" image="terminal-logo" id="lg6-To-GZA">
+                <menuItem title="HTTP Proxy Export Line To Pasteboard" image="terminal-logo" id="lg6-To-GZA">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
                         <action selector="copyExportCommand:" target="Voe-Tx-rLC" id="2U4-3M-sAK"/>
