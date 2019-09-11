@@ -11,16 +11,10 @@
 		1C82DBAA1FA96FB600B32551 /* install_simple_obfs.sh in Resources */ = {isa = PBXBuildFile; fileRef = 1C82DBA91FA96F0300B32551 /* install_simple_obfs.sh */; };
 		258E511BA910B0521B24DAB8 /* Pods_ShadowsocksX_NG.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 283ED1A8E9B711AC65670031 /* Pods_ShadowsocksX_NG.framework */; };
 		9B07EFA71D048BBB0052D9DF /* ss-local in Resources */ = {isa = PBXBuildFile; fileRef = 9B07EFA61D048BBB0052D9DF /* ss-local */; };
-		9B07EFAC1D048E880052D9DF /* menu_icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B07EFA81D048E880052D9DF /* menu_icon@2x.png */; };
-		9B07EFAD1D048E880052D9DF /* menu_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B07EFA91D048E880052D9DF /* menu_icon.png */; };
-		9B07EFAE1D048E880052D9DF /* menu_icon_disabled.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B07EFAA1D048E880052D9DF /* menu_icon_disabled.png */; };
-		9B07EFAF1D048E880052D9DF /* menu_icon_disabled@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B07EFAB1D048E880052D9DF /* menu_icon_disabled@2x.png */; };
 		9B0BFFE91D0460A70040E62B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B0BFFE81D0460A70040E62B /* AppDelegate.swift */; };
 		9B0BFFEB1D0460A70040E62B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9B0BFFEA1D0460A70040E62B /* Assets.xcassets */; };
 		9B0BFFEE1D0460A70040E62B /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9B0BFFEC1D0460A70040E62B /* MainMenu.xib */; };
 		9B0BFFF91D0460A70040E62B /* ShadowsocksX_NGTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B0BFFF81D0460A70040E62B /* ShadowsocksX_NGTests.swift */; };
-		9B16E59A1F99FD0700E54DC5 /* icons8-Eye Filled-50.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B16E5971F99FD0700E54DC5 /* icons8-Eye Filled-50.png */; };
-		9B16E59B1F99FD0700E54DC5 /* icons8-Blind Filled-50.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B16E5991F99FD0700E54DC5 /* icons8-Blind Filled-50.png */; };
 		9B20804A2326AC460075386C /* kcptun.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9B2080482326AC460075386C /* kcptun.sh */; };
 		9B20804B2326AC460075386C /* client in Resources */ = {isa = PBXBuildFile; fileRef = 9B2080492326AC460075386C /* client */; };
 		9B2491B41D0ACC3A003BBECC /* PreferencesWindowController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9B2491B61D0ACC3A003BBECC /* PreferencesWindowController.xib */; };
@@ -44,9 +38,6 @@
 		9B3FFF541D09E2D10019A709 /* proxy_conf_helper in Resources */ = {isa = PBXBuildFile; fileRef = 9B3FFF441D09CD3B0019A709 /* proxy_conf_helper */; };
 		9B5831F61E7302F8009D5B7D /* ShortcutsController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9B5831F51E7302F8009D5B7D /* ShortcutsController.m */; };
 		9B5831FF1E741969009D5B7D /* PreferencesWinController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B5831FD1E741969009D5B7D /* PreferencesWinController.swift */; };
-		9B5832031E741F8D009D5B7D /* command-512.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B5832021E741F8D009D5B7D /* command-512.png */; };
-		9B5832071E7421B2009D5B7D /* virtual-server-icon-3.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B5832061E7421B2009D5B7D /* virtual-server-icon-3.png */; };
-		9B58320B1E7422DB009D5B7D /* http.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B58320A1E7422DB009D5B7D /* http.png */; };
 		9B5AA0AC209C43C200E8B659 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 9B5AA0AB209C43C200E8B659 /* Credits.rtf */; };
 		9B5D132A2154A62600F99F03 /* install_kcptun.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9B5D13272154A50700F99F03 /* install_kcptun.sh */; };
 		9B6BF9541E27B2570061B9A7 /* ServiceManagement.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B6BF9531E27B2570061B9A7 /* ServiceManagement.framework */; };
@@ -57,19 +48,28 @@
 		9B74B5E9232949B100DEA386 /* ImportWindowController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9B74B5EB232949B100DEA386 /* ImportWindowController.xib */; };
 		9B84DAED2163A72F00DFF068 /* Diagnose.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B84DAEC2163A72F00DFF068 /* Diagnose.swift */; };
 		9B86459D1E7C2CAD00A84029 /* ProxyInterfacesViewCtrl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B86459C1E7C2CAD00A84029 /* ProxyInterfacesViewCtrl.swift */; };
-		9B938D991E864B38005F5636 /* menu_g_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B938D931E864B38005F5636 /* menu_g_icon.png */; };
-		9B938D9A1E864B38005F5636 /* menu_g_icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B938D941E864B38005F5636 /* menu_g_icon@2x.png */; };
-		9B938D9B1E864B38005F5636 /* menu_m_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B938D951E864B38005F5636 /* menu_m_icon.png */; };
-		9B938D9C1E864B38005F5636 /* menu_m_icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B938D961E864B38005F5636 /* menu_m_icon@2x.png */; };
-		9B938D9D1E864B38005F5636 /* menu_p_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B938D971E864B38005F5636 /* menu_p_icon.png */; };
-		9B938D9E1E864B38005F5636 /* menu_p_icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B938D981E864B38005F5636 /* menu_p_icon@2x.png */; };
 		9B9CBCAF1E263B1600FC61AA /* libpcre.1.dylib in Resources */ = {isa = PBXBuildFile; fileRef = 9B9CBCAD1E263A6600FC61AA /* libpcre.1.dylib */; };
 		9B9F13A71E8A28B300DE4794 /* LaunchHelper.app in CopyFiles */ = {isa = PBXBuildFile; fileRef = 9B9F13A61E8A282D00DE4794 /* LaunchHelper.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		9BA04B231D23D5A5005AAD7F /* ProxyConfTool.m in Sources */ = {isa = PBXBuildFile; fileRef = 9BA04B221D23D5A5005AAD7F /* ProxyConfTool.m */; };
+		9BAA662723295FAB00F5CC99 /* icons8-Eye Filled-50.png in Resources */ = {isa = PBXBuildFile; fileRef = 9BAA661723295FAB00F5CC99 /* icons8-Eye Filled-50.png */; };
+		9BAA662823295FAB00F5CC99 /* menu_m_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 9BAA661823295FAB00F5CC99 /* menu_m_icon.png */; };
+		9BAA662923295FAB00F5CC99 /* menu_p_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 9BAA661923295FAB00F5CC99 /* menu_p_icon.png */; };
+		9BAA662A23295FAB00F5CC99 /* menu_icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 9BAA661A23295FAB00F5CC99 /* menu_icon@2x.png */; };
+		9BAA662B23295FAB00F5CC99 /* http.png in Resources */ = {isa = PBXBuildFile; fileRef = 9BAA661B23295FAB00F5CC99 /* http.png */; };
+		9BAA662C23295FAC00F5CC99 /* menu_g_icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 9BAA661C23295FAB00F5CC99 /* menu_g_icon@2x.png */; };
+		9BAA662D23295FAC00F5CC99 /* icons8-Blind Filled-50.png in Resources */ = {isa = PBXBuildFile; fileRef = 9BAA661D23295FAB00F5CC99 /* icons8-Blind Filled-50.png */; };
+		9BAA662E23295FAC00F5CC99 /* menu_p_icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 9BAA661E23295FAB00F5CC99 /* menu_p_icon@2x.png */; };
+		9BAA662F23295FAC00F5CC99 /* menu_icon_disabled@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 9BAA661F23295FAB00F5CC99 /* menu_icon_disabled@2x.png */; };
+		9BAA663023295FAC00F5CC99 /* menu_icon_disabled.png in Resources */ = {isa = PBXBuildFile; fileRef = 9BAA662023295FAB00F5CC99 /* menu_icon_disabled.png */; };
+		9BAA663123295FAC00F5CC99 /* menu_m_icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 9BAA662123295FAB00F5CC99 /* menu_m_icon@2x.png */; };
+		9BAA663223295FAC00F5CC99 /* command-512.png in Resources */ = {isa = PBXBuildFile; fileRef = 9BAA662223295FAB00F5CC99 /* command-512.png */; };
+		9BAA663323295FAC00F5CC99 /* terminal-logo.png in Resources */ = {isa = PBXBuildFile; fileRef = 9BAA662323295FAB00F5CC99 /* terminal-logo.png */; };
+		9BAA663423295FAC00F5CC99 /* menu_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 9BAA662423295FAB00F5CC99 /* menu_icon.png */; };
+		9BAA663523295FAC00F5CC99 /* virtual-server-icon-3.png in Resources */ = {isa = PBXBuildFile; fileRef = 9BAA662523295FAB00F5CC99 /* virtual-server-icon-3.png */; };
+		9BAA663623295FAC00F5CC99 /* menu_g_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 9BAA662623295FAB00F5CC99 /* menu_g_icon.png */; };
 		9BAFE2E21E83ED7F00F71CCE /* PreferencesWinController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9BAFE2E41E83ED7F00F71CCE /* PreferencesWinController.xib */; };
 		9BB706A71D1B982300551F0E /* SWBApplication.m in Sources */ = {isa = PBXBuildFile; fileRef = 9BB706A51D1B982300551F0E /* SWBApplication.m */; };
 		9BBE7B751F508A0E00E8FFE5 /* fix_dir_owner.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9BBE7B711F50790500E8FFE5 /* fix_dir_owner.sh */; };
-		9BBECA07232404FB00C632DB /* terminal-logo.png in Resources */ = {isa = PBXBuildFile; fileRef = 9BBECA06232404FB00C632DB /* terminal-logo.png */; };
 		9BC70EDC1D2E3E3100EDA4CA /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 9B172A6C1D0ADDDD00B87B9A /* Localizable.strings */; };
 		9BCB1D6C20A15B0E005BABE7 /* libsodium.23.dylib in Resources */ = {isa = PBXBuildFile; fileRef = 9B5AA09F209C100C00E8B659 /* libsodium.23.dylib */; };
 		9BCB1D6D20A15B0E005BABE7 /* libcares.2.dylib in Resources */ = {isa = PBXBuildFile; fileRef = 9B5AA0A2209C103900E8B659 /* libcares.2.dylib */; };
@@ -153,10 +153,6 @@
 		58907E7F50405104B42CB189 /* Pods-ShadowsocksX-NGUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ShadowsocksX-NGUITests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-ShadowsocksX-NGUITests/Pods-ShadowsocksX-NGUITests.debug.xcconfig"; sourceTree = "<group>"; };
 		5B6203C1228FCD3D365814AC /* Pods-ShadowsocksX-NGTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ShadowsocksX-NGTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-ShadowsocksX-NGTests/Pods-ShadowsocksX-NGTests.debug.xcconfig"; sourceTree = "<group>"; };
 		9B07EFA61D048BBB0052D9DF /* ss-local */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = "ss-local"; sourceTree = "<group>"; };
-		9B07EFA81D048E880052D9DF /* menu_icon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "menu_icon@2x.png"; sourceTree = "<group>"; };
-		9B07EFA91D048E880052D9DF /* menu_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = menu_icon.png; sourceTree = "<group>"; };
-		9B07EFAA1D048E880052D9DF /* menu_icon_disabled.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = menu_icon_disabled.png; sourceTree = "<group>"; };
-		9B07EFAB1D048E880052D9DF /* menu_icon_disabled@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "menu_icon_disabled@2x.png"; sourceTree = "<group>"; };
 		9B0BFFE51D0460A70040E62B /* ShadowsocksX-NG.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "ShadowsocksX-NG.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		9B0BFFE81D0460A70040E62B /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		9B0BFFEA1D0460A70040E62B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -165,8 +161,6 @@
 		9B0BFFF41D0460A70040E62B /* ShadowsocksX-NGTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "ShadowsocksX-NGTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		9B0BFFF81D0460A70040E62B /* ShadowsocksX_NGTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShadowsocksX_NGTests.swift; sourceTree = "<group>"; };
 		9B0BFFFA1D0460A70040E62B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		9B16E5971F99FD0700E54DC5 /* icons8-Eye Filled-50.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icons8-Eye Filled-50.png"; sourceTree = "<group>"; };
-		9B16E5991F99FD0700E54DC5 /* icons8-Blind Filled-50.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icons8-Blind Filled-50.png"; sourceTree = "<group>"; };
 		9B172A601D0ADA5B00B87B9A /* genstrings.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = genstrings.py; sourceTree = "<group>"; };
 		9B172A6B1D0ADDDD00B87B9A /* Base */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Base; path = Base.lproj/Localizable.strings; sourceTree = "<group>"; };
 		9B172A6D1D0ADDE800B87B9A /* zh-Hans */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
@@ -202,9 +196,6 @@
 		9B5831F51E7302F8009D5B7D /* ShortcutsController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ShortcutsController.m; sourceTree = "<group>"; };
 		9B5831FA1E73098F009D5B7D /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		9B5831FD1E741969009D5B7D /* PreferencesWinController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreferencesWinController.swift; sourceTree = "<group>"; };
-		9B5832021E741F8D009D5B7D /* command-512.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "command-512.png"; sourceTree = "<group>"; };
-		9B5832061E7421B2009D5B7D /* virtual-server-icon-3.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "virtual-server-icon-3.png"; sourceTree = "<group>"; };
-		9B58320A1E7422DB009D5B7D /* http.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = http.png; sourceTree = "<group>"; };
 		9B5AA09F209C100C00E8B659 /* libsodium.23.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libsodium.23.dylib; sourceTree = "<group>"; };
 		9B5AA0A2209C103900E8B659 /* libcares.2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libcares.2.dylib; sourceTree = "<group>"; };
 		9B5AA0AB209C43C200E8B659 /* Credits.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = Credits.rtf; sourceTree = "<group>"; };
@@ -219,23 +210,32 @@
 		9B74B5F1232949E800DEA386 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/ImportWindowController.strings"; sourceTree = "<group>"; };
 		9B84DAEC2163A72F00DFF068 /* Diagnose.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Diagnose.swift; sourceTree = "<group>"; };
 		9B86459C1E7C2CAD00A84029 /* ProxyInterfacesViewCtrl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ProxyInterfacesViewCtrl.swift; sourceTree = "<group>"; };
-		9B938D931E864B38005F5636 /* menu_g_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = menu_g_icon.png; sourceTree = "<group>"; };
-		9B938D941E864B38005F5636 /* menu_g_icon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "menu_g_icon@2x.png"; sourceTree = "<group>"; };
-		9B938D951E864B38005F5636 /* menu_m_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = menu_m_icon.png; sourceTree = "<group>"; };
-		9B938D961E864B38005F5636 /* menu_m_icon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "menu_m_icon@2x.png"; sourceTree = "<group>"; };
-		9B938D971E864B38005F5636 /* menu_p_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = menu_p_icon.png; sourceTree = "<group>"; };
-		9B938D981E864B38005F5636 /* menu_p_icon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "menu_p_icon@2x.png"; sourceTree = "<group>"; };
 		9B9CBCAD1E263A6600FC61AA /* libpcre.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libpcre.1.dylib; sourceTree = "<group>"; };
 		9B9F13A11E8A282C00DE4794 /* LaunchHelper.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = LaunchHelper.xcodeproj; path = LaunchHelper/LaunchHelper.xcodeproj; sourceTree = "<group>"; };
 		9BA04B211D23D5A5005AAD7F /* ProxyConfTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ProxyConfTool.h; sourceTree = "<group>"; };
 		9BA04B221D23D5A5005AAD7F /* ProxyConfTool.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ProxyConfTool.m; sourceTree = "<group>"; };
+		9BAA661723295FAB00F5CC99 /* icons8-Eye Filled-50.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icons8-Eye Filled-50.png"; sourceTree = "<group>"; };
+		9BAA661823295FAB00F5CC99 /* menu_m_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = menu_m_icon.png; sourceTree = "<group>"; };
+		9BAA661923295FAB00F5CC99 /* menu_p_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = menu_p_icon.png; sourceTree = "<group>"; };
+		9BAA661A23295FAB00F5CC99 /* menu_icon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "menu_icon@2x.png"; sourceTree = "<group>"; };
+		9BAA661B23295FAB00F5CC99 /* http.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = http.png; sourceTree = "<group>"; };
+		9BAA661C23295FAB00F5CC99 /* menu_g_icon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "menu_g_icon@2x.png"; sourceTree = "<group>"; };
+		9BAA661D23295FAB00F5CC99 /* icons8-Blind Filled-50.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icons8-Blind Filled-50.png"; sourceTree = "<group>"; };
+		9BAA661E23295FAB00F5CC99 /* menu_p_icon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "menu_p_icon@2x.png"; sourceTree = "<group>"; };
+		9BAA661F23295FAB00F5CC99 /* menu_icon_disabled@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "menu_icon_disabled@2x.png"; sourceTree = "<group>"; };
+		9BAA662023295FAB00F5CC99 /* menu_icon_disabled.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = menu_icon_disabled.png; sourceTree = "<group>"; };
+		9BAA662123295FAB00F5CC99 /* menu_m_icon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "menu_m_icon@2x.png"; sourceTree = "<group>"; };
+		9BAA662223295FAB00F5CC99 /* command-512.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "command-512.png"; sourceTree = "<group>"; };
+		9BAA662323295FAB00F5CC99 /* terminal-logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "terminal-logo.png"; sourceTree = "<group>"; };
+		9BAA662423295FAB00F5CC99 /* menu_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = menu_icon.png; sourceTree = "<group>"; };
+		9BAA662523295FAB00F5CC99 /* virtual-server-icon-3.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "virtual-server-icon-3.png"; sourceTree = "<group>"; };
+		9BAA662623295FAB00F5CC99 /* menu_g_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = menu_g_icon.png; sourceTree = "<group>"; };
 		9BAFE2E31E83ED7F00F71CCE /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/PreferencesWinController.xib; sourceTree = "<group>"; };
 		9BAFE2E91E83EDDF00F71CCE /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/PreferencesWinController.strings"; sourceTree = "<group>"; };
 		9BAFE2EB1E83F91D00F71CCE /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/MainMenu.strings"; sourceTree = "<group>"; };
 		9BB706A51D1B982300551F0E /* SWBApplication.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SWBApplication.m; sourceTree = "<group>"; };
 		9BB706A61D1B982300551F0E /* SWBApplication.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SWBApplication.h; sourceTree = "<group>"; };
 		9BBE7B711F50790500E8FFE5 /* fix_dir_owner.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = fix_dir_owner.sh; sourceTree = "<group>"; };
-		9BBECA06232404FB00C632DB /* terminal-logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "terminal-logo.png"; sourceTree = "<group>"; };
 		9BE8FBC11D0B71CF00CAFD01 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/PreferencesWindowController.strings"; sourceTree = "<group>"; };
 		9BEEF0651D04CB8500FC52B3 /* install_ss_local.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = install_ss_local.sh; sourceTree = "<group>"; };
 		9BEEF0661D04CE8D00FC52B3 /* start_ss_local.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = start_ss_local.sh; sourceTree = "<group>"; };
@@ -317,32 +317,17 @@
 		9B07EFB01D048E900052D9DF /* Support Files */ = {
 			isa = PBXGroup;
 			children = (
+				9BAA661623295F7F00F5CC99 /* images */,
 				B5A2AB00221A72EC003F77B7 /* v2ray-plugin */,
 				9B5D13252154A4B400F99F03 /* kcptun */,
 				9B5AA0A9209C41EC00E8B659 /* ss-local */,
 				1C82DBA31FA96C7400B32551 /* simple-obfs */,
-				9B16E5991F99FD0700E54DC5 /* icons8-Blind Filled-50.png */,
 				9B5AA0AA209C42A900E8B659 /* privoxy */,
-				9B16E5971F99FD0700E54DC5 /* icons8-Eye Filled-50.png */,
-				9B938D931E864B38005F5636 /* menu_g_icon.png */,
-				9B938D941E864B38005F5636 /* menu_g_icon@2x.png */,
-				9B938D951E864B38005F5636 /* menu_m_icon.png */,
-				9B938D961E864B38005F5636 /* menu_m_icon@2x.png */,
-				9B938D971E864B38005F5636 /* menu_p_icon.png */,
-				9B938D981E864B38005F5636 /* menu_p_icon@2x.png */,
-				9B58320A1E7422DB009D5B7D /* http.png */,
-				9B5832061E7421B2009D5B7D /* virtual-server-icon-3.png */,
-				9B5832021E741F8D009D5B7D /* command-512.png */,
-				9BBECA06232404FB00C632DB /* terminal-logo.png */,
 				9B172A6C1D0ADDDD00B87B9A /* Localizable.strings */,
 				9B3FFF4B1D09D8F70019A709 /* install_helper.sh */,
 				9B3FFF281D08A1DF0019A709 /* user-rule.txt */,
 				9B3FFF261D0898EB0019A709 /* gfwlist.txt */,
 				9B3FFF221D088E8D0019A709 /* abp.js */,
-				9B07EFA81D048E880052D9DF /* menu_icon@2x.png */,
-				9B07EFA91D048E880052D9DF /* menu_icon.png */,
-				9B07EFAA1D048E880052D9DF /* menu_icon_disabled.png */,
-				9B07EFAB1D048E880052D9DF /* menu_icon_disabled@2x.png */,
 				9BBE7B711F50790500E8FFE5 /* fix_dir_owner.sh */,
 				9B5AA0AB209C43C200E8B659 /* Credits.rtf */,
 			);
@@ -462,7 +447,7 @@
 				9BEEF0661D04CE8D00FC52B3 /* start_ss_local.sh */,
 				9BEEF0671D04CE9A00FC52B3 /* stop_ss_local.sh */,
 			);
-			name = "ss-local";
+			path = "ss-local";
 			sourceTree = "<group>";
 		};
 		9B5AA0AA209C42A900E8B659 /* privoxy */ = {
@@ -474,7 +459,7 @@
 				C6D429911DA75988002A5711 /* start_privoxy.sh */,
 				C6D429921DA75988002A5711 /* stop_privoxy.sh */,
 			);
-			name = privoxy;
+			path = privoxy;
 			sourceTree = "<group>";
 		};
 		9B5D13252154A4B400F99F03 /* kcptun */ = {
@@ -493,6 +478,29 @@
 				9B9F13A61E8A282D00DE4794 /* LaunchHelper.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		9BAA661623295F7F00F5CC99 /* images */ = {
+			isa = PBXGroup;
+			children = (
+				9BAA662223295FAB00F5CC99 /* command-512.png */,
+				9BAA661B23295FAB00F5CC99 /* http.png */,
+				9BAA661D23295FAB00F5CC99 /* icons8-Blind Filled-50.png */,
+				9BAA661723295FAB00F5CC99 /* icons8-Eye Filled-50.png */,
+				9BAA662623295FAB00F5CC99 /* menu_g_icon.png */,
+				9BAA661C23295FAB00F5CC99 /* menu_g_icon@2x.png */,
+				9BAA662023295FAB00F5CC99 /* menu_icon_disabled.png */,
+				9BAA661F23295FAB00F5CC99 /* menu_icon_disabled@2x.png */,
+				9BAA662423295FAB00F5CC99 /* menu_icon.png */,
+				9BAA661A23295FAB00F5CC99 /* menu_icon@2x.png */,
+				9BAA661823295FAB00F5CC99 /* menu_m_icon.png */,
+				9BAA662123295FAB00F5CC99 /* menu_m_icon@2x.png */,
+				9BAA661923295FAB00F5CC99 /* menu_p_icon.png */,
+				9BAA661E23295FAB00F5CC99 /* menu_p_icon@2x.png */,
+				9BAA662323295FAB00F5CC99 /* terminal-logo.png */,
+				9BAA662523295FAB00F5CC99 /* virtual-server-icon-3.png */,
+			);
+			path = images;
 			sourceTree = "<group>";
 		};
 		B5A2AB00221A72EC003F77B7 /* v2ray-plugin */ = {
@@ -653,54 +661,54 @@
 				9BCB1D6D20A15B0E005BABE7 /* libcares.2.dylib in Resources */,
 				9BBE7B751F508A0E00E8FFE5 /* fix_dir_owner.sh in Resources */,
 				9B3F7BFF1E82BF5B00C68B75 /* libev.4.dylib in Resources */,
+				9BAA662D23295FAC00F5CC99 /* icons8-Blind Filled-50.png in Resources */,
+				9BAA663623295FAC00F5CC99 /* menu_g_icon.png in Resources */,
+				9BAA662E23295FAC00F5CC99 /* menu_p_icon@2x.png in Resources */,
 				1C82DBAA1FA96FB600B32551 /* install_simple_obfs.sh in Resources */,
-				9B938D9A1E864B38005F5636 /* menu_g_icon@2x.png in Resources */,
 				9B74B5E9232949B100DEA386 /* ImportWindowController.xib in Resources */,
-				9BBECA07232404FB00C632DB /* terminal-logo.png in Resources */,
-				9B938D9E1E864B38005F5636 /* menu_p_icon@2x.png in Resources */,
+				9BAA663523295FAC00F5CC99 /* virtual-server-icon-3.png in Resources */,
 				9B9CBCAF1E263B1600FC61AA /* libpcre.1.dylib in Resources */,
 				B5A2AB03221A72EC003F77B7 /* v2ray-plugin in Resources */,
-				9B5832031E741F8D009D5B7D /* command-512.png in Resources */,
 				9B3FFF541D09E2D10019A709 /* proxy_conf_helper in Resources */,
-				9B5832071E7421B2009D5B7D /* virtual-server-icon-3.png in Resources */,
+				9BAA662723295FAB00F5CC99 /* icons8-Eye Filled-50.png in Resources */,
 				9BEEF0691D04D4D500FC52B3 /* install_ss_local.sh in Resources */,
 				9B2491B41D0ACC3A003BBECC /* PreferencesWindowController.xib in Resources */,
 				9B3FFF291D08A1DF0019A709 /* user-rule.txt in Resources */,
+				9BAA663123295FAC00F5CC99 /* menu_m_icon@2x.png in Resources */,
 				C6D429971DA75988002A5711 /* stop_privoxy.sh in Resources */,
+				9BAA662F23295FAC00F5CC99 /* menu_icon_disabled@2x.png in Resources */,
 				C8E42A6E1D4F2CAF0074C7EA /* UserRulesController.xib in Resources */,
+				9BAA663423295FAC00F5CC99 /* menu_icon.png in Resources */,
 				9BEEF06A1D04D4D500FC52B3 /* start_ss_local.sh in Resources */,
-				9B16E59A1F99FD0700E54DC5 /* icons8-Eye Filled-50.png in Resources */,
-				9B938D9C1E864B38005F5636 /* menu_m_icon@2x.png in Resources */,
 				9B3546731E802B1200B510B4 /* ToastWindowController.xib in Resources */,
+				9BAA662923295FAB00F5CC99 /* menu_p_icon.png in Resources */,
 				C6D429941DA75988002A5711 /* privoxy in Resources */,
 				C6D429991DA76FBC002A5711 /* privoxy.config.example in Resources */,
 				9BEEF06B1D04D4D500FC52B3 /* stop_ss_local.sh in Resources */,
 				9B3FFF341D08CEF70019A709 /* SWBQRCodeWindowController.xib in Resources */,
 				9B3FFF231D088E8D0019A709 /* abp.js in Resources */,
-				9B07EFAD1D048E880052D9DF /* menu_icon.png in Resources */,
 				9BAFE2E21E83ED7F00F71CCE /* PreferencesWinController.xib in Resources */,
+				9BAA663223295FAC00F5CC99 /* command-512.png in Resources */,
+				9BAA663023295FAC00F5CC99 /* menu_icon_disabled.png in Resources */,
+				9BAA662C23295FAC00F5CC99 /* menu_g_icon@2x.png in Resources */,
+				9BAA663323295FAC00F5CC99 /* terminal-logo.png in Resources */,
 				9B0BFFEB1D0460A70040E62B /* Assets.xcassets in Resources */,
 				B5A2AB04221A72EC003F77B7 /* install_v2ray_plugin.sh in Resources */,
+				9BAA662B23295FAB00F5CC99 /* http.png in Resources */,
 				1C82DBA81FA96C7500B32551 /* obfs-local in Resources */,
-				9B938D9D1E864B38005F5636 /* menu_p_icon.png in Resources */,
-				9B938D9B1E864B38005F5636 /* menu_m_icon.png in Resources */,
 				9B7297EC214DA88A00FD24AA /* ShareServerProfilesWindowController.xib in Resources */,
 				9B3FFF271D0898EB0019A709 /* gfwlist.txt in Resources */,
 				C6D429931DA75988002A5711 /* install_privoxy.sh in Resources */,
-				9B58320B1E7422DB009D5B7D /* http.png in Resources */,
 				9BC70EDC1D2E3E3100EDA4CA /* Localizable.strings in Resources */,
-				9B16E59B1F99FD0700E54DC5 /* icons8-Blind Filled-50.png in Resources */,
 				9B20804B2326AC460075386C /* client in Resources */,
 				9B0BFFEE1D0460A70040E62B /* MainMenu.xib in Resources */,
 				9B3FFF4C1D09D8F70019A709 /* install_helper.sh in Resources */,
+				9BAA662823295FAB00F5CC99 /* menu_m_icon.png in Resources */,
 				C6D429961DA75988002A5711 /* start_privoxy.sh in Resources */,
-				9B07EFAC1D048E880052D9DF /* menu_icon@2x.png in Resources */,
+				9BAA662A23295FAB00F5CC99 /* menu_icon@2x.png in Resources */,
 				9B5AA0AC209C43C200E8B659 /* Credits.rtf in Resources */,
 				9B07EFA71D048BBB0052D9DF /* ss-local in Resources */,
-				9B07EFAF1D048E880052D9DF /* menu_icon_disabled@2x.png in Resources */,
 				9B20804A2326AC460075386C /* kcptun.sh in Resources */,
-				9B07EFAE1D048E880052D9DF /* menu_icon_disabled.png in Resources */,
-				9B938D991E864B38005F5636 /* menu_g_icon.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
