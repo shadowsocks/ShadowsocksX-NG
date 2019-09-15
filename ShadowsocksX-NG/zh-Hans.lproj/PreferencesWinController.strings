@@ -135,3 +135,6 @@
 
 /* Class = "NSButtonCell"; title = "Set HTTP proxy to system proxy configure in global mode"; ObjectID = "m8L-D6-ye3"; */
 "m8L-D6-ye3.title" = "全局模式时，在系统代理中设置HTTP代理服务器";
+
+/* Class = "NSTextFieldCell"; title = "External PAC URL:"; ObjectID = "kBe-eq-uZL"; */
+"kBe-eq-uZL.title" = "外部PAC URL:";

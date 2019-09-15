@@ -16,6 +16,7 @@
             <connections>
                 <outlet property="autoModeMenuItem" destination="r07-Gu-aEz" id="9aH-pQ-Rgi"/>
                 <outlet property="copyHttpProxyExportCmdLineMenuItem" destination="lg6-To-GZA" id="VTb-he-dg4"/>
+                <outlet property="externalPACModeMenuItem" destination="U9N-QS-BwB" id="ING-P9-2Xz"/>
                 <outlet property="globalModeMenuItem" destination="Mw3-Jm-eXA" id="ar5-Yx-3ze"/>
                 <outlet property="manualModeMenuItem" destination="8PR-gs-c5N" id="9qz-mU-5kt"/>
                 <outlet property="runningStatusMenuItem" destination="fzk-mE-CEV" id="Vwm-Rg-Ykn"/>
@@ -28,7 +29,7 @@
             </connections>
         </customObject>
         <customObject id="YLy-65-1bz" customClass="NSFontManager"/>
-        <menu title="ShadowsocksX-NG" id="Hob-KD-bx9">
+        <menu title="ShadowsocksX-NG" autoenablesItems="NO" id="Hob-KD-bx9">
             <items>
                 <menuItem title="Showsocks: On" enabled="NO" id="fzk-mE-CEV">
                     <modifierMask key="keyEquivalentModifierMask"/>
@@ -40,7 +41,7 @@
                     </connections>
                 </menuItem>
                 <menuItem isSeparatorItem="YES" id="LXP-yK-yQu"/>
-                <menuItem title="Proxy Auto Configure Mode" id="r07-Gu-aEz">
+                <menuItem title="Auto Mode By PAC" id="r07-Gu-aEz">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
                         <action selector="selectPACMode:" target="Voe-Tx-rLC" id="l36-cd-xl7"/>
@@ -56,6 +57,12 @@
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
                         <action selector="selectManualMode:" target="Voe-Tx-rLC" id="Xxb-28-6fi"/>
+                    </connections>
+                </menuItem>
+                <menuItem title="Auto Mode By External PAC" id="U9N-QS-BwB">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <connections>
+                        <action selector="selectExternalPACMode:" target="Voe-Tx-rLC" id="LnX-Ec-hc4"/>
                     </connections>
                 </menuItem>
                 <menuItem isSeparatorItem="YES" id="BMf-0T-UcX"/>
@@ -156,6 +163,7 @@
             </items>
             <point key="canvasLocation" x="-2367" y="-139"/>
         </menu>
+        <userDefaultsController representsSharedInstance="YES" id="jhL-aG-BFA"/>
     </objects>
     <resources>
         <image name="NSShareTemplate" width="11" height="16"/>

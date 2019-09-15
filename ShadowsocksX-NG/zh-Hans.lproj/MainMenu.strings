@@ -65,6 +65,9 @@
 /* Class = "NSMenuItem"; title = "PAC自动模式"; ObjectID = "r07-Gu-aEz"; */
 "r07-Gu-aEz.title" = "PAC自动模式";
 
+/* Class = "NSMenuItem"; title = "Auto Mode By External PAC"; ObjectID = "U9N-QS-BwB"; */
+"U9N-QS-BwB.title" = "外部PAC自动模式";
+
 /* Class = "NSMenuItem"; title = "编辑PAC用户自定规则..."; ObjectID = "rms-p0-CvB"; */
 "rms-p0-CvB.title" = "编辑PAC用户自定规则...";
 

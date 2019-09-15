@@ -294,6 +294,26 @@
                                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                             </textFieldCell>
                                         </textField>
+                                        <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="kjx-TJ-4n3">
+                                            <rect key="frame" x="20" y="59" width="440" height="22"/>
+                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" borderStyle="bezel" drawsBackground="YES" id="8u6-Mz-FmD">
+                                                <font key="font" metaFont="system"/>
+                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                            <connections>
+                                                <binding destination="uQz-5y-ZL2" name="value" keyPath="values.ExternalPACURL" id="Txm-wz-loc"/>
+                                                <outlet property="formatter" destination="TUK-vL-Gf1" id="P0K-qn-jbx"/>
+                                            </connections>
+                                        </textField>
+                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="4xg-iR-B4f">
+                                            <rect key="frame" x="18" y="89" width="115" height="17"/>
+                                            <textFieldCell key="cell" lineBreakMode="clipping" title="External PAC URL:" id="kBe-eq-uZL">
+                                                <font key="font" metaFont="system"/>
+                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
                                     </subviews>
                                     <constraints>
                                         <constraint firstItem="2rw-0u-LXJ" firstAttribute="leading" secondItem="GR0-SX-ali" secondAttribute="leading" id="0Ai-mB-cGz"/>
@@ -301,6 +321,7 @@
                                         <constraint firstAttribute="trailing" secondItem="cd8-PU-OwG" secondAttribute="trailing" constant="20" symbolic="YES" id="0jg-by-tfu"/>
                                         <constraint firstItem="cd8-PU-OwG" firstAttribute="trailing" secondItem="GR0-SX-ali" secondAttribute="trailing" id="0oY-ej-0QF"/>
                                         <constraint firstItem="GR0-SX-ali" firstAttribute="trailing" secondItem="tGd-pe-2xJ" secondAttribute="trailing" id="2fj-E3-3mE"/>
+                                        <constraint firstItem="4xg-iR-B4f" firstAttribute="leading" secondItem="kjx-TJ-4n3" secondAttribute="leading" id="2yI-0v-oL2"/>
                                         <constraint firstItem="tGd-pe-2xJ" firstAttribute="top" secondItem="Zfl-10-Wdk" secondAttribute="bottom" constant="8" symbolic="YES" id="9zQ-jB-1Gg"/>
                                         <constraint firstItem="GR0-SX-ali" firstAttribute="leading" secondItem="KXG-O0-ake" secondAttribute="leading" id="Azh-T5-N9l"/>
                                         <constraint firstAttribute="trailing" secondItem="a60-LH-adV" secondAttribute="trailing" constant="75" id="DaX-QR-7M3"/>
@@ -313,16 +334,21 @@
                                         <constraint firstItem="r8z-mM-M0X" firstAttribute="baseline" secondItem="2rw-0u-LXJ" secondAttribute="baseline" id="QEn-do-x8W"/>
                                         <constraint firstItem="2rw-0u-LXJ" firstAttribute="top" secondItem="cd8-PU-OwG" secondAttribute="bottom" constant="10" symbolic="YES" id="Qbh-oe-lLP"/>
                                         <constraint firstItem="KXG-O0-ake" firstAttribute="trailing" secondItem="Zfl-10-Wdk" secondAttribute="trailing" id="Txa-bI-rZ8"/>
+                                        <constraint firstItem="4xg-iR-B4f" firstAttribute="leading" secondItem="Pc1-f7-0zA" secondAttribute="leading" constant="20" symbolic="YES" id="Uw2-0K-VeS"/>
                                         <constraint firstItem="GR0-SX-ali" firstAttribute="top" secondItem="2rw-0u-LXJ" secondAttribute="bottom" constant="10" symbolic="YES" id="Vir-tB-20R"/>
                                         <constraint firstItem="GR0-SX-ali" firstAttribute="leading" secondItem="mhO-vS-JmZ" secondAttribute="trailing" constant="8" symbolic="YES" id="WnA-gF-UqA"/>
+                                        <constraint firstItem="4xg-iR-B4f" firstAttribute="top" secondItem="MvY-R0-1FU" secondAttribute="bottom" constant="53" id="XCG-l5-jux"/>
                                         <constraint firstItem="c8B-qf-UNK" firstAttribute="baseline" secondItem="cd8-PU-OwG" secondAttribute="baseline" id="Y0w-zP-WJi"/>
+                                        <constraint firstItem="kjx-TJ-4n3" firstAttribute="trailing" secondItem="RcT-mn-xqK" secondAttribute="trailing" id="ZXm-jX-cX4"/>
                                         <constraint firstItem="tGd-pe-2xJ" firstAttribute="leading" secondItem="RcT-mn-xqK" secondAttribute="leading" id="aAF-ZY-Z9e"/>
                                         <constraint firstItem="tGd-pe-2xJ" firstAttribute="trailing" secondItem="RcT-mn-xqK" secondAttribute="trailing" id="b7t-yY-W2r"/>
                                         <constraint firstItem="mhO-vS-JmZ" firstAttribute="leading" secondItem="Pc1-f7-0zA" secondAttribute="leading" constant="33" id="gma-t4-tSn"/>
                                         <constraint firstItem="c8B-qf-UNK" firstAttribute="leading" secondItem="Pc1-f7-0zA" secondAttribute="leading" constant="37" id="hWb-e7-smc"/>
+                                        <constraint firstItem="kjx-TJ-4n3" firstAttribute="top" secondItem="4xg-iR-B4f" secondAttribute="bottom" constant="8" symbolic="YES" id="hX5-MV-nk3"/>
                                         <constraint firstItem="2rw-0u-LXJ" firstAttribute="leading" secondItem="r8z-mM-M0X" secondAttribute="trailing" constant="8" symbolic="YES" id="kq1-lD-s0v"/>
                                         <constraint firstItem="Zfl-10-Wdk" firstAttribute="leading" secondItem="MvY-R0-1FU" secondAttribute="trailing" constant="8" symbolic="YES" id="mM0-Pt-cnz"/>
                                         <constraint firstItem="Zfl-10-Wdk" firstAttribute="leading" secondItem="tGd-pe-2xJ" secondAttribute="leading" id="nF7-PX-HHz"/>
+                                        <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="4xg-iR-B4f" secondAttribute="trailing" constant="20" symbolic="YES" id="oMV-od-1hf"/>
                                         <constraint firstItem="mhO-vS-JmZ" firstAttribute="top" secondItem="r8z-mM-M0X" secondAttribute="bottom" constant="14" id="olN-4f-A04"/>
                                         <constraint firstItem="a60-LH-adV" firstAttribute="leading" secondItem="Zfl-10-Wdk" secondAttribute="trailing" constant="8" symbolic="YES" id="p1h-uH-dt4"/>
                                         <constraint firstItem="c8B-qf-UNK" firstAttribute="leading" secondItem="r8z-mM-M0X" secondAttribute="leading" id="pRr-zF-Etf"/>
@@ -616,9 +642,10 @@
             <connections>
                 <outlet property="delegate" destination="-2" id="0bl-1N-AYu"/>
             </connections>
-            <point key="canvasLocation" x="140" y="161"/>
+            <point key="canvasLocation" x="141" y="146"/>
         </window>
         <userDefaultsController representsSharedInstance="YES" id="uQz-5y-ZL2"/>
+        <customFormatter id="TUK-vL-Gf1" userLabel="PAC URL Formatter" customClass="PACURLFormatter" customModule="ShadowsocksX_NG" customModuleProvider="target"/>
         <numberFormatter formatterBehavior="default10_4" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="0" maximumIntegerDigits="42" id="C7t-aU-bub" userLabel="Port Number Formatter">
             <real key="minimum" value="128"/>
             <real key="maximum" value="65535"/>

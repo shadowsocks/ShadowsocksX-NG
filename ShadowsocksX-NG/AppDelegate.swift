@@ -30,6 +30,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     @IBOutlet weak var autoModeMenuItem: NSMenuItem!
     @IBOutlet weak var globalModeMenuItem: NSMenuItem!
     @IBOutlet weak var manualModeMenuItem: NSMenuItem!
+    @IBOutlet weak var externalPACModeMenuItem: NSMenuItem!
     
     @IBOutlet weak var serversMenuItem: NSMenuItem!
     @IBOutlet var showQRCodeMenuItem: NSMenuItem!
@@ -106,6 +107,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             "LocalHTTPOn": true,
             "LocalHTTP.FollowGlobal": false,
             "ProxyExceptions": "127.0.0.1, localhost, 192.168.0.0/16, 10.0.0.0/8, FE80::/64, ::1, FD00::/8",
+            "ExternalPACURL": "",
             ])
         
         statusItem = NSStatusBar.system.statusItem(withLength: AppDelegate.StatusItemIconWidth)
@@ -119,6 +121,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         _ = notifyCenter.rx.notification(NOTIFY_CONF_CHANGED)
             .subscribe(onNext: { noti in
                 self.applyConfig()
+                self.updateRunningModeMenu()
                 self.updateCopyHttpProxyExportMenu()
             })
         
@@ -154,6 +157,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                     defaults.setValue("manual", forKey: "ShadowsocksRunningMode")
                     toastMessage = "Manual Mode".localized
                 case "manual":
+                    if self.externalPACModeMenuItem.isEnabled {
+                        defaults.setValue("externalPAC", forKey: "ShadowsocksRunningMode")
+                        toastMessage = "Auto Mode By External PAC".localized
+                    } else {
+                        defaults.setValue("auto", forKey: "ShadowsocksRunningMode")
+                        toastMessage = "Auto Mode By PAC".localized
+                    }
+                case "externalPAC":
                     defaults.setValue("auto", forKey: "ShadowsocksRunningMode")
                     toastMessage = "Auto Mode By PAC".localized
                 default:
@@ -211,6 +222,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                 ProxyConfHelper.enableGlobalProxy()
             } else if mode == "manual" {
                 ProxyConfHelper.disableProxy()
+            } else if mode == "externalPAC" {
+                ProxyConfHelper.enableExternalPACProxy()
             }
         } else {
             ProxyConfHelper.disableProxy()
@@ -333,6 +346,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         applyConfig()
     }
     
+    @IBAction func selectExternalPACMode(_ sender: NSMenuItem) {
+        let defaults = UserDefaults.standard
+        defaults.setValue("externalPAC", forKey: "ShadowsocksRunningMode")
+        updateRunningModeMenu()
+        applyConfig()
+    }
+    
     @IBAction func editServerPreferences(_ sender: NSMenuItem) {
         if preferencesWinCtrl != nil {
             preferencesWinCtrl.close()
@@ -436,10 +456,36 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     
     func updateRunningModeMenu() {
         let defaults = UserDefaults.standard
-        let mode = defaults.string(forKey: "ShadowsocksRunningMode")
         
-        var serverMenuText = "Servers - (No Selected)".localized
+        if let pacURL = defaults.string(forKey: "ExternalPACURL") {
+            if pacURL != "" {
+                externalPACModeMenuItem.isEnabled = true
+            } else {
+                externalPACModeMenuItem.isEnabled = false
+            }
+        }
 
+        // Update running mode state
+        autoModeMenuItem.state = .off
+        globalModeMenuItem.state = .off
+        manualModeMenuItem.state = .off
+        externalPACModeMenuItem.state = .off
+        
+        let mode = defaults.string(forKey: "ShadowsocksRunningMode")
+        if mode == "auto" {
+            autoModeMenuItem.state = .on
+        } else if mode == "global" {
+            globalModeMenuItem.state = .on
+        } else if mode == "manual" {
+            manualModeMenuItem.state = .on
+        } else if mode == "externalPAC" {
+            externalPACModeMenuItem.state = .on
+        }
+        updateStatusMenuImage()
+        
+        // Update selected server name
+        var serverMenuText = "Servers - (No Selected)".localized
+        
         let mgr = ServerProfileManager.instance
         for p in mgr.profiles {
             if mgr.activeProfileId == p.uuid {
@@ -454,21 +500,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             }
         }
         serversMenuItem.title = serverMenuText
-        
-        if mode == "auto" {
-            autoModeMenuItem.state = .on
-            globalModeMenuItem.state = .off
-            manualModeMenuItem.state = .off
-        } else if mode == "global" {
-            autoModeMenuItem.state = .off
-            globalModeMenuItem.state = .on
-            manualModeMenuItem.state = .off
-        } else if mode == "manual" {
-            autoModeMenuItem.state = .off
-            globalModeMenuItem.state = .off
-            manualModeMenuItem.state = .on
-        }
-        updateStatusMenuImage()
     }
     
     func updateStatusMenuImage() {
@@ -484,6 +515,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                         statusItem.image = NSImage(named: NSImage.Name(rawValue: "menu_g_icon"))
                     case "manual":
                         statusItem.image = NSImage(named: NSImage.Name(rawValue: "menu_m_icon"))
+                    case "externalPAC":
+                        statusItem.image = NSImage(named: NSImage.Name(rawValue: "menu_e_icon"))
                 default: break
                 }
                 statusItem.image?.isTemplate = true
