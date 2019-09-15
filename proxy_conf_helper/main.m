@@ -188,7 +188,7 @@ int main(int argc, const char * argv[])
                     SCPreferencesPathSetValue(prefRef, (__bridge CFStringRef)prefPath
                                               , (__bridge CFDictionaryRef)proxies);
                 } else if ([mode isEqualToString:@"off"]) {
-                    if (pacURL != nil && portString != nil) {
+                    if (pacURL != nil && portString != nil && socks5ListenAddress != nil) {
                         // 取原来的配置，判断是否为shadowsocksX-NG设置的
                         NSDictionary* oldProxies
                             = (__bridge NSDictionary*)SCPreferencesPathGetValue(prefRef
@@ -196,7 +196,7 @@ int main(int argc, const char * argv[])
                         
                         if (([oldProxies[(NSString *)kCFNetworkProxiesProxyAutoConfigURLString] isEqualToString:pacURL]
                              &&[oldProxies[(NSString *)kCFNetworkProxiesProxyAutoConfigEnable] isEqual:[NSNumber numberWithInt:1]])
-                            ||([oldProxies[(NSString*)kCFNetworkProxiesSOCKSProxy] isEqualToString:@"127.0.0.1"]
+                            ||([oldProxies[(NSString*)kCFNetworkProxiesSOCKSProxy] isEqualToString:socks5ListenAddress]
                                &&[oldProxies[(NSString*)kCFNetworkProxiesSOCKSPort] isEqualTo:[NSNumber numberWithInteger:port]]
                                &&[oldProxies[(NSString*)kCFNetworkProxiesSOCKSEnable] isEqual:[NSNumber numberWithInt:1]])
                             ) {
