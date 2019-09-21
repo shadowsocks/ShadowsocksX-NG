@@ -138,3 +138,6 @@
 
 /* Class = "NSTextFieldCell"; title = "External PAC URL:"; ObjectID = "kBe-eq-uZL"; */
 "kBe-eq-uZL.title" = "外部PAC URL:";
+
+/* Class = "NSButtonCell"; title = "Reset Preferences"; ObjectID = "mQC-AR-HXC"; */
+"mQC-AR-HXC.title" = "重置偏好设置";

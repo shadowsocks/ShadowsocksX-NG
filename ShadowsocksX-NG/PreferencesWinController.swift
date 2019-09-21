@@ -39,7 +39,7 @@ class PreferencesWinController: NSWindowController {
     @IBAction func resetAllPreferences(sender: NSButton) {
         let alert = NSAlert.init()
         alert.alertStyle = .warning;
-        alert.messageText = "Are you sure reset the preferences to defaults?".localized
+        alert.messageText = "Are you sure you want to reset the preferences to defaults?".localized
         alert.informativeText = "All your changes of preferences will be lost.".localized
         alert.addButton(withTitle: "OK")
         alert.addButton(withTitle: "Cancel")

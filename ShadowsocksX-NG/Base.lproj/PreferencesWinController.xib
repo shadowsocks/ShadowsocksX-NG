@@ -480,7 +480,7 @@
                                             <rect key="frame" x="20" y="111" width="440" height="119"/>
                                             <clipView key="contentView" id="9Wy-0J-wQ8">
                                                 <rect key="frame" x="1" y="1" width="438" height="117"/>
-                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                <autoresizingMask key="autoresizingMask"/>
                                                 <subviews>
                                                     <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" columnSelection="YES" multipleSelection="NO" autosaveColumns="NO" id="Vp3-dp-iqv">
                                                         <rect key="frame" x="0.0" y="0.0" width="438" height="117"/>
