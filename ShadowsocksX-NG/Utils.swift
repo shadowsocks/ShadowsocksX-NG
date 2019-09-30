@@ -8,13 +8,15 @@
 
 import Foundation
 
-
 extension String {
     var localized: String {
-        return NSLocalizedString(self, tableName: nil, bundle: Bundle.main, value: "", comment: "")
+        return NSLocalizedString(self, tableName: "Localizable", comment: "")
+    }
+    
+    func localized(withComment:String) -> String {
+        return NSLocalizedString(self, tableName: "Localizable", comment: withComment)
     }
 }
-
 
 extension Data {
     func sha1() -> String {
@@ -24,4 +26,13 @@ extension Data {
         let hexBytes = digest.map { String(format: "%02hhx", $0) }
         return hexBytes.joined(separator: "")
     }
+}
+
+enum ProxyType {
+    case pac
+    case global
+}
+
+struct Globals {
+    static var proxyType = ProxyType.pac
 }

@@ -6,7 +6,7 @@ Overview
 [![Platform](http://cocoapod-badges.herokuapp.com/p/GCDWebServer/badge.png)](https://github.com/swisspol/GCDWebServer)
 [![License](http://img.shields.io/cocoapods/l/GCDWebServer.svg)](LICENSE)
 
-GCDWebServer is a modern and lightweight GCD based HTTP 1.1 server designed to be embedded in OS X & iOS apps. It was written from scratch with the following goals in mind:
+GCDWebServer is a modern and lightweight GCD based HTTP 1.1 server designed to be embedded in iOS, macOS & tvOS apps. It was written from scratch with the following goals in mind:
 * Elegant and easy to use architecture with only 4 core classes: server, connection, request and response (see "Understanding GCDWebServer's Architecture" below)
 * Well designed API with fully documented headers for easy integration and customization
 * Entirely built with an event-driven design using [Grand Central Dispatch](http://en.wikipedia.org/wiki/Grand_Central_Dispatch) for best performance and concurrency
@@ -28,23 +28,22 @@ Extra built-in features:
 
 Included extensions:
 * [GCDWebUploader](GCDWebUploader/GCDWebUploader.h): subclass of ```GCDWebServer``` that implements an interface for uploading and downloading files using a web browser
-* [GCDWebDAVServer](GCDWebDAVServer/GCDWebDAVServer.h): subclass of ```GCDWebServer``` that implements a class 1 [WebDAV](https://en.wikipedia.org/wiki/WebDAV) server (with partial class 2 support for OS X Finder)
+* [GCDWebDAVServer](GCDWebDAVServer/GCDWebDAVServer.h): subclass of ```GCDWebServer``` that implements a class 1 [WebDAV](https://en.wikipedia.org/wiki/WebDAV) server (with partial class 2 support for macOS Finder)
 
 What's not supported (but not really required from an embedded HTTP server):
 * Keep-alive connections
 * HTTPS
 
 Requirements:
-* OS X 10.7 or later (x86_64)
-* iOS 5.0 or later (armv7, armv7s or arm64)
-* ARC memory management only (if you need MRC support use GCDWebServer 3.1 and earlier)
+* macOS 10.7 or later (x86_64)
+* iOS 8.0 or later (armv7, armv7s or arm64)
+* tvOS 9.0 or later (arm64)
+* ARC memory management only (if you need MRC support use GCDWebServer 3.1 or earlier)
 
 Getting Started
 ===============
 
-Download or check out the [latest release](https://github.com/swisspol/GCDWebServer/releases) of GCDWebServer then add the entire "GCDWebServer" subfolder to your Xcode project. If you intend to use one of the extensions like GCDWebDAVServer or GCDWebUploader, add these subfolders as well.
-
-If you add the files directly then (1) link to `libz` (via Target > Build Phases > Link Binary With Libraries) and (2) add `$(SDKROOT)/usr/include/libxml2` to your header search paths (via Target > Build Settings > HEADER_SEARCH_PATHS).
+Download or check out the [latest release](https://github.com/swisspol/GCDWebServer/releases) of GCDWebServer then add the entire "GCDWebServer" subfolder to your Xcode project. If you intend to use one of the extensions like GCDWebDAVServer or GCDWebUploader, add these subfolders as well. Finally link to `libz` (via Target > Build Phases > Link Binary With Libraries) and add `$(SDKROOT)/usr/include/libxml2` to your header search paths (via Target > Build Settings > HEADER_SEARCH_PATHS).
 
 Alternatively, you can install GCDWebServer using [CocoaPods](http://cocoapods.org/) by simply adding this line to your Podfile:
 ```
@@ -71,7 +70,7 @@ Then run `$ carthage update` and add the generated frameworks to your Xcode proj
 Help & Support
 ==============
 
-For help with using GCDWebServer, it's best to ask your question on Stack Overflow with the [`gcdwebserver`](http://stackoverflow.com/questions/tagged/gcdwebserver) tag.
+For help with using GCDWebServer, it's best to ask your question on Stack Overflow with the [`gcdwebserver`](http://stackoverflow.com/questions/tagged/gcdwebserver) tag. For bug reports and enhancement requests you can use [issues](https://github.com/swisspol/GCDWebServer/issues) in this project.
 
 Be sure to read this entire README first though!
 
@@ -82,7 +81,7 @@ These code snippets show how to implement a custom HTTP server that runs on port
 
 **IMPORTANT:** If not using CocoaPods, be sure to add the `libz` shared system library to the Xcode target for your app.
 
-**OS X version (command line tool):**
+**macOS version (command line tool):**
 ```objectivec
 #import "GCDWebServer.h"
 #import "GCDWebServerDataResponse.h"
@@ -148,7 +147,7 @@ int main(int argc, const char* argv[]) {
 @end
 ```
 
-**OS X Swift version (command line tool):**
+**macOS Swift version (command line tool):**
 
 ***webServer.swift***
 ```swift
@@ -159,12 +158,12 @@ func initWebServer() {
 
     let webServer = GCDWebServer()
 
-    webServer.addDefaultHandlerForMethod("GET", requestClass: GCDWebServerRequest.self, processBlock: {request in
-    return GCDWebServerDataResponse(HTML:"<html><body><p>Hello World</p></body></html>")
+    webServer.addDefaultHandler(forMethod: "GET", request: GCDWebServerRequest.self, processBlock: {request in
+            return GCDWebServerDataResponse(html:"<html><body><p>Hello World</p></body></html>")
+            
+        })
         
-    })
-    
-    webServer.runWithPort(8080, bonjourName: "GCD Web Server")
+    webServer.start(withPort: 8080, bonjourName: "GCD Web Server")
     
     print("Visit \(webServer.serverURL) in your web browser")
 }
@@ -209,7 +208,7 @@ WebDAV Server in iOS Apps
 
 GCDWebDAVServer is a subclass of ```GCDWebServer``` that provides a class 1 compliant [WebDAV](https://en.wikipedia.org/wiki/WebDAV) server. This lets users upload, download, delete files and create directories from a directory inside your iOS app's sandbox using any WebDAV client like [Transmit](https://panic.com/transmit/) (Mac), [ForkLift](http://binarynights.com/forklift/) (Mac) or [CyberDuck](http://cyberduck.io/) (Mac / Windows).
 
-GCDWebDAVServer should also work with the [OS X Finder](http://support.apple.com/kb/PH13859) as it is partially class 2 compliant (but only when the client is the OS X WebDAV implementation).
+GCDWebDAVServer should also work with the [macOS Finder](http://support.apple.com/kb/PH13859) as it is partially class 2 compliant (but only when the client is the macOS WebDAV implementation).
 
 Simply instantiate and run a ```GCDWebDAVServer``` instance then connect to ```http://{YOUR-IOS-DEVICE-IP-ADDRESS}/``` using a WebDAV client:
 
@@ -239,7 +238,7 @@ Serving a Static Website
 
 GCDWebServer includes a built-in handler that can recursively serve a directory (it also lets you control how the ["Cache-Control"](http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.9) header should be set):
 
-**OS X version (command line tool):**
+**macOS version (command line tool):**
 ```objectivec
 #import "GCDWebServer.h"
 
@@ -350,8 +349,8 @@ GCDWebServer & Background Mode for iOS Apps
 When doing networking operations in iOS apps, you must handle carefully [what happens when iOS puts the app in the background](https://developer.apple.com/library/ios/technotes/tn2277/_index.html). Typically you must stop any network servers while the app is in the background and restart them when the app comes back to the foreground. This can become quite complex considering servers might have ongoing connections when they need to be stopped.
 
 Fortunately, GCDWebServer does all of this automatically for you:
-- GCDWebServer begins a [background task](https://developer.apple.com/library/ios/documentation/iphone/conceptual/iphoneosprogrammingguide/ManagingYourApplicationsFlow/ManagingYourApplicationsFlow.html) whenever the first HTTP connection is opened and ends it only when the last one is closed. This prevents iOS from suspending the app after it goes in the background, which would immediately kill HTTP connections to the client.
- - While the app is in the background, as long as new HTTP connections keep being initiated, the background task will continue to exist and iOS will not suspend the app (unless under sudden and unexpected memory pressure).
+- GCDWebServer begins a [background task](https://developer.apple.com/library/archive/documentation/iPhone/Conceptual/iPhoneOSProgrammingGuide/BackgroundExecution/BackgroundExecution.html) whenever the first HTTP connection is opened and ends it only when the last one is closed. This prevents iOS from suspending the app after it goes in the background, which would immediately kill HTTP connections to the client.
+ - While the app is in the background, as long as new HTTP connections keep being initiated, the background task will continue to exist and iOS will not suspend the app **for up to 10 minutes** (unless under sudden and unexpected memory pressure).
  - If the app is still in the background when the last HTTP connection is closed, GCDWebServer will suspend itself and stop accepting new connections as if you had called ```-stop``` (this behavior can be disabled with the ```GCDWebServerOption_AutomaticallySuspendInBackground``` option).
 - If the app goes in the background while no HTTP connections are opened, GCDWebServer will immediately suspend itself and stop accepting new connections as if you had called ```-stop``` (this behavior can be disabled with the ```GCDWebServerOption_AutomaticallySuspendInBackground``` option).
 - If the app comes back to the foreground and GCDWebServer had been suspended, it will automatically resume itself and start accepting again new HTTP connections as if you had called ```-start```.
@@ -365,7 +364,7 @@ Both for debugging and informational purpose, GCDWebServer logs messages extensi
 
 By default, all messages logged by GCDWebServer are sent to its built-in logging facility, which simply outputs to ```stderr``` (assuming a terminal type device is connected). In order to better integrate with the rest of your app or because of the amount of information logged, you might want to use another logging facility.
 
-GCDWebServer has automatic support for [XLFacility](https://github.com/swisspol/XLFacility) (by the same author as GCDWebServer and also open-source) and [CocoaLumberjack](https://github.com/CocoaLumberjack/CocoaLumberjack). If either of them is in the same Xcode project, GCDWebServer should use it automatically instead of the built-in logging facility (see [GCDWebServerPrivate.h](GCDWebServer/Core/GCDWebServerPrivate.h) for the implementation details).
+GCDWebServer has automatic support for [XLFacility](https://github.com/swisspol/XLFacility) (by the same author as GCDWebServer and also open-source): if it is in the same Xcode project, GCDWebServer should use it automatically instead of the built-in logging facility (see [GCDWebServerPrivate.h](GCDWebServer/Core/GCDWebServerPrivate.h) for the implementation details).
 
 It's also possible to use a custom logging facility - see [GCDWebServer.h](GCDWebServer/Core/GCDWebServer.h) for more information.
 

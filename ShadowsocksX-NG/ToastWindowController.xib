@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="11762" systemVersion="16D32" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
+    <dependencies>
+        <deployment identifier="macosx"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="11762"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <customObject id="-2" userLabel="File's Owner" customClass="ToastWindowController" customModule="ShadowsocksX_NG" customModuleProvider="target">
+            <connections>
+                <outlet property="panelView" destination="KRY-zc-8By" id="a3Z-ll-K4V"/>
+                <outlet property="titleTextField" destination="scG-hz-bja" id="8Dk-Hq-eUS"/>
+                <outlet property="window" destination="kRK-Pd-y69" id="pHW-35-GCT"/>
+            </connections>
+        </customObject>
+        <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
+        <customObject id="-3" userLabel="Application" customClass="NSObject"/>
+        <window title="Window" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" hidesOnDeactivate="YES" oneShot="NO" showsToolbarButton="NO" visibleAtLaunch="NO" animationBehavior="default" id="kRK-Pd-y69" customClass="NSPanel">
+            <windowStyleMask key="styleMask" closable="YES" miniaturizable="YES" resizable="YES" utility="YES"/>
+            <rect key="contentRect" x="139" y="81" width="300" height="100"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1920" height="1057"/>
+            <value key="minSize" type="size" width="200" height="100"/>
+            <view key="contentView" id="KRY-zc-8By" userLabel="Panel View">
+                <rect key="frame" x="0.0" y="0.0" width="300" height="100"/>
+                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                <subviews>
+                    <textField verticalHuggingPriority="750" fixedFrame="YES" preferredMaxLayoutWidth="162" translatesAutoresizingMaskIntoConstraints="NO" id="scG-hz-bja" userLabel="Is Name">
+                        <rect key="frame" x="24" y="33" width="258" height="31"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
+                        <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="center" title="Label" usesSingleLineMode="YES" id="eQL-ri-Y7Z">
+                            <font key="font" metaFont="system" size="24"/>
+                            <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                            <color key="backgroundColor" name="alternateSelectedControlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                </subviews>
+            </view>
+            <point key="canvasLocation" x="-2307" y="172"/>
+        </window>
+    </objects>
+</document>

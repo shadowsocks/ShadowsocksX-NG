@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="14490.70" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
+    <dependencies>
+        <deployment identifier="macosx"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14490.70"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <customObject id="-2" userLabel="File's Owner" customClass="ShareServerProfilesWindowController" customModule="ShadowsocksX_NG" customModuleProvider="target">
+            <connections>
+                <outlet property="copyAllServerURLsButton" destination="PkN-2i-ex7" id="5gY-Vs-cfn"/>
+                <outlet property="copyQRCodeButton" destination="GPl-Kb-AZg" id="pId-jX-erp"/>
+                <outlet property="copyURLButton" destination="Myo-Gh-Sba" id="3uJ-PP-nOS"/>
+                <outlet property="profilesTableView" destination="LWb-xh-GIK" id="qqJ-Qa-fWq"/>
+                <outlet property="qrCodeImageView" destination="atP-ge-P5H" id="Wc7-Ht-oJE"/>
+                <outlet property="saveAllServerURLsAsFileButton" destination="WOW-rs-fyP" id="A7T-IN-ub2"/>
+                <outlet property="saveQRCodeAsFileButton" destination="4WD-tD-JDA" id="Bfg-wE-8ls"/>
+                <outlet property="window" destination="F0z-JX-Cv5" id="gIp-Ho-8D9"/>
+            </connections>
+        </customObject>
+        <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
+        <customObject id="-3" userLabel="Application" customClass="NSObject"/>
+        <window title="Share Server Profiles" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" animationBehavior="default" id="F0z-JX-Cv5">
+            <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
+            <windowPositionMask key="initialPositionMask" topStrut="YES" bottomStrut="YES"/>
+            <rect key="contentRect" x="562" y="460" width="508" height="419"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1680" height="1027"/>
+            <view key="contentView" wantsLayer="YES" id="se5-gp-TjO">
+                <rect key="frame" x="0.0" y="0.0" width="508" height="419"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <scrollView autohidesScrollers="YES" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="d0q-qb-o6U">
+                        <rect key="frame" x="20" y="119" width="200" height="280"/>
+                        <clipView key="contentView" id="G7B-Z5-glP">
+                            <rect key="frame" x="1" y="1" width="198" height="278"/>
+                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                            <subviews>
+                                <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" columnReordering="NO" columnSelection="YES" columnResizing="NO" multipleSelection="NO" autosaveColumns="NO" rowSizeStyle="automatic" viewBased="YES" id="LWb-xh-GIK">
+                                    <rect key="frame" x="0.0" y="0.0" width="198" height="278"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <size key="intercellSpacing" width="3" height="2"/>
+                                    <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
+                                    <tableColumns>
+                                        <tableColumn editable="NO" width="195" minWidth="40" maxWidth="1000" id="BVB-7v-GrU">
+                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Server">
+                                                <font key="font" metaFont="smallSystem"/>
+                                                <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                                            </tableHeaderCell>
+                                            <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" title="Text Cell" id="Z7X-TN-APg">
+                                                <font key="font" metaFont="system"/>
+                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                            <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
+                                            <prototypeCellViews>
+                                                <tableCellView identifier="cellTitle" id="a8X-ox-vkA">
+                                                    <rect key="frame" x="1" y="1" width="195" height="17"/>
+                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                    <subviews>
+                                                        <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="Kni-HI-MDc">
+                                                            <rect key="frame" x="0.0" y="0.0" width="195" height="17"/>
+                                                            <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="Table View Cell" id="EIQ-Bg-vVe">
+                                                                <font key="font" metaFont="system"/>
+                                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                        </textField>
+                                                    </subviews>
+                                                    <constraints>
+                                                        <constraint firstItem="Kni-HI-MDc" firstAttribute="leading" secondItem="a8X-ox-vkA" secondAttribute="leading" constant="2" id="7KO-0D-dgp"/>
+                                                        <constraint firstItem="Kni-HI-MDc" firstAttribute="centerX" secondItem="a8X-ox-vkA" secondAttribute="centerX" id="Fe7-da-2Ni"/>
+                                                        <constraint firstItem="Kni-HI-MDc" firstAttribute="centerY" secondItem="a8X-ox-vkA" secondAttribute="centerY" id="jIj-uO-Kop"/>
+                                                    </constraints>
+                                                    <connections>
+                                                        <outlet property="textField" destination="Kni-HI-MDc" id="wnh-Vn-cT5"/>
+                                                    </connections>
+                                                </tableCellView>
+                                            </prototypeCellViews>
+                                        </tableColumn>
+                                    </tableColumns>
+                                    <connections>
+                                        <outlet property="dataSource" destination="-2" id="4GA-ch-rOE"/>
+                                        <outlet property="delegate" destination="-2" id="IdR-br-h7j"/>
+                                    </connections>
+                                </tableView>
+                            </subviews>
+                        </clipView>
+                        <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="YES" id="gkA-hM-aoX">
+                            <rect key="frame" x="1" y="224" width="178" height="16"/>
+                            <autoresizingMask key="autoresizingMask"/>
+                        </scroller>
+                        <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="UQv-FS-DZa">
+                            <rect key="frame" x="224" y="17" width="15" height="102"/>
+                            <autoresizingMask key="autoresizingMask"/>
+                        </scroller>
+                    </scrollView>
+                    <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="atP-ge-P5H">
+                        <rect key="frame" x="238" y="119" width="250" height="250"/>
+                        <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" id="V51-A5-F2F"/>
+                    </imageView>
+                    <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="GPl-Kb-AZg">
+                        <rect key="frame" x="232" y="46" width="262" height="32"/>
+                        <buttonCell key="cell" type="push" title="Copy QRCode" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="PrW-s6-Uab">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="copyQRCode:" target="-2" id="cLd-uU-Mqd"/>
+                        </connections>
+                    </button>
+                    <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="4WD-tD-JDA">
+                        <rect key="frame" x="232" y="13" width="262" height="32"/>
+                        <buttonCell key="cell" type="push" title="Save QRCode As File" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="IaI-Rj-Kss">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="saveQRCodeAsFile:" target="-2" id="cHE-5h-cbg"/>
+                        </connections>
+                    </button>
+                    <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="PkN-2i-ex7">
+                        <rect key="frame" x="14" y="79" width="212" height="32"/>
+                        <buttonCell key="cell" type="push" title="Copy All Server URLs" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="Yt2-p1-4w0">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="copyAllServerURLs:" target="-2" id="y34-hx-a7y"/>
+                        </connections>
+                    </button>
+                    <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="WOW-rs-fyP">
+                        <rect key="frame" x="14" y="46" width="212" height="32"/>
+                        <buttonCell key="cell" type="push" title="Save All Server URLs As File" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="9OS-xy-GB1">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="saveAllServerURLsAsFile:" target="-2" id="Urh-dz-B8d"/>
+                        </connections>
+                    </button>
+                    <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Myo-Gh-Sba">
+                        <rect key="frame" x="232" y="79" width="262" height="32"/>
+                        <buttonCell key="cell" type="push" title="Copy URL" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="PHX-gY-lZe">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="copyURL:" target="-2" id="dqq-Ps-sEh"/>
+                        </connections>
+                    </button>
+                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="9o8-fU-fd5">
+                        <rect key="frame" x="236" y="378" width="200" height="17"/>
+                        <textFieldCell key="cell" lineBreakMode="clipping" title="The QRCode is in SIP002 format" id="czc-dd-Tcq">
+                            <font key="font" metaFont="system"/>
+                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                </subviews>
+                <constraints>
+                    <constraint firstItem="PkN-2i-ex7" firstAttribute="baseline" secondItem="Myo-Gh-Sba" secondAttribute="baseline" id="0JZ-YU-1ku"/>
+                    <constraint firstItem="WOW-rs-fyP" firstAttribute="baseline" secondItem="GPl-Kb-AZg" secondAttribute="baseline" id="2KL-CL-2ZT"/>
+                    <constraint firstItem="PkN-2i-ex7" firstAttribute="top" secondItem="d0q-qb-o6U" secondAttribute="bottom" constant="12" id="5B6-SC-Lfb"/>
+                    <constraint firstItem="GPl-Kb-AZg" firstAttribute="leading" secondItem="4WD-tD-JDA" secondAttribute="leading" id="BMf-K1-TVf"/>
+                    <constraint firstItem="4WD-tD-JDA" firstAttribute="top" secondItem="GPl-Kb-AZg" secondAttribute="bottom" constant="12" symbolic="YES" id="IhQ-NN-0wa"/>
+                    <constraint firstItem="d0q-qb-o6U" firstAttribute="leading" secondItem="PkN-2i-ex7" secondAttribute="leading" id="OIj-KG-9aT"/>
+                    <constraint firstItem="atP-ge-P5H" firstAttribute="leading" secondItem="Myo-Gh-Sba" secondAttribute="leading" id="OW7-ys-grj"/>
+                    <constraint firstItem="atP-ge-P5H" firstAttribute="trailing" secondItem="Myo-Gh-Sba" secondAttribute="trailing" id="Ond-No-6XU"/>
+                    <constraint firstItem="d0q-qb-o6U" firstAttribute="top" secondItem="se5-gp-TjO" secondAttribute="top" constant="20" symbolic="YES" id="P4g-uT-iiA"/>
+                    <constraint firstAttribute="bottom" secondItem="4WD-tD-JDA" secondAttribute="bottom" constant="20" symbolic="YES" id="Pzp-Xq-ySf"/>
+                    <constraint firstItem="9o8-fU-fd5" firstAttribute="leading" secondItem="d0q-qb-o6U" secondAttribute="trailing" constant="18" id="YhZ-3f-Vhg"/>
+                    <constraint firstItem="PkN-2i-ex7" firstAttribute="leading" secondItem="WOW-rs-fyP" secondAttribute="leading" id="aVv-aq-6Uw"/>
+                    <constraint firstItem="9o8-fU-fd5" firstAttribute="top" secondItem="se5-gp-TjO" secondAttribute="top" constant="24" id="djw-QK-Hkh"/>
+                    <constraint firstItem="d0q-qb-o6U" firstAttribute="leading" secondItem="se5-gp-TjO" secondAttribute="leading" constant="20" symbolic="YES" id="eBs-kY-b4F"/>
+                    <constraint firstAttribute="trailing" secondItem="9o8-fU-fd5" secondAttribute="trailing" constant="74" id="fMj-gc-6a3"/>
+                    <constraint firstItem="WOW-rs-fyP" firstAttribute="top" secondItem="PkN-2i-ex7" secondAttribute="bottom" constant="12" symbolic="YES" id="hFL-Fk-vnh"/>
+                    <constraint firstItem="d0q-qb-o6U" firstAttribute="bottom" secondItem="atP-ge-P5H" secondAttribute="bottom" id="j2N-0R-fbF"/>
+                    <constraint firstItem="PkN-2i-ex7" firstAttribute="trailing" secondItem="WOW-rs-fyP" secondAttribute="trailing" id="jYr-de-nuz"/>
+                    <constraint firstItem="Myo-Gh-Sba" firstAttribute="leading" secondItem="GPl-Kb-AZg" secondAttribute="leading" id="lZg-Ig-xNO"/>
+                    <constraint firstAttribute="trailing" secondItem="atP-ge-P5H" secondAttribute="trailing" constant="20" symbolic="YES" id="lwK-X8-kuL"/>
+                    <constraint firstItem="GPl-Kb-AZg" firstAttribute="trailing" secondItem="4WD-tD-JDA" secondAttribute="trailing" id="u6y-c4-plW"/>
+                    <constraint firstItem="atP-ge-P5H" firstAttribute="top" secondItem="9o8-fU-fd5" secondAttribute="bottom" constant="9" id="uwM-zJ-SN7"/>
+                    <constraint firstItem="d0q-qb-o6U" firstAttribute="trailing" secondItem="PkN-2i-ex7" secondAttribute="trailing" id="v7l-fK-lVF"/>
+                    <constraint firstItem="9o8-fU-fd5" firstAttribute="leading" secondItem="atP-ge-P5H" secondAttribute="leading" id="vJ0-fV-7FM"/>
+                    <constraint firstItem="Myo-Gh-Sba" firstAttribute="trailing" secondItem="GPl-Kb-AZg" secondAttribute="trailing" id="yu7-lx-VDg"/>
+                </constraints>
+            </view>
+            <connections>
+                <outlet property="delegate" destination="-2" id="0bl-1N-AYu"/>
+            </connections>
+            <point key="canvasLocation" x="143" y="223.5"/>
+        </window>
+    </objects>
+</document>

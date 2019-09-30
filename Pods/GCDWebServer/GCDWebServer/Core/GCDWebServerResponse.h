@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2012-2015, Pierre-Olivier Latour
+ Copyright (c) 2012-2019, Pierre-Olivier Latour
  All rights reserved.
  
  Redistribution and use in source and binary forms, with or without
@@ -27,11 +27,13 @@
 
 #import <Foundation/Foundation.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 /**
  *  The GCDWebServerBodyReaderCompletionBlock is passed by GCDWebServer to the
  *  GCDWebServerBodyReader object when reading data from it asynchronously.
  */
-typedef void (^GCDWebServerBodyReaderCompletionBlock)(NSData* data, NSError* error);
+typedef void (^GCDWebServerBodyReaderCompletionBlock)(NSData* _Nullable data, NSError* _Nullable error);
 
 /**
  *  This protocol is used by the GCDWebServerConnection to communicate with
@@ -62,7 +64,7 @@ typedef void (^GCDWebServerBodyReaderCompletionBlock)(NSData* data, NSError* err
  *  or an empty NSData there is no more body data, or nil on error and set
  *  the "error" argument which is guaranteed to be non-NULL.
  */
-- (NSData*)readData:(NSError**)error;
+- (nullable NSData*)readData:(NSError**)error;
 
 /**
  *  This method is called after all body data has been sent.
@@ -102,7 +104,7 @@ typedef void (^GCDWebServerBodyReaderCompletionBlock)(NSData* data, NSError* err
  *
  *  @warning This property must be set if a body is present.
  */
-@property(nonatomic, copy) NSString* contentType;
+@property(nonatomic, copy, nullable) NSString* contentType;
 
 /**
  *  Sets the content length for the body of the response. If a body is present
@@ -136,14 +138,14 @@ typedef void (^GCDWebServerBodyReaderCompletionBlock)(NSData* data, NSError* err
  *
  *  The default value is nil.
  */
-@property(nonatomic, retain) NSDate* lastModifiedDate;
+@property(nonatomic, nullable) NSDate* lastModifiedDate;
 
 /**
  *  Sets the ETag for the response using the "ETag" header.
  *
  *  The default value is nil.
  */
-@property(nonatomic, copy) NSString* eTag;
+@property(nonatomic, copy, nullable) NSString* eTag;
 
 /**
  *  Enables gzip encoding for the response body.
@@ -174,7 +176,7 @@ typedef void (^GCDWebServerBodyReaderCompletionBlock)(NSData* data, NSError* err
  *  @warning Do not attempt to override the primary headers used
  *  by GCDWebServerResponse like "Content-Type", "ETag", etc...
  */
-- (void)setValue:(NSString*)value forAdditionalHeader:(NSString*)header;
+- (void)setValue:(nullable NSString*)value forAdditionalHeader:(NSString*)header;
 
 /**
  *  Convenience method that checks if the contentType property is defined.
@@ -206,3 +208,5 @@ typedef void (^GCDWebServerBodyReaderCompletionBlock)(NSData* data, NSError* err
 - (instancetype)initWithRedirect:(NSURL*)location permanent:(BOOL)permanent;
 
 @end
+
+NS_ASSUME_NONNULL_END

@@ -8,6 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import <CoreImage/CoreImage.h>
+#import <AppKit/AppKit.h>
 
 void ScanQRCodeOnScreen() {
     /* displays[] Quartz display ID's */
@@ -56,9 +57,13 @@ void ScanQRCodeOnScreen() {
             NSLog(@"%@", feature.messageString);
             if ( [feature.messageString hasPrefix:@"ss://"] )
             {
-                [foundSSUrls addObject:[NSURL URLWithString:feature.messageString]];
+                NSURL *url = [NSURL URLWithString:feature.messageString];
+                if (url) {
+                    [foundSSUrls addObject:url];
+                }
             }
         }
+         CGImageRelease(image);
     }
     
     free(displays);
@@ -72,62 +77,41 @@ void ScanQRCodeOnScreen() {
      ];
 }
 
-// 解析SS URL，如果成功则返回一个与ServerProfile类兼容的dict
-NSDictionary<NSString *, id>* ParseSSURL(NSURL* url) {
-    if (!url.host) {
-        return nil;
-    }
+NSImage* createQRImage(NSString *string, NSSize size) {
+    NSImage *outputImage = [[NSImage alloc]initWithSize:size];
+    [outputImage lockFocus];
     
-    NSString *urlString = [url absoluteString];
-    int i = 0;
-    NSString *errorReason = nil;
-    while(i < 2) {
-        if (i == 1) {
-            NSString* host = url.host;
-            if ([host length]%4!=0) {
-                int n = 4 - [host length]%4;
-                if (1==n) {
-                    host = [host stringByAppendingString:@"="];
-                } else if (2==n) {
-                    host = [host stringByAppendingString:@"=="];
-                }
-            }
-            NSData *data = [[NSData alloc] initWithBase64EncodedString:host options:0];
-            NSString *decodedString = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-            urlString = decodedString;
-        }
-        i++;
-        urlString = [urlString stringByReplacingOccurrencesOfString:@"ss://" withString:@"" options:NSAnchoredSearch range:NSMakeRange(0, urlString.length)];
-        NSRange firstColonRange = [urlString rangeOfString:@":"];
-        NSRange lastColonRange = [urlString rangeOfString:@":" options:NSBackwardsSearch];
-        NSRange lastAtRange = [urlString rangeOfString:@"@" options:NSBackwardsSearch];
-        if (firstColonRange.length == 0) {
-            errorReason = @"colon not found";
-            continue;
-        }
-        if (firstColonRange.location == lastColonRange.location) {
-            errorReason = @"only one colon";
-            continue;
-        }
-        if (lastAtRange.length == 0) {
-            errorReason = @"at not found";
-            continue;
-        }
-        if (!((firstColonRange.location < lastAtRange.location) && (lastAtRange.location < lastColonRange.location))) {
-            errorReason = @"wrong position";
-            continue;
-        }
-        NSString *method = [urlString substringWithRange:NSMakeRange(0, firstColonRange.location)];
-        NSString *password = [urlString substringWithRange:NSMakeRange(firstColonRange.location + 1, lastAtRange.location - firstColonRange.location - 1)];
-        NSString *IP = [urlString substringWithRange:NSMakeRange(lastAtRange.location + 1, lastColonRange.location - lastAtRange.location - 1)];
-        NSString *port = [urlString substringWithRange:NSMakeRange(lastColonRange.location + 1, urlString.length - lastColonRange.location - 1)];
-        
-        
-        return @{@"ServerHost": IP,
-                 @"ServerPort": @([port integerValue]),
-                 @"Method": method,
-                 @"Password": password,
-                 };
-    }
-    return nil;
+    // Setup the QR filter with our string
+    CIFilter *filter = [CIFilter filterWithName:@"CIQRCodeGenerator"];
+    [filter setDefaults];
+    
+    NSData *data = [string dataUsingEncoding:NSUTF8StringEncoding];
+    [filter setValue:data forKey:@"inputMessage"];
+    /*
+     L: 7%
+     M: 15%
+     Q: 25%
+     H: 30%
+     */
+    [filter setValue:@"Q" forKey:@"inputCorrectionLevel"];
+    
+    CIImage *image = [filter valueForKey:@"outputImage"];
+    
+    // Calculate the size of the generated image and the scale for the desired image size
+    CGRect extent = CGRectIntegral(image.extent);
+    CGFloat scale = MIN(size.width / CGRectGetWidth(extent), size.height / CGRectGetHeight(extent));
+    
+    CGImageRef bitmapImage = [NSGraphicsContext.currentContext.CIContext createCGImage:image fromRect:extent];
+    
+    CGContextRef graphicsContext = NSGraphicsContext.currentContext.CGContext;
+    
+    CGContextSetInterpolationQuality(graphicsContext, kCGInterpolationNone);
+    CGContextScaleCTM(graphicsContext, scale, scale);
+    CGContextDrawImage(graphicsContext, extent, bitmapImage);
+    
+    // Cleanup
+    CGImageRelease(bitmapImage);
+    
+    [outputImage unlockFocus];
+    return outputImage;
 }

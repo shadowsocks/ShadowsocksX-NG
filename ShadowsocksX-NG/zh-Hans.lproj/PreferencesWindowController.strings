@@ -15,7 +15,7 @@
 "MiN-VE-FtC.title" = "备注:";
 
 /* Class = "NSButtonCell"; title = "Enable OTA"; ObjectID = "hRZ-Rp-I5e"; */
-"hRZ-Rp-I5e.title" = "启用 OTA";
+"hRZ-Rp-I5e.title" = "启用 OTA (被废弃)";
 
 /* Class = "NSButtonCell"; title = "Cacnel"; ObjectID = "j03-9E-uHW"; */
 "j03-9E-uHW.title" = "取消";
@@ -34,3 +34,15 @@
 
 /* Class = "NSButtonCell"; title = "OK"; ObjectID = "zPE-oD-PwK"; */
 "zPE-oD-PwK.title" = "确定";
+
+/* Class = "NSMenuItem"; title = "Clone"; ObjectID = "bl9-lq-u9V"; */
+"bl9-lq-u9V.title" = "克隆";
+
+/* Class = "NSTextFieldCell"; title = "Plugin:"; ObjectID = "gDt-yZ-Mqs"; */
+"gDt-yZ-Mqs.title" = "插件:";
+
+/* Class = "NSTextFieldCell"; title = "Plugin Opts:"; ObjectID = "orT-7j-dxE"; */
+"orT-7j-dxE.title" = "插件选项:";
+
+/* Class = "NSButtonCell"; title = "Open Plugin Folder..."; ObjectID = "T8q-g1-qjN"; */
+"T8q-g1-qjN.title" = "打开插件目录...";

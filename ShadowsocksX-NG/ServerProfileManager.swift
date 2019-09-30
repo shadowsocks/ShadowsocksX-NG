@@ -2,7 +2,7 @@
 //  ServerProfileManager.swift
 //  ShadowsocksX-NG
 //
-//  Created by 邱宇舟 on 16/6/6.
+//  Created by 邱宇舟 on 16/6/6. Modified by 秦宇航 16/9/12
 //  Copyright © 2016年 qiuyuzhou. All rights reserved.
 //
 
@@ -21,7 +21,7 @@ class ServerProfileManager: NSObject {
         let defaults = UserDefaults.standard
         if let _profiles = defaults.array(forKey: "ServerProfiles") {
             for _profile in _profiles {
-                let profile = ServerProfile.fromDictionary(_profile as! [String : AnyObject])
+                let profile = ServerProfile.fromDictionary(_profile as! [String: Any])
                 profiles.append(profile)
             }
         }
@@ -48,14 +48,6 @@ class ServerProfileManager: NSObject {
         if getActiveProfile() == nil {
             activeProfileId = nil
         }
-        
-        if activeProfileId != nil {
-            defaults.set(activeProfileId, forKey: "ActiveServerProfileId")
-            writeSSLocalConfFile((getActiveProfile()?.toJsonConfig())!)
-        } else {
-            defaults.removeObject(forKey: "ActiveServerProfileId")
-            removeSSLocalConfFile()
-        }
     }
     
     func getActiveProfile() -> ServerProfile? {
@@ -69,5 +61,34 @@ class ServerProfileManager: NSObject {
         } else {
             return nil
         }
+    }
+    
+    func addServerProfileByURL(urls: [URL]) -> Int {
+        var addCount = 0
+        
+        for url in urls {
+            if let profile = ServerProfile(url: url) {
+                profiles.append(profile)
+                addCount = addCount + 1
+            }
+        }
+        
+        if addCount > 0 {
+            save()
+            NotificationCenter.default
+                .post(name: NOTIFY_SERVER_PROFILES_CHANGED, object: nil)
+        }
+        
+        return addCount
+    }
+    
+    static func findURLSInText(_ text: String) -> [URL] {
+        var urls = text.split(separator: "\n")
+            .map { String($0).trimmingCharacters(in: CharacterSet.whitespacesAndNewlines) }
+            .map { URL(string: $0) }
+            .filter { $0 != nil }
+            .map { $0! }
+        urls = urls.filter { $0.scheme == "ss" }
+        return urls
     }
 }

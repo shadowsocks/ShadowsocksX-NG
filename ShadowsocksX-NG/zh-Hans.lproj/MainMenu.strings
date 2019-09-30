@@ -1,4 +1,10 @@
 
+/* Class = "NSMenuItem"; title = "Preferences..."; ObjectID = "4CS-qD-zW5"; */
+"4CS-qD-zW5.title" = "偏好设置...";
+
+/* Class = "NSMenuItem"; title = "Import Server URLs From Pasteboard"; ObjectID = "7Eq-XD-K5c"; */
+"7Eq-XD-K5c.title" = "从剪贴板导入服务器配置链接";
+
 /* Class = "NSMenuItem"; title = "应用用户自定规则到 PAC"; ObjectID = "6qf-cg-HXc"; */
 "6qf-cg-HXc.title" = "应用用户自定规则到 PAC";
 
@@ -27,7 +33,7 @@
 "Mw3-Jm-eXA.title" = "全局模式";
 
 /* Class = "NSMenuItem"; title = "扫描屏幕上的二维码..."; ObjectID = "Qe6-bF-paT"; */
-"Qe6-bF-paT.title" = "扫描屏幕上的二维码...";
+"Qe6-bF-paT.title" = "扫描屏幕上的二维码";
 
 /* Class = "NSMenuItem"; title = "显示当前服务器的二维码..."; ObjectID = "R6A-96-Zcb"; */
 "R6A-96-Zcb.title" = "显示当前服务器的二维码...";
@@ -35,13 +41,16 @@
 /* Class = "NSMenuItem"; title = "从 GFW List 更新PAC"; ObjectID = "TFc-Ec-duM"; */
 "TFc-Ec-duM.title" = "从 GFW List 更新PAC";
 
+/* Class = "NSMenuItem"; title = "复制终端代理命令"; ObjectID = "lg6-To-GZA"; */
+"lg6-To-GZA.title" = "复制终端代理命令";
+
 /* Class = "NSMenuItem"; title = "反馈"; ObjectID = "W7u-7g-Gv4"; */
 "W7u-7g-Gv4.title" = "反馈";
 
 /* Class = "NSMenu"; title = "代理"; ObjectID = "YZp-bf-L40"; */
 "YZp-bf-L40.title" = "代理";
 
-/* Class = "NSMenuItem"; title = "高级设置..."; ObjectID = "bZ3-fy-34d"; */
+/* Class = "NSMenuItem"; title = "Advanced Preferences ..."; ObjectID = "bZ3-fy-34d"; */
 "bZ3-fy-34d.title" = "高级设置...";
 
 /* Class = "NSMenuItem"; title = "代理"; ObjectID = "diI-fB-Rss"; */
@@ -56,11 +65,14 @@
 /* Class = "NSMenuItem"; title = "PAC自动模式"; ObjectID = "r07-Gu-aEz"; */
 "r07-Gu-aEz.title" = "PAC自动模式";
 
+/* Class = "NSMenuItem"; title = "Auto Mode By External PAC"; ObjectID = "U9N-QS-BwB"; */
+"U9N-QS-BwB.title" = "外部PAC自动模式";
+
 /* Class = "NSMenuItem"; title = "编辑PAC用户自定规则..."; ObjectID = "rms-p0-CvB"; */
 "rms-p0-CvB.title" = "编辑PAC用户自定规则...";
 
-/* Class = "NSMenuItem"; title = "高级设置..."; ObjectID = "sbx-yz-3lO"; */
-"sbx-yz-3lO.title" = "高级设置...";
+/* Class = "NSMenuItem"; title = "Advanced PAC Proxy Preferences..."; ObjectID = "sbx-yz-3lO"; */
+"sbx-yz-3lO.title" = "高级PAC代理设置...";
 
 /* Class = "NSMenuItem"; title = "服务器"; ObjectID = "u5M-hQ-VSc"; */
 "u5M-hQ-VSc.title" = "服务器";
@@ -80,3 +92,29 @@
 /* Class = "NSMenuItem"; title = "HTTP Proxy Preference ..."; ObjectID = "uEp-Gz-cu0"; */
 "uEp-Gz-cu0.title" = "HTTP代理设置...";
 
+/* Class = "NSMenuItem"; title = "Show Bunch Json Example File..."; ObjectID = "pdy-JE-50Q"; */
+"pdy-JE-50Q.title" = "显示示例服务器配置文件...";
+
+/* Class = "NSMenuItem"; title = "Import Bunch Json File..."; ObjectID = "T9g-gy-gvv"; */
+"T9g-gy-gvv.title" = "导入服务器配置文件...";
+
+/* Class = "NSMenuItem"; title = "Export All Server To Json..."; ObjectID = "6k0-gn-DQv"; */
+"6k0-gn-DQv.title" = "导出全部服务器配置...";
+
+/* Class = "NSMenuItem"; title = "Preferences"; ObjectID = "iVn-LD-Ynd"; */
+"iVn-LD-Ynd.title" = "偏好设置";
+
+/* Class = "NSMenuItem"; title = "Share Server Profiles..."; ObjectID = "r5z-RB-LIZ"; */
+"r5z-RB-LIZ.title" = "分享服务器配置...";
+
+/* Class = "NSMenuItem"; title = "Help"; ObjectID = "Xg8-er-4Ov"; */
+"Xg8-er-4Ov.title" = "帮助";
+
+/* Class = "NSMenuItem"; title = "Check for Updates..."; ObjectID = "hLv-bp-doM"; */
+"hLv-bp-doM.title" = "检查更新...";
+
+/* Class = "NSMenuItem"; title = "Export Diagnosis..."; ObjectID = "eNh-vY-utd"; */
+"eNh-vY-utd.title" = "导出诊断信息...";
+
+/* Class = "NSMenuItem"; title = "Import Server URLs..."; ObjectID = "geG-dQ-OYl"; */
+"geG-dQ-OYl.title" = "导入服务器URL...";

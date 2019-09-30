@@ -1,7 +1,7 @@
 //
 //  AFError.swift
 //
-//  Copyright (c) 2014-2016 Alamofire Software Foundation (http://alamofire.org/)
+//  Copyright (c) 2014-2018 Alamofire Software Foundation (http://alamofire.org/)
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -130,6 +130,16 @@ public enum AFError: Error {
     case multipartEncodingFailed(reason: MultipartEncodingFailureReason)
     case responseValidationFailed(reason: ResponseValidationFailureReason)
     case responseSerializationFailed(reason: ResponseSerializationFailureReason)
+}
+
+// MARK: - Adapt Error
+
+struct AdaptError: Error {
+    let error: Error
+}
+
+extension Error {
+    var underlyingAdaptError: Error? { return (self as? AdaptError)?.error }
 }
 
 // MARK: - Error Booleans

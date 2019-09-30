@@ -11,6 +11,6 @@
 
 void ScanQRCodeOnScreen();
 
-NSDictionary<NSString *, id>* ParseSSURL(NSURL* url);
+NSImage* createQRImage(NSString *string, NSSize size);
 
 #endif /* QRCodeUtils_h */

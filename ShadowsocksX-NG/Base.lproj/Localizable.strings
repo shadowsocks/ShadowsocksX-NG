@@ -1,9 +1,67 @@
+
+
+
+
+
+
 /*
  * SHARED STRINGS
  */
 
 /*
- * ./PACUtils.swift
+ * ./ShadowsocksX-NG/UserRulesController.swift
+ */
+
+"PAC has been updated by User Rules." = "PAC has been updated by User Rules.";
+
+"It's failed to update PAC by User Rules." = "It's failed to update PAC by User Rules.";
+
+/*
+ * ./ShadowsocksX-NG/AppDelegate.swift
+ */
+
+"Global Mode" = "Global Mode";
+
+"Manual Mode" = "Manual Mode";
+
+"Auto Mode By PAC" = "Auto Mode By PAC";
+
+"Shadowsocks: On" = "Shadowsocks: On";
+
+"Shadowsocks: Off" = "Shadowsocks: Off";
+
+"Export Command Copied." = "Export Command Copied.";
+
+"Save Diagnosis to File" = "Save Diagnosis to File";
+
+"Servers" = "Servers";
+
+"Turn Shadowsocks Off" = "Turn Shadowsocks Off";
+
+"Turn Shadowsocks On" = "Turn Shadowsocks On";
+
+"By scan QR Code" = "By scan QR Code";
+
+"By handle SS URL" = "By handle SS URL";
+
+"By import from pasteboard" = "By import from pasteboard";
+
+"Add \(addCount) Shadowsocks Server Profile" = "Add \(addCount) Shadowsocks Server Profile";
+
+"Not found valid QRCode of shadowsocks profile" = "Not found valid QRCode of shadowsocks profile";
+
+"Not found valid URL of shadowsocks profile" = "Not found valid URL of shadowsocks profile";
+
+/*
+ * ./ShadowsocksX-NG/ShareServerProfilesWindowController.swift
+ */
+
+"Save QRCode As File" = "Save QRCode As File";
+
+"Save All Server URLs To File" = "Save All Server URLs To File";
+
+/*
+ * ./ShadowsocksX-NG/PACUtils.swift
  */
 
 "PAC has been updated by latest GFW List." = "PAC has been updated by latest GFW List.";
@@ -11,47 +69,16 @@
 "Failed to download latest GFW List." = "Failed to download latest GFW List.";
 
 /*
- * ./PreferencesWindowController.swift
+ * ./ShadowsocksX-NG/ImportWindowController.swift
+ */
+
+"Success to add \(addCount) server." = "Success to add \(addCount) server.";
+
+"Not found valid shadowsocks server urls." = "Not found valid shadowsocks server urls.";
+
+/*
+ * ./ShadowsocksX-NG/PreferencesWindowController.swift
  */
 
 "New Server" = "New Server";
 
-/*
- * ./AppDelegate.swift
- */
-
-"Add Shadowsocks Server Profile" = "Add Shadowsocks Server Profile";
-
-"By scan QR Code" = "By scan QR Code";
-
-"By Handle SS URL" = "By Handle SS URL";
-
-" Encryption Method: \(profile.method)" = " Encryption Method: \(profile.method)";
-
-"Current server profile is not valid." = "Current server profile is not valid.";
-
-"No current server profile." = "No current server profile.";
-
-"Shadowsocks: On" = "Shadowsocks: On";
-
-"Turn Shadowsocks Off" = "Turn Shadowsocks Off";
-
-"Shadowsocks: Off" = "Shadowsocks: Off";
-
-"Turn Shadowsocks On" = "Turn Shadowsocks On";
-
-"Proxy - Auto By PAC" = "Proxy - Auto By PAC";
-
-"Proxy - Global" = "Proxy - Global";
-
-"Proxy - Manual" = "Proxy - Manual";
-
-"Servers" = "Servers";
-
-"Auto" = "PAC";
-
-"Global" = "Global";
-
-"Manual" = "Manual";
-
-"Show Running Mode On Status Bar" = "Show Running Mode On Status Bar";

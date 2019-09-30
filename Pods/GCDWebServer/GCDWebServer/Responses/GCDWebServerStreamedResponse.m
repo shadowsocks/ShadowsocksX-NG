@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2012-2015, Pierre-Olivier Latour
+ Copyright (c) 2012-2019, Pierre-Olivier Latour
  All rights reserved.
  
  Redistribution and use in source and binary forms, with or without
@@ -31,36 +31,33 @@
 
 #import "GCDWebServerPrivate.h"
 
-@interface GCDWebServerStreamedResponse () {
-@private
+@implementation GCDWebServerStreamedResponse {
   GCDWebServerAsyncStreamBlock _block;
 }
-@end
 
-@implementation GCDWebServerStreamedResponse
+@dynamic contentType;
 
 + (instancetype)responseWithContentType:(NSString*)type streamBlock:(GCDWebServerStreamBlock)block {
-  return [[[self class] alloc] initWithContentType:type streamBlock:block];
+  return [(GCDWebServerStreamedResponse*)[[self class] alloc] initWithContentType:type streamBlock:block];
 }
 
 + (instancetype)responseWithContentType:(NSString*)type asyncStreamBlock:(GCDWebServerAsyncStreamBlock)block {
-  return [[[self class] alloc] initWithContentType:type asyncStreamBlock:block];
+  return [(GCDWebServerStreamedResponse*)[[self class] alloc] initWithContentType:type asyncStreamBlock:block];
 }
 
 - (instancetype)initWithContentType:(NSString*)type streamBlock:(GCDWebServerStreamBlock)block {
-  return [self initWithContentType:type asyncStreamBlock:^(GCDWebServerBodyReaderCompletionBlock completionBlock) {
-    
-    NSError* error = nil;
-    NSData* data = block(&error);
-    completionBlock(data, error);
-    
-  }];
+  return [self initWithContentType:type
+                  asyncStreamBlock:^(GCDWebServerBodyReaderCompletionBlock completionBlock) {
+                    NSError* error = nil;
+                    NSData* data = block(&error);
+                    completionBlock(data, error);
+                  }];
 }
 
 - (instancetype)initWithContentType:(NSString*)type asyncStreamBlock:(GCDWebServerAsyncStreamBlock)block {
   if ((self = [super init])) {
     _block = [block copy];
-    
+
     self.contentType = type;
   }
   return self;

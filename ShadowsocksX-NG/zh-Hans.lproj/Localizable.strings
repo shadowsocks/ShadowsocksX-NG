@@ -2,8 +2,6 @@
 
 
 
-
-
 /*
  * SHARED STRINGS
  */
@@ -14,27 +12,27 @@
 
 "PAC has been updated by latest GFW List." = "已经使用最新的 GFW List 更新PAC";
 
-"Failed to download latest GFW List." = "下载 GFW List 失败";
+"It's failed to update PAC by User Rules." = "更新 PAC 失败";
 
-/*
- * ./PreferencesWindowController.swift
- */
-
-"New Server" = "新服务器";
+"Failed to download latest GFW List." = "下载最新的 GFW 列表失败";
 
 /*
  * ./AppDelegate.swift
  */
 
-"Add Shadowsocks Server Profile" = "已添加新Shaodwsocks服务器配置";
+"Save Diagnosis to File" = "保存诊断信息到文件";
+
+"Global Mode" = "全局模式";
+
+"Manual Mode" = "手动模式";
+
+"Auto Mode By PAC" = "PAC自动模式";
+
+"Add \(addCount) Shadowsocks Server Profile" = "已添加\(addCount)个Shadowsocks服务器配置";
+
+"Not found valid qrcode or url of shadowsocks profile" = "没有找到有效的shadowsocks配置二维码或链接";
 
 "By scan QR Code" = "通过扫描二维码";
-
-" Encription Method: \(profile.method)" = " 加密方法: \(profile.method)";
-
-"Current server profile is not valid." = "当前服务器配置无效";
-
-"No current server profile." = "未设置当前服务器配置";
 
 "Shadowsocks: On" = "Shadowsocks: On";
 
@@ -44,18 +42,44 @@
 
 "Turn Shadowsocks On" = "打开 Shadowsocks";
 
-"Proxy - Auto By PAC" = "代理 - PAC自动";
-
-"Proxy - Global" = "代理 - 全局";
-
-"Proxy - Manual" = "代理 - 手动";
-
 "Servers" = "服务器";
 
-"Auto" = "自动";
+"Servers - (No Selected)" = "服务器 - (未选择)";
 
-"Global" = "全局";
+"Add \(addCount) Shadowsocks Server Profile" = "新增 \(addCount) 个 Shadowsocks 服务器配置";
 
-"Manual" = "手动";
+"Not found valid QRCode of shadowsocks profile" = "未找到有效的 shadowsocks 二维码";
 
-"Show Running Mode On Status Bar" = "在状态栏显示运行模式";
+"Not found valid URL of shadowsocks profile" = "未找到有效的 shadowsocks 链接";
+
+/*
+ * ./HTTPPreferencesWindowController.swift
+ */
+
+"Export Command Copied." = "Export 命令已复制至剪贴板";
+
+"Timeout" = "超时";
+
+/*
+ * ./ShadowsocksX-NG/ShareServerProfilesWindowController.swift
+ */
+
+"Save All Server URLs To File" = "保存所有服务器 URL 到文件";
+
+"Save QRCode As File" = "保存 QRCode 为文件";
+
+/*
+ * ./ShadowsocksX-NG/ImportWindowController.swift
+ */
+
+"Success to add \(addCount) server." = "成功添加 \(addCount) 个服务器";
+
+"Not found valid shadowsocks server urls." = "未找到有效的shadowsocks服务器URL";
+
+/*
+ * ./ShadowsocksX-NG/PreferencesWindowController.swift
+ */
+
+"New Server" = "新建服务器";
+
+

@@ -7,50 +7,87 @@
 //
 
 import Cocoa
-
+import Carbon
+import RxCocoa
+import RxSwift
 
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDelegate {
     
+    var shareWinCtrl: ShareServerProfilesWindowController!
     var qrcodeWinCtrl: SWBQRCodeWindowController!
     var preferencesWinCtrl: PreferencesWindowController!
-    var advPreferencesWinCtrl: AdvPreferencesWindowController!
-    var proxyPreferencesWinCtrl: ProxyPreferencesController!
     var editUserRulesWinCtrl: UserRulesController!
-    var httpPreferencesWinCtrl : HTTPPreferencesWindowController!
-    
-    var launchAtLoginController: LaunchAtLoginController = LaunchAtLoginController()
-    
+    var allInOnePreferencesWinCtrl: PreferencesWinController!
+    var toastWindowCtrl: ToastWindowController!
+    var importWinCtrl: ImportWindowController!
+
     @IBOutlet weak var window: NSWindow!
     @IBOutlet weak var statusMenu: NSMenu!
     
     @IBOutlet weak var runningStatusMenuItem: NSMenuItem!
     @IBOutlet weak var toggleRunningMenuItem: NSMenuItem!
-    @IBOutlet weak var proxyMenuItem: NSMenuItem!
     @IBOutlet weak var autoModeMenuItem: NSMenuItem!
     @IBOutlet weak var globalModeMenuItem: NSMenuItem!
     @IBOutlet weak var manualModeMenuItem: NSMenuItem!
-    @IBOutlet weak var showRunningModeMenuItem: NSMenuItem!
+    @IBOutlet weak var externalPACModeMenuItem: NSMenuItem!
     
     @IBOutlet weak var serversMenuItem: NSMenuItem!
     @IBOutlet var showQRCodeMenuItem: NSMenuItem!
     @IBOutlet var scanQRCodeMenuItem: NSMenuItem!
-    @IBOutlet var serversPreferencesMenuItem: NSMenuItem!
+    @IBOutlet var serverProfilesBeginSeparatorMenuItem: NSMenuItem!
+    @IBOutlet var serverProfilesEndSeparatorMenuItem: NSMenuItem!
+    
+    @IBOutlet weak var copyHttpProxyExportCmdLineMenuItem: NSMenuItem!
     
     @IBOutlet weak var lanchAtLoginMenuItem: NSMenuItem!
-    
+
+    @IBOutlet weak var hudWindow: NSPanel!
+    @IBOutlet weak var panelView: NSView!
+    @IBOutlet weak var isNameTextField: NSTextField!
+
+    let kProfileMenuItemIndexBase = 100
+
     var statusItem: NSStatusItem!
+    static let StatusItemIconWidth: CGFloat = NSStatusItem.variableLength
     
-    static let StatusItemIconWidth:CGFloat = 20
+    func ensureLaunchAgentsDirOwner () {
+        let dirPath = NSHomeDirectory() + "/Library/LaunchAgents"
+        let fileMgr = FileManager.default
+        if fileMgr.fileExists(atPath: dirPath) {
+            do {
+                let attrs = try fileMgr.attributesOfItem(atPath: dirPath)
+                if attrs[FileAttributeKey.ownerAccountName] as! String != NSUserName() {
+                    //try fileMgr.setAttributes([FileAttributeKey.ownerAccountName: NSUserName()], ofItemAtPath: dirPath)
+                    let bashFilePath = Bundle.main.path(forResource: "fix_dir_owner.sh", ofType: nil)!
+                    let script = "do shell script \"bash \\\"\(bashFilePath)\\\" \(NSUserName()) \" with administrator privileges"
+                    if let appleScript = NSAppleScript(source: script) {
+                        var err: NSDictionary? = nil
+                        appleScript.executeAndReturnError(&err)
+                    }
+                }
+            }
+            catch {
+                NSLog("Error when ensure the owner of $HOME/Library/LaunchAgents, \(error.localizedDescription)")
+            }
+        }
+    }
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
-        // Insert code here to initialize your application
+        
+        _ = LaunchAtLoginController()// Ensure set when launch
         
         NSUserNotificationCenter.default.delegate = self
+        
+        self.ensureLaunchAgentsDirOwner()
         
         // Prepare ss-local
         InstallSSLocal()
         InstallPrivoxy()
+        InstallSimpleObfs()
+        InstallKcptun()
+        InstallV2rayPlugin()
+        
         // Prepare defaults
         let defaults = UserDefaults.standard
         defaults.register(defaults: [
@@ -58,7 +95,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             "ShadowsocksRunningMode": "auto",
             "LocalSocks5.ListenPort": NSNumber(value: 1086 as UInt16),
             "LocalSocks5.ListenAddress": "127.0.0.1",
-            "PacServer.ListenPort":NSNumber(value: 8090 as UInt16),
+            "PacServer.ListenAddress":"127.0.0.1",
+            "PacServer.ListenPort":NSNumber(value: 1089 as UInt16),
             "LocalSocks5.Timeout": NSNumber(value: 60 as UInt),
             "LocalSocks5.EnableUDPRelay": NSNumber(value: false as Bool),
             "LocalSocks5.EnableVerboseMode": NSNumber(value: false as Bool),
@@ -67,24 +105,27 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             "LocalHTTP.ListenAddress": "127.0.0.1",
             "LocalHTTP.ListenPort": NSNumber(value: 1087 as UInt16),
             "LocalHTTPOn": true,
-            "LocalHTTP.FollowGlobal": true
+            "LocalHTTP.FollowGlobal": false,
+            "ProxyExceptions": "127.0.0.1, localhost, 192.168.0.0/16, 10.0.0.0/8, FE80::/64, ::1, FD00::/8",
+            "ExternalPACURL": "",
             ])
         
-        statusItem = NSStatusBar.system().statusItem(withLength: AppDelegate.StatusItemIconWidth)
-        let image = NSImage(named: "menu_icon")
-        image?.isTemplate = true
+        statusItem = NSStatusBar.system.statusItem(withLength: AppDelegate.StatusItemIconWidth)
+        let image : NSImage = NSImage(named: NSImage.Name(rawValue: "menu_icon"))!
+        image.isTemplate = true
         statusItem.image = image
         statusItem.menu = statusMenu
         
-        
         let notifyCenter = NotificationCenter.default
-        notifyCenter.addObserver(forName: NSNotification.Name(rawValue: NOTIFY_ADV_PROXY_CONF_CHANGED), object: nil, queue: nil
-            , using: {
-                (note) in
+        
+        _ = notifyCenter.rx.notification(NOTIFY_CONF_CHANGED)
+            .subscribe(onNext: { noti in
                 self.applyConfig()
-            }
-        )
-        notifyCenter.addObserver(forName: NSNotification.Name(rawValue: NOTIFY_SERVER_PROFILES_CHANGED), object: nil, queue: nil
+                self.updateRunningModeMenu()
+                self.updateCopyHttpProxyExportMenu()
+            })
+        
+        notifyCenter.addObserver(forName: NOTIFY_SERVER_PROFILES_CHANGED, object: nil, queue: nil
             , using: {
                 (note) in
                 let profileMgr = ServerProfileManager.instance
@@ -95,61 +136,52 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                     }
                 }
                 self.updateServersMenu()
+                self.updateRunningModeMenu()
                 SyncSSLocal()
             }
         )
-        notifyCenter.addObserver(forName: NSNotification.Name(rawValue: NOTIFY_ADV_CONF_CHANGED), object: nil, queue: nil
-            , using: {
-                (note) in
-                SyncSSLocal()
-                self.applyConfig()
-            }
-        )
-        notifyCenter.addObserver(forName: NSNotification.Name(rawValue: NOTIFY_HTTP_CONF_CHANGED), object: nil, queue: nil
-            , using: {
-                (note) in
-                SyncPrivoxy()
-                self.applyConfig()
-            }
-        )
-        notifyCenter.addObserver(forName: NSNotification.Name(rawValue: "NOTIFY_FOUND_SS_URL"), object: nil, queue: nil) {
-            (note: Notification) in
-            if let userInfo = (note as NSNotification).userInfo {
-                let urls: [URL] = userInfo["urls"] as! [URL]
+        _ = notifyCenter.rx.notification(NOTIFY_TOGGLE_RUNNING_SHORTCUT)
+            .subscribe(onNext: { noti in
+                self.doToggleRunning(showToast: true)
+            })
+        _ = notifyCenter.rx.notification(NOTIFY_SWITCH_PROXY_MODE_SHORTCUT)
+            .subscribe(onNext: { noti in
+                let mode = defaults.string(forKey: "ShadowsocksRunningMode")!
                 
-                let mgr = ServerProfileManager.instance
-                var isChanged = false
-                
-                for url in urls {
-                    let profielDict = ParseSSURL(url)
-                    if let profielDict = profielDict {
-                        let profile = ServerProfile.fromDictionary(profielDict as [String : AnyObject])
-                        mgr.profiles.append(profile)
-                        isChanged = true
-                        
-                        let userNote = NSUserNotification()
-                        userNote.title = "Add Shadowsocks Server Profile".localized
-                        if userInfo["source"] as! String == "qrcode" {
-                            userNote.subtitle = "By scan QR Code".localized
-                        } else if userInfo["source"] as! String == "url" {
-                            userNote.subtitle = "By Handle SS URL".localized
-                        }
-                        userNote.informativeText = "Host: \(profile.serverHost)"
-                        " Port: \(profile.serverPort)"
-                        " Encription Method: \(profile.method)".localized
-                        userNote.soundName = NSUserNotificationDefaultSoundName
-                        
-                        NSUserNotificationCenter.default
-                            .deliver(userNote);
+                var toastMessage: String!;
+                switch mode {
+                case "auto":
+                    defaults.setValue("global", forKey: "ShadowsocksRunningMode")
+                    toastMessage = "Global Mode".localized
+                case "global":
+                    defaults.setValue("manual", forKey: "ShadowsocksRunningMode")
+                    toastMessage = "Manual Mode".localized
+                case "manual":
+                    if self.externalPACModeMenuItem.isEnabled {
+                        defaults.setValue("externalPAC", forKey: "ShadowsocksRunningMode")
+                        toastMessage = "Auto Mode By External PAC".localized
+                    } else {
+                        defaults.setValue("auto", forKey: "ShadowsocksRunningMode")
+                        toastMessage = "Auto Mode By PAC".localized
                     }
+                case "externalPAC":
+                    defaults.setValue("auto", forKey: "ShadowsocksRunningMode")
+                    toastMessage = "Auto Mode By PAC".localized
+                default:
+                    defaults.setValue("auto", forKey: "ShadowsocksRunningMode")
+                    toastMessage = "Auto Mode By PAC".localized
                 }
                 
-                if isChanged {
-                    mgr.save()
-                    self.updateServersMenu()
-                }
-            }
-        }
+                self.updateRunningModeMenu()
+                self.applyConfig()
+                
+                self.makeToast(toastMessage)
+            })
+        
+        _ = notifyCenter.rx.notification(NOTIFY_FOUND_SS_URL)
+            .subscribe(onNext: { noti in
+                self.handleFoundSSURL(noti)
+            })
         
         // Handle ss url scheme
         NSAppleEventManager.shared().setEventHandler(self
@@ -157,14 +189,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             , forEventClass: AEEventClass(kInternetEventClass), andEventID: AEEventID(kAEGetURL))
         
         updateMainMenu()
+        updateCopyHttpProxyExportMenu()
         updateServersMenu()
         updateRunningModeMenu()
-        updateLaunchAtLoginMenu()
         
         ProxyConfHelper.install()
         ProxyConfHelper.startMonitorPAC()
         applyConfig()
-        SyncSSLocal()
+
+        // Register global hotkey
+        ShortcutsController.bindShortcuts()
     }
     
     func applicationWillTerminate(_ aNotification: Notification) {
@@ -173,38 +207,51 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         StopPrivoxy()
         ProxyConfHelper.disableProxy()
     }
-    
+
     func applyConfig() {
+        SyncSSLocal()
+        
         let defaults = UserDefaults.standard
         let isOn = defaults.bool(forKey: "ShadowsocksOn")
         let mode = defaults.string(forKey: "ShadowsocksRunningMode")
         
         if isOn {
-            StartSSLocal()
-            StartPrivoxy()
             if mode == "auto" {
                 ProxyConfHelper.enablePACProxy()
             } else if mode == "global" {
                 ProxyConfHelper.enableGlobalProxy()
             } else if mode == "manual" {
                 ProxyConfHelper.disableProxy()
+            } else if mode == "externalPAC" {
+                ProxyConfHelper.enableExternalPACProxy()
             }
         } else {
-            StopSSLocal()
-            StopPrivoxy()
             ProxyConfHelper.disableProxy()
         }
     }
-    
+
+    // MARK: - UI Methods
     @IBAction func toggleRunning(_ sender: NSMenuItem) {
+        self.doToggleRunning(showToast: false)
+    }
+    
+    func doToggleRunning(showToast: Bool) {
         let defaults = UserDefaults.standard
-        var isOn = defaults.bool(forKey: "ShadowsocksOn")
+        var isOn = UserDefaults.standard.bool(forKey: "ShadowsocksOn")
         isOn = !isOn
         defaults.set(isOn, forKey: "ShadowsocksOn")
         
-        updateMainMenu()
+        self.updateMainMenu()
+        self.applyConfig()
         
-        applyConfig()
+        if showToast {
+            if isOn {
+                self.makeToast("Shadowsocks: On".localized)
+            }
+            else {
+                self.makeToast("Shadowsocks: Off".localized)
+            }
+        }
     }
     
     @IBAction func updateGFWList(_ sender: NSMenuItem) {
@@ -215,7 +262,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         if editUserRulesWinCtrl != nil {
             editUserRulesWinCtrl.close()
         }
-        let ctrl = UserRulesController(windowNibName: "UserRulesController")
+        let ctrl = UserRulesController(windowNibName: NSNib.Name(rawValue: "UserRulesController"))
         editUserRulesWinCtrl = ctrl
         
         ctrl.showWindow(self)
@@ -223,44 +270,61 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         ctrl.window?.makeKeyAndOrderFront(self)
     }
     
-    @IBAction func showQRCodeForCurrentServer(_ sender: NSMenuItem) {
-        var errMsg: String?
-        if let profile = ServerProfileManager.instance.getActiveProfile() {
-            if profile.isValid() {
-                // Show window
-                if qrcodeWinCtrl != nil{
-                    qrcodeWinCtrl.close()
-                }
-                qrcodeWinCtrl = SWBQRCodeWindowController(windowNibName: "SWBQRCodeWindowController")
-                qrcodeWinCtrl.qrCode = profile.URL()!.absoluteString
-                qrcodeWinCtrl.showWindow(self)
-                NSApp.activate(ignoringOtherApps: true)
-                qrcodeWinCtrl.window?.makeKeyAndOrderFront(nil)
-                
-                return
-            } else {
-                errMsg = "Current server profile is not valid.".localized
-            }
-        } else {
-            errMsg = "No current server profile.".localized
+    @IBAction func showShareServerProfiles(_ sender: NSMenuItem) {
+        if shareWinCtrl != nil {
+            shareWinCtrl.close()
         }
-        let userNote = NSUserNotification()
-        userNote.title = errMsg
-        userNote.soundName = NSUserNotificationDefaultSoundName
-        
-        NSUserNotificationCenter.default
-            .deliver(userNote);
+        shareWinCtrl = ShareServerProfilesWindowController(windowNibName: NSNib.Name(rawValue: "ShareServerProfilesWindowController"))
+        shareWinCtrl.showWindow(self)
+        NSApp.activate(ignoringOtherApps: true)
+        shareWinCtrl.window?.makeKeyAndOrderFront(nil)
+    }
+    
+    @IBAction func showImportWindow(_ sender: NSMenuItem) {
+        if importWinCtrl != nil {
+            importWinCtrl.close()
+        }
+        importWinCtrl = ImportWindowController(windowNibName: .init(rawValue: "ImportWindowController"))
+        importWinCtrl.showWindow(self)
+        NSApp.activate(ignoringOtherApps: true)
+        importWinCtrl.window?.makeKeyAndOrderFront(nil)
     }
     
     @IBAction func scanQRCodeFromScreen(_ sender: NSMenuItem) {
         ScanQRCodeOnScreen()
     }
     
-    @IBAction func toggleLaunghAtLogin(_ sender: NSMenuItem) {
-        launchAtLoginController.launchAtLogin = !launchAtLoginController.launchAtLogin;
-        updateLaunchAtLoginMenu()
+    @IBAction func importProfileURLFromPasteboard(_ sender: NSMenuItem) {
+        let pb = NSPasteboard.general
+        if #available(OSX 10.13, *) {
+            if let text = pb.string(forType: NSPasteboard.PasteboardType.URL) {
+                if let url = URL(string: text) {
+                    NotificationCenter.default.post(
+                        name: NOTIFY_FOUND_SS_URL, object: nil
+                        , userInfo: [
+                            "urls": [url],
+                            "source": "pasteboard",
+                            ])
+                }
+            }
+        }
+        if let text = pb.string(forType: NSPasteboard.PasteboardType.string) {
+            var urls = text.split(separator: "\n")
+                .map { String($0).trimmingCharacters(in: CharacterSet.whitespacesAndNewlines) }
+                .map { URL(string: $0) }
+                .filter { $0 != nil }
+                .map { $0! }
+            urls = urls.filter { $0.scheme == "ss" }
+            
+            NotificationCenter.default.post(
+                name: NOTIFY_FOUND_SS_URL, object: nil
+                , userInfo: [
+                    "urls": urls,
+                    "source": "pasteboard",
+                    ])
+        }
     }
-    
+
     @IBAction func selectPACMode(_ sender: NSMenuItem) {
         let defaults = UserDefaults.standard
         defaults.setValue("auto", forKey: "ShadowsocksRunningMode")
@@ -282,75 +346,107 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         applyConfig()
     }
     
+    @IBAction func selectExternalPACMode(_ sender: NSMenuItem) {
+        let defaults = UserDefaults.standard
+        defaults.setValue("externalPAC", forKey: "ShadowsocksRunningMode")
+        updateRunningModeMenu()
+        applyConfig()
+    }
+    
     @IBAction func editServerPreferences(_ sender: NSMenuItem) {
         if preferencesWinCtrl != nil {
             preferencesWinCtrl.close()
         }
-        let ctrl = PreferencesWindowController(windowNibName: "PreferencesWindowController")
-        preferencesWinCtrl = ctrl
+        preferencesWinCtrl = PreferencesWindowController(windowNibName: NSNib.Name(rawValue: "PreferencesWindowController"))
         
-        ctrl.showWindow(self)
+        preferencesWinCtrl.showWindow(self)
         NSApp.activate(ignoringOtherApps: true)
-        ctrl.window?.makeKeyAndOrderFront(self)
     }
     
-    @IBAction func editAdvPreferences(_ sender: NSMenuItem) {
-        if advPreferencesWinCtrl != nil {
-            advPreferencesWinCtrl.close()
+    @IBAction func showAllInOnePreferences(_ sender: NSMenuItem) {
+        if allInOnePreferencesWinCtrl != nil {
+            allInOnePreferencesWinCtrl.close()
         }
-        let ctrl = AdvPreferencesWindowController(windowNibName: "AdvPreferencesWindowController")
-        advPreferencesWinCtrl = ctrl
         
-        ctrl.showWindow(self)
-        NSApp.activate(ignoringOtherApps: true)
-        ctrl.window?.makeKeyAndOrderFront(self)
-    }
-    
-    @IBAction func editHTTPPreferences(_ sender: NSMenuItem) {
-        if httpPreferencesWinCtrl != nil {
-            httpPreferencesWinCtrl.close()
-        }
-        let ctrl = HTTPPreferencesWindowController(windowNibName: "HTTPPreferencesWindowController")
-        httpPreferencesWinCtrl = ctrl
+        allInOnePreferencesWinCtrl = PreferencesWinController(windowNibName: NSNib.Name(rawValue: "PreferencesWinController"))
         
-        ctrl.showWindow(self)
+        allInOnePreferencesWinCtrl.showWindow(self)
         NSApp.activate(ignoringOtherApps: true)
-        ctrl.window?.makeKeyAndOrderFront(self)
-    }
-    
-    @IBAction func editProxyPreferences(_ sender: NSObject) {
-        if proxyPreferencesWinCtrl != nil {
-            proxyPreferencesWinCtrl.close()
-        }
-        proxyPreferencesWinCtrl = ProxyPreferencesController(windowNibName: "ProxyPreferencesController")
-        proxyPreferencesWinCtrl.showWindow(self)
-        NSApp.activate(ignoringOtherApps: true)
-        proxyPreferencesWinCtrl.window?.makeKeyAndOrderFront(self)
+        allInOnePreferencesWinCtrl.window?.makeKeyAndOrderFront(self)
     }
     
     @IBAction func selectServer(_ sender: NSMenuItem) {
-        let index = sender.tag
+        let index = sender.tag - kProfileMenuItemIndexBase
         let spMgr = ServerProfileManager.instance
         let newProfile = spMgr.profiles[index]
         if newProfile.uuid != spMgr.activeProfileId {
             spMgr.setActiveProfiledId(newProfile.uuid)
             updateServersMenu()
             SyncSSLocal()
+            applyConfig()
         }
         updateRunningModeMenu()
     }
     
+    @IBAction func copyExportCommand(_ sender: NSMenuItem) {
+        // Get the Http proxy config.
+        let defaults = UserDefaults.standard
+        let address = defaults.string(forKey: "LocalHTTP.ListenAddress")!
+        let port = defaults.integer(forKey: "LocalHTTP.ListenPort")
+        
+        // Format an export string.
+        let command = "export http_proxy=http://\(address):\(port);export https_proxy=http://\(address):\(port);"
+        
+        // Copy to paste board.
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(command, forType: NSPasteboard.PasteboardType.string)
+        
+        // Show a toast notification.
+        self.makeToast("Export Command Copied.".localized)
+    }
+    
     @IBAction func showLogs(_ sender: NSMenuItem) {
-        let ws = NSWorkspace.shared()
+        let ws = NSWorkspace.shared
         if let appUrl = ws.urlForApplication(withBundleIdentifier: "com.apple.Console") {
             try! ws.launchApplication(at: appUrl
-                ,options: .default
-                ,configuration: [NSWorkspaceLaunchConfigurationArguments: "~/Library/Logs/ss-local.log"])
+                ,options: NSWorkspace.LaunchOptions.default
+                ,configuration: [NSWorkspace.LaunchConfigurationKey.arguments: "~/Library/Logs/ss-local.log"])
         }
     }
     
     @IBAction func feedback(_ sender: NSMenuItem) {
-        NSWorkspace.shared().open(URL(string: "https://github.com/qiuyuzhou/ShadowsocksX-NG/issues")!)
+        NSWorkspace.shared.open(URL(string: "https://github.com/qiuyuzhou/ShadowsocksX-NG/issues")!)
+    }
+    
+    @IBAction func checkForUpdates(_ sender: NSMenuItem) {
+        NSWorkspace.shared.open(URL(string: "https://github.com/shadowsocks/ShadowsocksX-NG/releases")!)
+    }
+    
+    @IBAction func exportDiagnosis(_ sender: NSMenuItem) {
+        let savePanel = NSSavePanel()
+        savePanel.title = "Save Diagnosis to File".localized
+        savePanel.canCreateDirectories = true
+        savePanel.allowedFileTypes = ["txt"]
+        savePanel.isExtensionHidden = false
+        
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyyMMdd_HHmmss"
+        let dateString = formatter.string(from: Date())
+        
+        savePanel.nameFieldStringValue = "ShadowsocksX-NG_diagnose_\(dateString)"
+        
+        savePanel.becomeKey()
+        let result = savePanel.runModal()
+        if (result.rawValue == NSFileHandlingPanelOKButton) {
+            if let url = savePanel.url {
+                let diagnosisText = diagnose()
+                try! diagnosisText.write(to: url, atomically: false, encoding: String.Encoding.utf8)
+            }
+        }
+    }
+    
+    @IBAction func showHelp(_ sender: NSMenuItem) {
+        NSWorkspace.shared.open(URL(string: "https://github.com/shadowsocks/ShadowsocksX-NG/wiki")!)
     }
     
     @IBAction func showAbout(_ sender: NSMenuItem) {
@@ -358,31 +454,38 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         NSApp.activate(ignoringOtherApps: true)
     }
     
-    @IBAction func showRunningMode(_ sender: NSMenuItem) {
-        sender.state = sender.state == 1 ? 0 : 1
-        let defaults = UserDefaults.standard
-        let isShown = (sender.state == 1)
-        defaults.set(isShown, forKey: "ShowRunningModeOnStatusBar")
-        updateStatusItemUI(isShownnRunningMode: isShown)
-    }
-    
-    func updateLaunchAtLoginMenu() {
-        if launchAtLoginController.launchAtLogin {
-            lanchAtLoginMenuItem.state = 1
-        } else {
-            lanchAtLoginMenuItem.state = 0
-        }
-    }
-    
     func updateRunningModeMenu() {
         let defaults = UserDefaults.standard
-        let mode = defaults.string(forKey: "ShadowsocksRunningMode")
         
-        showRunningModeMenuItem.title = "Show Running Mode On Status Bar".localized
-        showRunningModeMenuItem.state = defaults.bool(forKey: "ShowRunningModeOnStatusBar") ? 1 : 0
-        
-        var serverMenuText = "Servers".localized
+        if let pacURL = defaults.string(forKey: "ExternalPACURL") {
+            if pacURL != "" {
+                externalPACModeMenuItem.isEnabled = true
+            } else {
+                externalPACModeMenuItem.isEnabled = false
+            }
+        }
 
+        // Update running mode state
+        autoModeMenuItem.state = .off
+        globalModeMenuItem.state = .off
+        manualModeMenuItem.state = .off
+        externalPACModeMenuItem.state = .off
+        
+        let mode = defaults.string(forKey: "ShadowsocksRunningMode")
+        if mode == "auto" {
+            autoModeMenuItem.state = .on
+        } else if mode == "global" {
+            globalModeMenuItem.state = .on
+        } else if mode == "manual" {
+            manualModeMenuItem.state = .on
+        } else if mode == "externalPAC" {
+            externalPACModeMenuItem.state = .on
+        }
+        updateStatusMenuImage()
+        
+        // Update selected server name
+        var serverMenuText = "Servers - (No Selected)".localized
+        
         let mgr = ServerProfileManager.instance
         for p in mgr.profiles {
             if mgr.activeProfileId == p.uuid {
@@ -392,47 +495,35 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                 } else {
                     profileName = p.serverHost
                 }
-                serverMenuText = "\(serverMenuText) - \(profileName)"
+                serverMenuText = "Servers".localized + " - \(profileName)"
+                break
             }
         }
         serversMenuItem.title = serverMenuText
-        
-        if mode == "auto" {
-            proxyMenuItem.title = "Proxy - Auto By PAC".localized
-            autoModeMenuItem.state = 1
-            globalModeMenuItem.state = 0
-            manualModeMenuItem.state = 0
-        } else if mode == "global" {
-            proxyMenuItem.title = "Proxy - Global".localized
-            autoModeMenuItem.state = 0
-            globalModeMenuItem.state = 1
-            manualModeMenuItem.state = 0
-        } else if mode == "manual" {
-            proxyMenuItem.title = "Proxy - Manual".localized
-            autoModeMenuItem.state = 0
-            globalModeMenuItem.state = 0
-            manualModeMenuItem.state = 1
-        }
-        let isShown = defaults.bool(forKey: "ShowRunningModeOnStatusBar")
-        updateStatusItemUI(isShownnRunningMode: isShown)
     }
     
-    func updateStatusItemUI(isShownnRunningMode: Bool) {
-        if isShownnRunningMode {
-            let defaults = UserDefaults.standard
-            let mode = defaults.string(forKey: "ShadowsocksRunningMode")
-            if mode == "auto" {
-                statusItem.title = "Auto".localized
-            } else if mode == "global" {
-                statusItem.title = "Global".localized
-            } else if mode == "manual" {
-                statusItem.title = "Manual".localized
+    func updateStatusMenuImage() {
+        let defaults = UserDefaults.standard
+        let mode = defaults.string(forKey: "ShadowsocksRunningMode")
+        let isOn = defaults.bool(forKey: "ShadowsocksOn")
+        if isOn {
+            if let m = mode {
+                switch m {
+                    case "auto":
+                        statusItem.image = NSImage(named: NSImage.Name(rawValue: "menu_p_icon"))
+                    case "global":
+                        statusItem.image = NSImage(named: NSImage.Name(rawValue: "menu_g_icon"))
+                    case "manual":
+                        statusItem.image = NSImage(named: NSImage.Name(rawValue: "menu_m_icon"))
+                    case "externalPAC":
+                        statusItem.image = NSImage(named: NSImage.Name(rawValue: "menu_e_icon"))
+                default: break
+                }
+                statusItem.image?.isTemplate = true
             }
-            let titleWidth = statusItem.title!.size(withAttributes: [NSFontAttributeName: statusItem.button!.font!]).width
-            let imageWidth:CGFloat = AppDelegate.StatusItemIconWidth
-            statusItem.length = titleWidth + imageWidth + 2
         } else {
-            statusItem.length = AppDelegate.StatusItemIconWidth
+            statusItem.image = NSImage(named: NSImage.Name(rawValue: "menu_icon_disabled"))
+            statusItem.image?.isTemplate = true
         }
     }
     
@@ -441,62 +532,108 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         let isOn = defaults.bool(forKey: "ShadowsocksOn")
         if isOn {
             runningStatusMenuItem.title = "Shadowsocks: On".localized
+            runningStatusMenuItem.image = NSImage(named: NSImage.Name(rawValue: "NSStatusAvailable"))
             toggleRunningMenuItem.title = "Turn Shadowsocks Off".localized
-            let image = NSImage(named: "menu_icon")
+            let image = NSImage(named: NSImage.Name(rawValue: "menu_icon"))
             statusItem.image = image
         } else {
             runningStatusMenuItem.title = "Shadowsocks: Off".localized
             toggleRunningMenuItem.title = "Turn Shadowsocks On".localized
-            let image = NSImage(named: "menu_icon_disabled")
+            runningStatusMenuItem.image = NSImage(named: NSImage.Name(rawValue: "NSStatusNone"))
+            let image = NSImage(named: NSImage.Name(rawValue: "menu_icon_disabled"))
             statusItem.image = image
         }
+        statusItem.image?.isTemplate = true
+        
+        updateStatusMenuImage()
+    }
+    
+    func updateCopyHttpProxyExportMenu() {
+        let defaults = UserDefaults.standard
+        let isOn = defaults.bool(forKey: "LocalHTTPOn")
+        copyHttpProxyExportCmdLineMenuItem.isHidden = !isOn
     }
     
     func updateServersMenu() {
+        guard let menu = serversMenuItem.submenu else { return }
+
         let mgr = ServerProfileManager.instance
-        serversMenuItem.submenu?.removeAllItems()
-        let showQRItem = showQRCodeMenuItem
-        let scanQRItem = scanQRCodeMenuItem
-        let preferencesItem = serversPreferencesMenuItem
-        
-        var i = 0
-        for p in mgr.profiles {
+        let profiles = mgr.profiles
+
+        // Remove all profile menu items
+        let beginIndex = menu.index(of: serverProfilesBeginSeparatorMenuItem) + 1
+        let endIndex = menu.index(of: serverProfilesEndSeparatorMenuItem)
+        // Remove from end to begin, so the index won't change :)
+        for index in (beginIndex..<endIndex).reversed() {
+            menu.removeItem(at: index)
+        }
+
+        // Insert all profile menu items
+        for (i, profile) in profiles.enumerated().reversed() {
             let item = NSMenuItem()
-            item.tag = i
-            if p.remark.isEmpty {
-                item.title = "\(p.serverHost):\(p.serverPort)"
-            } else {
-                item.title = "\(p.remark) (\(p.serverHost):\(p.serverPort))"
-            }
-            if mgr.activeProfileId == p.uuid {
-                item.state = 1
-            }
-            if !p.isValid() {
-                item.isEnabled = false
-            }
+            item.tag = i + kProfileMenuItemIndexBase
+            item.title = profile.title()
+            item.state = (mgr.activeProfileId == profile.uuid) ? .on : .off
+            item.isEnabled = profile.isValid()
             item.action = #selector(AppDelegate.selectServer)
             
-            serversMenuItem.submenu?.addItem(item)
-            i += 1
+            menu.insertItem(item, at: beginIndex)
         }
-        if !mgr.profiles.isEmpty {
-            serversMenuItem.submenu?.addItem(NSMenuItem.separator())
-        }
-        serversMenuItem.submenu?.addItem(showQRItem!)
-        serversMenuItem.submenu?.addItem(scanQRItem!)
-        serversMenuItem.submenu?.addItem(NSMenuItem.separator())
-        serversMenuItem.submenu?.addItem(preferencesItem!)
+
+        // End separator is redundant if profile section is empty
+        serverProfilesEndSeparatorMenuItem.isHidden = profiles.isEmpty
     }
     
-    func handleURLEvent(_ event: NSAppleEventDescriptor, withReplyEvent replyEvent: NSAppleEventDescriptor) {
+    @objc func handleURLEvent(_ event: NSAppleEventDescriptor, withReplyEvent replyEvent: NSAppleEventDescriptor) {
         if let urlString = event.paramDescriptor(forKeyword: AEKeyword(keyDirectObject))?.stringValue {
             if let url = URL(string: urlString) {
                 NotificationCenter.default.post(
-                    name: Notification.Name(rawValue: "NOTIFY_FOUND_SS_URL"), object: nil
+                    name: NOTIFY_FOUND_SS_URL, object: nil
                     , userInfo: [
-                        "ruls": [url],
+                        "urls": [url],
                         "source": "url",
                         ])
+            }
+        }
+    }
+    
+    func handleFoundSSURL(_ note: Notification) {
+        let sendNotify = {
+            (title: String, subtitle: String, infoText: String) in
+            
+            let userNote = NSUserNotification()
+            userNote.title = title
+            userNote.subtitle = subtitle
+            userNote.informativeText = infoText
+            userNote.soundName = NSUserNotificationDefaultSoundName
+            
+            NSUserNotificationCenter.default
+                .deliver(userNote);
+        }
+        
+        if let userInfo = (note as NSNotification).userInfo {
+            let urls: [URL] = userInfo["urls"] as! [URL]
+            
+            let mgr = ServerProfileManager.instance
+            let addCount = mgr.addServerProfileByURL(urls: urls)
+            
+            if addCount > 0 {
+                var subtitle: String = ""
+                if userInfo["source"] as! String == "qrcode" {
+                    subtitle = "By scan QR Code".localized
+                } else if userInfo["source"] as! String == "url" {
+                    subtitle = "By handle SS URL".localized
+                } else if userInfo["source"] as! String == "pasteboard" {
+                    subtitle = "By import from pasteboard".localized
+                }
+                
+                sendNotify("Add \(addCount) Shadowsocks Server Profile".localized, subtitle, "")
+            } else {
+                if userInfo["source"] as! String == "qrcode" {
+                    sendNotify("", "", "Not found valid QRCode of shadowsocks profile".localized)
+                } else if userInfo["source"] as! String == "url" {
+                    sendNotify("", "", "Not found valid URL of shadowsocks profile".localized)
+                }
             }
         }
     }
@@ -507,6 +644,19 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     func userNotificationCenter(_ center: NSUserNotificationCenter
         , shouldPresent notification: NSUserNotification) -> Bool {
         return true
+    }
+    
+    
+    func makeToast(_ message: String) {
+        if toastWindowCtrl != nil {
+            toastWindowCtrl.close()
+        }
+        toastWindowCtrl = ToastWindowController(windowNibName: NSNib.Name(rawValue: "ToastWindowController"))
+        toastWindowCtrl.message = message
+        toastWindowCtrl.showWindow(self)
+        //NSApp.activate(ignoringOtherApps: true)
+        //toastWindowCtrl.window?.makeKeyAndOrderFront(self)
+        toastWindowCtrl.fadeInHud()
     }
 }
 

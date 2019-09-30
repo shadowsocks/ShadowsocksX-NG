@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2012-2015, Pierre-Olivier Latour
+ Copyright (c) 2012-2019, Pierre-Olivier Latour
  All rights reserved.
  
  Redistribution and use in source and binary forms, with or without
@@ -27,11 +27,14 @@
 
 #import "GCDWebServerResponse.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 /**
  *  The GCDWebServerDataResponse subclass of GCDWebServerResponse reads the body
  *  of the HTTP response from memory.
  */
 @interface GCDWebServerDataResponse : GCDWebServerResponse
+@property(nonatomic, copy) NSString* contentType;  // Redeclare as non-null
 
 /**
  *  Creates a response with data in memory and a given content type.
@@ -50,40 +53,40 @@
 /**
  *  Creates a data response from text encoded using UTF-8.
  */
-+ (instancetype)responseWithText:(NSString*)text;
++ (nullable instancetype)responseWithText:(NSString*)text;
 
 /**
  *  Creates a data response from HTML encoded using UTF-8.
  */
-+ (instancetype)responseWithHTML:(NSString*)html;
++ (nullable instancetype)responseWithHTML:(NSString*)html;
 
 /**
  *  Creates a data response from an HTML template encoded using UTF-8.
  *  See -initWithHTMLTemplate:variables: for details.
  */
-+ (instancetype)responseWithHTMLTemplate:(NSString*)path variables:(NSDictionary*)variables;
++ (nullable instancetype)responseWithHTMLTemplate:(NSString*)path variables:(NSDictionary<NSString*, NSString*>*)variables;
 
 /**
  *  Creates a data response from a serialized JSON object and the default
  *  "application/json" content type.
  */
-+ (instancetype)responseWithJSONObject:(id)object;
++ (nullable instancetype)responseWithJSONObject:(id)object;
 
 /**
  *  Creates a data response from a serialized JSON object and a custom
  *  content type.
  */
-+ (instancetype)responseWithJSONObject:(id)object contentType:(NSString*)type;
++ (nullable instancetype)responseWithJSONObject:(id)object contentType:(NSString*)type;
 
 /**
  *  Initializes a data response from text encoded using UTF-8.
  */
-- (instancetype)initWithText:(NSString*)text;
+- (nullable instancetype)initWithText:(NSString*)text;
 
 /**
  *  Initializes a data response from HTML encoded using UTF-8.
  */
-- (instancetype)initWithHTML:(NSString*)html;
+- (nullable instancetype)initWithHTML:(NSString*)html;
 
 /**
  *  Initializes a data response from an HTML template encoded using UTF-8.
@@ -91,18 +94,20 @@
  *  All occurences of "%variable%" within the HTML template are replaced with
  *  their corresponding values.
  */
-- (instancetype)initWithHTMLTemplate:(NSString*)path variables:(NSDictionary*)variables;
+- (nullable instancetype)initWithHTMLTemplate:(NSString*)path variables:(NSDictionary<NSString*, NSString*>*)variables;
 
 /**
  *  Initializes a data response from a serialized JSON object and the default
  *  "application/json" content type.
  */
-- (instancetype)initWithJSONObject:(id)object;
+- (nullable instancetype)initWithJSONObject:(id)object;
 
 /**
  *  Initializes a data response from a serialized JSON object and a custom
  *  content type.
  */
-- (instancetype)initWithJSONObject:(id)object contentType:(NSString*)type;
+- (nullable instancetype)initWithJSONObject:(id)object contentType:(NSString*)type;
 
 @end
+
+NS_ASSUME_NONNULL_END

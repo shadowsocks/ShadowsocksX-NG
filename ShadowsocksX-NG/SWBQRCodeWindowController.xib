@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="11201" systemVersion="16A323" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="12121" systemVersion="16G29" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="11201"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="12121"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+        <capability name="system font weights other than Regular or Bold" minToolsVersion="7.0"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="SWBQRCodeWindowController">
@@ -15,19 +17,66 @@
         <customObject id="-3" userLabel="Application" customClass="NSObject"/>
         <window title="QR Code" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" restorable="NO" oneShot="NO" animationBehavior="default" id="QvC-M9-y7g">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES"/>
-            <rect key="contentRect" x="566" y="456" width="250" height="250"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1680" height="1027"/>
+            <rect key="contentRect" x="566" y="456" width="290" height="379"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1440" height="877"/>
             <view key="contentView" id="EiT-Mj-1SZ">
-                <rect key="frame" x="0.0" y="0.0" width="250" height="250"/>
+                <rect key="frame" x="0.0" y="0.0" width="290" height="379"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
                     <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="yRy-QH-TEe">
-                        <rect key="frame" x="0.0" y="0.0" width="250" height="250"/>
+                        <rect key="frame" x="20" y="81" width="250" height="250"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" id="iAJ-tw-LNU"/>
+                        <connections>
+                            <outlet property="menu" destination="5h4-gO-Rh7" id="Ps3-TP-31Y"/>
+                        </connections>
                     </imageView>
+                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" allowsCharacterPickerTouchBarItem="NO" translatesAutoresizingMaskIntoConstraints="NO" id="9f5-sB-jlD">
+                        <rect key="frame" x="18" y="342" width="254" height="17"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="Title For Server" id="fHU-xF-zyc">
+                            <font key="font" metaFont="systemSemibold" size="13"/>
+                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                        <connections>
+                            <binding destination="-2" name="value" keyPath="self.title" id="VU2-sZ-3fH"/>
+                        </connections>
+                    </textField>
+                    <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="fAd-u3-u8m">
+                        <rect key="frame" x="14" y="20" width="262" height="32"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="push" title="Copy To Pasteboard" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="3q0-EO-Vug">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="copyQRCode:" target="-2" id="4fF-ID-p1E"/>
+                        </connections>
+                    </button>
+                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" allowsCharacterPickerTouchBarItem="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dqP-hN-9CY">
+                        <rect key="frame" x="34" y="56" width="222" height="17"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Press option/alt key to show legacy " id="x9U-Ti-73h">
+                            <font key="font" metaFont="system"/>
+                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
                 </subviews>
             </view>
+            <point key="canvasLocation" x="152" y="-60.5"/>
         </window>
+        <menu id="5h4-gO-Rh7">
+            <items>
+                <menuItem title="Copy QRCode" id="m8q-W6-UjX">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <connections>
+                        <action selector="copyQRCode:" target="-2" id="vD4-PS-09w"/>
+                    </connections>
+                </menuItem>
+            </items>
+        </menu>
+        <userDefaultsController representsSharedInstance="YES" id="owc-dp-6hu"/>
     </objects>
 </document>

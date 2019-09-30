@@ -1,7 +1,7 @@
 //
 //  Alamofire.swift
 //
-//  Copyright (c) 2014-2016 Alamofire Software Foundation (http://alamofire.org/)
+//  Copyright (c) 2014-2018 Alamofire Software Foundation (http://alamofire.org/)
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -53,7 +53,7 @@ extension URL: URLConvertible {
 }
 
 extension URLComponents: URLConvertible {
-    /// Returns a URL if `url` is not nil, otherise throws an `Error`.
+    /// Returns a URL if `url` is not nil, otherwise throws an `Error`.
     ///
     /// - throws: An `AFError.invalidURL` if `url` is `nil`.
     ///
@@ -221,6 +221,13 @@ public func download(
 ///
 /// If `destination` is not specified, the contents will remain in the temporary location determined by the
 /// underlying URL session.
+///
+/// On the latest release of all the Apple platforms (iOS 10, macOS 10.12, tvOS 10, watchOS 3), `resumeData` is broken
+/// on background URL session configurations. There's an underlying bug in the `resumeData` generation logic where the
+/// data is written incorrectly and will always fail to resume the download. For more information about the bug and
+/// possible workarounds, please refer to the following Stack Overflow post:
+///
+///    - http://stackoverflow.com/a/39347461/1342462
 ///
 /// - parameter resumeData:  The resume data. This is an opaque data blob produced by `URLSessionDownloadTask`
 ///                          when a task is cancelled. See `URLSession -downloadTask(withResumeData:)` for additional
@@ -435,6 +442,7 @@ public func upload(
 ///
 /// - returns: The created `StreamRequest`.
 @discardableResult
+@available(iOS 9.0, macOS 10.11, tvOS 9.0, *)
 public func stream(withHostName hostName: String, port: Int) -> StreamRequest {
     return SessionManager.default.stream(withHostName: hostName, port: port)
 }
@@ -449,6 +457,7 @@ public func stream(withHostName hostName: String, port: Int) -> StreamRequest {
 ///
 /// - returns: The created `StreamRequest`.
 @discardableResult
+@available(iOS 9.0, macOS 10.11, tvOS 9.0, *)
 public func stream(with netService: NetService) -> StreamRequest {
     return SessionManager.default.stream(with: netService)
 }

@@ -1,7 +1,7 @@
 //
 //  ResponseSerialization.swift
 //
-//  Copyright (c) 2014-2016 Alamofire Software Foundation (http://alamofire.org/)
+//  Copyright (c) 2014-2018 Alamofire Software Foundation (http://alamofire.org/)
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -84,6 +84,23 @@ public struct DownloadResponseSerializer<Value>: DownloadResponseSerializerProto
     }
 }
 
+// MARK: - Timeline
+
+extension Request {
+    var timeline: Timeline {
+        let requestStartTime = self.startTime ?? CFAbsoluteTimeGetCurrent()
+        let requestCompletedTime = self.endTime ?? CFAbsoluteTimeGetCurrent()
+        let initialResponseTime = self.delegate.initialResponseTime ?? requestCompletedTime
+
+        return Timeline(
+            requestStartTime: requestStartTime,
+            initialResponseTime: initialResponseTime,
+            requestCompletedTime: requestCompletedTime,
+            serializationCompletedTime: CFAbsoluteTimeGetCurrent()
+        )
+    }
+}
+
 // MARK: - Default
 
 extension DataRequest {
@@ -101,7 +118,8 @@ extension DataRequest {
                     request: self.request,
                     response: self.response,
                     data: self.delegate.data,
-                    error: self.delegate.error
+                    error: self.delegate.error,
+                    timeline: self.timeline
                 )
 
                 dataResponse.add(self.delegate.metrics)
@@ -136,22 +154,12 @@ extension DataRequest {
                 self.delegate.error
             )
 
-            let requestCompletedTime = self.endTime ?? CFAbsoluteTimeGetCurrent()
-            let initialResponseTime = self.delegate.initialResponseTime ?? requestCompletedTime
-
-            let timeline = Timeline(
-                requestStartTime: self.startTime ?? CFAbsoluteTimeGetCurrent(),
-                initialResponseTime: initialResponseTime,
-                requestCompletedTime: requestCompletedTime,
-                serializationCompletedTime: CFAbsoluteTimeGetCurrent()
-            )
-
             var dataResponse = DataResponse<T.SerializedObject>(
                 request: self.request,
                 response: self.response,
                 data: self.delegate.data,
                 result: result,
-                timeline: timeline
+                timeline: self.timeline
             )
 
             dataResponse.add(self.delegate.metrics)
@@ -184,7 +192,8 @@ extension DownloadRequest {
                     temporaryURL: self.downloadDelegate.temporaryURL,
                     destinationURL: self.downloadDelegate.destinationURL,
                     resumeData: self.downloadDelegate.resumeData,
-                    error: self.downloadDelegate.error
+                    error: self.downloadDelegate.error,
+                    timeline: self.timeline
                 )
 
                 downloadResponse.add(self.delegate.metrics)
@@ -219,16 +228,6 @@ extension DownloadRequest {
                 self.downloadDelegate.error
             )
 
-            let requestCompletedTime = self.endTime ?? CFAbsoluteTimeGetCurrent()
-            let initialResponseTime = self.delegate.initialResponseTime ?? requestCompletedTime
-
-            let timeline = Timeline(
-                requestStartTime: self.startTime ?? CFAbsoluteTimeGetCurrent(),
-                initialResponseTime: initialResponseTime,
-                requestCompletedTime: requestCompletedTime,
-                serializationCompletedTime: CFAbsoluteTimeGetCurrent()
-            )
-
             var downloadResponse = DownloadResponse<T.SerializedObject>(
                 request: self.request,
                 response: self.response,
@@ -236,7 +235,7 @@ extension DownloadRequest {
                 destinationURL: self.downloadDelegate.destinationURL,
                 resumeData: self.downloadDelegate.resumeData,
                 result: result,
-                timeline: timeline
+                timeline: self.timeline
             )
 
             downloadResponse.add(self.delegate.metrics)
@@ -369,13 +368,13 @@ extension Request {
 
         var convertedEncoding = encoding
 
-        if let encodingName = response?.textEncodingName as CFString!, convertedEncoding == nil {
+        if let encodingName = response?.textEncodingName as CFString?, convertedEncoding == nil {
             convertedEncoding = String.Encoding(rawValue: CFStringConvertEncodingToNSStringEncoding(
                 CFStringConvertIANACharSetNameToEncoding(encodingName))
             )
         }
 
-        let actualEncoding = convertedEncoding ?? String.Encoding.isoLatin1
+        let actualEncoding = convertedEncoding ?? .isoLatin1
 
         if let string = String(data: validData, encoding: actualEncoding) {
             return .success(string)

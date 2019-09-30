@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2012-2015, Pierre-Olivier Latour
+ Copyright (c) 2012-2019, Pierre-Olivier Latour
  All rights reserved.
  
  Redistribution and use in source and binary forms, with or without
@@ -31,18 +31,14 @@
 
 #import "GCDWebServerPrivate.h"
 
-@interface GCDWebServerDataRequest () {
-@private
-  NSMutableData* _data;
-  
+@interface GCDWebServerDataRequest ()
+@property(nonatomic) NSMutableData* data;
+@end
+
+@implementation GCDWebServerDataRequest {
   NSString* _text;
   id _jsonObject;
 }
-@end
-
-@implementation GCDWebServerDataRequest
-
-@synthesize data=_data;
 
 - (BOOL)open:(NSError**)error {
   if (self.contentLength != NSUIntegerMax) {
@@ -52,7 +48,7 @@
   }
   if (_data == nil) {
     if (error) {
-      *error = [NSError errorWithDomain:kGCDWebServerErrorDomain code:-1 userInfo:@{NSLocalizedDescriptionKey: @"Failed allocating memory"}];
+      *error = [NSError errorWithDomain:kGCDWebServerErrorDomain code:-1 userInfo:@{NSLocalizedDescriptionKey : @"Failed allocating memory"}];
     }
     return NO;
   }
@@ -72,7 +68,7 @@
   NSMutableString* description = [NSMutableString stringWithString:[super description]];
   if (_data) {
     [description appendString:@"\n\n"];
-    [description appendString:GCDWebServerDescribeData(_data, self.contentType)];
+    [description appendString:GCDWebServerDescribeData(_data, (NSString*)self.contentType)];
   }
   return description;
 }

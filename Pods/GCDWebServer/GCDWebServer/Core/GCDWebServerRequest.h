@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2012-2015, Pierre-Olivier Latour
+ Copyright (c) 2012-2019, Pierre-Olivier Latour
  All rights reserved.
  
  Redistribution and use in source and binary forms, with or without
@@ -26,6 +26,8 @@
  */
 
 #import <Foundation/Foundation.h>
+
+NS_ASSUME_NONNULL_BEGIN
 
 /**
  *  Attribute key to retrieve an NSArray containing NSStrings from a GCDWebServerRequest
@@ -100,7 +102,7 @@ extern NSString* const GCDWebServerRequestAttribute_RegexCaptures;
 /**
  *  Returns the HTTP headers for the request.
  */
-@property(nonatomic, readonly) NSDictionary* headers;
+@property(nonatomic, readonly) NSDictionary<NSString*, NSString*>* headers;
 
 /**
  *  Returns the path component of the URL for the request.
@@ -112,7 +114,7 @@ extern NSString* const GCDWebServerRequestAttribute_RegexCaptures;
  *
  *  @warning This property will be nil if there is no query in the URL.
  */
-@property(nonatomic, readonly) NSDictionary* query;
+@property(nonatomic, readonly, nullable) NSDictionary<NSString*, NSString*>* query;
 
 /**
  *  Returns the content type for the body of the request parsed from the
@@ -122,7 +124,7 @@ extern NSString* const GCDWebServerRequestAttribute_RegexCaptures;
  *  "application/octet-stream" if a body is present but there was no
  *  "Content-Type" header.
  */
-@property(nonatomic, readonly) NSString* contentType;
+@property(nonatomic, readonly, nullable) NSString* contentType;
 
 /**
  *  Returns the content length for the body of the request parsed from the
@@ -137,12 +139,12 @@ extern NSString* const GCDWebServerRequestAttribute_RegexCaptures;
 /**
  *  Returns the parsed "If-Modified-Since" header or nil if absent or malformed.
  */
-@property(nonatomic, readonly) NSDate* ifModifiedSince;
+@property(nonatomic, readonly, nullable) NSDate* ifModifiedSince;
 
 /**
  *  Returns the parsed "If-None-Match" header or nil if absent or malformed.
  */
-@property(nonatomic, readonly) NSString* ifNoneMatch;
+@property(nonatomic, readonly, nullable) NSString* ifNoneMatch;
 
 /**
  *  Returns the parsed "Range" header or (NSUIntegerMax, 0) if absent or malformed.
@@ -184,7 +186,7 @@ extern NSString* const GCDWebServerRequestAttribute_RegexCaptures;
 /**
  *  This method is the designated initializer for the class.
  */
-- (instancetype)initWithMethod:(NSString*)method url:(NSURL*)url headers:(NSDictionary*)headers path:(NSString*)path query:(NSDictionary*)query;
+- (instancetype)initWithMethod:(NSString*)method url:(NSURL*)url headers:(NSDictionary<NSString*, NSString*>*)headers path:(NSString*)path query:(nullable NSDictionary<NSString*, NSString*>*)query;
 
 /**
  *  Convenience method that checks if the contentType property is defined.
@@ -201,6 +203,8 @@ extern NSString* const GCDWebServerRequestAttribute_RegexCaptures;
  *
  *  @return The attribute value for the key.
  */
-- (id)attributeForKey:(NSString*)key;
+- (nullable id)attributeForKey:(NSString*)key;
 
 @end
+
+NS_ASSUME_NONNULL_END

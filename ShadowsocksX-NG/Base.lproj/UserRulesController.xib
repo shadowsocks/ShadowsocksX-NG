@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="11201" systemVersion="16A323" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="14490.70" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="11201"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14490.70"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="UserRulesController" customModule="ShadowsocksX_NG" customModuleProvider="target">
@@ -14,17 +15,20 @@
         </customObject>
         <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
         <customObject id="-3" userLabel="Application" customClass="NSObject"/>
-        <window title="User Rules" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" oneShot="NO" releasedWhenClosed="NO" animationBehavior="default" id="F0z-JX-Cv5">
+        <window title="User Rules" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" animationBehavior="default" id="F0z-JX-Cv5">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
-            <rect key="contentRect" x="196" y="240" width="480" height="270"/>
+            <windowPositionMask key="initialPositionMask" topStrut="YES" bottomStrut="YES"/>
+            <rect key="contentRect" x="196" y="519" width="480" height="270"/>
             <rect key="screenRect" x="0.0" y="0.0" width="1680" height="1027"/>
             <view key="contentView" id="se5-gp-TjO">
                 <rect key="frame" x="0.0" y="0.0" width="480" height="270"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="N2T-OG-SO9">
+                    <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="N2T-OG-SO9">
                         <rect key="frame" x="385" y="13" width="81" height="32"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <constraints>
+                            <constraint firstAttribute="width" constant="69" id="aO3-kK-V9p"/>
+                        </constraints>
                         <buttonCell key="cell" type="push" title="OK" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="0Sc-cm-Vyu">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                             <font key="font" metaFont="system"/>
@@ -37,9 +41,11 @@ DQ
                             <action selector="didOK:" target="-2" id="216-18-SFI"/>
                         </connections>
                     </button>
-                    <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="2bi-hW-nd9">
+                    <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="2bi-hW-nd9">
                         <rect key="frame" x="304" y="13" width="81" height="32"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <constraints>
+                            <constraint firstAttribute="width" constant="69" id="jXL-pY-uDw"/>
+                        </constraints>
                         <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="QAR-9i-kmv">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                             <font key="font" metaFont="system"/>
@@ -51,34 +57,43 @@ Gw
                             <action selector="didCancel:" target="-2" id="SFh-eD-YLV"/>
                         </connections>
                     </button>
-                    <scrollView fixedFrame="YES" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="J3L-MK-p8I">
+                    <scrollView horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="J3L-MK-p8I">
                         <rect key="frame" x="20" y="61" width="440" height="189"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <clipView key="contentView" ambiguous="YES" id="fO6-Dc-ZUL">
+                        <clipView key="contentView" drawsBackground="NO" id="fO6-Dc-ZUL">
                             <rect key="frame" x="1" y="1" width="423" height="187"/>
                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                             <subviews>
-                                <textView ambiguous="YES" importsGraphics="NO" richText="NO" usesFontPanel="YES" findStyle="panel" continuousSpellChecking="YES" allowsUndo="YES" usesRuler="YES" allowsNonContiguousLayout="YES" quoteSubstitution="YES" dashSubstitution="YES" spellingCorrection="YES" smartInsertDelete="YES" id="4yV-hS-knY">
+                                <textView importsGraphics="NO" richText="NO" verticallyResizable="YES" usesFontPanel="YES" findStyle="panel" continuousSpellChecking="YES" allowsUndo="YES" usesRuler="YES" allowsNonContiguousLayout="YES" quoteSubstitution="YES" dashSubstitution="YES" spellingCorrection="YES" smartInsertDelete="YES" id="4yV-hS-knY">
                                     <rect key="frame" x="0.0" y="0.0" width="423" height="187"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                    <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                    <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                     <size key="minSize" width="423" height="187"/>
                                     <size key="maxSize" width="463" height="10000000"/>
                                     <color key="insertionPointColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                 </textView>
                             </subviews>
-                            <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         </clipView>
-                        <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" doubleValue="1" horizontal="YES" id="z0Z-PW-muW">
+                        <scroller key="horizontalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" doubleValue="1" horizontal="YES" id="z0Z-PW-muW">
                             <rect key="frame" x="-100" y="-100" width="87" height="18"/>
                             <autoresizingMask key="autoresizingMask"/>
                         </scroller>
-                        <scroller key="verticalScroller" verticalHuggingPriority="750" horizontal="NO" id="Us9-yx-gj4">
+                        <scroller key="verticalScroller" wantsLayer="YES" verticalHuggingPriority="750" horizontal="NO" id="Us9-yx-gj4">
                             <rect key="frame" x="424" y="1" width="15" height="187"/>
                             <autoresizingMask key="autoresizingMask"/>
                         </scroller>
                     </scrollView>
                 </subviews>
+                <constraints>
+                    <constraint firstItem="N2T-OG-SO9" firstAttribute="leading" secondItem="2bi-hW-nd9" secondAttribute="trailing" constant="12" symbolic="YES" id="aMv-5A-H00"/>
+                    <constraint firstItem="2bi-hW-nd9" firstAttribute="baseline" secondItem="N2T-OG-SO9" secondAttribute="baseline" id="bCp-AI-xph"/>
+                    <constraint firstItem="J3L-MK-p8I" firstAttribute="trailing" secondItem="N2T-OG-SO9" secondAttribute="trailing" id="ceZ-Kz-tzP"/>
+                    <constraint firstItem="J3L-MK-p8I" firstAttribute="leading" secondItem="se5-gp-TjO" secondAttribute="leading" constant="20" symbolic="YES" id="jkN-Yi-047"/>
+                    <constraint firstItem="2bi-hW-nd9" firstAttribute="top" secondItem="J3L-MK-p8I" secondAttribute="bottom" constant="20" symbolic="YES" id="n5u-fC-X85"/>
+                    <constraint firstItem="J3L-MK-p8I" firstAttribute="top" secondItem="se5-gp-TjO" secondAttribute="top" constant="20" symbolic="YES" id="nm4-yK-hmi"/>
+                    <constraint firstAttribute="bottom" secondItem="2bi-hW-nd9" secondAttribute="bottom" constant="20" symbolic="YES" id="tqM-nL-hC0"/>
+                    <constraint firstAttribute="trailing" secondItem="J3L-MK-p8I" secondAttribute="trailing" constant="20" symbolic="YES" id="ziG-gJ-Fcg"/>
+                </constraints>
             </view>
             <connections>
                 <outlet property="delegate" destination="-2" id="0bl-1N-AYu"/>

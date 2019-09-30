@@ -1,81 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "0730"
+   LastUpgradeVersion = "0930"
    version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
       buildImplicitDependencies = "YES">
       <BuildActionEntries>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "YES"
-            buildForProfiling = "YES"
-            buildForArchiving = "YES"
-            buildForAnalyzing = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "79C040AFDDCE1BCBF6D8B5EB0B85887F"
-               BuildableName = "Alamofire.framework"
-               BlueprintName = "Alamofire"
-               ReferencedContainer = "container:Pods/Pods.xcodeproj">
-            </BuildableReference>
-         </BuildActionEntry>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "YES"
-            buildForProfiling = "YES"
-            buildForArchiving = "YES"
-            buildForAnalyzing = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "7AD154F318B10A340D705FD3003EAAC6"
-               BuildableName = "libBRLOptionParser.a"
-               BlueprintName = "BRLOptionParser"
-               ReferencedContainer = "container:Pods/Pods.xcodeproj">
-            </BuildableReference>
-         </BuildActionEntry>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "YES"
-            buildForProfiling = "YES"
-            buildForArchiving = "YES"
-            buildForAnalyzing = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "F69966EE760BB16DE7009DBE04D8B18D"
-               BuildableName = "Pods_ShadowsocksX_NG.framework"
-               BlueprintName = "Pods-ShadowsocksX-NG"
-               ReferencedContainer = "container:Pods/Pods.xcodeproj">
-            </BuildableReference>
-         </BuildActionEntry>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "YES"
-            buildForProfiling = "YES"
-            buildForArchiving = "YES"
-            buildForAnalyzing = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "9D7253CF594B2D7CB8127F7CCAFF916F"
-               BuildableName = "Pods_ShadowsocksX_NGTests.framework"
-               BlueprintName = "Pods-ShadowsocksX-NGTests"
-               ReferencedContainer = "container:Pods/Pods.xcodeproj">
-            </BuildableReference>
-         </BuildActionEntry>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "YES"
-            buildForProfiling = "YES"
-            buildForArchiving = "YES"
-            buildForAnalyzing = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "3F0FDAFB5467946C22EE9F2EC643E2B0"
-               BuildableName = "libPods-proxy_conf_helper.a"
-               BlueprintName = "Pods-proxy_conf_helper"
-               ReferencedContainer = "container:Pods/Pods.xcodeproj">
-            </BuildableReference>
-         </BuildActionEntry>
          <BuildActionEntry
             buildForTesting = "YES"
             buildForRunning = "YES"

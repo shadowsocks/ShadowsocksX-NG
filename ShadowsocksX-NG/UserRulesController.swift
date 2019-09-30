@@ -22,7 +22,7 @@ class UserRulesController: NSWindowController {
         }
 
         let str = try? String(contentsOfFile: PACUserRuleFilePath, encoding: String.Encoding.utf8)
-        userRulesView.string = str
+        userRulesView.string = str!
     }
     
     @IBAction func didCancel(_ sender: AnyObject) {
@@ -30,7 +30,7 @@ class UserRulesController: NSWindowController {
     }
 
     @IBAction func didOK(_ sender: AnyObject) {
-        if let str = userRulesView.string {
+        if let str = userRulesView?.string {
             do {
                 try str.data(using: String.Encoding.utf8)?.write(to: URL(fileURLWithPath: PACUserRuleFilePath), options: .atomic)
 
