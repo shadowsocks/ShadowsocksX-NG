@@ -491,7 +491,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             if mgr.activeProfileId == p.uuid {
                 var profileName :String
                 if !p.remark.isEmpty {
-                    profileName = p.remark
+                    profileName = String(p.remark.prefix(24))
                 } else {
                     profileName = p.serverHost
                 }
