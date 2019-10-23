@@ -108,6 +108,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             "LocalHTTP.FollowGlobal": false,
             "ProxyExceptions": "127.0.0.1, localhost, 192.168.0.0/16, 10.0.0.0/8, FE80::/64, ::1, FD00::/8",
             "ExternalPACURL": "",
+            "EnableSwitchMode.PAC": true,
+            "EnableSwitchMode.Global": true,
+            "EnableSwitchMode.Manual": false,
+            "EnableSwitchMode.ExternalPAC": false,
             ])
         
         statusItem = NSStatusBar.system.statusItem(withLength: AppDelegate.StatusItemIconWidth)
@@ -148,34 +152,50 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             .subscribe(onNext: { noti in
                 let mode = defaults.string(forKey: "ShadowsocksRunningMode")!
                 
-                var toastMessage: String!;
-                switch mode {
-                case "auto":
-                    defaults.setValue("global", forKey: "ShadowsocksRunningMode")
-                    toastMessage = "Global Mode".localized
-                case "global":
-                    defaults.setValue("manual", forKey: "ShadowsocksRunningMode")
-                    toastMessage = "Manual Mode".localized
-                case "manual":
-                    if self.externalPACModeMenuItem.isEnabled {
-                        defaults.setValue("externalPAC", forKey: "ShadowsocksRunningMode")
-                        toastMessage = "Auto Mode By External PAC".localized
-                    } else {
-                        defaults.setValue("auto", forKey: "ShadowsocksRunningMode")
-                        toastMessage = "Auto Mode By PAC".localized
-                    }
-                case "externalPAC":
-                    defaults.setValue("auto", forKey: "ShadowsocksRunningMode")
-                    toastMessage = "Auto Mode By PAC".localized
-                default:
-                    defaults.setValue("auto", forKey: "ShadowsocksRunningMode")
-                    toastMessage = "Auto Mode By PAC".localized
+                var enabledModeList: [String] = []
+                if defaults.bool(forKey: "EnableSwitchMode.PAC") {
+                    enabledModeList.append("auto")
                 }
+                if defaults.bool(forKey: "EnableSwitchMode.Global") {
+                    enabledModeList.append("global")
+                }
+                if defaults.bool(forKey: "EnableSwitchMode.Manual") {
+                    enabledModeList.append("manual")
+                }
+                if defaults.bool(forKey: "EnableSwitchMode.ExternalPAC")
+                    && self.externalPACModeMenuItem.isEnabled {
+                    enabledModeList.append("externalPAC")
+                }
+                
+                if enabledModeList.isEmpty {
+                    return
+                }
+                
+                var nextMode = ""
+                if enabledModeList.contains(mode) {
+                    let i = enabledModeList.firstIndex(of: mode)!
+                    if i + 1 == enabledModeList.count {
+                        nextMode = enabledModeList[0]
+                    } else {
+                        nextMode = enabledModeList[i+1]
+                    }
+                } else {
+                    nextMode = enabledModeList[0]
+                }
+                
+                defaults.setValue(nextMode, forKey: "ShadowsocksRunningMode")
                 
                 self.updateRunningModeMenu()
                 self.applyConfig()
                 
-                self.makeToast(toastMessage)
+                // Show toast message
+                let toastMessages = [
+                    "auto": "Auto Mode By PAC".localized,
+                    "global": "Global Mode".localized,
+                    "manual": "Manual Mode".localized,
+                    "externalPAC": "Auto Mode By External PAC".localized,
+                ]
+                self.makeToast(toastMessages[nextMode]!)
             })
         
         _ = notifyCenter.rx.notification(NOTIFY_FOUND_SS_URL)
