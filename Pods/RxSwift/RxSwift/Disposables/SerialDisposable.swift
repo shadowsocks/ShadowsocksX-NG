@@ -16,7 +16,7 @@ public final class SerialDisposable : DisposeBase, Cancelable {
     
     /// - returns: Was resource disposed.
     public var isDisposed: Bool {
-        return _isDisposed
+        return self._isDisposed
     }
     
     /// Initializes a new instance of the `SerialDisposable`.
@@ -33,18 +33,18 @@ public final class SerialDisposable : DisposeBase, Cancelable {
     */
     public var disposable: Disposable {
         get {
-            return _lock.calculateLocked {
-                return _current ?? Disposables.create()
+            return self._lock.calculateLocked {
+                return self._current ?? Disposables.create()
             }
         }
         set (newDisposable) {
-            let disposable: Disposable? = _lock.calculateLocked {
-                if _isDisposed {
+            let disposable: Disposable? = self._lock.calculateLocked {
+                if self._isDisposed {
                     return newDisposable
                 }
                 else {
-                    let toDispose = _current
-                    _current = newDisposable
+                    let toDispose = self._current
+                    self._current = newDisposable
                     return toDispose
                 }
             }
@@ -57,18 +57,18 @@ public final class SerialDisposable : DisposeBase, Cancelable {
     
     /// Disposes the underlying disposable as well as all future replacements.
     public func dispose() {
-        _dispose()?.dispose()
+        self._dispose()?.dispose()
     }
 
     private func _dispose() -> Disposable? {
-        _lock.lock(); defer { _lock.unlock() }
-        if _isDisposed {
+        self._lock.lock(); defer { self._lock.unlock() }
+        if self._isDisposed {
             return nil
         }
         else {
-            _isDisposed = true
-            let current = _current
-            _current = nil
+            self._isDisposed = true
+            let current = self._current
+            self._current = nil
             return current
         }
     }

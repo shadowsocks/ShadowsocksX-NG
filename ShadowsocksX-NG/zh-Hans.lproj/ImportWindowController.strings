@@ -1,0 +1,9 @@
+
+/* Class = "NSButtonCell"; title = "Import"; ObjectID = "EW8-ld-aGr"; */
+"EW8-ld-aGr.title" = "导入";
+
+/* Class = "NSWindow"; title = "Import Server URLs"; ObjectID = "F0z-JX-Cv5"; */
+"F0z-JX-Cv5.title" = "导入服务器URLs";
+
+/* Class = "NSTextFieldCell"; placeholderString = "Copy your shadowsocks URLs to here"; ObjectID = "h31-8G-f2d"; */
+"h31-8G-f2d.placeholderString" = "复制shadowsocks URLs到这里";

@@ -22,30 +22,30 @@ fileprivate final class DematerializeSink<Element: EventConvertible, O: Observer
     fileprivate func on(_ event: Event<Element>) {
         switch event {
         case .next(let element):
-            forwardOn(element.event)
+            self.forwardOn(element.event)
             if element.event.isStopEvent {
-                dispose()
+                self.dispose()
             }
         case .completed:
-            forwardOn(.completed)
-            dispose()
+            self.forwardOn(.completed)
+            self.dispose()
         case .error(let error):
-            forwardOn(.error(error))
-            dispose()
+            self.forwardOn(.error(error))
+            self.dispose()
         }
     }
 }
 
-final fileprivate class Dematerialize<Element: EventConvertible>: Producer<Element.ElementType>  {
+final private class Dematerialize<Element: EventConvertible>: Producer<Element.ElementType> {
     private let _source: Observable<Element>
     
     init(source: Observable<Element>) {
-        _source = source
+        self._source = source
     }
     
     override func run<O : ObserverType>(_ observer: O, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where O.E == Element.ElementType {
         let sink = DematerializeSink<Element, O>(observer: observer, cancel: cancel)
-        let subscription = _source.subscribe(sink)
+        let subscription = self._source.subscribe(sink)
         return (sink: sink, subscription: subscription)
     }
 }

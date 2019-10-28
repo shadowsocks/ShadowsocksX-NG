@@ -20,6 +20,11 @@ If applicable, add screenshots to help explain your problem.
  - OS Version: [e.g. 10.13.1]
  - Version [e.g. 22]
 
+**Diagnoisis file:**
+
+Please first upgrade to the latest version.
+Then export the diagnosis file and upload it to here.
+
 **ss-local.log**
 
 Please upload the ss-local.log file here the file is in `~/Library/Logs`

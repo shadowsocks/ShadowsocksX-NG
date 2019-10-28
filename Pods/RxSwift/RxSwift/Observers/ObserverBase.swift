@@ -9,17 +9,17 @@
 class ObserverBase<ElementType> : Disposable, ObserverType {
     typealias E = ElementType
 
-    private var _isStopped: AtomicInt = 0
+    private let _isStopped = AtomicInt(0)
 
     func on(_ event: Event<E>) {
         switch event {
         case .next:
-            if _isStopped == 0 {
-                onCore(event)
+            if load(self._isStopped) == 0 {
+                self.onCore(event)
             }
         case .error, .completed:
-            if AtomicCompareAndSwap(0, 1, &_isStopped) {
-                onCore(event)
+            if fetchOr(self._isStopped, 1) == 0 {
+                self.onCore(event)
             }
         }
     }
@@ -29,6 +29,6 @@ class ObserverBase<ElementType> : Disposable, ObserverType {
     }
 
     func dispose() {
-        _ = AtomicCompareAndSwap(0, 1, &_isStopped)
+        fetchOr(self._isStopped, 1)
     }
 }

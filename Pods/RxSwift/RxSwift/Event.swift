@@ -22,7 +22,7 @@ public enum Event<Element> {
 }
 
 extension Event : CustomDebugStringConvertible {
-    /// - returns: Description of event.
+    /// Description of event.
     public var debugDescription: String {
         switch self {
         case .next(let value):
@@ -60,7 +60,7 @@ extension Event {
         return nil
     }
 
-    /// If `completed` event, returns true.
+    /// If `completed` event, returns `true`.
     public var isCompleted: Bool {
         if case .completed = self {
             return true
@@ -70,8 +70,8 @@ extension Event {
 }
 
 extension Event {
-    /// Maps sequence elements using transform. If error happens during the transform .error
-    /// will be returned as value
+    /// Maps sequence elements using transform. If error happens during the transform, `.error`
+    /// will be returned as value.
     public func map<Result>(_ transform: (Element) throws -> Result) -> Event<Result> {
         do {
             switch self {

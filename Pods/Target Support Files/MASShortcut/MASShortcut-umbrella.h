@@ -10,18 +10,18 @@
 #endif
 #endif
 
-#import "MASDictionaryTransformer.h"
-#import "MASHotKey.h"
 #import "MASKeyCodes.h"
 #import "MASKeyMasks.h"
-#import "MASLocalization.h"
 #import "MASShortcut.h"
-#import "MASShortcutBinder.h"
-#import "MASShortcutMonitor.h"
 #import "MASShortcutValidator.h"
+#import "MASHotKey.h"
+#import "MASShortcutMonitor.h"
+#import "Shortcut.h"
+#import "MASLocalization.h"
 #import "MASShortcutView+Bindings.h"
 #import "MASShortcutView.h"
-#import "Shortcut.h"
+#import "MASDictionaryTransformer.h"
+#import "MASShortcutBinder.h"
 
 FOUNDATION_EXPORT double MASShortcutVersionNumber;
 FOUNDATION_EXPORT const unsigned char MASShortcutVersionString[];

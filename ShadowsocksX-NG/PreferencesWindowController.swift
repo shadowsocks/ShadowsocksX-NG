@@ -169,6 +169,12 @@ class PreferencesWindowController: NSWindowController
         NSWorkspace.shared.open(url!)
     }
     
+    @IBAction func openPluginFolder(_ sender: Any) {
+        let folderPath = NSHomeDirectory() + APP_SUPPORT_DIR + "plugins/"
+        let url = URL(fileURLWithPath: folderPath, isDirectory: true)
+        NSWorkspace.shared.open(url)
+    }
+    
     @IBAction func copyCurrentProfileURL2Pasteboard(_ sender: NSButton) {
         let index = profilesTableView.selectedRow
         if  index >= 0 {
@@ -244,7 +250,7 @@ class PreferencesWindowController: NSWindowController
         let profile = profileMgr.profiles[index]
         let isActive = (profileMgr.activeProfileId == profile.uuid)
         if !profile.remark.isEmpty {
-            return (profile.remark, isActive)
+            return (String(profile.remark.prefix(24)), isActive)
         } else {
             return (profile.serverHost, isActive)
         }

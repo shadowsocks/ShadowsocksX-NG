@@ -39,7 +39,7 @@ public protocol VirtualTimeConverterType {
     func convertFromVirtualTimeInterval(_ virtualTimeInterval: VirtualTimeIntervalUnit) -> RxTimeInterval
 
     /**
-     Converts from virtual time interval to `NSTimeInterval`.
+     Converts from `NSTimeInterval` to virtual time interval.
      
      - parameter timeInterval: `NSTimeInterval` to convert to virtual time interval.
      - returns: Virtual time interval corresponding to time interval.
@@ -56,7 +56,7 @@ public protocol VirtualTimeConverterType {
     func offsetVirtualTime(_ time: VirtualTimeUnit, offset: VirtualTimeIntervalUnit) -> VirtualTimeUnit
 
     /**
-     This is aditional abstraction because `Date` is unfortunately not comparable.
+     This is additional abstraction because `Date` is unfortunately not comparable.
      Extending `Date` with `Comparable` would be too risky because of possible collisions with other libraries.
     */
     func compareVirtualTime(_ lhs: VirtualTimeUnit, _ rhs: VirtualTimeUnit) -> VirtualTimeComparison
@@ -65,7 +65,7 @@ public protocol VirtualTimeConverterType {
 /**
  Virtual time comparison result.
 
- This is aditional abstraction because `Date` is unfortunately not comparable.
+ This is additional abstraction because `Date` is unfortunately not comparable.
  Extending `Date` with `Comparable` would be too risky because of possible collisions with other libraries.
 */
 public enum VirtualTimeComparison {

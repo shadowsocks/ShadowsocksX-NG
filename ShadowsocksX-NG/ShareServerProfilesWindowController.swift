@@ -30,6 +30,7 @@ class ShareServerProfilesWindowController: NSWindowController
         
         defaults = UserDefaults.standard
         profileMgr = ServerProfileManager.instance
+        profilesTableView.reloadData()
         
         if !profileMgr.profiles.isEmpty {
             let index = IndexSet(integer: 0)
@@ -71,7 +72,7 @@ class ShareServerProfilesWindowController: NSWindowController
     @IBAction func saveQRCodeAsFile(_ sender: NSButton) {
         if let img = qrCodeImageView.image {
             let savePanel = NSSavePanel()
-            savePanel.title = "Save All Server URLs To File".localized
+            savePanel.title = "Save QRCode As File".localized
             savePanel.canCreateDirectories = true
             savePanel.allowedFileTypes = ["gif"]
             savePanel.isExtensionHidden = false

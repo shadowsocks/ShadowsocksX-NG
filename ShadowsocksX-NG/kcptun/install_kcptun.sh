@@ -4,17 +4,23 @@
 #  ShadowsocksX-NG
 #
 #  Created by 邱宇舟 on 2018/9/21.
-#  Copyright © 2018年 qiuyuzhou. All rights reserved.
+#  Copyright © 2018-2019年 qiuyuzhou. All rights reserved.
 
-# https://github.com/shadowsocks/kcptun/releases
+# Use kcptune bianry from here which is not support SIP003.
+# We use an adatper to handle it.
+# https://github.com/xtaci/kcptun/releases
 
-VERSION="v20170718"
+VERSION="v20190905_1"
 
-cd `dirname "${BASH_SOURCE[0]}"`
+cd "$(dirname "${BASH_SOURCE[0]}")"
 
 mkdir -p "$HOME/Library/Application Support/ShadowsocksX-NG/kcptun_$VERSION"
-cp -f kcptun_client "$HOME/Library/Application Support/ShadowsocksX-NG/kcptun_$VERSION/"
+cp -f client "$HOME/Library/Application Support/ShadowsocksX-NG/kcptun_$VERSION/"
 
-ln -sfh "$HOME/Library/Application Support/ShadowsocksX-NG/kcptun_$VERSION/kcptun_client" "$HOME/Library/Application Support/ShadowsocksX-NG/plugins/kcptun"
+# Delete old kcptun symbol link
+rm -f "$HOME/Library/Application Support/ShadowsocksX-NG/plugins/kcptun"
+
+# Copy adapter shell script to plugin folder
+cp -f kcptun.sh "$HOME/Library/Application Support/ShadowsocksX-NG/plugins/kcptun"
 
 echo "install kcptun done"

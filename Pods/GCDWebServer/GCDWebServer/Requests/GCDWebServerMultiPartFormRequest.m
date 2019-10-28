@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2012-2015, Pierre-Olivier Latour
+ Copyright (c) 2012-2019, Pierre-Olivier Latour
  All rights reserved.
  
  Redistribution and use in source and binary forms, with or without
@@ -106,8 +106,8 @@ static NSData* _dashNewlineData = nil;
   NSString* _defaultcontrolName;
   ParserState _state;
   NSMutableData* _data;
-  NSMutableArray* _arguments;
-  NSMutableArray* _files;
+  NSMutableArray<GCDWebServerMultiPartArgument*>* _arguments;
+  NSMutableArray<GCDWebServerMultiPartFile*>* _files;
 
   NSString* _controlName;
   NSString* _fileName;
@@ -132,7 +132,7 @@ static NSData* _dashNewlineData = nil;
   }
 }
 
-- (instancetype)initWithBoundary:(NSString* _Nonnull)boundary defaultControlName:(NSString* _Nullable)name arguments:(NSMutableArray* _Nonnull)arguments files:(NSMutableArray* _Nonnull)files {
+- (instancetype)initWithBoundary:(NSString* _Nonnull)boundary defaultControlName:(NSString* _Nullable)name arguments:(NSMutableArray<GCDWebServerMultiPartArgument*>* _Nonnull)arguments files:(NSMutableArray<GCDWebServerMultiPartFile*>* _Nonnull)files {
   NSData* data = boundary.length ? [[NSString stringWithFormat:@"--%@", boundary] dataUsingEncoding:NSASCIIStringEncoding] : nil;
   if (data == nil) {
     GWS_DNOT_REACHED();
@@ -312,8 +312,8 @@ static NSData* _dashNewlineData = nil;
 @end
 
 @interface GCDWebServerMultiPartFormRequest ()
-@property(nonatomic) NSMutableArray* arguments;
-@property(nonatomic) NSMutableArray* files;
+@property(nonatomic) NSMutableArray<GCDWebServerMultiPartArgument*>* arguments;
+@property(nonatomic) NSMutableArray<GCDWebServerMultiPartFile*>* files;
 @end
 
 @implementation GCDWebServerMultiPartFormRequest {
@@ -324,7 +324,7 @@ static NSData* _dashNewlineData = nil;
   return @"multipart/form-data";
 }
 
-- (instancetype)initWithMethod:(NSString*)method url:(NSURL*)url headers:(NSDictionary*)headers path:(NSString*)path query:(NSDictionary*)query {
+- (instancetype)initWithMethod:(NSString*)method url:(NSURL*)url headers:(NSDictionary<NSString*, NSString*>*)headers path:(NSString*)path query:(NSDictionary<NSString*, NSString*>*)query {
   if ((self = [super initWithMethod:method url:url headers:headers path:path query:query])) {
     _arguments = [[NSMutableArray alloc] init];
     _files = [[NSMutableArray alloc] init];
@@ -337,7 +337,7 @@ static NSData* _dashNewlineData = nil;
   _parser = [[GCDWebServerMIMEStreamParser alloc] initWithBoundary:boundary defaultControlName:nil arguments:_arguments files:_files];
   if (_parser == nil) {
     if (error) {
-      *error = [NSError errorWithDomain:kGCDWebServerErrorDomain code:-1 userInfo:@{ NSLocalizedDescriptionKey : @"Failed starting to parse multipart form data" }];
+      *error = [NSError errorWithDomain:kGCDWebServerErrorDomain code:-1 userInfo:@{NSLocalizedDescriptionKey : @"Failed starting to parse multipart form data"}];
     }
     return NO;
   }
@@ -347,7 +347,7 @@ static NSData* _dashNewlineData = nil;
 - (BOOL)writeData:(NSData*)data error:(NSError**)error {
   if (![_parser appendBytes:data.bytes length:data.length]) {
     if (error) {
-      *error = [NSError errorWithDomain:kGCDWebServerErrorDomain code:-1 userInfo:@{ NSLocalizedDescriptionKey : @"Failed continuing to parse multipart form data" }];
+      *error = [NSError errorWithDomain:kGCDWebServerErrorDomain code:-1 userInfo:@{NSLocalizedDescriptionKey : @"Failed continuing to parse multipart form data"}];
     }
     return NO;
   }
@@ -359,7 +359,7 @@ static NSData* _dashNewlineData = nil;
   _parser = nil;
   if (!atEnd) {
     if (error) {
-      *error = [NSError errorWithDomain:kGCDWebServerErrorDomain code:-1 userInfo:@{ NSLocalizedDescriptionKey : @"Failed finishing to parse multipart form data" }];
+      *error = [NSError errorWithDomain:kGCDWebServerErrorDomain code:-1 userInfo:@{NSLocalizedDescriptionKey : @"Failed finishing to parse multipart form data"}];
     }
     return NO;
   }

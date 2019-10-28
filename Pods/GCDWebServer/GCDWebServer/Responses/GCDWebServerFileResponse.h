@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2012-2015, Pierre-Olivier Latour
+ Copyright (c) 2012-2019, Pierre-Olivier Latour
  All rights reserved.
  
  Redistribution and use in source and binary forms, with or without
@@ -101,7 +101,7 @@ NS_ASSUME_NONNULL_BEGIN
  *  file extensions without the period, and the values must be the corresponding
  *  MIME types.
  */
-- (nullable instancetype)initWithFile:(NSString*)path byteRange:(NSRange)range isAttachment:(BOOL)attachment mimeTypeOverrides:(nullable NSDictionary*)overrides;
+- (nullable instancetype)initWithFile:(NSString*)path byteRange:(NSRange)range isAttachment:(BOOL)attachment mimeTypeOverrides:(nullable NSDictionary<NSString*, NSString*>*)overrides;
 
 @end
 

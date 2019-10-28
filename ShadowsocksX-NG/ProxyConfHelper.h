@@ -20,6 +20,8 @@
 
 + (void)disableProxy;
 
++ (void)enableExternalPACProxy;
+
 + (void)startMonitorPAC;
 
 @end

@@ -21,7 +21,7 @@ extension ObservableType {
     }
 }
 
-final fileprivate class EnumeratedSink<Element, O : ObserverType>: Sink<O>, ObserverType where O.E == (index: Int, element: Element) {
+final private class EnumeratedSink<Element, O: ObserverType>: Sink<O>, ObserverType where O.E == (index: Int, element: Element) {
     typealias E = Element
     var index = 0
     
@@ -29,34 +29,34 @@ final fileprivate class EnumeratedSink<Element, O : ObserverType>: Sink<O>, Obse
         switch event {
         case .next(let value):
             do {
-                let nextIndex = try incrementChecked(&index)
+                let nextIndex = try incrementChecked(&self.index)
                 let next = (index: nextIndex, element: value)
-                forwardOn(.next(next))
+                self.forwardOn(.next(next))
             }
             catch let e {
-                forwardOn(.error(e))
-                dispose()
+                self.forwardOn(.error(e))
+                self.dispose()
             }
         case .completed:
-            forwardOn(.completed)
-            dispose()
+            self.forwardOn(.completed)
+            self.dispose()
         case .error(let error):
-            forwardOn(.error(error))
-            dispose()
+            self.forwardOn(.error(error))
+            self.dispose()
         }
     }
 }
 
-final fileprivate class Enumerated<Element> : Producer<(index: Int, element: Element)> {
+final private class Enumerated<Element>: Producer<(index: Int, element: Element)> {
     private let _source: Observable<Element>
 
     init(source: Observable<Element>) {
-        _source = source
+        self._source = source
     }
 
     override func run<O: ObserverType>(_ observer: O, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where O.E == (index: Int, element: Element) {
         let sink = EnumeratedSink<Element, O>(observer: observer, cancel: cancel)
-        let subscription = _source.subscribe(sink)
+        let subscription = self._source.subscribe(sink)
         return (sink: sink, subscription: subscription)
     }
 }

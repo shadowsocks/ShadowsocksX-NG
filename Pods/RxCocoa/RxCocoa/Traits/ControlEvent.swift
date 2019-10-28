@@ -8,7 +8,7 @@
 
 import RxSwift
 
-/// Protocol that enables extension of `ControlEvent`.
+/// A protocol that extends `ControlEvent`.
 public protocol ControlEventType : ObservableType {
 
     /// - returns: `ControlEvent` interface
@@ -16,25 +16,25 @@ public protocol ControlEventType : ObservableType {
 }
 
 /**
-    Trait for `Observable`/`ObservableType` that represents event on UI element.
+    A trait for `Observable`/`ObservableType` that represents an event on a UI element.
 
-    It's properties are:
+    Properties:
 
-    - it never fails
-    - it won't send any initial value on subscription
-    - it will `Complete` sequence on control being deallocated
-    - it never errors out
-    - it delivers events on `MainScheduler.instance`
+    - it never fails,
+    - it doesn’t send any initial value on subscription,
+    - it `Complete`s the sequence when the control deallocates,
+    - it never errors out, and
+    - it delivers events on `MainScheduler.instance`.
 
     **The implementation of `ControlEvent` will ensure that sequence of events is being subscribed on main scheduler
      (`subscribeOn(ConcurrentMainScheduler.instance)` behavior).**
 
-    **It is implementor's responsibility to make sure that that all other properties enumerated above are satisfied.**
+    **It is the implementor’s responsibility to make sure that all other properties enumerated above are satisfied.**
 
-    **If they aren't, then using this trait communicates wrong properties and could potentially break someone's code.**
+    **If they aren’t, using this trait will communicate wrong properties, and could potentially break someone’s code.**
 
-    **In case `events` observable sequence that is being passed into initializer doesn't satisfy all enumerated
-     properties, please don't use this trait.**
+    **If the `events` observable sequence passed into thr initializer doesn’t satisfy all enumerated
+     properties, don’t use this trait.**
 */
 public struct ControlEvent<PropertyType> : ControlEventType {
     public typealias E = PropertyType
@@ -46,20 +46,20 @@ public struct ControlEvent<PropertyType> : ControlEventType {
     /// - parameter events: Observable sequence that represents events.
     /// - returns: Control event created with a observable sequence of events.
     public init<Ev: ObservableType>(events: Ev) where Ev.E == E {
-        _events = events.subscribeOn(ConcurrentMainScheduler.instance)
+        self._events = events.subscribeOn(ConcurrentMainScheduler.instance)
     }
 
     /// Subscribes an observer to control events.
     ///
     /// - parameter observer: Observer to subscribe to events.
     /// - returns: Disposable object that can be used to unsubscribe the observer from receiving control events.
-    public func subscribe<O : ObserverType>(_ observer: O) -> Disposable where O.E == E {
-        return _events.subscribe(observer)
+    public func subscribe<O: ObserverType>(_ observer: O) -> Disposable where O.E == E {
+        return self._events.subscribe(observer)
     }
 
     /// - returns: `Observable` interface.
     public func asObservable() -> Observable<E> {
-        return _events
+        return self._events
     }
 
     /// - returns: `ControlEvent` interface.

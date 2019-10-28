@@ -41,6 +41,7 @@ func diagnose() -> String {
         "ShadowsocksRunningMode",
         "LocalSocks5.ListenPort",
         "LocalSocks5.ListenAddress",
+        "PacServer.ListenAddress",
         "PacServer.ListenPort",
         "LocalSocks5.Timeout",
         "LocalSocks5.EnableUDPRelay",
@@ -78,14 +79,17 @@ func diagnose() -> String {
     strs.append("$ ls -l ~/.ShadowsocksX-NG/\n")
     strs.append(shell("ls", "-l", NSHomeDirectory() + "/.ShadowsocksX-NG/"))
     strs.append("-----------------------------------\n")
-    strs.append("$ ls -l /Library/Application Support/ShadowsocksX-NG/")
+    strs.append("$ ls -l /Library/Application Support/ShadowsocksX-NG/\n")
     strs.append(shell("ls", "-l", "/Library/Application Support/ShadowsocksX-NG/"))
     strs.append("-----------------------------------\n")
-    strs.append("$ lsof -PiTCP -sTCP:LISTEN")
+    strs.append("$ lsof -PiTCP -sTCP:LISTEN\n")
     strs.append(shell("lsof", "-PiTCP", "-sTCP:LISTEN"))
     strs.append("-----------------------------------\n")
-    strs.append("$ ifconfig")
+    strs.append("$ ifconfig\n")
     strs.append(shell("ifconfig"))
+    strs.append("-----------------------------------\n")
+    strs.append("$ launchctl list | grep com.qiuyuzhou.\n")
+    strs.append(shell("bash", "-c", "launchctl list | grep com.qiuyuzhou."))
     strs.append("-----------------------------------\n")
     
     let output = strs.joined()

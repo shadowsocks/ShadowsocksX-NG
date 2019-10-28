@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="14313.18" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="14490.70" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14313.18"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14490.70"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="NSApplication">
@@ -16,6 +16,7 @@
             <connections>
                 <outlet property="autoModeMenuItem" destination="r07-Gu-aEz" id="9aH-pQ-Rgi"/>
                 <outlet property="copyHttpProxyExportCmdLineMenuItem" destination="lg6-To-GZA" id="VTb-he-dg4"/>
+                <outlet property="externalPACModeMenuItem" destination="U9N-QS-BwB" id="ING-P9-2Xz"/>
                 <outlet property="globalModeMenuItem" destination="Mw3-Jm-eXA" id="ar5-Yx-3ze"/>
                 <outlet property="manualModeMenuItem" destination="8PR-gs-c5N" id="9qz-mU-5kt"/>
                 <outlet property="runningStatusMenuItem" destination="fzk-mE-CEV" id="Vwm-Rg-Ykn"/>
@@ -28,7 +29,7 @@
             </connections>
         </customObject>
         <customObject id="YLy-65-1bz" customClass="NSFontManager"/>
-        <menu title="ShadowsocksX-NG" id="Hob-KD-bx9">
+        <menu title="ShadowsocksX-NG" autoenablesItems="NO" id="Hob-KD-bx9">
             <items>
                 <menuItem title="Showsocks: On" enabled="NO" id="fzk-mE-CEV">
                     <modifierMask key="keyEquivalentModifierMask"/>
@@ -40,7 +41,7 @@
                     </connections>
                 </menuItem>
                 <menuItem isSeparatorItem="YES" id="LXP-yK-yQu"/>
-                <menuItem title="Proxy Auto Configure Mode" id="r07-Gu-aEz">
+                <menuItem title="Auto Mode By PAC" id="r07-Gu-aEz">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
                         <action selector="selectPACMode:" target="Voe-Tx-rLC" id="l36-cd-xl7"/>
@@ -56,6 +57,12 @@
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
                         <action selector="selectManualMode:" target="Voe-Tx-rLC" id="Xxb-28-6fi"/>
+                    </connections>
+                </menuItem>
+                <menuItem title="Auto Mode By External PAC" id="U9N-QS-BwB">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <connections>
+                        <action selector="selectExternalPACMode:" target="Voe-Tx-rLC" id="LnX-Ec-hc4"/>
                     </connections>
                 </menuItem>
                 <menuItem isSeparatorItem="YES" id="BMf-0T-UcX"/>
@@ -80,13 +87,13 @@
                         <action selector="scanQRCodeFromScreen:" target="Voe-Tx-rLC" id="zQZ-IT-H4a"/>
                     </connections>
                 </menuItem>
-                <menuItem title="Import Server URLs From Pasteboard" id="7Eq-XD-K5c">
+                <menuItem title="Import Server URLs..." id="geG-dQ-OYl">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
-                        <action selector="importProfileURLFromPasteboard:" target="Voe-Tx-rLC" id="RwL-Ms-BaC"/>
+                        <action selector="showImportWindow:" target="-1" id="CsE-vW-Wcn"/>
                     </connections>
                 </menuItem>
-                <menuItem title="Share Server Profiles..." id="r5z-RB-LIZ">
+                <menuItem title="Share Server Profiles..." image="NSShareTemplate" id="r5z-RB-LIZ">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
                         <action selector="showShareServerProfiles:" target="Voe-Tx-rLC" id="3Qv-n1-5h1"/>
@@ -98,7 +105,7 @@
                         <action selector="showAllInOnePreferences:" target="Voe-Tx-rLC" id="2of-nZ-atc"/>
                     </connections>
                 </menuItem>
-                <menuItem title="Copy HTTP Proxy Shell Export Line" id="lg6-To-GZA">
+                <menuItem title="HTTP Proxy Export Line To Pasteboard" image="terminal-logo" id="lg6-To-GZA">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
                         <action selector="copyExportCommand:" target="Voe-Tx-rLC" id="2U4-3M-sAK"/>
@@ -156,5 +163,10 @@
             </items>
             <point key="canvasLocation" x="-2367" y="-139"/>
         </menu>
+        <userDefaultsController representsSharedInstance="YES" id="jhL-aG-BFA"/>
     </objects>
+    <resources>
+        <image name="NSShareTemplate" width="11" height="16"/>
+        <image name="terminal-logo" width="22.695652008056641" height="17.217391967773438"/>
+    </resources>
 </document>

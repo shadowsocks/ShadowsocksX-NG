@@ -35,5 +35,33 @@ class PreferencesWinController: NSWindowController {
         let defaults = UserDefaults.standard
         defaults.removeObject(forKey: "ProxyExceptions")
     }
-
+    
+    @IBAction func resetAllPreferences(sender: NSButton) {
+        let alert = NSAlert.init()
+        alert.alertStyle = .warning;
+        alert.messageText = "Are you sure you want to reset the preferences to defaults?".localized
+        alert.informativeText = "All your changes of preferences will be lost.".localized
+        alert.addButton(withTitle: "OK")
+        alert.addButton(withTitle: "Cancel")
+        if alert.runModal() == .alertFirstButtonReturn {
+            self.resetUserDefaults()
+        }
+    }
+    
+    func resetUserDefaults() {
+        let domain = Bundle.main.bundleIdentifier!
+        let defaults = UserDefaults.standard
+        
+        // Don't reset server profiles, restore them later.
+        let profiles = defaults.array(forKey: "ServerProfiles")
+        let activeProfileId = defaults.string(forKey: "ActiveServerProfileId")
+        
+        defaults.removePersistentDomain(forName: domain)
+        defaults.synchronize()
+        
+        // Restore server profiles.
+        defaults.set(profiles, forKey: "ServerProfiles")
+        defaults.set(activeProfileId, forKey: "ActiveServerProfileId")
+        defaults.synchronize()
+    }
 }

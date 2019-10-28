@@ -13,7 +13,7 @@
 
 @implementation ProxyConfHelper
 
-GCDWebServer *webServer =nil;
+GCDWebServer *webServer = nil;
 
 + (BOOL)isVersionOk {
     NSTask *task;
@@ -39,7 +39,7 @@ GCDWebServer *webServer =nil;
     NSString *str;
     str = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
     
-    if (![str isEqualToString:kProxyConfHelperVersion]) {
+    if (![str isGreaterThanOrEqualTo: kProxyConfHelperVersion]) {
         return NO;
     }
     return YES;
@@ -153,19 +153,21 @@ GCDWebServer *webServer =nil;
 }
 
 + (void)enableGlobalProxy {
+    NSString* socks5ListenAddress = [[NSUserDefaults standardUserDefaults]stringForKey:@"LocalSocks5.ListenAddress"];
     NSUInteger port = [[NSUserDefaults standardUserDefaults]integerForKey:@"LocalSocks5.ListenPort"];
     
     NSMutableArray* args = [@[@"--mode", @"global", @"--port"
-                              , [NSString stringWithFormat:@"%lu", (unsigned long)port]]mutableCopy];
+                              , [NSString stringWithFormat:@"%lu", (unsigned long)port],@"--socks-listen-address",socks5ListenAddress]mutableCopy];
     
-    // Because issue #106 https://github.com/shadowsocks/ShadowsocksX-NG/issues/106
-    // Comment below out.
-//    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"LocalHTTPOn"] && [[NSUserDefaults standardUserDefaults] boolForKey:@"LocalHTTP.FollowGlobal"]) {
-//        NSUInteger privoxyPort = [[NSUserDefaults standardUserDefaults]integerForKey:@"LocalHTTP.ListenPort"];
-//
-//        [args addObject:@"--privoxy-port"];
-//        [args addObject:[NSString stringWithFormat:@"%lu", (unsigned long)privoxyPort]];
-//    }
+    // Known issue #106 https://github.com/shadowsocks/ShadowsocksX-NG/issues/106
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"LocalHTTPOn"] && [[NSUserDefaults standardUserDefaults] boolForKey:@"LocalHTTP.FollowGlobal"]) {
+        NSUInteger privoxyPort = [[NSUserDefaults standardUserDefaults]integerForKey:@"LocalHTTP.ListenPort"];
+        NSString* privoxyListenAddress = [[NSUserDefaults standardUserDefaults]stringForKey:@"LocalHTTP.ListenAddress"];
+        [args addObject:@"--privoxy-port"];
+        [args addObject:[NSString stringWithFormat:@"%lu", (unsigned long)privoxyPort]];
+        [args addObject:@"--privoxy-listen-address"];
+        [args addObject:privoxyListenAddress];
+    }
     
     [self addArguments4ManualSpecifyNetworkServices:args];
     [self addArguments4ManualSpecifyProxyExceptions:args];
@@ -176,10 +178,23 @@ GCDWebServer *webServer =nil;
 + (void)disableProxy {
     // 带上所有参数是为了判断是否原有代理设置是否由ssx-ng设置的。如果是用户手工设置的其他配置，则不进行清空。
     NSURL* url = [NSURL URLWithString: [self getHttpPACUrl]];
+    NSString* socks5ListenAddress = [[NSUserDefaults standardUserDefaults]stringForKey:@"LocalSocks5.ListenAddress"];
     NSUInteger port = [[NSUserDefaults standardUserDefaults]integerForKey:@"LocalSocks5.ListenPort"];
     
     NSMutableArray* args = [@[@"--mode", @"off"
+                              , @"--pac-url", [url absoluteString]
                               , @"--port", [NSString stringWithFormat:@"%lu", (unsigned long)port]
+                              , @"--socks-listen-address",socks5ListenAddress
+                              ]mutableCopy];
+    [self addArguments4ManualSpecifyNetworkServices:args];
+    [self addArguments4ManualSpecifyProxyExceptions:args];
+    [self callHelper:args];
+    [self stopPACServer];
+}
+
++ (void)enableExternalPACProxy {
+    NSURL* url = [NSURL URLWithString: [self getExternalPACUrl]];
+    NSMutableArray* args = [@[@"--mode", @"auto"
                               , @"--pac-url", [url absoluteString]
                               ]mutableCopy];
     [self addArguments4ManualSpecifyNetworkServices:args];
@@ -193,10 +208,16 @@ GCDWebServer *webServer =nil;
     
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
 
-    NSString * address = @"127.0.0.1";
+    NSString * address = [defaults stringForKey:@"PacServer.ListenAddress"];
     int port = (short)[defaults integerForKey:@"PacServer.ListenPort"];
     
     return [NSString stringWithFormat:@"%@%@:%d%@",@"http://",address,port,routerPath];
+}
+
++ (NSString*)getExternalPACUrl {
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    
+    return [defaults stringForKey:@"ExternalPACURL"];
 }
 
 + (void)startPACServer:(NSString*) PACFilePath {
@@ -207,6 +228,8 @@ GCDWebServer *webServer =nil;
     NSData* originalPACData = [NSData dataWithContentsOfFile:PACFilePath];
     
     webServer = [[GCDWebServer alloc] init];
+    
+
     [webServer addHandlerForMethod:@"GET"
                               path:routerPath
                       requestClass:[GCDWebServerRequest class]
@@ -220,9 +243,10 @@ GCDWebServer *webServer =nil;
     
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     
+    NSString * address = [defaults stringForKey:@"PacServer.ListenAddress"];
     int port = (short)[defaults integerForKey:@"PacServer.ListenPort"];
     
-    [webServer startWithOptions:@{@"BindToLocalhost":@YES, @"Port":@(port)} error:nil];
+    [webServer startWithOptions:@{@"ServerName":address,@"Port":@(port)} error:nil];
 }
 
 + (void)stopPACServer {
@@ -233,6 +257,7 @@ GCDWebServer *webServer =nil;
 }
 
 + (void)startMonitorPAC {
+    // Monitor change event of the PAC file.
     NSString* PACFilePath = [self getPACFilePath];
     dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
     int fileId = open([PACFilePath UTF8String], O_EVTONLY);

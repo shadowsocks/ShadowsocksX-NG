@@ -23,11 +23,11 @@ public final class BooleanDisposable : Cancelable {
     
     /// - returns: Was resource disposed.
     public var isDisposed: Bool {
-        return _isDisposed
+        return self._isDisposed
     }
     
     /// Sets the status to disposed, which can be observer through the `isDisposed` property.
     public func dispose() {
-        _isDisposed = true
+        self._isDisposed = true
     }
 }

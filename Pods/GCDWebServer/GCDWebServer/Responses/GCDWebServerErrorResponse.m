@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2012-2015, Pierre-Olivier Latour
+ Copyright (c) 2012-2019, Pierre-Olivier Latour
  All rights reserved.
  
  Redistribution and use in source and binary forms, with or without
@@ -37,7 +37,7 @@
   GWS_DCHECK(((NSInteger)errorCode >= 400) && ((NSInteger)errorCode < 500));
   va_list arguments;
   va_start(arguments, format);
-  GCDWebServerErrorResponse* response = [[self alloc] initWithStatusCode:errorCode underlyingError:nil messageFormat:format arguments:arguments];
+  GCDWebServerErrorResponse* response = [(GCDWebServerErrorResponse*)[self alloc] initWithStatusCode:errorCode underlyingError:nil messageFormat:format arguments:arguments];
   va_end(arguments);
   return response;
 }
@@ -46,7 +46,7 @@
   GWS_DCHECK(((NSInteger)errorCode >= 500) && ((NSInteger)errorCode < 600));
   va_list arguments;
   va_start(arguments, format);
-  GCDWebServerErrorResponse* response = [[self alloc] initWithStatusCode:errorCode underlyingError:nil messageFormat:format arguments:arguments];
+  GCDWebServerErrorResponse* response = [(GCDWebServerErrorResponse*)[self alloc] initWithStatusCode:errorCode underlyingError:nil messageFormat:format arguments:arguments];
   va_end(arguments);
   return response;
 }
@@ -55,7 +55,7 @@
   GWS_DCHECK(((NSInteger)errorCode >= 400) && ((NSInteger)errorCode < 500));
   va_list arguments;
   va_start(arguments, format);
-  GCDWebServerErrorResponse* response = [[self alloc] initWithStatusCode:errorCode underlyingError:underlyingError messageFormat:format arguments:arguments];
+  GCDWebServerErrorResponse* response = [(GCDWebServerErrorResponse*)[self alloc] initWithStatusCode:errorCode underlyingError:underlyingError messageFormat:format arguments:arguments];
   va_end(arguments);
   return response;
 }
@@ -64,7 +64,7 @@
   GWS_DCHECK(((NSInteger)errorCode >= 500) && ((NSInteger)errorCode < 600));
   va_list arguments;
   va_start(arguments, format);
-  GCDWebServerErrorResponse* response = [[self alloc] initWithStatusCode:errorCode underlyingError:underlyingError messageFormat:format arguments:arguments];
+  GCDWebServerErrorResponse* response = [(GCDWebServerErrorResponse*)[self alloc] initWithStatusCode:errorCode underlyingError:underlyingError messageFormat:format arguments:arguments];
   va_end(arguments);
   return response;
 }

@@ -62,4 +62,33 @@ class ServerProfileManager: NSObject {
             return nil
         }
     }
+    
+    func addServerProfileByURL(urls: [URL]) -> Int {
+        var addCount = 0
+        
+        for url in urls {
+            if let profile = ServerProfile(url: url) {
+                profiles.append(profile)
+                addCount = addCount + 1
+            }
+        }
+        
+        if addCount > 0 {
+            save()
+            NotificationCenter.default
+                .post(name: NOTIFY_SERVER_PROFILES_CHANGED, object: nil)
+        }
+        
+        return addCount
+    }
+    
+    static func findURLSInText(_ text: String) -> [URL] {
+        var urls = text.split(separator: "\n")
+            .map { String($0).trimmingCharacters(in: CharacterSet.whitespacesAndNewlines) }
+            .map { URL(string: $0) }
+            .filter { $0 != nil }
+            .map { $0! }
+        urls = urls.filter { $0.scheme == "ss" }
+        return urls
+    }
 }
