@@ -34,26 +34,25 @@
                 <menuItem title="Showsocks: On" enabled="NO" id="fzk-mE-CEV">
                     <modifierMask key="keyEquivalentModifierMask"/>
                 </menuItem>
-                <menuItem title="Turn ShadowsocksX On" id="GSu-Tf-StS">
-                    <modifierMask key="keyEquivalentModifierMask"/>
+                <menuItem title="Turn ShadowsocksX On" keyEquivalent="s" id="GSu-Tf-StS">
                     <connections>
                         <action selector="toggleRunning:" target="Voe-Tx-rLC" id="EvE-23-Wiv"/>
                     </connections>
                 </menuItem>
                 <menuItem isSeparatorItem="YES" id="LXP-yK-yQu"/>
-                <menuItem title="Auto Mode By PAC" id="r07-Gu-aEz">
+                <menuItem title="Auto Mode By PAC" keyEquivalent="a" id="r07-Gu-aEz">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
                         <action selector="selectPACMode:" target="Voe-Tx-rLC" id="l36-cd-xl7"/>
                     </connections>
                 </menuItem>
-                <menuItem title="Global Mode" id="Mw3-Jm-eXA">
+                <menuItem title="Global Mode" keyEquivalent="g" id="Mw3-Jm-eXA">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
                         <action selector="selectGlobalMode:" target="Voe-Tx-rLC" id="7QH-HB-B2e"/>
                     </connections>
                 </menuItem>
-                <menuItem title="Manual Mode" id="8PR-gs-c5N">
+                <menuItem title="Manual Mode" keyEquivalent="m" id="8PR-gs-c5N">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
                         <action selector="selectManualMode:" target="Voe-Tx-rLC" id="Xxb-28-6fi"/>
@@ -70,8 +69,7 @@
                     <modifierMask key="keyEquivalentModifierMask" shift="YES"/>
                     <menu key="submenu" title="Servers" id="9Y1-db-3HK">
                         <items>
-                            <menuItem title="Server Preferences..." id="M5r-E7-44f">
-                                <modifierMask key="keyEquivalentModifierMask"/>
+                            <menuItem title="Server Preferences..." keyEquivalent="e" id="M5r-E7-44f">
                                 <connections>
                                     <action selector="editServerPreferences:" target="Voe-Tx-rLC" id="6Lv-6i-Neb"/>
                                 </connections>
@@ -105,8 +103,7 @@
                         <action selector="showAllInOnePreferences:" target="Voe-Tx-rLC" id="2of-nZ-atc"/>
                     </connections>
                 </menuItem>
-                <menuItem title="HTTP Proxy Export Line To Pasteboard" image="terminal-logo" id="lg6-To-GZA">
-                    <modifierMask key="keyEquivalentModifierMask"/>
+                <menuItem title="HTTP Proxy Export Line To Pasteboard" image="terminal-logo" keyEquivalent="c" id="lg6-To-GZA">
                     <connections>
                         <action selector="copyExportCommand:" target="Voe-Tx-rLC" id="2U4-3M-sAK"/>
                     </connections>
