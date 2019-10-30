@@ -51,6 +51,7 @@
 		9B7725EB232E54A20062299F /* menu_e_icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 9B7725E9232E54A20062299F /* menu_e_icon@2x.png */; };
 		9B84DAED2163A72F00DFF068 /* Diagnose.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B84DAEC2163A72F00DFF068 /* Diagnose.swift */; };
 		9B86459D1E7C2CAD00A84029 /* ProxyInterfacesViewCtrl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B86459C1E7C2CAD00A84029 /* ProxyInterfacesViewCtrl.swift */; };
+		9B9B9966236992CA0036600F /* v2ray-plugin in Resources */ = {isa = PBXBuildFile; fileRef = 9B9B9965236992C90036600F /* v2ray-plugin */; };
 		9B9CBCAF1E263B1600FC61AA /* libpcre.1.dylib in Resources */ = {isa = PBXBuildFile; fileRef = 9B9CBCAD1E263A6600FC61AA /* libpcre.1.dylib */; };
 		9B9F13A71E8A28B300DE4794 /* LaunchHelper.app in CopyFiles */ = {isa = PBXBuildFile; fileRef = 9B9F13A61E8A282D00DE4794 /* LaunchHelper.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		9BA04B231D23D5A5005AAD7F /* ProxyConfTool.m in Sources */ = {isa = PBXBuildFile; fileRef = 9BA04B221D23D5A5005AAD7F /* ProxyConfTool.m */; };
@@ -84,7 +85,6 @@
 		9BEEF0701D04DDB100FC52B3 /* ServerProfileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BEEF06F1D04DDB100FC52B3 /* ServerProfileManager.swift */; };
 		9BEEF0751D04EF3E00FC52B3 /* PreferencesWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BEEF0731D04EF3E00FC52B3 /* PreferencesWindowController.swift */; };
 		9BEEF0781D04FE8A00FC52B3 /* LaunchAgentUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BEEF0771D04FE8A00FC52B3 /* LaunchAgentUtils.swift */; };
-		B5A2AB03221A72EC003F77B7 /* v2ray-plugin in Resources */ = {isa = PBXBuildFile; fileRef = B5A2AB01221A72EC003F77B7 /* v2ray-plugin */; };
 		B5A2AB04221A72EC003F77B7 /* install_v2ray_plugin.sh in Resources */ = {isa = PBXBuildFile; fileRef = B5A2AB02221A72EC003F77B7 /* install_v2ray_plugin.sh */; };
 		C6D429931DA75988002A5711 /* install_privoxy.sh in Resources */ = {isa = PBXBuildFile; fileRef = C6D4298E1DA75988002A5711 /* install_privoxy.sh */; };
 		C6D429941DA75988002A5711 /* privoxy in Resources */ = {isa = PBXBuildFile; fileRef = C6D4298F1DA75988002A5711 /* privoxy */; };
@@ -217,6 +217,7 @@
 		9B7725E9232E54A20062299F /* menu_e_icon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "menu_e_icon@2x.png"; sourceTree = "<group>"; };
 		9B84DAEC2163A72F00DFF068 /* Diagnose.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Diagnose.swift; sourceTree = "<group>"; };
 		9B86459C1E7C2CAD00A84029 /* ProxyInterfacesViewCtrl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ProxyInterfacesViewCtrl.swift; sourceTree = "<group>"; };
+		9B9B9965236992C90036600F /* v2ray-plugin */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = "v2ray-plugin"; sourceTree = "<group>"; };
 		9B9CBCAD1E263A6600FC61AA /* libpcre.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libpcre.1.dylib; sourceTree = "<group>"; };
 		9B9F13A11E8A282C00DE4794 /* LaunchHelper.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = LaunchHelper.xcodeproj; path = LaunchHelper/LaunchHelper.xcodeproj; sourceTree = "<group>"; };
 		9BA04B211D23D5A5005AAD7F /* ProxyConfTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ProxyConfTool.h; sourceTree = "<group>"; };
@@ -253,7 +254,6 @@
 		9BEEF0731D04EF3E00FC52B3 /* PreferencesWindowController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreferencesWindowController.swift; sourceTree = "<group>"; };
 		9BEEF0771D04FE8A00FC52B3 /* LaunchAgentUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LaunchAgentUtils.swift; sourceTree = "<group>"; };
 		B4E6A97CA843F3943524B686 /* Pods-proxy_conf_helper.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-proxy_conf_helper.debug.xcconfig"; path = "Pods/Target Support Files/Pods-proxy_conf_helper/Pods-proxy_conf_helper.debug.xcconfig"; sourceTree = "<group>"; };
-		B5A2AB01221A72EC003F77B7 /* v2ray-plugin */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = "v2ray-plugin"; sourceTree = "<group>"; };
 		B5A2AB02221A72EC003F77B7 /* install_v2ray_plugin.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = install_v2ray_plugin.sh; sourceTree = "<group>"; };
 		C6D4298E1DA75988002A5711 /* install_privoxy.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = install_privoxy.sh; sourceTree = "<group>"; };
 		C6D4298F1DA75988002A5711 /* privoxy */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = privoxy; sourceTree = "<group>"; };
@@ -518,7 +518,7 @@
 		B5A2AB00221A72EC003F77B7 /* v2ray-plugin */ = {
 			isa = PBXGroup;
 			children = (
-				B5A2AB01221A72EC003F77B7 /* v2ray-plugin */,
+				9B9B9965236992C90036600F /* v2ray-plugin */,
 				B5A2AB02221A72EC003F77B7 /* install_v2ray_plugin.sh */,
 			);
 			path = "v2ray-plugin";
@@ -682,7 +682,6 @@
 				9B74B5E9232949B100DEA386 /* ImportWindowController.xib in Resources */,
 				9BAA663523295FAC00F5CC99 /* virtual-server-icon-3.png in Resources */,
 				9B9CBCAF1E263B1600FC61AA /* libpcre.1.dylib in Resources */,
-				B5A2AB03221A72EC003F77B7 /* v2ray-plugin in Resources */,
 				9B3FFF541D09E2D10019A709 /* proxy_conf_helper in Resources */,
 				9BAA662723295FAB00F5CC99 /* icons8-Eye Filled-50.png in Resources */,
 				9BEEF0691D04D4D500FC52B3 /* install_ss_local.sh in Resources */,
@@ -718,6 +717,7 @@
 				9BC70EDC1D2E3E3100EDA4CA /* Localizable.strings in Resources */,
 				9B20804B2326AC460075386C /* client in Resources */,
 				9B0BFFEE1D0460A70040E62B /* MainMenu.xib in Resources */,
+				9B9B9966236992CA0036600F /* v2ray-plugin in Resources */,
 				9B3FFF4C1D09D8F70019A709 /* install_helper.sh in Resources */,
 				9BAA662823295FAB00F5CC99 /* menu_m_icon.png in Resources */,
 				C6D429961DA75988002A5711 /* start_privoxy.sh in Resources */,
@@ -1081,6 +1081,7 @@
 					"$(PROJECT_DIR)/ShadowsocksX-NG/simple-obfs",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				MARKETING_VERSION = 1.9.3;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.qiuyuzhou.ShadowsocksX-NG";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1115,6 +1116,7 @@
 					"$(PROJECT_DIR)/ShadowsocksX-NG/simple-obfs",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				MARKETING_VERSION = 1.9.3;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.qiuyuzhou.ShadowsocksX-NG";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
