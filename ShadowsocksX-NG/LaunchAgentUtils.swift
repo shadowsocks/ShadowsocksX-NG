@@ -10,7 +10,7 @@ import Foundation
 
 let SS_LOCAL_VERSION = "3.2.5"
 let KCPTUN_CLIENT_VERSION = "v20190905_1"
-let V2RAY_PLUGIN_VERSION = "1.1.0"
+let V2RAY_PLUGIN_VERSION = "1.2.0"
 let PRIVOXY_VERSION = "3.0.26.static"
 let SIMPLE_OBFS_VERSION = "0.0.5_1"
 let APP_SUPPORT_DIR = "/Library/Application Support/ShadowsocksX-NG/"
