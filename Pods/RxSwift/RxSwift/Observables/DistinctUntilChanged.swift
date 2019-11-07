@@ -63,14 +63,14 @@ extension ObservableType {
     }
 }
 
-final fileprivate class DistinctUntilChangedSink<O: ObserverType, Key>: Sink<O>, ObserverType {
+final private class DistinctUntilChangedSink<O: ObserverType, Key>: Sink<O>, ObserverType {
     typealias E = O.E
     
     private let _parent: DistinctUntilChanged<E, Key>
-    private var _currentKey: Key? = nil
+    private var _currentKey: Key?
     
     init(parent: DistinctUntilChanged<E, Key>, observer: O, cancel: Cancelable) {
-        _parent = parent
+        self._parent = parent
         super.init(observer: observer, cancel: cancel)
     }
     
@@ -78,32 +78,32 @@ final fileprivate class DistinctUntilChangedSink<O: ObserverType, Key>: Sink<O>,
         switch event {
         case .next(let value):
             do {
-                let key = try _parent._selector(value)
+                let key = try self._parent._selector(value)
                 var areEqual = false
-                if let currentKey = _currentKey {
-                    areEqual = try _parent._comparer(currentKey, key)
+                if let currentKey = self._currentKey {
+                    areEqual = try self._parent._comparer(currentKey, key)
                 }
                 
                 if areEqual {
                     return
                 }
                 
-                _currentKey = key
+                self._currentKey = key
                 
-                forwardOn(event)
+                self.forwardOn(event)
             }
             catch let error {
-                forwardOn(.error(error))
-                dispose()
+                self.forwardOn(.error(error))
+                self.dispose()
             }
         case .error, .completed:
-            forwardOn(event)
-            dispose()
+            self.forwardOn(event)
+            self.dispose()
         }
     }
 }
 
-final fileprivate class DistinctUntilChanged<Element, Key>: Producer<Element> {
+final private class DistinctUntilChanged<Element, Key>: Producer<Element> {
     typealias KeySelector = (Element) throws -> Key
     typealias EqualityComparer = (Key, Key) throws -> Bool
     
@@ -112,14 +112,14 @@ final fileprivate class DistinctUntilChanged<Element, Key>: Producer<Element> {
     fileprivate let _comparer: EqualityComparer
     
     init(source: Observable<Element>, selector: @escaping KeySelector, comparer: @escaping EqualityComparer) {
-        _source = source
-        _selector = selector
-        _comparer = comparer
+        self._source = source
+        self._selector = selector
+        self._comparer = comparer
     }
     
     override func run<O: ObserverType>(_ observer: O, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where O.E == Element {
         let sink = DistinctUntilChangedSink(parent: self, observer: observer, cancel: cancel)
-        let subscription = _source.subscribe(sink)
+        let subscription = self._source.subscribe(sink)
         return (sink: sink, subscription: subscription)
     }
 }

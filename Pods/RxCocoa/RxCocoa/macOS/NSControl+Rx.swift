@@ -11,25 +11,25 @@
 import Cocoa
 import RxSwift
 
-fileprivate var rx_value_key: UInt8 = 0
-fileprivate var rx_control_events_key: UInt8 = 0
+private var rx_value_key: UInt8 = 0
+private var rx_control_events_key: UInt8 = 0
 
 extension Reactive where Base: NSControl {
 
     /// Reactive wrapper for control event.
     public var controlEvent: ControlEvent<()> {
-        MainScheduler.ensureExecutingOnScheduler()
+        MainScheduler.ensureRunningOnMainThread()
 
-        let source = lazyInstanceObservable(&rx_control_events_key) { () -> Observable<Void> in
+        let source = self.lazyInstanceObservable(&rx_control_events_key) { () -> Observable<Void> in
             Observable.create { [weak control = self.base] observer in
-                MainScheduler.ensureExecutingOnScheduler()
+                MainScheduler.ensureRunningOnMainThread()
 
                 guard let control = control else {
                     observer.on(.completed)
                     return Disposables.create()
                 }
 
-                let observer = ControlTarget(control: control) { control in
+                let observer = ControlTarget(control: control) { _ in
                     observer.on(.next(()))
                 }
                 
@@ -48,11 +48,11 @@ extension Reactive where Base: NSControl {
     /// - parameter setter: Property value setter.
     public func controlProperty<T>(
         getter: @escaping (Base) -> T,
-        setter: @escaping (Base, T) -> ()
+        setter: @escaping (Base, T) -> Void
     ) -> ControlProperty<T> {
-        MainScheduler.ensureExecutingOnScheduler()
+        MainScheduler.ensureRunningOnMainThread()
 
-        let source = base.rx.lazyInstanceObservable(&rx_value_key) { () -> Observable<()> in
+        let source = self.base.rx.lazyInstanceObservable(&rx_value_key) { () -> Observable<()> in
                 return Observable.create { [weak weakControl = self.base] (observer: AnyObserver<()>) in
                     guard let control = weakControl else {
                         observer.on(.completed)
@@ -69,7 +69,7 @@ extension Reactive where Base: NSControl {
 
                     return observer
                 }
-                .takeUntil(deallocated)
+                .takeUntil(self.deallocated)
                 .share(replay: 1, scope: .whileConnected)
             }
             .flatMap { [weak base] _ -> Observable<T> in
@@ -77,14 +77,14 @@ extension Reactive where Base: NSControl {
                 return Observable.just(getter(control))
             }
 
-        let bindingObserver = Binder(base, binding: setter)
+        let bindingObserver = Binder(self.base, binding: setter)
 
         return ControlProperty(values: source, valueSink: bindingObserver)
     }
 
     /// Bindable sink for `enabled` property.
     public var isEnabled: Binder<Bool> {
-        return Binder(self.base) { (owner, value) in
+        return Binder(self.base) { owner, value in
             owner.isEnabled = value
         }
     }

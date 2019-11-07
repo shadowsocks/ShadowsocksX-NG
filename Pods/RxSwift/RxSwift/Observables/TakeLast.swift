@@ -20,11 +20,11 @@ extension ObservableType {
      */
     public func takeLast(_ count: Int)
         -> Observable<E> {
-        return TakeLast(source: asObservable(), count: count)
+        return TakeLast(source: self.asObservable(), count: count)
     }
 }
 
-final fileprivate class TakeLastSink<O: ObserverType> : Sink<O>, ObserverType {
+final private class TakeLastSink<O: ObserverType>: Sink<O>, ObserverType {
     typealias E = O.E
     typealias Parent = TakeLast<E>
     
@@ -33,32 +33,32 @@ final fileprivate class TakeLastSink<O: ObserverType> : Sink<O>, ObserverType {
     private var _elements: Queue<E>
     
     init(parent: Parent, observer: O, cancel: Cancelable) {
-        _parent = parent
-        _elements = Queue<E>(capacity: parent._count + 1)
+        self._parent = parent
+        self._elements = Queue<E>(capacity: parent._count + 1)
         super.init(observer: observer, cancel: cancel)
     }
     
     func on(_ event: Event<E>) {
         switch event {
         case .next(let value):
-            _elements.enqueue(value)
-            if _elements.count > self._parent._count {
-                let _ = _elements.dequeue()
+            self._elements.enqueue(value)
+            if self._elements.count > self._parent._count {
+                _ = self._elements.dequeue()
             }
         case .error:
-            forwardOn(event)
-            dispose()
+            self.forwardOn(event)
+            self.dispose()
         case .completed:
-            for e in _elements {
-                forwardOn(.next(e))
+            for e in self._elements {
+                self.forwardOn(.next(e))
             }
-            forwardOn(.completed)
-            dispose()
+            self.forwardOn(.completed)
+            self.dispose()
         }
     }
 }
 
-final fileprivate class TakeLast<Element>: Producer<Element> {
+final private class TakeLast<Element>: Producer<Element> {
     fileprivate let _source: Observable<Element>
     fileprivate let _count: Int
     
@@ -66,13 +66,13 @@ final fileprivate class TakeLast<Element>: Producer<Element> {
         if count < 0 {
             rxFatalError("count can't be negative")
         }
-        _source = source
-        _count = count
+        self._source = source
+        self._count = count
     }
     
     override func run<O : ObserverType>(_ observer: O, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where O.E == Element {
         let sink = TakeLastSink(parent: self, observer: observer, cancel: cancel)
-        let subscription = _source.subscribe(sink)
+        let subscription = self._source.subscribe(sink)
         return (sink: sink, subscription: subscription)
     }
 }

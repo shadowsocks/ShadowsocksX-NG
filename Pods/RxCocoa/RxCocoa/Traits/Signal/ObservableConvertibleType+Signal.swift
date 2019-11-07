@@ -55,4 +55,3 @@ extension ObservableConvertibleType {
         return Signal(source)
     }
 }
-

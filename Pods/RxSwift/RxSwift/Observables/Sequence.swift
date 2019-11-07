@@ -47,20 +47,20 @@ extension ObservableType {
     }
 }
 
-final fileprivate class ObservableSequenceSink<S: Sequence, O: ObserverType> : Sink<O> where S.Iterator.Element == O.E {
+final private class ObservableSequenceSink<S: Sequence, O: ObserverType>: Sink<O> where S.Iterator.Element == O.E {
     typealias Parent = ObservableSequence<S>
 
     private let _parent: Parent
 
     init(parent: Parent, observer: O, cancel: Cancelable) {
-        _parent = parent
+        self._parent = parent
         super.init(observer: observer, cancel: cancel)
     }
 
     func run() -> Disposable {
-        return _parent._scheduler.scheduleRecursive((_parent._elements.makeIterator(), _parent._elements)) { (iterator, recurse) in
+        return self._parent._scheduler.scheduleRecursive(self._parent._elements.makeIterator()) { iterator, recurse in
             var mutableIterator = iterator
-            if let next = mutableIterator.0.next() {
+            if let next = mutableIterator.next() {
                 self.forwardOn(.next(next))
                 recurse(mutableIterator)
             }
@@ -72,13 +72,13 @@ final fileprivate class ObservableSequenceSink<S: Sequence, O: ObserverType> : S
     }
 }
 
-final fileprivate class ObservableSequence<S: Sequence> : Producer<S.Iterator.Element> {
+final private class ObservableSequence<S: Sequence>: Producer<S.Iterator.Element> {
     fileprivate let _elements: S
     fileprivate let _scheduler: ImmediateSchedulerType
 
     init(elements: S, scheduler: ImmediateSchedulerType) {
-        _elements = elements
-        _scheduler = scheduler
+        self._elements = elements
+        self._scheduler = scheduler
     }
 
     override func run<O : ObserverType>(_ observer: O, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where O.E == E {

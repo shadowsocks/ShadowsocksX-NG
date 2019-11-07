@@ -17,7 +17,7 @@ Features:
 * Can be configured to be compatible with Shortcut Recorder
 * Can be installed both through CocoaPods and as a Git submodule
 * Mac App Store friendly
-* Works on OS X 10.6 and up
+* Works on OS X 10.10 and up
 * Hacking-friendly codebase covered with tests
 
 Partially done:

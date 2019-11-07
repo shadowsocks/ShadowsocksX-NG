@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2012-2015, Pierre-Olivier Latour
+ Copyright (c) 2012-2019, Pierre-Olivier Latour
  All rights reserved.
  
  Redistribution and use in source and binary forms, with or without
@@ -33,7 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
  *  The GCDWebServerBodyReaderCompletionBlock is passed by GCDWebServer to the
  *  GCDWebServerBodyReader object when reading data from it asynchronously.
  */
-typedef void (^GCDWebServerBodyReaderCompletionBlock)(NSData* data, NSError* _Nullable error);
+typedef void (^GCDWebServerBodyReaderCompletionBlock)(NSData* _Nullable data, NSError* _Nullable error);
 
 /**
  *  This protocol is used by the GCDWebServerConnection to communicate with

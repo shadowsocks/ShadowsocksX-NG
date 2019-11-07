@@ -12,37 +12,35 @@
 fileprivate final class AnonymousDisposable : DisposeBase, Cancelable {
     public typealias DisposeAction = () -> Void
 
-    private var _isDisposed: AtomicInt = 0
+    private let _isDisposed = AtomicInt(0)
     private var _disposeAction: DisposeAction?
 
     /// - returns: Was resource disposed.
     public var isDisposed: Bool {
-        return _isDisposed == 1
+        return isFlagSet(self._isDisposed, 1)
     }
 
     /// Constructs a new disposable with the given action used for disposal.
     ///
     /// - parameter disposeAction: Disposal action which will be run upon calling `dispose`.
     fileprivate init(_ disposeAction: @escaping DisposeAction) {
-        _disposeAction = disposeAction
+        self._disposeAction = disposeAction
         super.init()
     }
-    
+
     // Non-deprecated version of the constructor, used by `Disposables.create(with:)`
     fileprivate init(disposeAction: @escaping DisposeAction) {
-        _disposeAction = disposeAction
+        self._disposeAction = disposeAction
         super.init()
     }
-    
+
     /// Calls the disposal action if and only if the current instance hasn't been disposed yet.
     ///
     /// After invoking disposal action, disposal action will be dereferenced.
     fileprivate func dispose() {
-        if AtomicCompareAndSwap(0, 1, &_isDisposed) {
-            assert(_isDisposed == 1)
-
-            if let action = _disposeAction {
-                _disposeAction = nil
+        if fetchOr(self._isDisposed, 1) == 0 {
+            if let action = self._disposeAction {
+                self._disposeAction = nil
                 action()
             }
         }
@@ -50,12 +48,12 @@ fileprivate final class AnonymousDisposable : DisposeBase, Cancelable {
 }
 
 extension Disposables {
-    
+
     /// Constructs a new disposable with the given action used for disposal.
     ///
     /// - parameter dispose: Disposal action which will be run upon calling `dispose`.
-    public static func create(with dispose: @escaping () -> ()) -> Cancelable {
+    public static func create(with dispose: @escaping () -> Void) -> Cancelable {
         return AnonymousDisposable(disposeAction: dispose)
     }
-    
+
 }

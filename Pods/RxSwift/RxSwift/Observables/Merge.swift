@@ -18,7 +18,7 @@ extension ObservableType {
      */
     public func flatMap<O: ObservableConvertibleType>(_ selector: @escaping (E) throws -> O)
         -> Observable<O.E> {
-            return FlatMap(source: asObservable(), selector: selector)
+            return FlatMap(source: self.asObservable(), selector: selector)
     }
 
 }
@@ -36,7 +36,7 @@ extension ObservableType {
      */
     public func flatMapFirst<O: ObservableConvertibleType>(_ selector: @escaping (E) throws -> O)
         -> Observable<O.E> {
-            return FlatMapFirst(source: asObservable(), selector: selector)
+            return FlatMapFirst(source: self.asObservable(), selector: selector)
     }
 }
 
@@ -50,7 +50,7 @@ extension ObservableType where E : ObservableConvertibleType {
      - returns: The observable sequence that merges the elements of the observable sequences.
      */
     public func merge() -> Observable<E.E> {
-        return Merge(source: asObservable())
+        return Merge(source: self.asObservable())
     }
 
     /**
@@ -63,7 +63,7 @@ extension ObservableType where E : ObservableConvertibleType {
      */
     public func merge(maxConcurrent: Int)
         -> Observable<E.E> {
-        return MergeLimited(source: asObservable(), maxConcurrent: maxConcurrent)
+        return MergeLimited(source: self.asObservable(), maxConcurrent: maxConcurrent)
     }
 }
 
@@ -77,7 +77,7 @@ extension ObservableType where E : ObservableConvertibleType {
      - returns: An observable sequence that contains the elements of each observed inner sequence, in sequential order.
      */
     public func concat() -> Observable<E.E> {
-        return merge(maxConcurrent: 1)
+        return self.merge(maxConcurrent: 1)
     }
 }
 
@@ -132,7 +132,7 @@ extension ObservableType {
     
     public func concatMap<O: ObservableConvertibleType>(_ selector: @escaping (E) throws -> O)
         -> Observable<O.E> {
-            return ConcatMap(source: asObservable(), selector: selector)
+            return ConcatMap(source: self.asObservable(), selector: selector)
     }
 }
 
@@ -148,36 +148,36 @@ fileprivate final class MergeLimitedSinkIter<SourceElement, SourceSequence: Obse
     private let _disposeKey: DisposeKey
 
     var _lock: RecursiveLock {
-        return _parent._lock
+        return self._parent._lock
     }
     
     init(parent: Parent, disposeKey: DisposeKey) {
-        _parent = parent
-        _disposeKey = disposeKey
+        self._parent = parent
+        self._disposeKey = disposeKey
     }
     
     func on(_ event: Event<E>) {
-        synchronizedOn(event)
+        self.synchronizedOn(event)
     }
 
     func _synchronized_on(_ event: Event<E>) {
         switch event {
         case .next:
-            _parent.forwardOn(event)
+            self._parent.forwardOn(event)
         case .error:
-            _parent.forwardOn(event)
-            _parent.dispose()
+            self._parent.forwardOn(event)
+            self._parent.dispose()
         case .completed:
-            _parent._group.remove(for: _disposeKey)
-            if let next = _parent._queue.dequeue() {
-                _parent.subscribe(next, group: _parent._group)
+            self._parent._group.remove(for: self._disposeKey)
+            if let next = self._parent._queue.dequeue() {
+                self._parent.subscribe(next, group: self._parent._group)
             }
             else {
-                _parent._activeCount = _parent._activeCount - 1
+                self._parent._activeCount -= 1
                 
-                if _parent._stopped && _parent._activeCount == 0 {
-                    _parent.forwardOn(.completed)
-                    _parent.dispose()
+                if self._parent._stopped && self._parent._activeCount == 0 {
+                    self._parent.forwardOn(.completed)
+                    self._parent.dispose()
                 }
             }
         }
@@ -190,12 +190,12 @@ fileprivate final class ConcatMapSink<SourceElement, SourceSequence: ObservableC
     private let _selector: Selector
     
     init(selector: @escaping Selector, observer: Observer, cancel: Cancelable) {
-        _selector = selector
+        self._selector = selector
         super.init(maxConcurrent: 1, observer: observer, cancel: cancel)
     }
     
     override func performMap(_ element: SourceElement) throws -> SourceSequence {
-        return try _selector(element)
+        return try self._selector(element)
     }
 }
 
@@ -206,9 +206,9 @@ fileprivate final class MergeLimitedBasicSink<SourceSequence: ObservableConverti
     }
 }
 
-fileprivate class MergeLimitedSink<SourceElement, SourceSequence: ObservableConvertibleType, Observer: ObserverType>
+private class MergeLimitedSink<SourceElement, SourceSequence: ObservableConvertibleType, Observer: ObserverType>
     : Sink<Observer>
-    , ObserverType where Observer.E == SourceSequence.E  {
+    , ObserverType where Observer.E == SourceSequence.E {
     typealias QueueType = Queue<SourceSequence>
 
     let _maxConcurrent: Int
@@ -224,18 +224,16 @@ fileprivate class MergeLimitedSink<SourceElement, SourceSequence: ObservableConv
     let _group = CompositeDisposable()
     
     init(maxConcurrent: Int, observer: Observer, cancel: Cancelable) {
-        _maxConcurrent = maxConcurrent
-        
-        let _ = _group.insert(_sourceSubscription)
+        self._maxConcurrent = maxConcurrent
         super.init(observer: observer, cancel: cancel)
     }
     
     func run(_ source: Observable<SourceElement>) -> Disposable {
-        let _ = _group.insert(_sourceSubscription)
+        _ = self._group.insert(self._sourceSubscription)
         
         let disposable = source.subscribe(self)
-        _sourceSubscription.setDisposable(disposable)
-        return _group
+        self._sourceSubscription.setDisposable(disposable)
+        return self._group
     }
     
     func subscribe(_ innerSource: SourceSequence, group: CompositeDisposable) {
@@ -257,29 +255,29 @@ fileprivate class MergeLimitedSink<SourceElement, SourceSequence: ObservableConv
 
     @inline(__always)
     final private func nextElementArrived(element: SourceElement) -> SourceSequence? {
-        _lock.lock(); defer { _lock.unlock() } // {
+        self._lock.lock(); defer { self._lock.unlock() } // {
             let subscribe: Bool
-            if _activeCount < _maxConcurrent {
-                _activeCount += 1
+            if self._activeCount < self._maxConcurrent {
+                self._activeCount += 1
                 subscribe = true
             }
             else {
                 do {
-                    let value = try performMap(element)
-                    _queue.enqueue(value)
+                    let value = try self.performMap(element)
+                    self._queue.enqueue(value)
                 } catch {
-                    forwardOn(.error(error))
-                    dispose()
+                    self.forwardOn(.error(error))
+                    self.dispose()
                 }
                 subscribe = false
             }
 
             if subscribe {
                 do {
-                    return try performMap(element)
+                    return try self.performMap(element)
                 } catch {
-                    forwardOn(.error(error))
-                    dispose()
+                    self.forwardOn(.error(error))
+                    self.dispose()
                 }
             }
 
@@ -291,41 +289,41 @@ fileprivate class MergeLimitedSink<SourceElement, SourceSequence: ObservableConv
         switch event {
         case .next(let element):
             if let sequence = self.nextElementArrived(element: element) {
-                self.subscribe(sequence, group: _group)
+                self.subscribe(sequence, group: self._group)
             }
         case .error(let error):
-            _lock.lock(); defer { _lock.unlock() }
+            self._lock.lock(); defer { self._lock.unlock() }
 
-            forwardOn(.error(error))
-            dispose()
+            self.forwardOn(.error(error))
+            self.dispose()
         case .completed:
-            _lock.lock(); defer { _lock.unlock() }
+            self._lock.lock(); defer { self._lock.unlock() }
 
-            if _activeCount == 0 {
-                forwardOn(.completed)
-                dispose()
+            if self._activeCount == 0 {
+                self.forwardOn(.completed)
+                self.dispose()
             }
             else {
-                _sourceSubscription.dispose()
+                self._sourceSubscription.dispose()
             }
 
-            _stopped = true
+            self._stopped = true
         }
     }
 }
 
-final fileprivate class MergeLimited<SourceSequence: ObservableConvertibleType> : Producer<SourceSequence.E> {
+final private class MergeLimited<SourceSequence: ObservableConvertibleType>: Producer<SourceSequence.E> {
     private let _source: Observable<SourceSequence>
     private let _maxConcurrent: Int
     
     init(source: Observable<SourceSequence>, maxConcurrent: Int) {
-        _source = source
-        _maxConcurrent = maxConcurrent
+        self._source = source
+        self._maxConcurrent = maxConcurrent
     }
     
     override func run<O: ObserverType>(_ observer: O, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where O.E == SourceSequence.E {
-        let sink = MergeLimitedBasicSink<SourceSequence, O>(maxConcurrent: _maxConcurrent, observer: observer, cancel: cancel)
-        let subscription = sink.run(_source)
+        let sink = MergeLimitedBasicSink<SourceSequence, O>(maxConcurrent: self._maxConcurrent, observer: observer, cancel: cancel)
+        let subscription = sink.run(self._source)
         return (sink: sink, subscription: subscription)
     }
 }
@@ -346,12 +344,12 @@ fileprivate final class FlatMapSink<SourceElement, SourceSequence: ObservableCon
     private let _selector: Selector
 
     init(selector: @escaping Selector, observer: Observer, cancel: Cancelable) {
-        _selector = selector
+        self._selector = selector
         super.init(observer: observer, cancel: cancel)
     }
 
     override func performMap(_ element: SourceElement) throws -> SourceSequence {
-        return try _selector(element)
+        return try self._selector(element)
     }
 }
 
@@ -363,16 +361,16 @@ fileprivate final class FlatMapFirstSink<SourceElement, SourceSequence: Observab
     private let _selector: Selector
 
     override var subscribeNext: Bool {
-        return _activeCount == 0
+        return self._activeCount == 0
     }
 
     init(selector: @escaping Selector, observer: Observer, cancel: Cancelable) {
-        _selector = selector
+        self._selector = selector
         super.init(observer: observer, cancel: cancel)
     }
 
     override func performMap(_ element: SourceElement) throws -> SourceSequence {
-        return try _selector(element)
+        return try self._selector(element)
     }
 }
 
@@ -385,29 +383,29 @@ fileprivate final class MergeSinkIter<SourceElement, SourceSequence: ObservableC
     private let _disposeKey: DisposeKey
 
     init(parent: Parent, disposeKey: DisposeKey) {
-        _parent = parent
-        _disposeKey = disposeKey
+        self._parent = parent
+        self._disposeKey = disposeKey
     }
     
     func on(_ event: Event<E>) {
-        _parent._lock.lock(); defer { _parent._lock.unlock() } // lock {
+        self._parent._lock.lock(); defer { self._parent._lock.unlock() } // lock {
             switch event {
             case .next(let value):
-                _parent.forwardOn(.next(value))
+                self._parent.forwardOn(.next(value))
             case .error(let error):
-                _parent.forwardOn(.error(error))
-                _parent.dispose()
+                self._parent.forwardOn(.error(error))
+                self._parent.dispose()
             case .completed:
-                _parent._group.remove(for: _disposeKey)
-                _parent._activeCount -= 1
-                _parent.checkCompleted()
+                self._parent._group.remove(for: self._disposeKey)
+                self._parent._activeCount -= 1
+                self._parent.checkCompleted()
             }
         // }
     }
 }
 
 
-fileprivate class MergeSink<SourceElement, SourceSequence: ObservableConvertibleType, Observer: ObserverType>
+private class MergeSink<SourceElement, SourceSequence: ObservableConvertibleType, Observer: ObserverType>
     : Sink<Observer>
     , ObserverType where Observer.E == SourceSequence.E {
     typealias ResultType = Observer.E
@@ -436,19 +434,19 @@ fileprivate class MergeSink<SourceElement, SourceSequence: ObservableConvertible
 
     @inline(__always)
     final private func nextElementArrived(element: SourceElement) -> SourceSequence? {
-        _lock.lock(); defer { _lock.unlock() } // {
-            if !subscribeNext {
+        self._lock.lock(); defer { self._lock.unlock() } // {
+            if !self.subscribeNext {
                 return nil
             }
 
             do {
-                let value = try performMap(element)
-                _activeCount += 1
+                let value = try self.performMap(element)
+                self._activeCount += 1
                 return value
             }
             catch let e {
-                forwardOn(.error(e))
-                dispose()
+                self.forwardOn(.error(e))
+                self.dispose()
                 return nil
             }
         // }
@@ -457,24 +455,24 @@ fileprivate class MergeSink<SourceElement, SourceSequence: ObservableConvertible
     func on(_ event: Event<SourceElement>) {
         switch event {
         case .next(let element):
-            if let value = nextElementArrived(element: element) {
-                subscribeInner(value.asObservable())
+            if let value = self.nextElementArrived(element: element) {
+                self.subscribeInner(value.asObservable())
             }
         case .error(let error):
-            _lock.lock(); defer { _lock.unlock() }
-            forwardOn(.error(error))
-            dispose()
+            self._lock.lock(); defer { self._lock.unlock() }
+            self.forwardOn(.error(error))
+            self.dispose()
         case .completed:
-            _lock.lock(); defer { _lock.unlock() }
-            _stopped = true
-            _sourceSubscription.dispose()
-            checkCompleted()
+            self._lock.lock(); defer { self._lock.unlock() }
+            self._stopped = true
+            self._sourceSubscription.dispose()
+            self.checkCompleted()
         }
     }
 
     func subscribeInner(_ source: Observable<Observer.E>) {
         let iterDisposable = SingleAssignmentDisposable()
-        if let disposeKey = _group.insert(iterDisposable) {
+        if let disposeKey = self._group.insert(iterDisposable) {
             let iter = MergeSinkIter(parent: self, disposeKey: disposeKey)
             let subscription = source.subscribe(iter)
             iterDisposable.setDisposable(subscription)
@@ -482,40 +480,40 @@ fileprivate class MergeSink<SourceElement, SourceSequence: ObservableConvertible
     }
 
     func run(_ sources: [Observable<Observer.E>]) -> Disposable {
-        _activeCount += sources.count
+        self._activeCount += sources.count
 
         for source in sources {
-            subscribeInner(source)
+            self.subscribeInner(source)
         }
 
-        _stopped = true
+        self._stopped = true
 
-        checkCompleted()
+        self.checkCompleted()
 
-        return _group
+        return self._group
     }
 
     @inline(__always)
     func checkCompleted() {
-        if _stopped && _activeCount == 0 {
+        if self._stopped && self._activeCount == 0 {
             self.forwardOn(.completed)
             self.dispose()
         }
     }
     
     func run(_ source: Observable<SourceElement>) -> Disposable {
-        let _ = _group.insert(_sourceSubscription)
+        _ = self._group.insert(self._sourceSubscription)
 
         let subscription = source.subscribe(self)
-        _sourceSubscription.setDisposable(subscription)
+        self._sourceSubscription.setDisposable(subscription)
         
-        return _group
+        return self._group
     }
 }
 
 // MARK: Producers
 
-final fileprivate class FlatMap<SourceElement, SourceSequence: ObservableConvertibleType>: Producer<SourceSequence.E> {
+final private class FlatMap<SourceElement, SourceSequence: ObservableConvertibleType>: Producer<SourceSequence.E> {
     typealias Selector = (SourceElement) throws -> SourceSequence
 
     private let _source: Observable<SourceElement>
@@ -523,18 +521,18 @@ final fileprivate class FlatMap<SourceElement, SourceSequence: ObservableConvert
     private let _selector: Selector
 
     init(source: Observable<SourceElement>, selector: @escaping Selector) {
-        _source = source
-        _selector = selector
+        self._source = source
+        self._selector = selector
     }
     
     override func run<O: ObserverType>(_ observer: O, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where O.E == SourceSequence.E {
-        let sink = FlatMapSink(selector: _selector, observer: observer, cancel: cancel)
-        let subscription = sink.run(_source)
+        let sink = FlatMapSink(selector: self._selector, observer: observer, cancel: cancel)
+        let subscription = sink.run(self._source)
         return (sink: sink, subscription: subscription)
     }
 }
 
-final fileprivate class FlatMapFirst<SourceElement, SourceSequence: ObservableConvertibleType>: Producer<SourceSequence.E> {
+final private class FlatMapFirst<SourceElement, SourceSequence: ObservableConvertibleType>: Producer<SourceSequence.E> {
     typealias Selector = (SourceElement) throws -> SourceSequence
 
     private let _source: Observable<SourceElement>
@@ -542,13 +540,13 @@ final fileprivate class FlatMapFirst<SourceElement, SourceSequence: ObservableCo
     private let _selector: Selector
 
     init(source: Observable<SourceElement>, selector: @escaping Selector) {
-        _source = source
-        _selector = selector
+        self._source = source
+        self._selector = selector
     }
 
     override func run<O: ObserverType>(_ observer: O, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where O.E == SourceSequence.E {
-        let sink = FlatMapFirstSink<SourceElement, SourceSequence, O>(selector: _selector, observer: observer, cancel: cancel)
-        let subscription = sink.run(_source)
+        let sink = FlatMapFirstSink<SourceElement, SourceSequence, O>(selector: self._selector, observer: observer, cancel: cancel)
+        let subscription = sink.run(self._source)
         return (sink: sink, subscription: subscription)
     }
 }
@@ -560,13 +558,13 @@ final class ConcatMap<SourceElement, SourceSequence: ObservableConvertibleType>:
     private let _selector: Selector
     
     init(source: Observable<SourceElement>, selector: @escaping Selector) {
-        _source = source
-        _selector = selector
+        self._source = source
+        self._selector = selector
     }
     
     override func run<O: ObserverType>(_ observer: O, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where O.E == SourceSequence.E {
-        let sink = ConcatMapSink<SourceElement, SourceSequence, O>(selector: _selector, observer: observer, cancel: cancel)
-        let subscription = sink.run(_source)
+        let sink = ConcatMapSink<SourceElement, SourceSequence, O>(selector: self._selector, observer: observer, cancel: cancel)
+        let subscription = sink.run(self._source)
         return (sink: sink, subscription: subscription)
     }
 }
@@ -575,26 +573,26 @@ final class Merge<SourceSequence: ObservableConvertibleType> : Producer<SourceSe
     private let _source: Observable<SourceSequence>
 
     init(source: Observable<SourceSequence>) {
-        _source = source
+        self._source = source
     }
     
     override func run<O: ObserverType>(_ observer: O, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where O.E == SourceSequence.E {
         let sink = MergeBasicSink<SourceSequence, O>(observer: observer, cancel: cancel)
-        let subscription = sink.run(_source)
+        let subscription = sink.run(self._source)
         return (sink: sink, subscription: subscription)
     }
 }
 
-final fileprivate class MergeArray<Element> : Producer<Element> {
+final private class MergeArray<Element>: Producer<Element> {
     private let _sources: [Observable<Element>]
 
     init(sources: [Observable<Element>]) {
-        _sources = sources
+        self._sources = sources
     }
 
     override func run<O: ObserverType>(_ observer: O, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where O.E == E {
         let sink = MergeBasicSink<Observable<E>, O>(observer: observer, cancel: cancel)
-        let subscription = sink.run(_sources)
+        let subscription = sink.run(self._sources)
         return (sink: sink, subscription: subscription)
     }
 }

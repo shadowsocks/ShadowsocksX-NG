@@ -24,13 +24,13 @@ public final class ConcurrentMainScheduler : SchedulerType {
     private let _mainQueue: DispatchQueue
 
     /// - returns: Current time.
-    public var now : Date {
-        return _mainScheduler.now as Date
+    public var now: Date {
+        return self._mainScheduler.now as Date
     }
 
     private init(mainScheduler: MainScheduler) {
-        _mainQueue = DispatchQueue.main
-        _mainScheduler = mainScheduler
+        self._mainQueue = DispatchQueue.main
+        self._mainScheduler = mainScheduler
     }
 
     /// Singleton instance of `ConcurrentMainScheduler`
@@ -50,7 +50,7 @@ public final class ConcurrentMainScheduler : SchedulerType {
 
         let cancel = SingleAssignmentDisposable()
 
-        _mainQueue.async {
+        self._mainQueue.async {
             if cancel.isDisposed {
                 return
             }
@@ -70,7 +70,7 @@ public final class ConcurrentMainScheduler : SchedulerType {
     - returns: The disposable object used to cancel the scheduled action (best effort).
     */
     public final func scheduleRelative<StateType>(_ state: StateType, dueTime: Foundation.TimeInterval, action: @escaping (StateType) -> Disposable) -> Disposable {
-        return _mainScheduler.scheduleRelative(state, dueTime: dueTime, action: action)
+        return self._mainScheduler.scheduleRelative(state, dueTime: dueTime, action: action)
     }
 
     /**
@@ -83,6 +83,6 @@ public final class ConcurrentMainScheduler : SchedulerType {
     - returns: The disposable object used to cancel the scheduled action (best effort).
     */
     public func schedulePeriodic<StateType>(_ state: StateType, startAfter: TimeInterval, period: TimeInterval, action: @escaping (StateType) -> StateType) -> Disposable {
-        return _mainScheduler.schedulePeriodic(state, startAfter: startAfter, period: period, action: action)
+        return self._mainScheduler.schedulePeriodic(state, startAfter: startAfter, period: period, action: action)
     }
 }

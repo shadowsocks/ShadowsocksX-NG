@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2012-2015, Pierre-Olivier Latour
+ Copyright (c) 2012-2019, Pierre-Olivier Latour
  All rights reserved.
  
  Redistribution and use in source and binary forms, with or without
@@ -64,7 +64,7 @@ NS_ASSUME_NONNULL_BEGIN
  *  Creates a data response from an HTML template encoded using UTF-8.
  *  See -initWithHTMLTemplate:variables: for details.
  */
-+ (nullable instancetype)responseWithHTMLTemplate:(NSString*)path variables:(NSDictionary*)variables;
++ (nullable instancetype)responseWithHTMLTemplate:(NSString*)path variables:(NSDictionary<NSString*, NSString*>*)variables;
 
 /**
  *  Creates a data response from a serialized JSON object and the default
@@ -94,7 +94,7 @@ NS_ASSUME_NONNULL_BEGIN
  *  All occurences of "%variable%" within the HTML template are replaced with
  *  their corresponding values.
  */
-- (nullable instancetype)initWithHTMLTemplate:(NSString*)path variables:(NSDictionary*)variables;
+- (nullable instancetype)initWithHTMLTemplate:(NSString*)path variables:(NSDictionary<NSString*, NSString*>*)variables;
 
 /**
  *  Initializes a data response from a serialized JSON object and the default

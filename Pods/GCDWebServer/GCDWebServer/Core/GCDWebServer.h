@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2012-2015, Pierre-Olivier Latour
+ Copyright (c) 2012-2019, Pierre-Olivier Latour
  All rights reserved.
  
  Redistribution and use in source and binary forms, with or without
@@ -42,7 +42,7 @@ NS_ASSUME_NONNULL_BEGIN
  *  GCDWebServerRequest instance created with the same basic info.
  *  Otherwise, it simply returns nil.
  */
-typedef GCDWebServerRequest* _Nullable (^GCDWebServerMatchBlock)(NSString* requestMethod, NSURL* requestURL, NSDictionary* requestHeaders, NSString* urlPath, NSDictionary* urlQuery);
+typedef GCDWebServerRequest* _Nullable (^GCDWebServerMatchBlock)(NSString* requestMethod, NSURL* requestURL, NSDictionary<NSString*, NSString*>* requestHeaders, NSString* urlPath, NSDictionary<NSString*, NSString*>* urlQuery);
 
 /**
  *  The GCDWebServerProcessBlock is called after the HTTP request has been fully
@@ -68,6 +68,13 @@ typedef GCDWebServerResponse* _Nullable (^GCDWebServerProcessBlock)(__kindof GCD
  */
 typedef void (^GCDWebServerCompletionBlock)(GCDWebServerResponse* _Nullable response);
 typedef void (^GCDWebServerAsyncProcessBlock)(__kindof GCDWebServerRequest* request, GCDWebServerCompletionBlock completionBlock);
+
+/**
+ *  The GCDWebServerBuiltInLoggerBlock is used to override the built-in logger at runtime.
+ *  The block will be passed the log level and the log message, see setLogLevel for
+ *  documentation of the log levels for the built-in logger.
+ */
+typedef void (^GCDWebServerBuiltInLoggerBlock)(int level, NSString* _Nonnull message);
 
 /**
  *  The port used by the GCDWebServer (NSNumber / NSUInteger).
@@ -365,7 +372,7 @@ extern NSString* const GCDWebServerAuthenticationMethod_DigestAccess;
  *
  *  Returns NO if the server failed to start and sets "error" argument if not NULL.
  */
-- (BOOL)startWithOptions:(nullable NSDictionary*)options error:(NSError** _Nullable)error;
+- (BOOL)startWithOptions:(nullable NSDictionary<NSString*, id>*)options error:(NSError** _Nullable)error;
 
 /**
  *  Stops the server and prevents it to accepts new HTTP requests.
@@ -444,7 +451,7 @@ extern NSString* const GCDWebServerAuthenticationMethod_DigestAccess;
  *
  *  @warning This method must be used from the main thread only.
  */
-- (BOOL)runWithOptions:(nullable NSDictionary*)options error:(NSError** _Nullable)error;
+- (BOOL)runWithOptions:(nullable NSDictionary<NSString*, id>*)options error:(NSError** _Nullable)error;
 
 #endif
 
@@ -574,6 +581,14 @@ extern NSString* const GCDWebServerAuthenticationMethod_DigestAccess;
 + (void)setLogLevel:(int)level;
 
 /**
+ *  Set a logger to be used instead of the built-in logger which logs to stderr.
+ *
+ *  IMPORTANT: In order for this override to work, you should not be specifying
+ *  a custom logger at compile time with "__GCDWEBSERVER_LOGGING_HEADER__".
+ */
++ (void)setBuiltInLogger:(GCDWebServerBuiltInLoggerBlock)block;
+
+/**
  *  Logs a message to the logging facility at the VERBOSE level.
  */
 - (void)logVerbose:(NSString*)format, ... NS_FORMAT_FUNCTION(1, 2);
@@ -613,7 +628,7 @@ extern NSString* const GCDWebServerAuthenticationMethod_DigestAccess;
  *
  *  Returns the number of failed tests or -1 if server failed to start.
  */
-- (NSInteger)runTestsWithOptions:(nullable NSDictionary*)options inDirectory:(NSString*)path;
+- (NSInteger)runTestsWithOptions:(nullable NSDictionary<NSString*, id>*)options inDirectory:(NSString*)path;
 
 @end
 

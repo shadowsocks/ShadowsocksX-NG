@@ -24,14 +24,14 @@ extension ObservableType {
     }
 }
 
-final fileprivate class ToArraySink<SourceType, O: ObserverType> : Sink<O>, ObserverType where O.E == [SourceType] {
+final private class ToArraySink<SourceType, O: ObserverType>: Sink<O>, ObserverType where O.E == [SourceType] {
     typealias Parent = ToArray<SourceType>
     
     let _parent: Parent
-    var _list = Array<SourceType>()
+    var _list = [SourceType]()
     
     init(parent: Parent, observer: O, cancel: Cancelable) {
-        _parent = parent
+        self._parent = parent
         
         super.init(observer: observer, cancel: cancel)
     }
@@ -41,26 +41,26 @@ final fileprivate class ToArraySink<SourceType, O: ObserverType> : Sink<O>, Obse
         case .next(let value):
             self._list.append(value)
         case .error(let e):
-            forwardOn(.error(e))
+            self.forwardOn(.error(e))
             self.dispose()
         case .completed:
-            forwardOn(.next(_list))
-            forwardOn(.completed)
+            self.forwardOn(.next(self._list))
+            self.forwardOn(.completed)
             self.dispose()
         }
     }
 }
 
-final fileprivate class ToArray<SourceType> : Producer<[SourceType]> {
+final private class ToArray<SourceType>: Producer<[SourceType]> {
     let _source: Observable<SourceType>
 
     init(source: Observable<SourceType>) {
-        _source = source
+        self._source = source
     }
     
     override func run<O: ObserverType>(_ observer: O, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where O.E == [SourceType] {
         let sink = ToArraySink(parent: self, observer: observer, cancel: cancel)
-        let subscription = _source.subscribe(sink)
+        let subscription = self._source.subscribe(sink)
         return (sink: sink, subscription: subscription)
     }
 }

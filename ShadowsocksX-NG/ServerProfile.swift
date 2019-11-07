@@ -328,7 +328,7 @@ class ServerProfile: NSObject, NSCopying {
         if remark.isEmpty {
             return "\(serverHost):\(serverPort)"
         } else {
-            return "\(remark) (\(serverHost):\(serverPort))"
+            return "\(String(remark.prefix(24))) (\(serverHost):\(serverPort))"
         }
     }
     

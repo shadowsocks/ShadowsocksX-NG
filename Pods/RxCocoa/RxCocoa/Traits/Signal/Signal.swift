@@ -40,6 +40,6 @@ public struct SignalSharingStrategy : SharingStrategyProtocol {
 extension SharedSequenceConvertibleType where SharingStrategy == SignalSharingStrategy {
     /// Adds `asPublisher` to `SharingSequence` with `PublishSharingStrategy`.
     public func asSignal() -> Signal<E> {
-        return asSharedSequence()
+        return self.asSharedSequence()
     }
 }

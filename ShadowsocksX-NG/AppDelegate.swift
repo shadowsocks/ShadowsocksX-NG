@@ -20,6 +20,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     var editUserRulesWinCtrl: UserRulesController!
     var allInOnePreferencesWinCtrl: PreferencesWinController!
     var toastWindowCtrl: ToastWindowController!
+    var importWinCtrl: ImportWindowController!
 
     @IBOutlet weak var window: NSWindow!
     @IBOutlet weak var statusMenu: NSMenu!
@@ -29,6 +30,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     @IBOutlet weak var autoModeMenuItem: NSMenuItem!
     @IBOutlet weak var globalModeMenuItem: NSMenuItem!
     @IBOutlet weak var manualModeMenuItem: NSMenuItem!
+    @IBOutlet weak var externalPACModeMenuItem: NSMenuItem!
     
     @IBOutlet weak var serversMenuItem: NSMenuItem!
     @IBOutlet var showQRCodeMenuItem: NSMenuItem!
@@ -105,6 +107,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             "LocalHTTPOn": true,
             "LocalHTTP.FollowGlobal": false,
             "ProxyExceptions": "127.0.0.1, localhost, 192.168.0.0/16, 10.0.0.0/8, FE80::/64, ::1, FD00::/8",
+            "ExternalPACURL": "",
+            "EnableSwitchMode.PAC": true,
+            "EnableSwitchMode.Global": true,
+            "EnableSwitchMode.Manual": false,
+            "EnableSwitchMode.ExternalPAC": false,
             ])
         
         statusItem = NSStatusBar.system.statusItem(withLength: AppDelegate.StatusItemIconWidth)
@@ -118,6 +125,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         _ = notifyCenter.rx.notification(NOTIFY_CONF_CHANGED)
             .subscribe(onNext: { noti in
                 self.applyConfig()
+                self.updateRunningModeMenu()
                 self.updateCopyHttpProxyExportMenu()
             })
         
@@ -144,26 +152,50 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             .subscribe(onNext: { noti in
                 let mode = defaults.string(forKey: "ShadowsocksRunningMode")!
                 
-                var toastMessage: String!;
-                switch mode {
-                case "auto":
-                    defaults.setValue("global", forKey: "ShadowsocksRunningMode")
-                    toastMessage = "Global Mode".localized
-                case "global":
-                    defaults.setValue("manual", forKey: "ShadowsocksRunningMode")
-                    toastMessage = "Manual Mode".localized
-                case "manual":
-                    defaults.setValue("auto", forKey: "ShadowsocksRunningMode")
-                    toastMessage = "Auto Mode By PAC".localized
-                default:
-                    defaults.setValue("auto", forKey: "ShadowsocksRunningMode")
-                    toastMessage = "Auto Mode By PAC".localized
+                var enabledModeList: [String] = []
+                if defaults.bool(forKey: "EnableSwitchMode.PAC") {
+                    enabledModeList.append("auto")
                 }
+                if defaults.bool(forKey: "EnableSwitchMode.Global") {
+                    enabledModeList.append("global")
+                }
+                if defaults.bool(forKey: "EnableSwitchMode.Manual") {
+                    enabledModeList.append("manual")
+                }
+                if defaults.bool(forKey: "EnableSwitchMode.ExternalPAC")
+                    && self.externalPACModeMenuItem.isEnabled {
+                    enabledModeList.append("externalPAC")
+                }
+                
+                if enabledModeList.isEmpty {
+                    return
+                }
+                
+                var nextMode = ""
+                if enabledModeList.contains(mode) {
+                    let i = enabledModeList.firstIndex(of: mode)!
+                    if i + 1 == enabledModeList.count {
+                        nextMode = enabledModeList[0]
+                    } else {
+                        nextMode = enabledModeList[i+1]
+                    }
+                } else {
+                    nextMode = enabledModeList[0]
+                }
+                
+                defaults.setValue(nextMode, forKey: "ShadowsocksRunningMode")
                 
                 self.updateRunningModeMenu()
                 self.applyConfig()
                 
-                self.makeToast(toastMessage)
+                // Show toast message
+                let toastMessages = [
+                    "auto": "Auto Mode By PAC".localized,
+                    "global": "Global Mode".localized,
+                    "manual": "Manual Mode".localized,
+                    "externalPAC": "Auto Mode By External PAC".localized,
+                ]
+                self.makeToast(toastMessages[nextMode]!)
             })
         
         _ = notifyCenter.rx.notification(NOTIFY_FOUND_SS_URL)
@@ -210,6 +242,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                 ProxyConfHelper.enableGlobalProxy()
             } else if mode == "manual" {
                 ProxyConfHelper.disableProxy()
+            } else if mode == "externalPAC" {
+                ProxyConfHelper.enableExternalPACProxy()
             }
         } else {
             ProxyConfHelper.disableProxy()
@@ -266,6 +300,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         shareWinCtrl.window?.makeKeyAndOrderFront(nil)
     }
     
+    @IBAction func showImportWindow(_ sender: NSMenuItem) {
+        if importWinCtrl != nil {
+            importWinCtrl.close()
+        }
+        importWinCtrl = ImportWindowController(windowNibName: .init(rawValue: "ImportWindowController"))
+        importWinCtrl.showWindow(self)
+        NSApp.activate(ignoringOtherApps: true)
+        importWinCtrl.window?.makeKeyAndOrderFront(nil)
+    }
+    
     @IBAction func scanQRCodeFromScreen(_ sender: NSMenuItem) {
         ScanQRCodeOnScreen()
     }
@@ -276,7 +320,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             if let text = pb.string(forType: NSPasteboard.PasteboardType.URL) {
                 if let url = URL(string: text) {
                     NotificationCenter.default.post(
-                        name: Notification.Name(rawValue: "NOTIFY_FOUND_SS_URL"), object: nil
+                        name: NOTIFY_FOUND_SS_URL, object: nil
                         , userInfo: [
                             "urls": [url],
                             "source": "pasteboard",
@@ -293,7 +337,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             urls = urls.filter { $0.scheme == "ss" }
             
             NotificationCenter.default.post(
-                name: Notification.Name(rawValue: "NOTIFY_FOUND_SS_URL"), object: nil
+                name: NOTIFY_FOUND_SS_URL, object: nil
                 , userInfo: [
                     "urls": urls,
                     "source": "pasteboard",
@@ -318,6 +362,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     @IBAction func selectManualMode(_ sender: NSMenuItem) {
         let defaults = UserDefaults.standard
         defaults.setValue("manual", forKey: "ShadowsocksRunningMode")
+        updateRunningModeMenu()
+        applyConfig()
+    }
+    
+    @IBAction func selectExternalPACMode(_ sender: NSMenuItem) {
+        let defaults = UserDefaults.standard
+        defaults.setValue("externalPAC", forKey: "ShadowsocksRunningMode")
         updateRunningModeMenu()
         applyConfig()
     }
@@ -393,7 +444,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     
     @IBAction func exportDiagnosis(_ sender: NSMenuItem) {
         let savePanel = NSSavePanel()
-        savePanel.title = "Save All Server URLs To File".localized
+        savePanel.title = "Save Diagnosis to File".localized
         savePanel.canCreateDirectories = true
         savePanel.allowedFileTypes = ["txt"]
         savePanel.isExtensionHidden = false
@@ -425,38 +476,50 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     
     func updateRunningModeMenu() {
         let defaults = UserDefaults.standard
-        let mode = defaults.string(forKey: "ShadowsocksRunningMode")
         
-        var serverMenuText = "Servers".localized
+        if let pacURL = defaults.string(forKey: "ExternalPACURL") {
+            if pacURL != "" {
+                externalPACModeMenuItem.isEnabled = true
+            } else {
+                externalPACModeMenuItem.isEnabled = false
+            }
+        }
 
+        // Update running mode state
+        autoModeMenuItem.state = .off
+        globalModeMenuItem.state = .off
+        manualModeMenuItem.state = .off
+        externalPACModeMenuItem.state = .off
+        
+        let mode = defaults.string(forKey: "ShadowsocksRunningMode")
+        if mode == "auto" {
+            autoModeMenuItem.state = .on
+        } else if mode == "global" {
+            globalModeMenuItem.state = .on
+        } else if mode == "manual" {
+            manualModeMenuItem.state = .on
+        } else if mode == "externalPAC" {
+            externalPACModeMenuItem.state = .on
+        }
+        updateStatusMenuImage()
+        
+        // Update selected server name
+        var serverMenuText = "Servers - (No Selected)".localized
+        
         let mgr = ServerProfileManager.instance
         for p in mgr.profiles {
             if mgr.activeProfileId == p.uuid {
                 var profileName :String
                 if !p.remark.isEmpty {
-                    profileName = p.remark
+                    profileName = String(p.remark.prefix(24))
                 } else {
                     profileName = p.serverHost
                 }
-                serverMenuText = "\(serverMenuText) - \(profileName)"
+                serverMenuText = "Servers".localized + " - \(profileName)"
+                break
             }
         }
         serversMenuItem.title = serverMenuText
-        
-        if mode == "auto" {
-            autoModeMenuItem.state = .on
-            globalModeMenuItem.state = .off
-            manualModeMenuItem.state = .off
-        } else if mode == "global" {
-            autoModeMenuItem.state = .off
-            globalModeMenuItem.state = .on
-            manualModeMenuItem.state = .off
-        } else if mode == "manual" {
-            autoModeMenuItem.state = .off
-            globalModeMenuItem.state = .off
-            manualModeMenuItem.state = .on
-        }
-        updateStatusMenuImage()
     }
     
     func updateStatusMenuImage() {
@@ -472,6 +535,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                         statusItem.image = NSImage(named: NSImage.Name(rawValue: "menu_g_icon"))
                     case "manual":
                         statusItem.image = NSImage(named: NSImage.Name(rawValue: "menu_m_icon"))
+                    case "externalPAC":
+                        statusItem.image = NSImage(named: NSImage.Name(rawValue: "menu_e_icon"))
                 default: break
                 }
                 statusItem.image?.isTemplate = true
@@ -543,7 +608,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         if let urlString = event.paramDescriptor(forKeyword: AEKeyword(keyDirectObject))?.stringValue {
             if let url = URL(string: urlString) {
                 NotificationCenter.default.post(
-                    name: Notification.Name(rawValue: "NOTIFY_FOUND_SS_URL"), object: nil
+                    name: NOTIFY_FOUND_SS_URL, object: nil
                     , userInfo: [
                         "urls": [url],
                         "source": "url",
@@ -570,30 +635,25 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             let urls: [URL] = userInfo["urls"] as! [URL]
             
             let mgr = ServerProfileManager.instance
-            var addCount = 0
-            
-            var subtitle: String = ""
-            if userInfo["source"] as! String == "qrcode" {
-                subtitle = "By scan QR Code".localized
-            } else if userInfo["source"] as! String == "url" {
-                subtitle = "By handle SS URL".localized
-            } else if userInfo["source"] as! String == "pasteboard" {
-                subtitle = "By import from pasteboard".localized
-            }
-            
-            for url in urls {
-                if let profile = ServerProfile(url: url) {
-                    mgr.profiles.append(profile)
-                    addCount = addCount + 1
-                }
-            }
+            let addCount = mgr.addServerProfileByURL(urls: urls)
             
             if addCount > 0 {
+                var subtitle: String = ""
+                if userInfo["source"] as! String == "qrcode" {
+                    subtitle = "By scan QR Code".localized
+                } else if userInfo["source"] as! String == "url" {
+                    subtitle = "By handle SS URL".localized
+                } else if userInfo["source"] as! String == "pasteboard" {
+                    subtitle = "By import from pasteboard".localized
+                }
+                
                 sendNotify("Add \(addCount) Shadowsocks Server Profile".localized, subtitle, "")
-                mgr.save()
-                self.updateServersMenu()
             } else {
-                sendNotify("", "", "Not found valid qrcode or url of shadowsocks profile".localized)
+                if userInfo["source"] as! String == "qrcode" {
+                    sendNotify("", "", "Not found valid QRCode of shadowsocks profile".localized)
+                } else if userInfo["source"] as! String == "url" {
+                    sendNotify("", "", "Not found valid URL of shadowsocks profile".localized)
+                }
             }
         }
     }

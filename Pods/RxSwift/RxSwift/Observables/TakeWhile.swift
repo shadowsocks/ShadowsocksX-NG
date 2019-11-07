@@ -18,11 +18,11 @@ extension ObservableType {
      */
     public func takeWhile(_ predicate: @escaping (E) throws -> Bool)
         -> Observable<E> {
-        return TakeWhile(source: asObservable(), predicate: predicate)
+        return TakeWhile(source: self.asObservable(), predicate: predicate)
     }
 }
 
-final fileprivate class TakeWhileSink<O: ObserverType>
+final private class TakeWhileSink<O: ObserverType>
     : Sink<O>
     , ObserverType {
     typealias Element = O.E
@@ -33,53 +33,53 @@ final fileprivate class TakeWhileSink<O: ObserverType>
     fileprivate var _running = true
 
     init(parent: Parent, observer: O, cancel: Cancelable) {
-        _parent = parent
+        self._parent = parent
         super.init(observer: observer, cancel: cancel)
     }
     
     func on(_ event: Event<Element>) {
         switch event {
         case .next(let value):
-            if !_running {
+            if !self._running {
                 return
             }
             
             do {
-                _running = try _parent._predicate(value)
+                self._running = try self._parent._predicate(value)
             } catch let e {
-                forwardOn(.error(e))
-                dispose()
+                self.forwardOn(.error(e))
+                self.dispose()
                 return
             }
             
-            if _running {
-                forwardOn(.next(value))
+            if self._running {
+                self.forwardOn(.next(value))
             } else {
-                forwardOn(.completed)
-                dispose()
+                self.forwardOn(.completed)
+                self.dispose()
             }
         case .error, .completed:
-            forwardOn(event)
-            dispose()
+            self.forwardOn(event)
+            self.dispose()
         }
     }
     
 }
 
-final fileprivate class TakeWhile<Element>: Producer<Element> {
+final private class TakeWhile<Element>: Producer<Element> {
     typealias Predicate = (Element) throws -> Bool
 
     fileprivate let _source: Observable<Element>
     fileprivate let _predicate: Predicate
 
     init(source: Observable<Element>, predicate: @escaping Predicate) {
-        _source = source
-        _predicate = predicate
+        self._source = source
+        self._predicate = predicate
     }
 
     override func run<O : ObserverType>(_ observer: O, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where O.E == Element {
         let sink = TakeWhileSink(parent: self, observer: observer, cancel: cancel)
-        let subscription = _source.subscribe(sink)
+        let subscription = self._source.subscribe(sink)
         return (sink: sink, subscription: subscription)
     }
 }

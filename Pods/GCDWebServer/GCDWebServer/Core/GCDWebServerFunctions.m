@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2012-2015, Pierre-Olivier Latour
+ Copyright (c) 2012-2019, Pierre-Olivier Latour
  All rights reserved.
  
  Redistribution and use in source and binary forms, with or without
@@ -166,8 +166,8 @@ NSString* GCDWebServerDescribeData(NSData* data, NSString* type) {
   return [NSString stringWithFormat:@"<%lu bytes>", (unsigned long)data.length];
 }
 
-NSString* GCDWebServerGetMimeTypeForExtension(NSString* extension, NSDictionary* overrides) {
-  NSDictionary* builtInOverrides = @{ @"css" : @"text/css" };
+NSString* GCDWebServerGetMimeTypeForExtension(NSString* extension, NSDictionary<NSString*, NSString*>* overrides) {
+  NSDictionary* builtInOverrides = @{@"css" : @"text/css"};
   NSString* mimeType = nil;
   extension = [extension lowercaseString];
   if (extension.length) {
@@ -200,7 +200,7 @@ NSString* GCDWebServerUnescapeURLString(NSString* string) {
 #pragma clang diagnostic pop
 }
 
-NSDictionary* GCDWebServerParseURLEncodedForm(NSString* form) {
+NSDictionary<NSString*, NSString*>* GCDWebServerParseURLEncodedForm(NSString* form) {
   NSMutableDictionary* parameters = [NSMutableDictionary dictionary];
   NSScanner* scanner = [[NSScanner alloc] initWithString:form];
   [scanner setCharactersToBeSkipped:nil];
@@ -313,4 +313,19 @@ NSString* GCDWebServerComputeMD5Digest(NSString* format, ...) {
   }
   buffer[2 * CC_MD5_DIGEST_LENGTH] = 0;
   return (NSString*)[NSString stringWithUTF8String:buffer];
+}
+
+NSString* GCDWebServerNormalizePath(NSString* path) {
+  NSMutableArray* components = [[NSMutableArray alloc] init];
+  for (NSString* component in [path componentsSeparatedByString:@"/"]) {
+    if ([component isEqualToString:@".."]) {
+      [components removeLastObject];
+    } else if (component.length && ![component isEqualToString:@"."]) {
+      [components addObject:component];
+    }
+  }
+  if (path.length && ([path characterAtIndex:0] == '/')) {
+    return [@"/" stringByAppendingString:[components componentsJoinedByString:@"/"]];  // Preserve initial slash
+  }
+  return [components componentsJoinedByString:@"/"];
 }

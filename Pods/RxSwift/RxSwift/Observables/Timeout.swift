@@ -38,7 +38,7 @@ extension ObservableType {
     }
 }
 
-final fileprivate class TimeoutSink<O: ObserverType>: Sink<O>, LockOwnerType, ObserverType {
+final private class TimeoutSink<O: ObserverType>: Sink<O>, LockOwnerType, ObserverType {
     typealias E = O.E
     typealias Parent = Timeout<E>
     
@@ -53,17 +53,17 @@ final fileprivate class TimeoutSink<O: ObserverType>: Sink<O>, LockOwnerType, Ob
     private var _switched = false
     
     init(parent: Parent, observer: O, cancel: Cancelable) {
-        _parent = parent
+        self._parent = parent
         super.init(observer: observer, cancel: cancel)
     }
     
     func run() -> Disposable {
         let original = SingleAssignmentDisposable()
-        _subscription.disposable = original
+        self._subscription.disposable = original
         
-        _createTimeoutTimer()
+        self._createTimeoutTimer()
         
-        original.setDisposable(_parent._source.subscribe(self))
+        original.setDisposable(self._parent._source.subscribe(self))
         
         return Disposables.create(_subscription, _timerD)
     }
@@ -73,7 +73,7 @@ final fileprivate class TimeoutSink<O: ObserverType>: Sink<O>, LockOwnerType, Ob
         case .next:
             var onNextWins = false
             
-            _lock.performLocked() {
+            self._lock.performLocked {
                 onNextWins = !self._switched
                 if onNextWins {
                     self._id = self._id &+ 1
@@ -81,13 +81,13 @@ final fileprivate class TimeoutSink<O: ObserverType>: Sink<O>, LockOwnerType, Ob
             }
             
             if onNextWins {
-                forwardOn(event)
+                self.forwardOn(event)
                 self._createTimeoutTimer()
             }
         case .error, .completed:
             var onEventWins = false
             
-            _lock.performLocked() {
+            self._lock.performLocked {
                 onEventWins = !self._switched
                 if onEventWins {
                     self._id = self._id &+ 1
@@ -95,25 +95,25 @@ final fileprivate class TimeoutSink<O: ObserverType>: Sink<O>, LockOwnerType, Ob
             }
             
             if onEventWins {
-                forwardOn(event)
+                self.forwardOn(event)
                 self.dispose()
             }
         }
     }
     
     private func _createTimeoutTimer() {
-        if _timerD.isDisposed {
+        if self._timerD.isDisposed {
             return
         }
         
         let nextTimer = SingleAssignmentDisposable()
-        _timerD.disposable = nextTimer
+        self._timerD.disposable = nextTimer
         
-        let disposeSchedule = _parent._scheduler.scheduleRelative(_id, dueTime: _parent._dueTime) { state in
+        let disposeSchedule = self._parent._scheduler.scheduleRelative(self._id, dueTime: self._parent._dueTime) { state in
             
             var timerWins = false
             
-            self._lock.performLocked() {
+            self._lock.performLocked {
                 self._switched = (state == self._id)
                 timerWins = self._switched
             }
@@ -130,18 +130,17 @@ final fileprivate class TimeoutSink<O: ObserverType>: Sink<O>, LockOwnerType, Ob
 }
 
 
-final fileprivate class Timeout<Element> : Producer<Element> {
-    
+final private class Timeout<Element>: Producer<Element> {
     fileprivate let _source: Observable<Element>
     fileprivate let _dueTime: RxTimeInterval
     fileprivate let _other: Observable<Element>
     fileprivate let _scheduler: SchedulerType
     
     init(source: Observable<Element>, dueTime: RxTimeInterval, other: Observable<Element>, scheduler: SchedulerType) {
-        _source = source
-        _dueTime = dueTime
-        _other = other
-        _scheduler = scheduler
+        self._source = source
+        self._dueTime = dueTime
+        self._other = other
+        self._scheduler = scheduler
     }
     
     override func run<O : ObserverType>(_ observer: O, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where O.E == Element {
