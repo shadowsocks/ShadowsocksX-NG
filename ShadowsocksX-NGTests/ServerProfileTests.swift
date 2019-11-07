@@ -91,6 +91,13 @@ class ServerProfileTests: XCTestCase {
         XCTAssertNotNil(profile)
         XCTAssertEqual(profile?.password, "test/!@#:")
     }
+    
+    func testInitWithLegacyURLWithEscapedChineseRemark() {
+        let url = URL(string: "ss://YmYtY2ZiOnRlc3RAMTkyLjE2OC4xMDAuMTo4ODg4#%e4%bd%a0%e5%a5%bd")!
+        let profile = ServerProfile(url: url)
+        XCTAssertNotNil(profile)
+        XCTAssertEqual(profile?.remark, "你好")
+    }
 
     func testInitWithEmptyURL() {
         let url = URL(string: "ss://")!
