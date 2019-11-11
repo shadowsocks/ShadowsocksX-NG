@@ -335,7 +335,15 @@ func InstallPrivoxy() {
         }
     }
     
-    let userConfigPath = homeDir + USER_CONFIG_DIR + "user-privoxy.config"
+    let userConfigDir = homeDir + USER_CONFIG_DIR
+    // Make dir: '~/.ShadowsocksX-NG'
+    if !fileMgr.fileExists(atPath: userConfigDir) {
+        try! fileMgr.createDirectory(atPath: userConfigDir
+        , withIntermediateDirectories: true, attributes: nil)
+    }
+
+    // Install empty `user-privoxy.config` file.
+    let userConfigPath = userConfigDir + "user-privoxy.config"
     if !fileMgr.fileExists(atPath: userConfigPath) {
         let srcPath = Bundle.main.path(forResource: "user-privoxy", ofType: "config")!
         try! fileMgr.copyItem(atPath: srcPath, toPath: userConfigPath)
