@@ -1,6 +1,6 @@
 # ShadowsocksX-NG
 
-Current version is [v1.9.3](https://github.com/shadowsocks/ShadowsocksX-NG/releases/tag/v1.9.3)
+[Download](https://github.com/shadowsocks/ShadowsocksX-NG/releases/latest)
 
 [![Actions Status](https://github.com/shadowsocks/ShadowsocksX-NG/workflows/CI/badge.svg)](https://github.com/shadowsocks/ShadowsocksX-NG/actions)
 
