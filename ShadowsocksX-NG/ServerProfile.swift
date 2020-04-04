@@ -18,6 +18,7 @@ class ServerProfile: NSObject, NSCopying {
     @objc var method:String = "aes-128-gcm"
     @objc var password:String = ""
     @objc var remark:String = ""
+    @objc var rootPassword:String? = ""
     
     // SIP003 Plugin
     @objc var plugin: String = ""  // empty string disables plugin
@@ -150,6 +151,7 @@ class ServerProfile: NSObject, NSCopying {
         copy.method = self.method
         copy.password = self.password
         copy.remark = self.remark
+        copy.rootPassword = self.rootPassword
         
         copy.plugin = self.plugin
         copy.pluginOptions = self.pluginOptions
@@ -172,6 +174,7 @@ class ServerProfile: NSObject, NSCopying {
             if let pluginOptions = data["PluginOptions"] as? String {
                 profile.pluginOptions = pluginOptions
             }
+            profile.rootPassword = data["RootPassword"] as? String
         }
 
         if let id = data["Id"] as? String {
@@ -195,6 +198,7 @@ class ServerProfile: NSObject, NSCopying {
         d["Remark"] = remark as AnyObject?
         d["Plugin"] = plugin as AnyObject
         d["PluginOptions"] = pluginOptions as AnyObject
+        d["RootPassword"] = rootPassword as AnyObject?
         return d
     }
 
@@ -215,6 +219,7 @@ class ServerProfile: NSObject, NSCopying {
             conf["plugin"] = "plugins/\(plugin)" as AnyObject
             conf["plugin_opts"] = pluginOptions as AnyObject
         }
+        conf["rootPassword"] = rootPassword as AnyObject?
 
         return conf
     }
@@ -227,6 +232,7 @@ class ServerProfile: NSObject, NSCopying {
         print("Password=\(String(repeating: "*", count: password.count))", to: &buf)
         print("Plugin=\(plugin)", to: &buf)
         print("PluginOptions=\(pluginOptions)", to: &buf)
+        print("RootPassword=\(String(repeating: "*", count: rootPassword?.count ?? 0))", to: &buf)
         return buf
     }
 

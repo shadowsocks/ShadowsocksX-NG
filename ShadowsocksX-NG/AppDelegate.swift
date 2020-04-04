@@ -142,6 +142,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
                 self.updateServersMenu()
                 self.updateRunningModeMenu()
                 SyncSSLocal()
+                self.checkAndConfigIPToServer()
             }
         )
         _ = notifyCenter.rx.notification(NOTIFY_TOGGLE_RUNNING_SHORTCUT)
@@ -216,6 +217,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         ProxyConfHelper.install()
         ProxyConfHelper.startMonitorPAC()
         applyConfig()
+        self.checkAndConfigIPToServer()
 
         // Register global hotkey
         ShortcutsController.bindShortcuts()
@@ -249,6 +251,39 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             ProxyConfHelper.disableProxy()
         }
     }
+    
+    func checkAndConfigIPToServer() {
+        let defaults = UserDefaults.standard
+        let isOn = defaults.bool(forKey: "ShadowsocksOn")
+        if !isOn {
+            return
+        }
+        
+        let mgr = ServerProfileManager.instance
+        if mgr.activeProfileId == nil {
+            return
+        }
+        guard let profile = mgr.getActiveProfile() else {
+            return
+        }
+        guard let rootPassword = profile.rootPassword else {
+            return
+        }
+        let serverHost = profile.serverHost
+        
+        // python脚本文件路径
+        guard let aPath = Bundle.main.path(forResource: "ConfigIPToServer", ofType: "py") else { return }
+
+        // args: py文件接受的参数列表，通过sys.argv[i]访问
+        // block: 完成后的回调，包括返回值和错误内容
+        let script = CocoaPython(scrPath: aPath, args: [serverHost, rootPassword]) { [weak self] in
+            print($0) // 返回值，所有的py中print()的内容
+            print($1) // py中的错误信息
+        }
+
+        script.splitPara = "$" // 如果有多个结果，每个结果之间的分隔符，不设置则将所有的结果当成一个结果返回，即result == result[0]
+        script.runAsync() // 异步执行，回调在异步主线程中调用
+    }
 
     // MARK: - UI Methods
     @IBAction func toggleRunning(_ sender: NSMenuItem) {
@@ -263,6 +298,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         
         self.updateMainMenu()
         self.applyConfig()
+        self.checkAndConfigIPToServer()
         
         if showToast {
             if isOn {
@@ -406,6 +442,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             applyConfig()
         }
         updateRunningModeMenu()
+        self.checkAndConfigIPToServer()
     }
     
     @IBAction func copyExportCommand(_ sender: NSMenuItem) {

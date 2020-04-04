@@ -29,6 +29,7 @@ class PreferencesWindowController: NSWindowController
     @IBOutlet weak var pluginOptionsTextField: NSTextField!
     @IBOutlet weak var remarkTextField: NSTextField!
     @IBOutlet weak var removeButton: NSButton!
+    @IBOutlet weak var rootPasswordSecureTextField: NSSecureTextField!
     
     let tableViewDragType: String = "ss.server.profile.data"
     
@@ -235,6 +236,9 @@ class PreferencesWindowController: NSWindowController
             
             remarkTextField.bind(NSBindingName(rawValue: "value"), to: editingProfile, withKeyPath: "remark"
                 , options: [NSBindingOption.continuouslyUpdatesValue: true])
+            
+            rootPasswordSecureTextField.bind(NSBindingName(rawValue: "value"), to: editingProfile, withKeyPath: "rootPassword"
+            , options: [NSBindingOption.continuouslyUpdatesValue: true])
         } else {
             editingProfile = nil
             hostTextField.unbind(NSBindingName(rawValue: "value"))
@@ -244,6 +248,8 @@ class PreferencesWindowController: NSWindowController
             passwordTextField.unbind(NSBindingName(rawValue: "value"))
             
             remarkTextField.unbind(NSBindingName(rawValue: "value"))
+            
+            rootPasswordSecureTextField.unbind(NSBindingName(rawValue: "value"))
         }
     }
     

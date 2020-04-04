@@ -46,3 +46,6 @@
 
 /* Class = "NSButtonCell"; title = "Open Plugin Folder..."; ObjectID = "T8q-g1-qjN"; */
 "T8q-g1-qjN.title" = "打开插件目录...";
+
+/* Class = "NSTextFieldCell"; title = "RootPassword:"; ObjectID = "RiZ-pJ-QzE"; */
+"RiZ-pJ-QzE.title" = "root用户密码:";
