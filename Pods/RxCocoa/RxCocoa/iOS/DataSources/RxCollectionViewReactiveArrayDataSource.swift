@@ -38,16 +38,16 @@ class _RxCollectionViewReactiveArrayDataSource
     }
 }
 
-class RxCollectionViewReactiveArrayDataSourceSequenceWrapper<S: Sequence>
-    : RxCollectionViewReactiveArrayDataSource<S.Iterator.Element>
+class RxCollectionViewReactiveArrayDataSourceSequenceWrapper<Sequence: Swift.Sequence>
+    : RxCollectionViewReactiveArrayDataSource<Sequence.Element>
     , RxCollectionViewDataSourceType {
-    typealias Element = S
+    typealias Element = Sequence
 
     override init(cellFactory: @escaping CellFactory) {
         super.init(cellFactory: cellFactory)
     }
     
-    func collectionView(_ collectionView: UICollectionView, observedEvent: Event<S>) {
+    func collectionView(_ collectionView: UICollectionView, observedEvent: Event<Sequence>) {
         Binder(self) { collectionViewDataSource, sectionModels in
             let sections = Array(sectionModels)
             collectionViewDataSource.collectionView(collectionView, observedElements: sections)

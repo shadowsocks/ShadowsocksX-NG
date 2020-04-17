@@ -14,9 +14,9 @@ extension ObservableType {
 
      - returns: An observable sequence that surfaces any of the given sequences, whichever reacted first.
      */
-    public static func amb<S: Sequence>(_ sequence: S) -> Observable<E>
-        where S.Iterator.Element == Observable<E> {
-            return sequence.reduce(Observable<S.Iterator.Element.E>.never()) { a, o in
+    public static func amb<Sequence: Swift.Sequence>(_ sequence: Sequence) -> Observable<Element>
+        where Sequence.Element == Observable<Element> {
+            return sequence.reduce(Observable<Sequence.Element.Element>.never()) { a, o in
                 return a.amb(o.asObservable())
             }
     }
@@ -34,24 +34,24 @@ extension ObservableType {
      */
     public func amb<O2: ObservableType>
         (_ right: O2)
-        -> Observable<E> where O2.E == E {
+        -> Observable<Element> where O2.Element == Element {
         return Amb(left: self.asObservable(), right: right.asObservable())
     }
 }
 
-fileprivate enum AmbState {
+private enum AmbState {
     case neither
     case left
     case right
 }
 
-final private class AmbObserver<O: ObserverType>: ObserverType {
-    typealias Element = O.E
-    typealias Parent = AmbSink<O>
-    typealias This = AmbObserver<O>
+final private class AmbObserver<Observer: ObserverType>: ObserverType {
+    typealias Element = Observer.Element 
+    typealias Parent = AmbSink<Observer>
+    typealias This = AmbObserver<Observer>
     typealias Sink = (This, Event<Element>) -> Void
     
-    fileprivate let _parent: Parent
+    private let _parent: Parent
     fileprivate var _sink: Sink
     fileprivate var _cancel: Disposable
     
@@ -79,10 +79,10 @@ final private class AmbObserver<O: ObserverType>: ObserverType {
     }
 }
 
-final private class AmbSink<O: ObserverType>: Sink<O> {
-    typealias ElementType = O.E
-    typealias Parent = Amb<ElementType>
-    typealias AmbObserverType = AmbObserver<O>
+final private class AmbSink<Observer: ObserverType>: Sink<Observer> {
+    typealias Element = Observer.Element
+    typealias Parent = Amb<Element>
+    typealias AmbObserverType = AmbObserver<Observer>
 
     private let _parent: Parent
     
@@ -90,7 +90,7 @@ final private class AmbSink<O: ObserverType>: Sink<O> {
     // state
     private var _choice = AmbState.neither
     
-    init(parent: Parent, observer: O, cancel: Cancelable) {
+    init(parent: Parent, observer: Observer, cancel: Cancelable) {
         self._parent = parent
         super.init(observer: observer, cancel: cancel)
     }
@@ -100,14 +100,14 @@ final private class AmbSink<O: ObserverType>: Sink<O> {
         let subscription2 = SingleAssignmentDisposable()
         let disposeAll = Disposables.create(subscription1, subscription2)
         
-        let forwardEvent = { (o: AmbObserverType, event: Event<ElementType>) -> Void in
+        let forwardEvent = { (o: AmbObserverType, event: Event<Element>) -> Void in
             self.forwardOn(event)
             if event.isStopEvent {
                 self.dispose()
             }
         }
 
-        let decide = { (o: AmbObserverType, event: Event<ElementType>, me: AmbState, otherSubscription: Disposable) in
+        let decide = { (o: AmbObserverType, event: Event<Element>, me: AmbState, otherSubscription: Disposable) in
             self._lock.performLocked {
                 if self._choice == .neither {
                     self._choice = me
@@ -149,7 +149,7 @@ final private class Amb<Element>: Producer<Element> {
         self._right = right
     }
     
-    override func run<O : ObserverType>(_ observer: O, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where O.E == Element {
+    override func run<Observer: ObserverType>(_ observer: Observer, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where Observer.Element == Element {
         let sink = AmbSink(parent: self, observer: observer, cancel: cancel)
         let subscription = sink.run()
         return (sink: sink, subscription: subscription)

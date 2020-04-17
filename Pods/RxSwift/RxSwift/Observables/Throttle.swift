@@ -23,17 +23,17 @@ extension ObservableType {
      - returns: The throttled sequence.
      */
     public func throttle(_ dueTime: RxTimeInterval, latest: Bool = true, scheduler: SchedulerType)
-        -> Observable<E> {
+        -> Observable<Element> {
         return Throttle(source: self.asObservable(), dueTime: dueTime, latest: latest, scheduler: scheduler)
     }
 }
 
-final private class ThrottleSink<O: ObserverType>
-    : Sink<O>
+final private class ThrottleSink<Observer: ObserverType>
+    : Sink<Observer>
     , ObserverType
     , LockOwnerType
     , SynchronizedOnType {
-    typealias Element = O.E
+    typealias Element = Observer.Element 
     typealias ParentType = Throttle<Element>
     
     private let _parent: ParentType
@@ -47,7 +47,7 @@ final private class ThrottleSink<O: ObserverType>
 
     let cancellable = SerialDisposable()
     
-    init(parent: ParentType, observer: O, cancel: Cancelable) {
+    init(parent: ParentType, observer: Observer, cancel: Cancelable) {
         self._parent = parent
         
         super.init(observer: observer, cancel: cancel)
@@ -68,18 +68,16 @@ final private class ThrottleSink<O: ObserverType>
         case .next(let element):
             let now = self._parent._scheduler.now
 
-            let timeIntervalSinceLast: RxTimeInterval
+            let reducedScheduledTime: RxTimeInterval
 
             if let lastSendingTime = self._lastSentTime {
-                timeIntervalSinceLast = now.timeIntervalSince(lastSendingTime)
+                reducedScheduledTime = self._parent._dueTime.reduceWithSpanBetween(earlierDate: lastSendingTime, laterDate: now)
             }
             else {
-                timeIntervalSinceLast = self._parent._dueTime
+                reducedScheduledTime = .nanoseconds(0)
             }
 
-            let couldSendNow = timeIntervalSinceLast >= self._parent._dueTime
-
-            if couldSendNow {
+            if reducedScheduledTime.isNow {
                 self.sendNow(element: element)
                 return
             }
@@ -97,12 +95,11 @@ final private class ThrottleSink<O: ObserverType>
             }
 
             let scheduler = self._parent._scheduler
-            let dueTime = self._parent._dueTime
 
             let d = SingleAssignmentDisposable()
             self.cancellable.disposable = d
 
-            d.setDisposable(scheduler.scheduleRelative(0, dueTime: dueTime - timeIntervalSinceLast, action: self.propagate))
+            d.setDisposable(scheduler.scheduleRelative(0, dueTime: reducedScheduledTime, action: self.propagate))
         case .error:
             self._lastUnsentElement = nil
             self.forwardOn(event)
@@ -153,7 +150,7 @@ final private class Throttle<Element>: Producer<Element> {
         self._scheduler = scheduler
     }
     
-    override func run<O: ObserverType>(_ observer: O, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where O.E == Element {
+    override func run<Observer: ObserverType>(_ observer: Observer, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where Observer.Element == Element {
         let sink = ThrottleSink(parent: self, observer: observer, cancel: cancel)
         let subscription = sink.run()
         return (sink: sink, subscription: subscription)

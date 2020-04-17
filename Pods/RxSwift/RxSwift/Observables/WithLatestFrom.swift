@@ -17,7 +17,7 @@ extension ObservableType {
      - parameter resultSelector: Function to invoke for each element from the self combined with the latest element from the second source, if any.
      - returns: An observable sequence containing the result of combining each element of the self  with the latest element from the second source, if any, using the specified result selector function.
      */
-    public func withLatestFrom<SecondO: ObservableConvertibleType, ResultType>(_ second: SecondO, resultSelector: @escaping (E, SecondO.E) throws -> ResultType) -> Observable<ResultType> {
+    public func withLatestFrom<Source: ObservableConvertibleType, ResultType>(_ second: Source, resultSelector: @escaping (Element, Source.Element) throws -> ResultType) -> Observable<ResultType> {
         return WithLatestFrom(first: self.asObservable(), second: second.asObservable(), resultSelector: resultSelector)
     }
 
@@ -29,26 +29,26 @@ extension ObservableType {
      - parameter second: Second observable source.
      - returns: An observable sequence containing the result of combining each element of the self  with the latest element from the second source, if any, using the specified result selector function.
      */
-    public func withLatestFrom<SecondO: ObservableConvertibleType>(_ second: SecondO) -> Observable<SecondO.E> {
+    public func withLatestFrom<Source: ObservableConvertibleType>(_ second: Source) -> Observable<Source.Element> {
         return WithLatestFrom(first: self.asObservable(), second: second.asObservable(), resultSelector: { $1 })
     }
 }
 
-final private class WithLatestFromSink<FirstType, SecondType, O: ObserverType>
-    : Sink<O>
+final private class WithLatestFromSink<FirstType, SecondType, Observer: ObserverType>
+    : Sink<Observer>
     , ObserverType
     , LockOwnerType
     , SynchronizedOnType {
-    typealias ResultType = O.E
+    typealias ResultType = Observer.Element
     typealias Parent = WithLatestFrom<FirstType, SecondType, ResultType>
-    typealias E = FirstType
+    typealias Element = FirstType
     
-    fileprivate let _parent: Parent
+    private let _parent: Parent
     
-    var _lock = RecursiveLock()
+    fileprivate var _lock = RecursiveLock()
     fileprivate var _latest: SecondType?
 
-    init(parent: Parent, observer: O, cancel: Cancelable) {
+    init(parent: Parent, observer: Observer, cancel: Cancelable) {
         self._parent = parent
         
         super.init(observer: observer, cancel: cancel)
@@ -64,11 +64,11 @@ final private class WithLatestFromSink<FirstType, SecondType, O: ObserverType>
         return Disposables.create(fstSubscription, sndSubscription)
     }
 
-    func on(_ event: Event<E>) {
+    func on(_ event: Event<Element>) {
         self.synchronizedOn(event)
     }
 
-    func _synchronized_on(_ event: Event<E>) {
+    func _synchronized_on(_ event: Event<Element>) {
         switch event {
         case let .next(value):
             guard let latest = self._latest else { return }
@@ -90,14 +90,14 @@ final private class WithLatestFromSink<FirstType, SecondType, O: ObserverType>
     }
 }
 
-final private class WithLatestFromSecond<FirstType, SecondType, O: ObserverType>
+final private class WithLatestFromSecond<FirstType, SecondType, Observer: ObserverType>
     : ObserverType
     , LockOwnerType
     , SynchronizedOnType {
     
-    typealias ResultType = O.E
-    typealias Parent = WithLatestFromSink<FirstType, SecondType, O>
-    typealias E = SecondType
+    typealias ResultType = Observer.Element
+    typealias Parent = WithLatestFromSink<FirstType, SecondType, Observer>
+    typealias Element = SecondType
     
     private let _parent: Parent
     private let _disposable: Disposable
@@ -111,11 +111,11 @@ final private class WithLatestFromSecond<FirstType, SecondType, O: ObserverType>
         self._disposable = disposable
     }
     
-    func on(_ event: Event<E>) {
+    func on(_ event: Event<Element>) {
         self.synchronizedOn(event)
     }
 
-    func _synchronized_on(_ event: Event<E>) {
+    func _synchronized_on(_ event: Event<Element>) {
         switch event {
         case let .next(value):
             self._parent._latest = value
@@ -141,7 +141,7 @@ final private class WithLatestFrom<FirstType, SecondType, ResultType>: Producer<
         self._resultSelector = resultSelector
     }
     
-    override func run<O : ObserverType>(_ observer: O, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where O.E == ResultType {
+    override func run<Observer: ObserverType>(_ observer: Observer, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where Observer.Element == ResultType {
         let sink = WithLatestFromSink(parent: self, observer: observer, cancel: cancel)
         let subscription = sink.run()
         return (sink: sink, subscription: subscription)

@@ -7,6 +7,7 @@
 //
 
 import RxSwift
+import RxRelay
 
 extension PublishRelay {
     /// Converts `PublishRelay` to `Signal`.

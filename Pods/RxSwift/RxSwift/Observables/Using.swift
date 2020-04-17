@@ -16,18 +16,18 @@ extension ObservableType {
      - parameter observableFactory: Factory function to obtain an observable sequence that depends on the obtained resource.
      - returns: An observable sequence whose lifetime controls the lifetime of the dependent resource object.
      */
-    public static func using<Resource: Disposable>(_ resourceFactory: @escaping () throws -> Resource, observableFactory: @escaping (Resource) throws -> Observable<E>) -> Observable<E> {
+    public static func using<Resource: Disposable>(_ resourceFactory: @escaping () throws -> Resource, observableFactory: @escaping (Resource) throws -> Observable<Element>) -> Observable<Element> {
         return Using(resourceFactory: resourceFactory, observableFactory: observableFactory)
     }
 }
 
-final private class UsingSink<ResourceType: Disposable, O: ObserverType>: Sink<O>, ObserverType {
-    typealias SourceType = O.E
+final private class UsingSink<ResourceType: Disposable, Observer: ObserverType>: Sink<Observer>, ObserverType {
+    typealias SourceType = Observer.Element 
     typealias Parent = Using<SourceType, ResourceType>
 
     private let _parent: Parent
     
-    init(parent: Parent, observer: O, cancel: Cancelable) {
+    init(parent: Parent, observer: Observer, cancel: Cancelable) {
         self._parent = parent
         super.init(observer: observer, cancel: cancel)
     }
@@ -68,7 +68,7 @@ final private class UsingSink<ResourceType: Disposable, O: ObserverType>: Sink<O
 
 final private class Using<SourceType, ResourceType: Disposable>: Producer<SourceType> {
     
-    typealias E = SourceType
+    typealias Element = SourceType
     
     typealias ResourceFactory = () throws -> ResourceType
     typealias ObservableFactory = (ResourceType) throws -> Observable<SourceType>
@@ -82,7 +82,7 @@ final private class Using<SourceType, ResourceType: Disposable>: Producer<Source
         self._observableFactory = observableFactory
     }
     
-    override func run<O : ObserverType>(_ observer: O, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where O.E == E {
+    override func run<Observer: ObserverType>(_ observer: Observer, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where Observer.Element == Element {
         let sink = UsingSink(parent: self, observer: observer, cancel: cancel)
         let subscription = sink.run()
         return (sink: sink, subscription: subscription)

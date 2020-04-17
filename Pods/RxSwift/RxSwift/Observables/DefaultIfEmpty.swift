@@ -16,22 +16,22 @@ extension ObservableType {
      - parameter default: Default element to be sent if the source does not emit any elements
      - returns: An observable sequence which emits default element end completes in case the original sequence is empty
      */
-    public func ifEmpty(default: E) -> Observable<E> {
+    public func ifEmpty(default: Element) -> Observable<Element> {
         return DefaultIfEmpty(source: self.asObservable(), default: `default`)
     }
 }
 
-final private class DefaultIfEmptySink<O: ObserverType>: Sink<O>, ObserverType {
-    typealias E = O.E
-    private let _default: E
+final private class DefaultIfEmptySink<Observer: ObserverType>: Sink<Observer>, ObserverType {
+    typealias Element = Observer.Element 
+    private let _default: Element
     private var _isEmpty = true
     
-    init(default: E, observer: O, cancel: Cancelable) {
+    init(default: Element, observer: Observer, cancel: Cancelable) {
         self._default = `default`
         super.init(observer: observer, cancel: cancel)
     }
     
-    func on(_ event: Event<E>) {
+    func on(_ event: Event<Element>) {
         switch event {
         case .next:
             self._isEmpty = false
@@ -58,7 +58,7 @@ final private class DefaultIfEmpty<SourceType>: Producer<SourceType> {
         self._default = `default`
     }
     
-    override func run<O: ObserverType>(_ observer: O, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where O.E == SourceType {
+    override func run<Observer: ObserverType>(_ observer: Observer, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where Observer.Element == SourceType {
         let sink = DefaultIfEmptySink(default: self._default, observer: observer, cancel: cancel)
         let subscription = self._source.subscribe(sink)
         return (sink: sink, subscription: subscription)

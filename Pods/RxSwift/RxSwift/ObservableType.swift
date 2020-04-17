@@ -7,7 +7,7 @@
 //
 
 /// Represents a push style sequence.
-public protocol ObservableType : ObservableConvertibleType {
+public protocol ObservableType: ObservableConvertibleType {
     /**
     Subscribes `observer` to receive events for this sequence.
     
@@ -31,13 +31,13 @@ public protocol ObservableType : ObservableConvertibleType {
     
     - returns: Subscription for `observer` that can be used to cancel production of sequence elements and free resources.
     */
-    func subscribe<O: ObserverType>(_ observer: O) -> Disposable where O.E == E
+    func subscribe<Observer: ObserverType>(_ observer: Observer) -> Disposable where Observer.Element == Element
 }
 
 extension ObservableType {
     
     /// Default implementation of converting `ObservableType` to `Observable`.
-    public func asObservable() -> Observable<E> {
+    public func asObservable() -> Observable<Element> {
         // temporary workaround
         //return Observable.create(subscribe: self.subscribe)
         return Observable.create { o in

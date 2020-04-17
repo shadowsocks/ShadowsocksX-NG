@@ -18,7 +18,7 @@ import RxSwift
  By default it binds elements on main scheduler.
  */
 public struct Binder<Value>: ObserverType {
-    public typealias E = Value
+    public typealias Element = Value
     
     private let _binding: (Event<Value>) -> Void
 

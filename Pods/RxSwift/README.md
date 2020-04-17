@@ -3,8 +3,6 @@
 
 [![Travis CI](https://travis-ci.org/ReactiveX/RxSwift.svg?branch=master)](https://travis-ci.org/ReactiveX/RxSwift) ![platforms](https://img.shields.io/badge/platforms-iOS%20%7C%20macOS%20%7C%20tvOS%20%7C%20watchOS%20%7C%20Linux-333333.svg) [![pod](https://img.shields.io/cocoapods/v/RxSwift.svg)](https://cocoapods.org/pods/RxSwift) [![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage) [![Swift Package Manager compatible](https://img.shields.io/badge/Swift%20Package%20Manager-compatible-brightgreen.svg)](https://github.com/apple/swift-package-manager)
 
-* RxSwift 3.x / Swift 3.x can be found in [**rxswift-3.0** branch](https://github.com/ReactiveX/RxSwift/tree/rxswift-3.0).
-
 Rx is a [generic abstraction of computation](https://youtu.be/looJcaeboBY) expressed through `Observable<Element>` interface.
 
 This is a Swift version of [Rx](https://github.com/Reactive-Extensions/Rx.NET).
@@ -50,6 +48,28 @@ KVO observing, async operations and streams are all unified under [abstraction o
 
 * [with other libraries](Documentation/ComparisonWithOtherLibraries.md).
 
+###### ... understand the structure
+
+RxSwift comprises five separate components depending on eachother in the following way:
+
+```none
+┌──────────────┐    ┌──────────────┐
+│   RxCocoa    ├────▶   RxRelay    │
+└───────┬──────┘    └──────┬───────┘
+        │                  │        
+┌───────▼──────────────────▼───────┐
+│             RxSwift              │
+└───────▲──────────────────▲───────┘
+        │                  │        
+┌───────┴──────┐    ┌──────┴───────┐
+│    RxTest    │    │  RxBlocking  │
+└──────────────┘    └──────────────┘
+```
+
+* **RxSwift**: The core of RxSwift, providing the Rx standard as (mostly) defined by [ReactiveX](https://reactivex.io). It has no other dependencies.
+* **RxCocoa**: Provides Cocoa-specific capabilities for general iOS/macOS/watchOS & tvOS app development, such as Binders, Traits, and much more. It depends on both `RxSwift` and `RxRelay`.
+* **RxRelay**: Provides `PublishRelay` and `BehaviorRelay`, two [simple wrappers around Subjects](https://github.com/ReactiveX/RxSwift/blob/master/Documentation/Subjects.md#relays). It depends on `RxSwift`. 
+* **RxTest** and **RxBlocking**: Provides testing capabilities for Rx-based systems. It depends on `RxSwift`.
 
 ###### ... find compatible
 
@@ -75,7 +95,7 @@ KVO observing, async operations and streams are all unified under [abstraction o
   <tr>
     <td><div class="highlight highlight-source-swift"><pre>
 let searchResults = searchBar.rx.text.orEmpty
-    .throttle(0.3, scheduler: MainScheduler.instance)
+    .throttle(.milliseconds(300), scheduler: MainScheduler.instance)
     .distinctUntilChanged()
     .flatMapLatest { query -> Observable&lt;[Repository]&gt; in
         if query.isEmpty {
@@ -104,10 +124,10 @@ searchResults
 
 ## Requirements
 
-* Xcode 9.0
-* Swift 4.0
-* Swift 3.x ([use `rxswift-3.0` branch](https://github.com/ReactiveX/RxSwift/tree/rxswift-3.0) instead)
-* Swift 2.3 ([use `rxswift-2.0` branch](https://github.com/ReactiveX/RxSwift/tree/rxswift-2.0) instead)
+* Xcode 10.2
+* Swift 5.0
+
+For Xcode 10.1 and below, [use RxSwift 4.5](https://github.com/ReactiveX/RxSwift/releases/tag/4.5.0).
 
 ## Installation
 
@@ -121,21 +141,19 @@ Open Rx.xcworkspace, choose `RxExample` and hit run. This method will build ever
 
 ### [CocoaPods](https://guides.cocoapods.org/using/using-cocoapods.html)
 
-**Tested with `pod --version`: `1.3.1`**
-
 ```ruby
 # Podfile
 use_frameworks!
 
 target 'YOUR_TARGET_NAME' do
-    pod 'RxSwift',    '~> 4.0'
-    pod 'RxCocoa',    '~> 4.0'
+    pod 'RxSwift', '~> 5'
+    pod 'RxCocoa', '~> 5'
 end
 
 # RxTest and RxBlocking make the most sense in the context of unit/integration tests
 target 'YOUR_TESTING_TARGET' do
-    pod 'RxBlocking', '~> 4.0'
-    pod 'RxTest',     '~> 4.0'
+    pod 'RxBlocking', '~> 5'
+    pod 'RxTest', '~> 5'
 end
 ```
 
@@ -147,33 +165,43 @@ $ pod install
 
 ### [Carthage](https://github.com/Carthage/Carthage)
 
-**Tested with `carthage version`: `0.26.2`**
+Officially supported: Carthage 0.33 and up.
 
 Add this to `Cartfile`
 
 ```
-github "ReactiveX/RxSwift" ~> 4.0
+github "ReactiveX/RxSwift" ~> 5.0
 ```
 
 ```bash
 $ carthage update
 ```
 
-### [Swift Package Manager](https://github.com/apple/swift-package-manager)
+#### Carthage as a Static Library
 
-**Tested with `swift build --version`: `Swift 4.0.0-dev (swiftpm-13126)`**
+Carthage defaults to building RxSwift as a Dynamic Library. 
+
+If you wish to build RxSwift as a Static Library using Carthage you may use the script below to manually modify the framework type before building with Carthage:
+
+```bash
+carthage update RxSwift --platform iOS --no-build
+sed -i -e 's/MACH_O_TYPE = mh_dylib/MACH_O_TYPE = staticlib/g' Carthage/Checkouts/RxSwift/Rx.xcodeproj/project.pbxproj
+carthage build RxSwift --platform iOS
+```
+
+### [Swift Package Manager](https://github.com/apple/swift-package-manager)
 
 Create a `Package.swift` file.
 
 ```swift
-// swift-tools-version:4.0
+// swift-tools-version:5.0
 
 import PackageDescription
 
 let package = Package(
   name: "RxTestProject",
   dependencies: [
-    .package(url: "https://github.com/ReactiveX/RxSwift.git", "4.0.0" ..< "5.0.0")
+    .package(url: "https://github.com/ReactiveX/RxSwift.git", from: "5.0.0")
   ],
   targets: [
     .target(name: "RxTestProject", dependencies: ["RxSwift", "RxCocoa"])
@@ -185,7 +213,7 @@ let package = Package(
 $ swift build
 ```
 
-To build or test a module with RxTest dependency, set `TEST=1`. ([RxSwift >= 3.4.2](https://github.com/ReactiveX/RxSwift/releases/tag/3.4.2))
+To build or test a module with RxTest dependency, set `TEST=1`.
 
 ```bash
 $ TEST=1 swift test
@@ -201,7 +229,6 @@ $ git submodule add git@github.com:ReactiveX/RxSwift.git
 
 * Drag `Rx.xcodeproj` into Project Navigator
 * Go to `Project > Targets > Build Phases > Link Binary With Libraries`, click `+` and select `RxSwift-[Platform]` and `RxCocoa-[Platform]` targets
-
 
 ## References
 
