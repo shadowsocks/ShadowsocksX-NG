@@ -100,7 +100,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             "LocalSocks5.Timeout": NSNumber(value: 60 as UInt),
             "LocalSocks5.EnableUDPRelay": NSNumber(value: false as Bool),
             "LocalSocks5.EnableVerboseMode": NSNumber(value: false as Bool),
-            "GFWListURL": "https://raw.githubusercontent.com/gfwlist/gfwlist/master/gfwlist.txt",
+            "GFWListURL": "https://cdn.jsdelivr.net/gh/gfwlist/gfwlist/gfwlist.txt",
             "AutoConfigureNetworkServices": NSNumber(value: true as Bool),
             "LocalHTTP.ListenAddress": "127.0.0.1",
             "LocalHTTP.ListenPort": NSNumber(value: 1087 as UInt16),
