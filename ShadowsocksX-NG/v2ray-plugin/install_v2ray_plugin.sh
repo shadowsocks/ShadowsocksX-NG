@@ -7,7 +7,7 @@
 #  Copyright © 2019 qiuyuzhou. All rights reserved.
 # https://github.com/shadowsocks/v2ray-plugin/
 
-VERSION="1.2.0"
+VERSION="master"
 
 cd "$(dirname "${BASH_SOURCE[0]}")"
 
