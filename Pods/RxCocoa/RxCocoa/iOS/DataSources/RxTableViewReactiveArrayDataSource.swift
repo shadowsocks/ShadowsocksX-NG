@@ -38,16 +38,16 @@ class _RxTableViewReactiveArrayDataSource
 }
 
 
-class RxTableViewReactiveArrayDataSourceSequenceWrapper<S: Sequence>
-    : RxTableViewReactiveArrayDataSource<S.Iterator.Element>
+class RxTableViewReactiveArrayDataSourceSequenceWrapper<Sequence: Swift.Sequence>
+    : RxTableViewReactiveArrayDataSource<Sequence.Element>
     , RxTableViewDataSourceType {
-    typealias Element = S
+    typealias Element = Sequence
 
     override init(cellFactory: @escaping CellFactory) {
         super.init(cellFactory: cellFactory)
     }
 
-    func tableView(_ tableView: UITableView, observedEvent: Event<S>) {
+    func tableView(_ tableView: UITableView, observedEvent: Event<Sequence>) {
         Binder(self) { tableViewDataSource, sectionModels in
             let sections = Array(sectionModels)
             tableViewDataSource.tableView(tableView, observedElements: sections)

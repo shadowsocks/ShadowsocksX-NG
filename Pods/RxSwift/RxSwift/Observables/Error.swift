@@ -14,7 +14,7 @@ extension ObservableType {
 
      - returns: The observable sequence that terminates with specified error.
      */
-    public static func error(_ error: Swift.Error) -> Observable<E> {
+    public static func error(_ error: Swift.Error) -> Observable<Element> {
         return ErrorProducer(error: error)
     }
 }
@@ -26,7 +26,7 @@ final private class ErrorProducer<Element>: Producer<Element> {
         self._error = error
     }
     
-    override func subscribe<O: ObserverType>(_ observer: O) -> Disposable where O.E == Element {
+    override func subscribe<Observer: ObserverType>(_ observer: Observer) -> Disposable where Observer.Element == Element {
         observer.on(.error(self._error))
         return Disposables.create()
     }

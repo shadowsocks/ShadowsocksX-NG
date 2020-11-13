@@ -12,8 +12,8 @@ target 'ShadowsocksX-NG' do
   pod 'MASShortcut', '~> 2'
   
   # https://github.com/ReactiveX/RxSwift/blob/master/Documentation/GettingStarted.md
-  pod 'RxSwift',    '~> 4.5.0'
-  pod 'RxCocoa',    '~> 4.5.0'
+  pod 'RxSwift',    '~> 5'
+  pod 'RxCocoa',    '~> 5'
 
   target 'ShadowsocksX-NGTests' do
     inherit! :search_paths

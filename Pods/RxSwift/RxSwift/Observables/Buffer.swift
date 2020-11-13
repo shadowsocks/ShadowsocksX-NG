@@ -21,7 +21,7 @@ extension ObservableType {
      - returns: An observable sequence of buffers.
      */
     public func buffer(timeSpan: RxTimeInterval, count: Int, scheduler: SchedulerType)
-        -> Observable<[E]> {
+        -> Observable<[Element]> {
         return BufferTimeCount(source: self.asObservable(), timeSpan: timeSpan, count: count, scheduler: scheduler)
     }
 }
@@ -40,20 +40,19 @@ final private class BufferTimeCount<Element>: Producer<[Element]> {
         self._scheduler = scheduler
     }
     
-    override func run<O : ObserverType>(_ observer: O, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where O.E == [Element] {
+    override func run<Observer: ObserverType>(_ observer: Observer, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where Observer.Element == [Element] {
         let sink = BufferTimeCountSink(parent: self, observer: observer, cancel: cancel)
         let subscription = sink.run()
         return (sink: sink, subscription: subscription)
     }
 }
 
-final private class BufferTimeCountSink<Element, O: ObserverType>
-    : Sink<O>
+final private class BufferTimeCountSink<Element, Observer: ObserverType>
+    : Sink<Observer>
     , LockOwnerType
     , ObserverType
-    , SynchronizedOnType where O.E == [Element] {
+    , SynchronizedOnType where Observer.Element == [Element] {
     typealias Parent = BufferTimeCount<Element>
-    typealias E = Element
     
     private let _parent: Parent
     
@@ -64,7 +63,7 @@ final private class BufferTimeCountSink<Element, O: ObserverType>
     private var _buffer = [Element]()
     private var _windowID = 0
     
-    init(parent: Parent, observer: O, cancel: Cancelable) {
+    init(parent: Parent, observer: Observer, cancel: Cancelable) {
         self._parent = parent
         super.init(observer: observer, cancel: cancel)
     }
@@ -85,11 +84,11 @@ final private class BufferTimeCountSink<Element, O: ObserverType>
         self.createTimer(windowID)
     }
     
-    func on(_ event: Event<E>) {
+    func on(_ event: Event<Element>) {
         self.synchronizedOn(event)
     }
 
-    func _synchronized_on(_ event: Event<E>) {
+    func _synchronized_on(_ event: Event<Element>) {
         switch event {
         case .next(let element):
             self._buffer.append(element)

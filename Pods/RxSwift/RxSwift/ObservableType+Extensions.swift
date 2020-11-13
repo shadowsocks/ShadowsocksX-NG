@@ -17,7 +17,7 @@ extension ObservableType {
      - parameter on: Action to invoke for each event in the observable sequence.
      - returns: Subscription object used to unsubscribe from the observable sequence.
      */
-    public func subscribe(_ on: @escaping (Event<E>) -> Void)
+    public func subscribe(_ on: @escaping (Event<Element>) -> Void)
         -> Disposable {
             let observer = AnonymousObserver { e in
                 on(e)
@@ -36,7 +36,7 @@ extension ObservableType {
      gracefully completed, errored, or if the generation is canceled by disposing subscription).
      - returns: Subscription object used to unsubscribe from the observable sequence.
      */
-    public func subscribe(onNext: ((E) -> Void)? = nil, onError: ((Swift.Error) -> Void)? = nil, onCompleted: (() -> Void)? = nil, onDisposed: (() -> Void)? = nil)
+    public func subscribe(onNext: ((Element) -> Void)? = nil, onError: ((Swift.Error) -> Void)? = nil, onCompleted: (() -> Void)? = nil, onDisposed: (() -> Void)? = nil)
         -> Disposable {
             let disposable: Disposable
             
@@ -53,7 +53,7 @@ extension ObservableType {
             
             let callStack = Hooks.recordCallStackOnError ? Hooks.customCaptureSubscriptionCallstack() : []
             
-            let observer = AnonymousObserver<E> { event in
+            let observer = AnonymousObserver<Element> { event in
                 
                 #if DEBUG
                     synchronizationTracker.register(synchronizationErrorMessage: .default)
@@ -89,14 +89,17 @@ extension Hooks {
     public typealias DefaultErrorHandler = (_ subscriptionCallStack: [String], _ error: Error) -> Void
     public typealias CustomCaptureSubscriptionCallstack = () -> [String]
 
-    fileprivate static let _lock = RecursiveLock()
-    fileprivate static var _defaultErrorHandler: DefaultErrorHandler = { subscriptionCallStack, error in
+    private static let _lock = RecursiveLock()
+    private static var _defaultErrorHandler: DefaultErrorHandler = { subscriptionCallStack, error in
         #if DEBUG
             let serializedCallStack = subscriptionCallStack.joined(separator: "\n")
-            print("Unhandled error happened: \(error)\n subscription called from:\n\(serializedCallStack)")
+            print("Unhandled error happened: \(error)")
+            if !serializedCallStack.isEmpty {
+                print("subscription called from:\n\(serializedCallStack)")
+            }
         #endif
     }
-    fileprivate static var _customCaptureSubscriptionCallstack: CustomCaptureSubscriptionCallstack = {
+    private static var _customCaptureSubscriptionCallstack: CustomCaptureSubscriptionCallstack = {
         #if DEBUG
             return Thread.callStackSymbols
         #else

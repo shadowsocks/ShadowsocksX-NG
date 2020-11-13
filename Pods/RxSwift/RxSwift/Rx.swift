@@ -7,7 +7,7 @@
 //
 
 #if TRACE_RESOURCES
-    fileprivate let resourceCount = AtomicInt(0)
+    private let resourceCount = AtomicInt(0)
 
     /// Resource utilization information
     public struct Resources {

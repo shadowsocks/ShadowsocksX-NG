@@ -17,7 +17,7 @@ extension ObservableType {
      - returns: An observable sequence that contains the elements that occur after the specified index in the input sequence.
      */
     public func skip(_ count: Int)
-        -> Observable<E> {
+        -> Observable<Element> {
         return SkipCount(source: self.asObservable(), count: count)
     }
 }
@@ -34,22 +34,22 @@ extension ObservableType {
      - returns: An observable sequence with the elements skipped during the specified duration from the start of the source sequence.
      */
     public func skip(_ duration: RxTimeInterval, scheduler: SchedulerType)
-        -> Observable<E> {
+        -> Observable<Element> {
         return SkipTime(source: self.asObservable(), duration: duration, scheduler: scheduler)
     }
 }
 
 // count version
 
-final private class SkipCountSink<O: ObserverType>: Sink<O>, ObserverType {
-    typealias Element = O.E
+final private class SkipCountSink<Observer: ObserverType>: Sink<Observer>, ObserverType {
+    typealias Element = Observer.Element 
     typealias Parent = SkipCount<Element>
     
     let parent: Parent
     
     var remaining: Int
     
-    init(parent: Parent, observer: O, cancel: Cancelable) {
+    init(parent: Parent, observer: Observer, cancel: Cancelable) {
         self.parent = parent
         self.remaining = parent.count
         super.init(observer: observer, cancel: cancel)
@@ -85,7 +85,7 @@ final private class SkipCount<Element>: Producer<Element> {
         self.count = count
     }
     
-    override func run<O : ObserverType>(_ observer: O, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where O.E == Element {
+    override func run<Observer: ObserverType>(_ observer: Observer, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where Observer.Element == Element {
         let sink = SkipCountSink(parent: self, observer: observer, cancel: cancel)
         let subscription = self.source.subscribe(sink)
 
@@ -95,16 +95,15 @@ final private class SkipCount<Element>: Producer<Element> {
 
 // time version
 
-final private class SkipTimeSink<ElementType, O: ObserverType>: Sink<O>, ObserverType where O.E == ElementType {
-    typealias Parent = SkipTime<ElementType>
-    typealias Element = ElementType
+final private class SkipTimeSink<Element, Observer: ObserverType>: Sink<Observer>, ObserverType where Observer.Element == Element {
+    typealias Parent = SkipTime<Element>
 
     let parent: Parent
     
     // state
     var open = false
     
-    init(parent: Parent, observer: O, cancel: Cancelable) {
+    init(parent: Parent, observer: Observer, cancel: Cancelable) {
         self.parent = parent
         super.init(observer: observer, cancel: cancel)
     }
@@ -151,7 +150,7 @@ final private class SkipTime<Element>: Producer<Element> {
         self.duration = duration
     }
     
-    override func run<O : ObserverType>(_ observer: O, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where O.E == Element {
+    override func run<Observer: ObserverType>(_ observer: Observer, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where Observer.Element == Element {
         let sink = SkipTimeSink(parent: self, observer: observer, cancel: cancel)
         let subscription = sink.run()
         return (sink: sink, subscription: subscription)

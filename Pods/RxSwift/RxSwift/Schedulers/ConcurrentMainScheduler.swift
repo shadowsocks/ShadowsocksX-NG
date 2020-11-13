@@ -69,7 +69,7 @@ public final class ConcurrentMainScheduler : SchedulerType {
     - parameter action: Action to be executed.
     - returns: The disposable object used to cancel the scheduled action (best effort).
     */
-    public final func scheduleRelative<StateType>(_ state: StateType, dueTime: Foundation.TimeInterval, action: @escaping (StateType) -> Disposable) -> Disposable {
+    public final func scheduleRelative<StateType>(_ state: StateType, dueTime: RxTimeInterval, action: @escaping (StateType) -> Disposable) -> Disposable {
         return self._mainScheduler.scheduleRelative(state, dueTime: dueTime, action: action)
     }
 
@@ -82,7 +82,7 @@ public final class ConcurrentMainScheduler : SchedulerType {
     - parameter action: Action to be executed.
     - returns: The disposable object used to cancel the scheduled action (best effort).
     */
-    public func schedulePeriodic<StateType>(_ state: StateType, startAfter: TimeInterval, period: TimeInterval, action: @escaping (StateType) -> StateType) -> Disposable {
+    public func schedulePeriodic<StateType>(_ state: StateType, startAfter: RxTimeInterval, period: RxTimeInterval, action: @escaping (StateType) -> StateType) -> Disposable {
         return self._mainScheduler.schedulePeriodic(state, startAfter: startAfter, period: period, action: action)
     }
 }

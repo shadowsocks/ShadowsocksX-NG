@@ -18,7 +18,7 @@ extension ObservableType {
      - returns: An observable sequence with a `RxError.timeout` in case of a timeout.
      */
     public func timeout(_ dueTime: RxTimeInterval, scheduler: SchedulerType)
-        -> Observable<E> {
+        -> Observable<Element> {
             return Timeout(source: self.asObservable(), dueTime: dueTime, other: Observable.error(RxError.timeout), scheduler: scheduler)
     }
 
@@ -32,15 +32,15 @@ extension ObservableType {
      - parameter scheduler: Scheduler to run the timeout timer on.
      - returns: The source sequence switching to the other sequence in case of a timeout.
      */
-    public func timeout<O: ObservableConvertibleType>(_ dueTime: RxTimeInterval, other: O, scheduler: SchedulerType)
-        -> Observable<E> where E == O.E {
+    public func timeout<Source: ObservableConvertibleType>(_ dueTime: RxTimeInterval, other: Source, scheduler: SchedulerType)
+        -> Observable<Element> where Element == Source.Element {
             return Timeout(source: self.asObservable(), dueTime: dueTime, other: other.asObservable(), scheduler: scheduler)
     }
 }
 
-final private class TimeoutSink<O: ObserverType>: Sink<O>, LockOwnerType, ObserverType {
-    typealias E = O.E
-    typealias Parent = Timeout<E>
+final private class TimeoutSink<Observer: ObserverType>: Sink<Observer>, LockOwnerType, ObserverType {
+    typealias Element = Observer.Element 
+    typealias Parent = Timeout<Element>
     
     private let _parent: Parent
     
@@ -52,7 +52,7 @@ final private class TimeoutSink<O: ObserverType>: Sink<O>, LockOwnerType, Observ
     private var _id = 0
     private var _switched = false
     
-    init(parent: Parent, observer: O, cancel: Cancelable) {
+    init(parent: Parent, observer: Observer, cancel: Cancelable) {
         self._parent = parent
         super.init(observer: observer, cancel: cancel)
     }
@@ -68,7 +68,7 @@ final private class TimeoutSink<O: ObserverType>: Sink<O>, LockOwnerType, Observ
         return Disposables.create(_subscription, _timerD)
     }
 
-    func on(_ event: Event<E>) {
+    func on(_ event: Event<Element>) {
         switch event {
         case .next:
             var onNextWins = false
@@ -143,7 +143,7 @@ final private class Timeout<Element>: Producer<Element> {
         self._scheduler = scheduler
     }
     
-    override func run<O : ObserverType>(_ observer: O, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where O.E == Element {
+    override func run<Observer: ObserverType>(_ observer: Observer, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where Observer.Element == Element {
         let sink = TimeoutSink(parent: self, observer: observer, cancel: cancel)
         let subscription = sink.run()
         return (sink: sink, subscription: subscription)

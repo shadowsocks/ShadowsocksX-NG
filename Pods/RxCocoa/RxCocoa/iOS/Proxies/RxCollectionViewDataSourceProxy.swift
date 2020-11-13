@@ -15,9 +15,9 @@ extension UICollectionView: HasDataSource {
     public typealias DataSource = UICollectionViewDataSource
 }
 
-fileprivate let collectionViewDataSourceNotSet = CollectionViewDataSourceNotSet()
+private let collectionViewDataSourceNotSet = CollectionViewDataSourceNotSet()
 
-fileprivate final class CollectionViewDataSourceNotSet
+private final class CollectionViewDataSourceNotSet
     : NSObject
     , UICollectionViewDataSource {
 

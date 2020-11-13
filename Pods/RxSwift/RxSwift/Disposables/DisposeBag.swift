@@ -32,8 +32,8 @@ public final class DisposeBag: DisposeBase {
     private var _lock = SpinLock()
     
     // state
-    fileprivate var _disposables = [Disposable]()
-    fileprivate var _isDisposed = false
+    private var _disposables = [Disposable]()
+    private var _isDisposed = false
     
     /// Constructs new empty dispose bag.
     public override init() {
