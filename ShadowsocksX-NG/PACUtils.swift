@@ -85,7 +85,21 @@ func GeneratePACFile() -> Bool {
                 let userRuleStr = try String(contentsOfFile: PACUserRuleFilePath, encoding: String.Encoding.utf8)
                 let userRuleLines = userRuleStr.components(separatedBy: CharacterSet.newlines)
                 
-                lines = userRuleLines + lines
+                lines = userRuleLines + lines.filter { (line) in
+                    // ignore the rule from gwf if user provide same rule for the same url
+                    var i = line.startIndex
+                    while i < line.endIndex {
+                        if line[i] == "@" || line[i] == "|" {
+                            i = line.index(after: i)
+                            continue
+                        }
+                        break
+                    }
+                    if i == line.startIndex {
+                        return !userRuleLines.contains(line)
+                    }
+                    return !userRuleLines.contains(String(line[i...]))
+                }
             } catch {
                 NSLog("Not found user-rule.txt")
             }
