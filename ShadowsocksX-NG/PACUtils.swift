@@ -16,6 +16,9 @@ let PACUserRuleFilePath = PACRulesDirPath + "user-rule.txt"
 let PACFilePath = PACRulesDirPath + "gfwlist.js"
 let GFWListFilePath = PACRulesDirPath + "gfwlist.txt"
 
+// This is where we temporarily holds the session when doing the request
+var GFWListUpdateSession: Alamofire.SessionManager?
+
 
 // Because of LocalSocks5.ListenPort may be changed
 func SyncPac() {
@@ -168,32 +171,68 @@ func UpdatePACFromGFWList() {
         } catch {
         }
     }
-    
-    let url = UserDefaults.standard.string(forKey: "GFWListURL")
-    Alamofire.request(url!)
+
+    let defaults = UserDefaults.standard
+    let url = defaults.string(forKey: "GFWListURL")
+
+    let configuration = URLSessionConfiguration.default
+    configuration.httpAdditionalHeaders = SessionManager.defaultHTTPHeaders
+
+    // SSX-NG On: fetch GFWList through the SOCKS5 proxy
+    // SSX-NG Off: fetch GFWList directly
+    let proxyOn = defaults.bool(forKey: "ShadowsocksOn")
+    if proxyOn,
+        let socksHost = defaults.string(forKey: "LocalSocks5.ListenAddress")
+    {
+        // This returns 0 if the key does not exist
+        // Ignore this corner case as other parts of the program do
+        let socksPort = defaults.integer(forKey: "LocalSocks5.ListenPort")
+
+        configuration.connectionProxyDictionary = [
+            kCFNetworkProxiesSOCKSEnable as AnyHashable: 1,
+            kCFNetworkProxiesSOCKSProxy as AnyHashable: socksHost,
+            kCFNetworkProxiesSOCKSPort as AnyHashable: socksPort,
+        ]
+    }
+
+    let session = Alamofire.SessionManager(configuration: configuration)
+
+    session.request(url!)
         .responseString {
             response in
-            if response.result.isSuccess {
-                if let v = response.result.value {
-                    do {
-                        try v.write(toFile: GFWListFilePath, atomically: true, encoding: String.Encoding.utf8)
-                        if GeneratePACFile() {
-                            // Popup a user notification
-                            let notification = NSUserNotification()
-                            notification.title = "PAC has been updated by latest GFW List.".localized
-                            NSUserNotificationCenter.default
-                                .deliver(notification)
-                        }
-                    } catch {
-                        
+
+            switch response.result {
+            case .success(let value):
+                do {
+                    try value.write(toFile: GFWListFilePath, atomically: true, encoding: String.Encoding.utf8)
+                    if GeneratePACFile() {
+                        // Popup a user notification
+                        let notification = NSUserNotification()
+                        notification.title = "PAC has been updated by latest GFW List.".localized
+                        NSUserNotificationCenter.default
+                            .deliver(notification)
                     }
+                } catch {
+
                 }
-            } else {
+
+            case .failure(let error):
+                let description = String(reflecting: error)
+                NSLog("Error fetching GFWList: \(description)")
+
                 // Popup a user notification
                 let notification = NSUserNotification()
                 notification.title = "Failed to download latest GFW List.".localized
                 NSUserNotificationCenter.default
                     .deliver(notification)
             }
+
+            // Session can be reused only if the proxy setting is not changed.
+            // Since updating GFWList is not a frequent operation, we can just
+            // trash the session everytime the request is complete.
+            GFWListUpdateSession = nil
         }
+
+    // We need to keep the session until request completion
+    GFWListUpdateSession = session
 }
