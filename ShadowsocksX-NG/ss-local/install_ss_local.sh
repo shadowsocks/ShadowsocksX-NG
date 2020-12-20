@@ -23,11 +23,11 @@ ln -s "$TargetDir" "$LatestTargetDir"
 
 cp -f libev.4.dylib "$TargetDir"
 
-# 2.8.0 https://bintray.com/homebrew/bottles/mbedtls
-cp -f libmbedcrypto.2.24.0.dylib "$TargetDir"
-ln -sfh  "$TargetDir/libmbedcrypto.2.24.0.dylib" "$TargetDir/libmbedcrypto.5.dylib"
+# 2.25.0 https://bintray.com/homebrew/bottles/mbedtls
+cp -f libmbedcrypto.2.25.0.dylib "$TargetDir"
+ln -sfh  "$TargetDir/libmbedcrypto.2.25.0.dylib" "$TargetDir/libmbedcrypto.6.dylib"
 
-# 8.42 https://bintray.com/homebrew/bottles/pcre
+# 8.44 https://bintray.com/homebrew/bottles/pcre
 cp -f libpcre.1.dylib "$TargetDir"
 
 # 1.0.18 https://bintray.com/homebrew/bottles/libsodium
@@ -36,7 +36,7 @@ ln -sfh "$TargetDir/libsodium.23.dylib" "$TargetDir/libsodium.dylib"
 
 #cp -f libudns.0.dylib "$TargetDir"
 
-# 1.15.0 https://bintray.com/homebrew/bottles/c-ares
+# 1.17.1 https://bintray.com/homebrew/bottles/c-ares
 cp -f libcares.2.dylib "$TargetDir"
 ln -sfh "$TargetDir/libcares.2.dylib" "$TargetDir/libcares.dylib"
 

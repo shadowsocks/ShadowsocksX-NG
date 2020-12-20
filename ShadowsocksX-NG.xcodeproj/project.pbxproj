@@ -41,7 +41,7 @@
 		9B5AA0AC209C43C200E8B659 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 9B5AA0AB209C43C200E8B659 /* Credits.rtf */; };
 		9B5D132A2154A62600F99F03 /* install_kcptun.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9B5D13272154A50700F99F03 /* install_kcptun.sh */; };
 		9B6BF9541E27B2570061B9A7 /* ServiceManagement.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B6BF9531E27B2570061B9A7 /* ServiceManagement.framework */; };
-		9B7297E7214D69C300FD24AA /* libmbedcrypto.2.24.0.dylib in Resources */ = {isa = PBXBuildFile; fileRef = 9B7297E5214D68F800FD24AA /* libmbedcrypto.2.24.0.dylib */; };
+		9B7297E7214D69C300FD24AA /* libmbedcrypto.2.25.0.dylib in Resources */ = {isa = PBXBuildFile; fileRef = 9B7297E5214D68F800FD24AA /* libmbedcrypto.2.25.0.dylib */; };
 		9B7297EA214D7C6B00FD24AA /* ShareServerProfilesWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B7297E8214D7C6B00FD24AA /* ShareServerProfilesWindowController.swift */; };
 		9B7297EC214DA88A00FD24AA /* ShareServerProfilesWindowController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9B7297EE214DA88A00FD24AA /* ShareServerProfilesWindowController.xib */; };
 		9B72FB62232782A300C6AAAE /* ImportWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B72FB60232782A300C6AAAE /* ImportWindowController.swift */; };
@@ -205,7 +205,7 @@
 		9B5AA0AB209C43C200E8B659 /* Credits.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = Credits.rtf; sourceTree = "<group>"; };
 		9B5D13272154A50700F99F03 /* install_kcptun.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = install_kcptun.sh; sourceTree = "<group>"; };
 		9B6BF9531E27B2570061B9A7 /* ServiceManagement.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ServiceManagement.framework; path = System/Library/Frameworks/ServiceManagement.framework; sourceTree = SDKROOT; };
-		9B7297E5214D68F800FD24AA /* libmbedcrypto.2.24.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libmbedcrypto.2.24.0.dylib; sourceTree = "<group>"; };
+		9B7297E5214D68F800FD24AA /* libmbedcrypto.2.25.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libmbedcrypto.2.25.0.dylib; sourceTree = "<group>"; };
 		9B7297E8214D7C6B00FD24AA /* ShareServerProfilesWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareServerProfilesWindowController.swift; sourceTree = "<group>"; };
 		9B7297ED214DA88A00FD24AA /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/ShareServerProfilesWindowController.xib; sourceTree = "<group>"; };
 		9B7297F0214DA89000FD24AA /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/ShareServerProfilesWindowController.strings"; sourceTree = "<group>"; };
@@ -446,7 +446,7 @@
 		9B5AA0A9209C41EC00E8B659 /* ss-local */ = {
 			isa = PBXGroup;
 			children = (
-				9B7297E5214D68F800FD24AA /* libmbedcrypto.2.24.0.dylib */,
+				9B7297E5214D68F800FD24AA /* libmbedcrypto.2.25.0.dylib */,
 				9B3F7BF71E82BF2D00C68B75 /* libev.4.dylib */,
 				9B5AA09F209C100C00E8B659 /* libsodium.23.dylib */,
 				9B5AA0A2209C103900E8B659 /* libcares.2.dylib */,
@@ -669,7 +669,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				9B5D132A2154A62600F99F03 /* install_kcptun.sh in Resources */,
-				9B7297E7214D69C300FD24AA /* libmbedcrypto.2.24.0.dylib in Resources */,
+				9B7297E7214D69C300FD24AA /* libmbedcrypto.2.25.0.dylib in Resources */,
 				9BCB1D6C20A15B0E005BABE7 /* libsodium.23.dylib in Resources */,
 				9BCB1D6D20A15B0E005BABE7 /* libcares.2.dylib in Resources */,
 				9BBE7B751F508A0E00E8FFE5 /* fix_dir_owner.sh in Resources */,
