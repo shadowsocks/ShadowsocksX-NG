@@ -86,6 +86,7 @@
 		9BEEF0751D04EF3E00FC52B3 /* PreferencesWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BEEF0731D04EF3E00FC52B3 /* PreferencesWindowController.swift */; };
 		9BEEF0781D04FE8A00FC52B3 /* LaunchAgentUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BEEF0771D04FE8A00FC52B3 /* LaunchAgentUtils.swift */; };
 		B5A2AB04221A72EC003F77B7 /* install_v2ray_plugin.sh in Resources */ = {isa = PBXBuildFile; fileRef = B5A2AB02221A72EC003F77B7 /* install_v2ray_plugin.sh */; };
+		BB57CC36258FA0F000D7AA1A /* libpcreposix.0.dylib in Resources */ = {isa = PBXBuildFile; fileRef = BB57CC34258FA0F000D7AA1A /* libpcreposix.0.dylib */; };
 		C6D429931DA75988002A5711 /* install_privoxy.sh in Resources */ = {isa = PBXBuildFile; fileRef = C6D4298E1DA75988002A5711 /* install_privoxy.sh */; };
 		C6D429941DA75988002A5711 /* privoxy in Resources */ = {isa = PBXBuildFile; fileRef = C6D4298F1DA75988002A5711 /* privoxy */; };
 		C6D429961DA75988002A5711 /* start_privoxy.sh in Resources */ = {isa = PBXBuildFile; fileRef = C6D429911DA75988002A5711 /* start_privoxy.sh */; };
@@ -255,6 +256,7 @@
 		9BEEF0771D04FE8A00FC52B3 /* LaunchAgentUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LaunchAgentUtils.swift; sourceTree = "<group>"; };
 		B4E6A97CA843F3943524B686 /* Pods-proxy_conf_helper.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-proxy_conf_helper.debug.xcconfig"; path = "Pods/Target Support Files/Pods-proxy_conf_helper/Pods-proxy_conf_helper.debug.xcconfig"; sourceTree = "<group>"; };
 		B5A2AB02221A72EC003F77B7 /* install_v2ray_plugin.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = install_v2ray_plugin.sh; sourceTree = "<group>"; };
+		BB57CC34258FA0F000D7AA1A /* libpcreposix.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libpcreposix.0.dylib; path = "ShadowsocksX-NG/privoxy/libpcreposix.0.dylib"; sourceTree = "<group>"; };
 		C6D4298E1DA75988002A5711 /* install_privoxy.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = install_privoxy.sh; sourceTree = "<group>"; };
 		C6D4298F1DA75988002A5711 /* privoxy */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = privoxy; sourceTree = "<group>"; };
 		C6D429911DA75988002A5711 /* start_privoxy.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = start_privoxy.sh; sourceTree = "<group>"; };
@@ -345,6 +347,7 @@
 		9B0BFFDC1D0460A70040E62B = {
 			isa = PBXGroup;
 			children = (
+				BB57CC34258FA0F000D7AA1A /* libpcreposix.0.dylib */,
 				9B5831FA1E73098F009D5B7D /* README.md */,
 				9B172A601D0ADA5B00B87B9A /* genstrings.py */,
 				9B9F13A11E8A282C00DE4794 /* LaunchHelper.xcodeproj */,
@@ -668,6 +671,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BB57CC36258FA0F000D7AA1A /* libpcreposix.0.dylib in Resources */,
 				9B5D132A2154A62600F99F03 /* install_kcptun.sh in Resources */,
 				9B7297E7214D69C300FD24AA /* libmbedcrypto.2.25.0.dylib in Resources */,
 				9BCB1D6C20A15B0E005BABE7 /* libsodium.23.dylib in Resources */,
