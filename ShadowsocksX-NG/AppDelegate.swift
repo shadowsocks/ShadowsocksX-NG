@@ -81,7 +81,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         
         self.ensureLaunchAgentsDirOwner()
         
-        // Prepare ss-local
+        // Prepare sslocal
         InstallSSLocal()
         InstallPrivoxy()
         InstallSimpleObfs()
@@ -434,7 +434,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         if let appUrl = ws.urlForApplication(withBundleIdentifier: "com.apple.Console") {
             try! ws.launchApplication(at: appUrl
                 ,options: NSWorkspace.LaunchOptions.default
-                ,configuration: [NSWorkspace.LaunchConfigurationKey.arguments: "~/Library/Logs/ss-local.log"])
+                ,configuration: [NSWorkspace.LaunchConfigurationKey.arguments: "~/Library/Logs/sslocal.log"])
         }
     }
     

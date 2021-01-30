@@ -8,6 +8,8 @@ Next Generation of [ShadowsocksX](https://github.com/shadowsocks/shadowsocks-iOS
 
 ## Why a new implementation?
 
+<!-- TODO: Update info about sslocal -->
+
 It's hard to maintain the original implementation as there is too much unused code in it.
 It also embeds the `ss-local` source code. It's crazy to maintain dependencies of `ss-local`.
 So it's hard to update the `ss-local` version.
