@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="14490.70" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="17701" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14490.70"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="17701"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="NSApplication">
@@ -114,6 +114,12 @@
                         <action selector="updateGFWList:" target="Voe-Tx-rLC" id="Ztt-PS-F3T"/>
                     </connections>
                 </menuItem>
+                <menuItem title="Update sslocal" id="ybb-Df-A5g">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <connections>
+                        <action selector="updateSSLocal:" target="Voe-Tx-rLC" id="1qj-i4-9oq"/>
+                    </connections>
+                </menuItem>
                 <menuItem title="Edit User Rules For PAC..." id="rms-p0-CvB">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
@@ -163,7 +169,7 @@
         <userDefaultsController representsSharedInstance="YES" id="jhL-aG-BFA"/>
     </objects>
     <resources>
-        <image name="NSShareTemplate" width="11" height="16"/>
+        <image name="NSShareTemplate" width="15" height="17"/>
         <image name="terminal-logo" width="22.695652008056641" height="17.217391967773438"/>
     </resources>
 </document>

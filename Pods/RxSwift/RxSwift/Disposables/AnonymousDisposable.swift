@@ -9,7 +9,7 @@
 /// Represents an Action-based disposable.
 ///
 /// When dispose method is called, disposal action will be dereferenced.
-fileprivate final class AnonymousDisposable : DisposeBase, Cancelable {
+private final class AnonymousDisposable : DisposeBase, Cancelable {
     public typealias DisposeAction = () -> Void
 
     private let _isDisposed = AtomicInt(0)
@@ -23,7 +23,7 @@ fileprivate final class AnonymousDisposable : DisposeBase, Cancelable {
     /// Constructs a new disposable with the given action used for disposal.
     ///
     /// - parameter disposeAction: Disposal action which will be run upon calling `dispose`.
-    fileprivate init(_ disposeAction: @escaping DisposeAction) {
+    private init(_ disposeAction: @escaping DisposeAction) {
         self._disposeAction = disposeAction
         super.init()
     }

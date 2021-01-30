@@ -7,6 +7,7 @@
 //
 
 import RxSwift
+import RxRelay
 
 extension BehaviorRelay {
     /// Converts `BehaviorRelay` to `Driver`.

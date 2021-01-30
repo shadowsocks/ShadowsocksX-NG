@@ -18,17 +18,17 @@ extension ObservableType {
      - returns: The throttled sequence.
      */
     public func debounce(_ dueTime: RxTimeInterval, scheduler: SchedulerType)
-        -> Observable<E> {
+        -> Observable<Element> {
             return Debounce(source: self.asObservable(), dueTime: dueTime, scheduler: scheduler)
     }
 }
 
-final private class DebounceSink<O: ObserverType>
-    : Sink<O>
+final private class DebounceSink<Observer: ObserverType>
+    : Sink<Observer>
     , ObserverType
     , LockOwnerType
     , SynchronizedOnType {
-    typealias Element = O.E
+    typealias Element = Observer.Element 
     typealias ParentType = Debounce<Element>
 
     private let _parent: ParentType
@@ -41,7 +41,7 @@ final private class DebounceSink<O: ObserverType>
 
     let cancellable = SerialDisposable()
 
-    init(parent: ParentType, observer: O, cancel: Cancelable) {
+    init(parent: ParentType, observer: Observer, cancel: Cancelable) {
         self._parent = parent
 
         super.init(observer: observer, cancel: cancel)
@@ -109,7 +109,7 @@ final private class Debounce<Element>: Producer<Element> {
         self._scheduler = scheduler
     }
 
-    override func run<O: ObserverType>(_ observer: O, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where O.E == Element {
+    override func run<Observer: ObserverType>(_ observer: Observer, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where Observer.Element == Element {
         let sink = DebounceSink(parent: self, observer: observer, cancel: cancel)
         let subscription = sink.run()
         return (sink: sink, subscription: subscription)

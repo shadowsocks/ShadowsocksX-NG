@@ -278,6 +278,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         UpdatePACFromGFWList()
     }
     
+    @IBAction func updateSSLocal(_ sender: NSMenuItem) {
+        // TODO
+    }
+    
     @IBAction func editUserRulesForPAC(_ sender: NSMenuItem) {
         if editUserRulesWinCtrl != nil {
             editUserRulesWinCtrl.close()

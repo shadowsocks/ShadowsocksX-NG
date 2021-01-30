@@ -8,6 +8,9 @@
 
 import class Foundation.NSNull
 
+// Importing RxCocoa also imports RxRelay
+@_exported import RxRelay
+
 import RxSwift
 #if os(iOS)
     import UIKit

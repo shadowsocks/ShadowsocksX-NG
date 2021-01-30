@@ -16,23 +16,23 @@ extension ObservableType {
      - parameter predicate: A function to test each element for a condition.
      - returns: An observable sequence that contains the elements from the input sequence that occur before the element at which the test no longer passes.
      */
-    public func takeWhile(_ predicate: @escaping (E) throws -> Bool)
-        -> Observable<E> {
+    public func takeWhile(_ predicate: @escaping (Element) throws -> Bool)
+        -> Observable<Element> {
         return TakeWhile(source: self.asObservable(), predicate: predicate)
     }
 }
 
-final private class TakeWhileSink<O: ObserverType>
-    : Sink<O>
+final private class TakeWhileSink<Observer: ObserverType>
+    : Sink<Observer>
     , ObserverType {
-    typealias Element = O.E
+    typealias Element = Observer.Element 
     typealias Parent = TakeWhile<Element>
 
-    fileprivate let _parent: Parent
+    private let _parent: Parent
 
-    fileprivate var _running = true
+    private var _running = true
 
-    init(parent: Parent, observer: O, cancel: Cancelable) {
+    init(parent: Parent, observer: Observer, cancel: Cancelable) {
         self._parent = parent
         super.init(observer: observer, cancel: cancel)
     }
@@ -69,7 +69,7 @@ final private class TakeWhileSink<O: ObserverType>
 final private class TakeWhile<Element>: Producer<Element> {
     typealias Predicate = (Element) throws -> Bool
 
-    fileprivate let _source: Observable<Element>
+    private let _source: Observable<Element>
     fileprivate let _predicate: Predicate
 
     init(source: Observable<Element>, predicate: @escaping Predicate) {
@@ -77,7 +77,7 @@ final private class TakeWhile<Element>: Producer<Element> {
         self._predicate = predicate
     }
 
-    override func run<O : ObserverType>(_ observer: O, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where O.E == Element {
+    override func run<Observer: ObserverType>(_ observer: Observer, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where Observer.Element == Element {
         let sink = TakeWhileSink(parent: self, observer: observer, cancel: cancel)
         let subscription = self._source.subscribe(sink)
         return (sink: sink, subscription: subscription)

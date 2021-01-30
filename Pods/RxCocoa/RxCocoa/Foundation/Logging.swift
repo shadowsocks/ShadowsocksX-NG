@@ -6,7 +6,11 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
+#if canImport(FoundationNetworking)
+import struct FoundationNetworking.URLRequest
+#else
 import struct Foundation.URLRequest
+#endif
 
 /// Simple logging settings for RxCocoa library.
 public struct Logging {

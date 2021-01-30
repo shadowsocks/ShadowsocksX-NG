@@ -8,6 +8,7 @@
 
 import RxSwift
 import Dispatch
+import Foundation
 
 extension ObservableType {
 
@@ -21,7 +22,7 @@ extension ObservableType {
      - returns: Disposable object that can be used to unsubscribe the observer.
      */
     @available(*, deprecated, renamed: "bind(to:)")
-    public func bindTo<O: ObserverType>(_ observer: O) -> Disposable where O.E == E {
+    public func bindTo<Observer: ObserverType>(_ observer: Observer) -> Disposable where Observer.Element == Element {
         return self.subscribe(observer)
     }
 
@@ -35,7 +36,7 @@ extension ObservableType {
      - returns: Disposable object that can be used to unsubscribe the observer.
      */
     @available(*, deprecated, renamed: "bind(to:)")
-    public func bindTo<O: ObserverType>(_ observer: O) -> Disposable where O.E == E? {
+    public func bindTo<Observer: ObserverType>(_ observer: Observer) -> Disposable where Observer.Element == Element? {
         return self.map { $0 }.subscribe(observer)
     }
 
@@ -49,7 +50,7 @@ extension ObservableType {
      - returns: Disposable object that can be used to unsubscribe the observer.
      */
     @available(*, deprecated, renamed: "bind(to:)")
-    public func bindTo(_ variable: Variable<E>) -> Disposable {
+    public func bindTo(_ variable: Variable<Element>) -> Disposable {
         return self.subscribe { e in
             switch e {
             case let .next(element):
@@ -77,8 +78,8 @@ extension ObservableType {
      - returns: Disposable object that can be used to unsubscribe the observer.
      */
     @available(*, deprecated, renamed: "bind(to:)")
-    public func bindTo(_ variable: Variable<E?>) -> Disposable {
-        return self.map { $0 as E? }.bindTo(variable)
+    public func bindTo(_ variable: Variable<Element?>) -> Disposable {
+        return self.map { $0 as Element? }.bindTo(variable)
     }
 
     /**
@@ -88,7 +89,7 @@ extension ObservableType {
      - returns: Object representing subscription.
      */
     @available(*, deprecated, renamed: "bind(to:)")
-    public func bindTo<R>(_ binder: (Self) -> R) -> R {
+    public func bindTo<Result>(_ binder: (Self) -> Result) -> Result {
         return binder(self)
     }
 
@@ -120,7 +121,7 @@ extension ObservableType {
      - returns: Subscription object used to unsubscribe from the observable sequence.
      */
     @available(*, deprecated, renamed: "bind(onNext:)")
-    public func bindNext(_ onNext: @escaping (E) -> Void) -> Disposable {
+    public func bindNext(_ onNext: @escaping (Element) -> Void) -> Disposable {
         return self.subscribe(onNext: onNext, onError: { error in
             let error = "Binding error: \(error)"
             #if DEBUG
@@ -219,12 +220,6 @@ extension ObservableType {
             fatalError()
         }
     }
-    extension UIWebView {
-        @available(*, unavailable, message: "createRxDelegateProxy is now unavailable, check DelegateProxyFactory")
-        public func createRxDelegateProxy() -> RxWebViewDelegateProxy {
-            fatalError()
-        }
-    }
 #endif
 
 #if os(macOS)
@@ -249,12 +244,13 @@ public func driveOnScheduler(_ scheduler: SchedulerType, action: () -> Void) {
     SharingScheduler.mock(scheduler: scheduler, action: action)
 }
 
+@available(*, deprecated, message: "Variable is deprecated. Please use `BehaviorRelay` as a replacement.")
 extension Variable {
     /// Converts `Variable` to `SharedSequence` unit.
     ///
     /// - returns: Observable sequence.
     @available(*, deprecated, renamed: "asDriver()")
-    public func asSharedSequence<SharingStrategy: SharingStrategyProtocol>(strategy: SharingStrategy.Type = SharingStrategy.self) -> SharedSequence<SharingStrategy, E> {
+    public func asSharedSequence<SharingStrategy: SharingStrategyProtocol>(strategy: SharingStrategy.Type = SharingStrategy.self) -> SharedSequence<SharingStrategy, Element> {
         let source = self.asObservable()
             .observeOn(SharingStrategy.scheduler)
         return SharedSequence(source)
@@ -288,16 +284,16 @@ Observer that enforces interface binding rules:
  queue.
 */
 @available(*, deprecated, renamed: "Binder")
-public final class UIBindingObserver<UIElementType, Value> : ObserverType where UIElementType: AnyObject {
-    public typealias E = Value
+public final class UIBindingObserver<UIElement, Value> : ObserverType where UIElement: AnyObject {
+    public typealias Element = Value
 
-    weak var UIElement: UIElementType?
+    weak var UIElement: UIElement?
 
-    let binding: (UIElementType, Value) -> Void
+    let binding: (UIElement, Value) -> Void
 
     /// Initializes `ViewBindingObserver` using
     @available(*, deprecated, renamed: "UIBinder.init(_:scheduler:binding:)")
-    public init(UIElement: UIElementType, binding: @escaping (UIElementType, Value) -> Void) {
+    public init(UIElement: UIElement, binding: @escaping (UIElement, Value) -> Void) {
         self.UIElement = UIElement
         self.binding = binding
     }
@@ -355,13 +351,9 @@ extension Reactive where Base: UIImageView {
                 if image != nil {
                     let transition = CATransition()
                     transition.duration = 0.25
-                    #if swift(>=4.2)
-                        transition.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
-                        transition.type = CATransitionType(rawValue: transitionType)
-                    #else
-                        transition.timingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionEaseInEaseOut)
-                        transition.type = transitionType
-                    #endif
+                    transition.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+                    transition.type = CATransitionType(rawValue: transitionType)
+
                     imageView.layer.add(transition, forKey: kCATransition)
                 }
             }
@@ -395,13 +387,8 @@ extension Reactive where Base: UISegmentedControl {
                     if value != nil {
                         let transition = CATransition()
                         transition.duration = 0.25
-#if swift(>=4.2)
                         transition.timingFunction = CAMediaTimingFunction(name: CAMediaTimingFunctionName.easeInEaseOut)
                         transition.type = CATransitionType(rawValue: transitionType)
-#else
-                        transition.timingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionEaseInEaseOut)
-                        transition.type = transitionType
-#endif
                         control.layer?.add(transition, forKey: kCATransition)
                     }
                 }
@@ -414,13 +401,12 @@ extension Reactive where Base: UISegmentedControl {
     }
 #endif
 
-import RxSwift
-
+@available(*, deprecated, message: "Variable is deprecated. Please use `BehaviorRelay` as a replacement.")
 extension Variable {
     /// Converts `Variable` to `Driver` trait.
     ///
     /// - returns: Driving observable sequence.
-    public func asDriver() -> Driver<E> {
+    public func asDriver() -> Driver<Element> {
         let source = self.asObservable()
             .observeOn(DriverSharingStrategy.scheduler)
         return Driver(source)
@@ -439,7 +425,8 @@ extension SharedSequenceConvertibleType where SharingStrategy == DriverSharingSt
      - parameter variable: Target variable for sequence elements.
      - returns: Disposable object that can be used to unsubscribe the observer from the variable.
      */
-    public func drive(_ variable: Variable<E>) -> Disposable {
+    @available(*, deprecated, message: "Variable is deprecated. Please use `BehaviorRelay` as a replacement.")
+    public func drive(_ variable: Variable<Element>) -> Disposable {
         MainScheduler.ensureRunningOnMainThread(errorMessage: errorMessage)
         return self.drive(onNext: { e in
             variable.value = e
@@ -453,7 +440,8 @@ extension SharedSequenceConvertibleType where SharingStrategy == DriverSharingSt
      - parameter variable: Target variable for sequence elements.
      - returns: Disposable object that can be used to unsubscribe the observer from the variable.
      */
-    public func drive(_ variable: Variable<E?>) -> Disposable {
+    @available(*, deprecated, message: "Variable is deprecated. Please use `BehaviorRelay` as a replacement.")
+    public func drive(_ variable: Variable<Element?>) -> Disposable {
         MainScheduler.ensureRunningOnMainThread(errorMessage: errorMessage)
         return self.drive(onNext: { e in
             variable.value = e
@@ -461,6 +449,7 @@ extension SharedSequenceConvertibleType where SharingStrategy == DriverSharingSt
     }
 }
 
+@available(*, deprecated, message: "Variable is deprecated. Please use `BehaviorRelay` as a replacement.")
 extension ObservableType {
     /**
      Creates new subscription and sends elements to variable.
@@ -471,7 +460,7 @@ extension ObservableType {
      - parameter to: Target variable for sequence elements.
      - returns: Disposable object that can be used to unsubscribe the observer.
      */
-    public func bind(to variable: Variable<E>) -> Disposable {
+    public func bind(to variable: Variable<Element>) -> Disposable {
         return self.subscribe { e in
             switch e {
             case let .next(element):
@@ -498,9 +487,94 @@ extension ObservableType {
      - parameter to: Target variable for sequence elements.
      - returns: Disposable object that can be used to unsubscribe the observer.
      */
-    public func bind(to variable: Variable<E?>) -> Disposable {
-        return self.map { $0 as E? }.bind(to: variable)
+    public func bind(to variable: Variable<Element?>) -> Disposable {
+        return self.map { $0 as Element? }.bind(to: variable)
     }
 }
 
+// MARK: throttle
+extension SharedSequenceConvertibleType {
+    /**
+     Returns an Observable that emits the first and the latest item emitted by the source Observable during sequential time windows of a specified duration.
+
+     This operator makes sure that no two elements are emitted in less then dueTime.
+
+     - seealso: [debounce operator on reactivex.io](http://reactivex.io/documentation/operators/debounce.html)
+
+     - parameter dueTime: Throttling duration for each element.
+     - parameter latest: Should latest element received in a dueTime wide time window since last element emission be emitted.
+     - returns: The throttled sequence.
+     */
+    @available(*, deprecated, message: "Use DispatchTimeInterval overload instead.", renamed: "timeout(_:latest:)")
+    public func throttle(_ dueTime: Foundation.TimeInterval, latest: Bool = true)
+        -> SharedSequence<SharingStrategy, Element> {
+        return throttle(.milliseconds(Int(dueTime * 1000.0)), latest: latest)
+    }
+
+    /**
+     Ignores elements from an observable sequence which are followed by another element within a specified relative time duration, using the specified scheduler to run throttling timers.
+
+     - parameter dueTime: Throttling duration for each element.
+     - returns: The throttled sequence.
+     */
+    @available(*, deprecated, message: "Use DispatchTimeInterval overload instead.", renamed: "debounce(_:)")
+    public func debounce(_ dueTime: Foundation.TimeInterval)
+        -> SharedSequence<SharingStrategy, Element> {
+        return debounce(.milliseconds(Int(dueTime * 1000.0)))
+    }
+}
+
+// MARK: delay
+extension SharedSequenceConvertibleType {
+    
+    /**
+     Returns an observable sequence by the source observable sequence shifted forward in time by a specified delay. Error events from the source observable sequence are not delayed.
+     
+     - seealso: [delay operator on reactivex.io](http://reactivex.io/documentation/operators/delay.html)
+     
+     - parameter dueTime: Relative time shift of the source by.
+     - parameter scheduler: Scheduler to run the subscription delay timer on.
+     - returns: the source Observable shifted in time by the specified delay.
+     */
+    @available(*, deprecated, message: "Use DispatchTimeInterval overload instead.", renamed: "delay(_:)")
+    public func delay(_ dueTime: Foundation.TimeInterval)
+        -> SharedSequence<SharingStrategy, Element> {
+        return delay(.milliseconds(Int(dueTime * 1000.0)))
+    }
+}
+
+extension SharedSequence where Element : RxAbstractInteger {
+    /**
+     Returns an observable sequence that produces a value after each period, using the specified scheduler to run timers and to send out observer messages.
+     
+     - seealso: [interval operator on reactivex.io](http://reactivex.io/documentation/operators/interval.html)
+     
+     - parameter period: Period for producing the values in the resulting sequence.
+     - returns: An observable sequence that produces a value after each period.
+     */
+    @available(*, deprecated, message: "Use DispatchTimeInterval overload instead.", renamed: "interval(_:)")
+    public static func interval(_ period: Foundation.TimeInterval)
+        -> SharedSequence<SharingStrategy, Element> {
+        return interval(.milliseconds(Int(period * 1000.0)))
+    }
+}
+
+// MARK: timer
+
+extension SharedSequence where Element: RxAbstractInteger {
+    /**
+     Returns an observable sequence that periodically produces a value after the specified initial relative due time has elapsed, using the specified scheduler to run timers.
+     
+     - seealso: [timer operator on reactivex.io](http://reactivex.io/documentation/operators/timer.html)
+     
+     - parameter dueTime: Relative time at which to produce the first value.
+     - parameter period: Period to produce subsequent values.
+     - returns: An observable sequence that produces a value after due time has elapsed and then each period.
+     */
+    @available(*, deprecated, message: "Use DispatchTimeInterval overload instead.", renamed: "timer(_:)")
+    public static func timer(_ dueTime: Foundation.TimeInterval, period: Foundation.TimeInterval)
+        -> SharedSequence<SharingStrategy, Element> {
+        return timer(.milliseconds(Int(dueTime * 1000.0)), period: .milliseconds(Int(period * 1000.0)))
+    }
+}
 

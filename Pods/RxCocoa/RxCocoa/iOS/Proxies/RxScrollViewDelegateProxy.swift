@@ -38,8 +38,8 @@ open class RxScrollViewDelegateProxy
         self.register { RxTextViewDelegateProxy(textView: $0) }
     }
 
-    fileprivate var _contentOffsetBehaviorSubject: BehaviorSubject<CGPoint>?
-    fileprivate var _contentOffsetPublishSubject: PublishSubject<()>?
+    private var _contentOffsetBehaviorSubject: BehaviorSubject<CGPoint>?
+    private var _contentOffsetPublishSubject: PublishSubject<()>?
 
     /// Optimized version used for observing content offset changes.
     internal var contentOffsetBehaviorSubject: BehaviorSubject<CGPoint> {

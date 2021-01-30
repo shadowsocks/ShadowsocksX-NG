@@ -24,18 +24,18 @@ extension ObservableType {
      - returns: The source sequence whose subscriptions and unsubscriptions happen on the specified scheduler.
      */
     public func subscribeOn(_ scheduler: ImmediateSchedulerType)
-        -> Observable<E> {
+        -> Observable<Element> {
         return SubscribeOn(source: self, scheduler: scheduler)
     }
 }
 
-final private class SubscribeOnSink<Ob: ObservableType, O: ObserverType>: Sink<O>, ObserverType where Ob.E == O.E {
-    typealias Element = O.E
+final private class SubscribeOnSink<Ob: ObservableType, Observer: ObserverType>: Sink<Observer>, ObserverType where Ob.Element == Observer.Element {
+    typealias Element = Observer.Element 
     typealias Parent = SubscribeOn<Ob>
     
     let parent: Parent
     
-    init(parent: Parent, observer: O, cancel: Cancelable) {
+    init(parent: Parent, observer: Observer, cancel: Cancelable) {
         self.parent = parent
         super.init(observer: observer, cancel: cancel)
     }
@@ -66,7 +66,7 @@ final private class SubscribeOnSink<Ob: ObservableType, O: ObserverType>: Sink<O
     }
 }
 
-final private class SubscribeOn<Ob: ObservableType>: Producer<Ob.E> {
+final private class SubscribeOn<Ob: ObservableType>: Producer<Ob.Element> {
     let source: Ob
     let scheduler: ImmediateSchedulerType
     
@@ -75,7 +75,7 @@ final private class SubscribeOn<Ob: ObservableType>: Producer<Ob.E> {
         self.scheduler = scheduler
     }
     
-    override func run<O : ObserverType>(_ observer: O, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where O.E == Ob.E {
+    override func run<Observer: ObserverType>(_ observer: Observer, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where Observer.Element == Ob.Element {
         let sink = SubscribeOnSink(parent: self, observer: observer, cancel: cancel)
         let subscription = sink.run()
         return (sink: sink, subscription: subscription)

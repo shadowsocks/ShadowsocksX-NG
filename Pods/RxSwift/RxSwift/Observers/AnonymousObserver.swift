@@ -6,9 +6,7 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-final class AnonymousObserver<ElementType> : ObserverBase<ElementType> {
-    typealias Element = ElementType
-    
+final class AnonymousObserver<Element>: ObserverBase<Element> {
     typealias EventHandler = (Event<Element>) -> Void
     
     private let _eventHandler : EventHandler

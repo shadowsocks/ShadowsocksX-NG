@@ -16,8 +16,8 @@ extension ObservableType {
      - parameter predicate: A function to test each source element for a condition.
      - returns: An observable sequence that contains elements from the input sequence that satisfy the condition.
      */
-    public func filter(_ predicate: @escaping (E) throws -> Bool)
-        -> Observable<E> {
+    public func filter(_ predicate: @escaping (Element) throws -> Bool)
+        -> Observable<Element> {
         return Filter(source: self.asObservable(), predicate: predicate)
     }
 }
@@ -40,13 +40,13 @@ extension ObservableType {
     }
 }
 
-final private class FilterSink<O: ObserverType>: Sink<O>, ObserverType {
+final private class FilterSink<Observer: ObserverType>: Sink<Observer>, ObserverType {
     typealias Predicate = (Element) throws -> Bool
-    typealias Element = O.E
+    typealias Element = Observer.Element
     
     private let _predicate: Predicate
     
-    init(predicate: @escaping Predicate, observer: O, cancel: Cancelable) {
+    init(predicate: @escaping Predicate, observer: Observer, cancel: Cancelable) {
         self._predicate = predicate
         super.init(observer: observer, cancel: cancel)
     }
@@ -82,7 +82,7 @@ final private class Filter<Element>: Producer<Element> {
         self._predicate = predicate
     }
     
-    override func run<O: ObserverType>(_ observer: O, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where O.E == Element {
+    override func run<Observer: ObserverType>(_ observer: Observer, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where Observer.Element == Element {
         let sink = FilterSink(predicate: self._predicate, observer: observer, cancel: cancel)
         let subscription = self._source.subscribe(sink)
         return (sink: sink, subscription: subscription)

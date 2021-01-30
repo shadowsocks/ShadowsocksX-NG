@@ -37,7 +37,7 @@ public final class PublishSubject<Element>
     private var _stoppedEvent = nil as Event<Element>?
 
     #if DEBUG
-        fileprivate let _synchronizationTracker = SynchronizationTracker()
+        private let _synchronizationTracker = SynchronizationTracker()
     #endif
 
     /// Indicates whether the subject has been isDisposed.
@@ -64,7 +64,7 @@ public final class PublishSubject<Element>
         dispatch(self._synchronized_on(event), event)
     }
 
-    func _synchronized_on(_ event: Event<E>) -> Observers {
+    func _synchronized_on(_ event: Event<Element>) -> Observers {
         self._lock.lock(); defer { self._lock.unlock() }
         switch event {
         case .next:
@@ -92,14 +92,14 @@ public final class PublishSubject<Element>
     - parameter observer: Observer to subscribe to the subject.
     - returns: Disposable object that can be used to unsubscribe the observer from the subject.
     */
-    public override func subscribe<O: ObserverType>(_ observer: O) -> Disposable where O.E == Element {
+    public override func subscribe<Observer: ObserverType>(_ observer: Observer) -> Disposable where Observer.Element == Element {
         self._lock.lock()
         let subscription = self._synchronized_subscribe(observer)
         self._lock.unlock()
         return subscription
     }
 
-    func _synchronized_subscribe<O: ObserverType>(_ observer: O) -> Disposable where O.E == E {
+    func _synchronized_subscribe<Observer: ObserverType>(_ observer: Observer) -> Disposable where Observer.Element == Element {
         if let stoppedEvent = self._stoppedEvent {
             observer.on(stoppedEvent)
             return Disposables.create()

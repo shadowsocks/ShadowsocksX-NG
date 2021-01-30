@@ -14,12 +14,6 @@ import RxSwift
     import UIKit
 
     typealias Control = UIKit.UIControl
-
-    #if swift(>=4.2)
-        public typealias ControlEvents = UIKit.UIControl.Event
-    #else
-        public typealias ControlEvents = UIKit.UIControlEvents
-    #endif
 #elseif os(macOS)
     import Cocoa
 
@@ -34,11 +28,11 @@ final class ControlTarget: RxTarget {
 
     weak var control: Control?
 #if os(iOS) || os(tvOS)
-    let controlEvents: UIControlEvents
+    let controlEvents: UIControl.Event
 #endif
     var callback: Callback?
     #if os(iOS) || os(tvOS)
-    init(control: Control, controlEvents: UIControlEvents, callback: @escaping Callback) {
+    init(control: Control, controlEvents: UIControl.Event, callback: @escaping Callback) {
         MainScheduler.ensureRunningOnMainThread()
 
         self.control = control
