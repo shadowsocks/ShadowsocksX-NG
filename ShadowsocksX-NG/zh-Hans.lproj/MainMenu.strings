@@ -118,3 +118,6 @@
 
 /* Class = "NSMenuItem"; title = "Import Server URLs..."; ObjectID = "geG-dQ-OYl"; */
 "geG-dQ-OYl.title" = "导入服务器URL...";
+
+/* Class = "NSMenuItem"; title = "Update sslocal"; ObjectID = "ybb-Df-A5g"; */
+"ybb-Df-A5g.title" = "更新sslocal可执行文件";

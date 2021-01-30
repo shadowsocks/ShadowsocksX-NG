@@ -52,6 +52,11 @@
 
 "Not found valid URL of shadowsocks profile" = "未找到有效的 shadowsocks 链接";
 
+"sslocal updated successfully" = "成功更新sslocal";
+
+"Failed to update sslocal" = "更新sslocal失败";
+
+
 /*
  * ./HTTPPreferencesWindowController.swift
  */

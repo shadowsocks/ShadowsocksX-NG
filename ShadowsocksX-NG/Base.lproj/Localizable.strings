@@ -52,6 +52,10 @@
 
 "Not found valid URL of shadowsocks profile" = "Not found valid URL of shadowsocks profile";
 
+"sslocal updated successfully" = "sslocal updated successfully";
+
+"Failed to update sslocal" = "Failed to update sslocal";
+
 /*
  * ./ShadowsocksX-NG/ShareServerProfilesWindowController.swift
  */

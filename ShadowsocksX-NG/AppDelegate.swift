@@ -10,6 +10,7 @@ import Cocoa
 import Carbon
 import RxCocoa
 import RxSwift
+import Alamofire
 
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDelegate {
@@ -279,7 +280,27 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     }
     
     @IBAction func updateSSLocal(_ sender: NSMenuItem) {
-        // TODO
+        let homeDir = NSHomeDirectory()
+        let ssLocalDir = homeDir + APP_SUPPORT_DIR + "sslocal/sslocal"
+        if !FileManager.default.fileExists(atPath: ssLocalDir) {
+            InstallSSLocal()
+        }
+        let downloadURL = "https://github.com/xiaoyu2006/ss-buildbot/releases/latest/download/sslocal"
+        let destination: DownloadRequest.DownloadFileDestination = { _, _ in
+            let destURL = URL(fileURLWithPath: ssLocalDir)
+            NSLog("Downloading to destination \(destURL).")
+            return (destURL, [.removePreviousFile])
+        }
+        // TODO: Check remote version number.
+        Alamofire.download(downloadURL, to: destination).response { response in
+            let notification = NSUserNotification()
+            if response.error == nil {
+                notification.title = "sslocal updated successfully".localized
+            } else {
+                notification.title = "Failed to update sslocal".localized
+            }
+            NSUserNotificationCenter.default.deliver(notification)
+        }
     }
     
     @IBAction func editUserRulesForPAC(_ sender: NSMenuItem) {
@@ -443,6 +464,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     }
     
     @IBAction func checkForUpdates(_ sender: NSMenuItem) {
+        // TODO: Better update.
         NSWorkspace.shared.open(URL(string: "https://github.com/shadowsocks/ShadowsocksX-NG/releases")!)
     }
     
