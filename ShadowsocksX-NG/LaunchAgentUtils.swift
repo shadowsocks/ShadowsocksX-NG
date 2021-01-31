@@ -201,7 +201,7 @@ func InstallSimpleObfs() {
     let fileMgr = FileManager.default
     let homeDir = NSHomeDirectory()
     let appSupportDir = homeDir + APP_SUPPORT_DIR
-    if !fileMgr.fileExists(atPath: appSupportDir + "simple-obfs-\(SIMPLE_OBFS_VERSION)/obfs-local")
+    if !fileMgr.fileExists(atPath: appSupportDir + "simple-obfs-\(SIMPLE_OBFS_VERSION)/obfs-local") || !fileMgr.fileExists(atPath: appSupportDir + "simple-obfs-\(SIMPLE_OBFS_VERSION)/libev.4.dylib")
         || !fileMgr.fileExists(atPath: appSupportDir + "plugins/obfs-local") {
         let bundle = Bundle.main
         let installerPath = bundle.path(forResource: "install_simple_obfs", ofType: "sh")
