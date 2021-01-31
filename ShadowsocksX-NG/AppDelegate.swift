@@ -296,11 +296,20 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             let notification = NSUserNotification()
             if response.error == nil {
                 notification.title = "sslocal updated successfully".localized
+                do {
+                    try FileManager.default.setAttributes([.posixPermissions: 0o754], ofItemAtPath: ssLocalDir)
+                }
+                catch {
+                    notification.title = "Failed to update sslocal".localized
+                    NSLog("Permission denied to \(ssLocalDir).")
+                }
             } else {
                 notification.title = "Failed to update sslocal".localized
             }
             NSUserNotificationCenter.default.deliver(notification)
         }
+        doToggleRunning(showToast: true)
+        doToggleRunning(showToast: true)
     }
     
     @IBAction func editUserRulesForPAC(_ sender: NSMenuItem) {

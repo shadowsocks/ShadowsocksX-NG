@@ -11,9 +11,11 @@ cd "$(dirname "${BASH_SOURCE[0]}")"
 
 NGDir="$HOME/Library/Application Support/ShadowsocksX-NG"
 TargetDir="$NGDir/sslocal"
+SSBin="$TargetDir/sslocal"
 
 mkdir "$TargetDir"
 
-cp -f sslocal "$TargetDir/sslocal"
+cp -f sslocal "$SSBin"
+chmod 754 "$SSBin"
 
 echo done
