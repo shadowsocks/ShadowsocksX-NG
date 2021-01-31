@@ -15,7 +15,7 @@ SSBin="$TargetDir/sslocal"
 
 mkdir "$TargetDir"
 
-cp -f sslocal "$SSBin"
+cp -f sslocal "$TargetDir"
 chmod 754 "$SSBin"
 
 echo done

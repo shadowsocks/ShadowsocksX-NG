@@ -14,8 +14,10 @@ mkdir -p "$TargetDir"
 mkdir -p "$PluginDir"
 
 cp -f obfs-local "$TargetDir"
+cp -f libev.4.dylib "$TargetDir"
 
 ln -sfh "$TargetDir/obfs-local" "$PluginDir/simple-obfs"
 ln -sfh "$TargetDir/obfs-local" "$PluginDir/obfs-local"
+ln -sfh "$TargetDir/libev.4.dylib" "$PluginDir/libev.4.dylib"
 
 echo done

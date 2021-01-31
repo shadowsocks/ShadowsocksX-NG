@@ -81,6 +81,8 @@
 		BA40BC6525C58707009354F2 /* install_sslocal.sh in Resources */ = {isa = PBXBuildFile; fileRef = BA40BC6225C58707009354F2 /* install_sslocal.sh */; };
 		BA40BC6625C58707009354F2 /* stop_sslocal.sh in Resources */ = {isa = PBXBuildFile; fileRef = BA40BC6325C58707009354F2 /* stop_sslocal.sh */; };
 		BA40BC6B25C5874B009354F2 /* sslocal in Resources */ = {isa = PBXBuildFile; fileRef = BA40BC6A25C5874B009354F2 /* sslocal */; };
+		BA40BC9125C69280009354F2 /* libev.4.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = BA40BC9025C69280009354F2 /* libev.4.dylib */; };
+		BA40BC9525C69326009354F2 /* libev.4.dylib in Resources */ = {isa = PBXBuildFile; fileRef = BA40BC9025C69280009354F2 /* libev.4.dylib */; };
 		C6D429931DA75988002A5711 /* install_privoxy.sh in Resources */ = {isa = PBXBuildFile; fileRef = C6D4298E1DA75988002A5711 /* install_privoxy.sh */; };
 		C6D429941DA75988002A5711 /* privoxy in Resources */ = {isa = PBXBuildFile; fileRef = C6D4298F1DA75988002A5711 /* privoxy */; };
 		C6D429961DA75988002A5711 /* start_privoxy.sh in Resources */ = {isa = PBXBuildFile; fileRef = C6D429911DA75988002A5711 /* start_privoxy.sh */; };
@@ -245,6 +247,7 @@
 		BA40BC6325C58707009354F2 /* stop_sslocal.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; name = stop_sslocal.sh; path = "ShadowsocksX-NG/sslocal/stop_sslocal.sh"; sourceTree = SOURCE_ROOT; };
 		BA40BC6A25C5874B009354F2 /* sslocal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = sslocal; path = "ShadowsocksX-NG/sslocal/sslocal"; sourceTree = SOURCE_ROOT; };
 		BA40BC8425C58FED009354F2 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/MainMenu.strings"; sourceTree = "<group>"; };
+		BA40BC9025C69280009354F2 /* libev.4.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libev.4.dylib; sourceTree = "<group>"; };
 		C6D4298E1DA75988002A5711 /* install_privoxy.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = install_privoxy.sh; sourceTree = "<group>"; };
 		C6D4298F1DA75988002A5711 /* privoxy */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = privoxy; sourceTree = "<group>"; };
 		C6D429911DA75988002A5711 /* start_privoxy.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = start_privoxy.sh; sourceTree = "<group>"; };
@@ -266,6 +269,7 @@
 				9B6BF9541E27B2570061B9A7 /* ServiceManagement.framework in Frameworks */,
 				9B3FFF3E1D08D9910019A709 /* SystemConfiguration.framework in Frameworks */,
 				258E511BA910B0521B24DAB8 /* Pods_ShadowsocksX_NG.framework in Frameworks */,
+				BA40BC9125C69280009354F2 /* libev.4.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -292,6 +296,7 @@
 			isa = PBXGroup;
 			children = (
 				1C82DBA51FA96C7400B32551 /* obfs-local */,
+				BA40BC9025C69280009354F2 /* libev.4.dylib */,
 				1C82DBA91FA96F0300B32551 /* install_simple_obfs.sh */,
 			);
 			path = "simple-obfs";
@@ -704,6 +709,7 @@
 				BA40BC6B25C5874B009354F2 /* sslocal in Resources */,
 				BA40BC6425C58707009354F2 /* start_sslocal.sh in Resources */,
 				9B5AA0AC209C43C200E8B659 /* Credits.rtf in Resources */,
+				BA40BC9525C69326009354F2 /* libev.4.dylib in Resources */,
 				9B20804A2326AC460075386C /* kcptun.sh in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
