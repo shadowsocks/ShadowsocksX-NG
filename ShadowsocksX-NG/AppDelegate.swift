@@ -292,14 +292,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             return (destURL, [.removePreviousFile])
         }
         // TODO: Check remote version number.
-        Alamofire.download(downloadURL, to: destination).response { response in
+        Alamofire.download(downloadURL, to: destination).response { [self] response in
             let notification = NSUserNotification()
             if response.error == nil {
                 notification.title = "sslocal updated successfully".localized
                 do {
                     try FileManager.default.setAttributes([.posixPermissions: 0o754], ofItemAtPath: ssLocalDir)
-                }
-                catch {
+                    self.doToggleRunning(showToast: false)
+                    self.doToggleRunning(showToast: false)
+                } catch {
                     notification.title = "Failed to update sslocal".localized
                     NSLog("Permission denied to \(ssLocalDir).")
                 }
@@ -308,8 +309,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             }
             NSUserNotificationCenter.default.deliver(notification)
         }
-        doToggleRunning(showToast: true)
-        doToggleRunning(showToast: true)
     }
     
     @IBAction func editUserRulesForPAC(_ sender: NSMenuItem) {
