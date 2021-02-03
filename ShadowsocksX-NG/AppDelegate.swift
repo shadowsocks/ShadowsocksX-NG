@@ -289,7 +289,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         let destination: DownloadRequest.DownloadFileDestination = { _, _ in
             let destURL = URL(fileURLWithPath: ssLocalDir)
             NSLog("Downloading to destination \(destURL).")
-            return (destURL, [.removePreviousFile])
+            return (destURL, [.removePreviousFile, .createIntermediateDirectories])
         }
         // TODO: Check remote version number.
         Alamofire.download(downloadURL, to: destination).response { [self] response in
