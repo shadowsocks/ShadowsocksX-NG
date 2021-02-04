@@ -44,7 +44,7 @@
 	<key>LSUIElement</key>
 	<true/>
 	<key>NSHumanReadableCopyright</key>
-	<string>Copyright © 2016-2019 qiuyuzhou. All rights reserved. License GPLv3.</string>
+	<string>Copyright © 2016-2021 ShadowsocskX-NG contributors. All rights reserved. License GPLv3.</string>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
