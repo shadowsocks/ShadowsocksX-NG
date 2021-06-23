@@ -214,7 +214,7 @@ class PreferencesWindowController: NSWindowController
         NSLog("bind profile \(index)")
 
         if index >= 0 && index < profileMgr.profiles.count {
-            editingProfile = profileMgr.profiles[index]
+            let editingProfile = profileMgr.profiles[index]
             
             hostTextField.bind(NSBindingName(rawValue: "value"), to: editingProfile, withKeyPath: "serverHost"
                 , options: [NSBindingOption.continuouslyUpdatesValue: true])
