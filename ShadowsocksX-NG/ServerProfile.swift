@@ -94,7 +94,7 @@ class ServerProfile: NSObject, NSCopying {
         guard let decodedUrl = _decodedUrl else {
             return nil
         }
-        guard var parsedUrl = URLComponents(string: decodedUrl) else {
+        guard let parsedUrl = URLComponents(string: decodedUrl) else {
             return nil
         }
         guard let host = parsedUrl.host, let port = parsedUrl.port,

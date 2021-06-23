@@ -10,7 +10,7 @@
 #import <CoreImage/CoreImage.h>
 #import <AppKit/AppKit.h>
 
-void ScanQRCodeOnScreen() {
+void ScanQRCodeOnScreen(void) {
     /* displays[] Quartz display ID's */
     CGDirectDisplayID   *displays = nil;
     
