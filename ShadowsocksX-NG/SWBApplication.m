@@ -13,8 +13,8 @@
 // Enable Key Shortcuts
 // http://stackoverflow.com/questions/970707/cocoa-keyboard-shortcuts-in-dialog-without-an-edit-menu
 - (void) sendEvent:(NSEvent *)event {
-    if ([event type] == NSKeyDown) {
-        if (([event modifierFlags] & NSDeviceIndependentModifierFlagsMask) == NSCommandKeyMask) {
+    if ([event type] == NSEventTypeKeyDown ) {
+        if (([event modifierFlags] & NSEventModifierFlagDeviceIndependentFlagsMask) == NSEventModifierFlagCommand) {
             if ([[event charactersIgnoringModifiers] isEqualToString:@"x"]) {
                 if ([self sendAction:@selector(cut:) to:nil from:self])
                     return;
@@ -36,7 +36,7 @@
                     return;
             }
         }
-        else if (([event modifierFlags] & NSDeviceIndependentModifierFlagsMask) == (NSCommandKeyMask | NSShiftKeyMask)) {
+        else if (([event modifierFlags] & NSEventModifierFlagDeviceIndependentFlagsMask) == (NSEventModifierFlagCommand | NSEventModifierFlagShift)) {
             if ([[event charactersIgnoringModifiers] isEqualToString:@"Z"]) {
                 if ([self sendAction:@selector(redo) to:nil from:self])
                     return;
