@@ -35,19 +35,19 @@ import RxSwift
 
  To find out more about traits and how to use them, please visit `Documentation/Traits.md`.
  */
-public typealias Driver<E> = SharedSequence<DriverSharingStrategy, E>
+public typealias Driver<Element> = SharedSequence<DriverSharingStrategy, Element>
 
 public struct DriverSharingStrategy: SharingStrategyProtocol {
-    public static var scheduler: SchedulerType { return SharingScheduler.make() }
-    public static func share<E>(_ source: Observable<E>) -> Observable<E> {
-        return source.share(replay: 1, scope: .whileConnected)
+    public static var scheduler: SchedulerType { SharingScheduler.make() }
+    public static func share<Element>(_ source: Observable<Element>) -> Observable<Element> {
+        source.share(replay: 1, scope: .whileConnected)
     }
 }
 
 extension SharedSequenceConvertibleType where SharingStrategy == DriverSharingStrategy {
     /// Adds `asDriver` to `SharingSequence` with `DriverSharingStrategy`.
-    public func asDriver() -> Driver<E> {
-        return self.asSharedSequence()
+    public func asDriver() -> Driver<Element> {
+        self.asSharedSequence()
     }
 }
 

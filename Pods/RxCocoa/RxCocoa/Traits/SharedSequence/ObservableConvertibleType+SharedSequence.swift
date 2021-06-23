@@ -15,11 +15,11 @@ extension ObservableConvertibleType {
      - parameter onErrorJustReturn: Element to return in case of error and after that complete the sequence.
      - returns: Driving observable sequence.
      */
-    public func asSharedSequence<S>(sharingStrategy: S.Type = S.self, onErrorJustReturn: E) -> SharedSequence<S, E> {
+    public func asSharedSequence<S>(sharingStrategy: S.Type = S.self, onErrorJustReturn: Element) -> SharedSequence<S, Element> {
         let source = self
             .asObservable()
-            .observeOn(S.scheduler)
-            .catchErrorJustReturn(onErrorJustReturn)
+            .observe(on:S.scheduler)
+            .catchAndReturn(onErrorJustReturn)
         return SharedSequence(source)
     }
 
@@ -29,11 +29,11 @@ extension ObservableConvertibleType {
      - parameter onErrorDriveWith: SharedSequence that provides elements of the sequence in case of error.
      - returns: Driving observable sequence.
      */
-    public func asSharedSequence<S>(sharingStrategy: S.Type = S.self, onErrorDriveWith: SharedSequence<S, E>) -> SharedSequence<S, E> {
+    public func asSharedSequence<S>(sharingStrategy: S.Type = S.self, onErrorDriveWith: SharedSequence<S, Element>) -> SharedSequence<S, Element> {
         let source = self
             .asObservable()
-            .observeOn(S.scheduler)
-            .catchError { _ in
+            .observe(on:S.scheduler)
+            .catch { _ in
                 onErrorDriveWith.asObservable()
             }
         return SharedSequence(source)
@@ -45,11 +45,11 @@ extension ObservableConvertibleType {
      - parameter onErrorRecover: Calculates driver that continues to drive the sequence in case of error.
      - returns: Driving observable sequence.
      */
-    public func asSharedSequence<S>(sharingStrategy: S.Type = S.self, onErrorRecover: @escaping (_ error: Swift.Error) -> SharedSequence<S, E>) -> SharedSequence<S, E> {
+    public func asSharedSequence<S>(sharingStrategy: S.Type = S.self, onErrorRecover: @escaping (_ error: Swift.Error) -> SharedSequence<S, Element>) -> SharedSequence<S, Element> {
         let source = self
             .asObservable()
-            .observeOn(S.scheduler)
-            .catchError { error in
+            .observe(on:S.scheduler)
+            .catch { error in
                 onErrorRecover(error).asObservable()
             }
         return SharedSequence(source)

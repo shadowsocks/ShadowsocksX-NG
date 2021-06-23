@@ -16,21 +16,21 @@ extension ObservableType {
      - parameter scheduler: Scheduler to run the producer loop on.
      - returns: An observable sequence that repeats the given element infinitely.
      */
-    public static func repeatElement(_ element: E, scheduler: ImmediateSchedulerType = CurrentThreadScheduler.instance) -> Observable<E> {
-        return RepeatElement(element: element, scheduler: scheduler)
+    public static func repeatElement(_ element: Element, scheduler: ImmediateSchedulerType = CurrentThreadScheduler.instance) -> Observable<Element> {
+        RepeatElement(element: element, scheduler: scheduler)
     }
 }
 
 final private class RepeatElement<Element>: Producer<Element> {
-    fileprivate let _element: Element
-    fileprivate let _scheduler: ImmediateSchedulerType
+    fileprivate let element: Element
+    fileprivate let scheduler: ImmediateSchedulerType
     
     init(element: Element, scheduler: ImmediateSchedulerType) {
-        self._element = element
-        self._scheduler = scheduler
+        self.element = element
+        self.scheduler = scheduler
     }
     
-    override func run<O : ObserverType>(_ observer: O, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where O.E == Element {
+    override func run<Observer: ObserverType>(_ observer: Observer, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where Observer.Element == Element {
         let sink = RepeatElementSink(parent: self, observer: observer, cancel: cancel)
         let subscription = sink.run()
 
@@ -38,18 +38,18 @@ final private class RepeatElement<Element>: Producer<Element> {
     }
 }
 
-final private class RepeatElementSink<O: ObserverType>: Sink<O> {
-    typealias Parent = RepeatElement<O.E>
+final private class RepeatElementSink<Observer: ObserverType>: Sink<Observer> {
+    typealias Parent = RepeatElement<Observer.Element>
     
-    private let _parent: Parent
+    private let parent: Parent
     
-    init(parent: Parent, observer: O, cancel: Cancelable) {
-        self._parent = parent
+    init(parent: Parent, observer: Observer, cancel: Cancelable) {
+        self.parent = parent
         super.init(observer: observer, cancel: cancel)
     }
     
     func run() -> Disposable {
-        return self._parent._scheduler.scheduleRecursive(self._parent._element) { e, recurse in
+        return self.parent.scheduler.scheduleRecursive(self.parent.element) { e, recurse in
             self.forwardOn(.next(e))
             recurse(e)
         }

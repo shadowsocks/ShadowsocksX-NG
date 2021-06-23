@@ -12,8 +12,8 @@ extension ControlProperty {
     /// Converts `ControlProperty` to `Driver` trait.
     ///
     /// `ControlProperty` already can't fail, so no special case needs to be handled.
-    public func asDriver() -> Driver<E> {
-        return self.asDriver { _ -> Driver<E> in
+    public func asDriver() -> Driver<Element> {
+        return self.asDriver { _ -> Driver<Element> in
             #if DEBUG
                 rxFatalError("Somehow driver received error from a source that shouldn't fail.")
             #else

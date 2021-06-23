@@ -6,7 +6,7 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-protocol SynchronizedUnsubscribeType : class {
+protocol SynchronizedUnsubscribeType: AnyObject {
     associatedtype DisposeKey
 
     func synchronizedUnsubscribe(_ disposeKey: DisposeKey)

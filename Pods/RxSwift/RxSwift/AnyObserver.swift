@@ -10,9 +10,6 @@
 ///
 /// Forwards operations to an arbitrary underlying observer with the same `Element` type, hiding the specifics of the underlying observer type.
 public struct AnyObserver<Element> : ObserverType {
-    /// The type of elements in sequence that observer can observe.
-    public typealias E = Element
-    
     /// Anonymous event handler type.
     public typealias EventHandler = (Event<Element>) -> Void
 
@@ -28,7 +25,7 @@ public struct AnyObserver<Element> : ObserverType {
     /// Construct an instance whose `on(event)` calls `observer.on(event)`
     ///
     /// - parameter observer: Observer that receives sequence events.
-    public init<O : ObserverType>(_ observer: O) where O.E == Element {
+    public init<Observer: ObserverType>(_ observer: Observer) where Observer.Element == Element {
         self.observer = observer.on
     }
     
@@ -36,14 +33,14 @@ public struct AnyObserver<Element> : ObserverType {
     ///
     /// - parameter event: Event instance.
     public func on(_ event: Event<Element>) {
-        return self.observer(event)
+        self.observer(event)
     }
 
     /// Erases type of observer and returns canonical observer.
     ///
     /// - returns: type erased observer.
-    public func asObserver() -> AnyObserver<E> {
-        return self
+    public func asObserver() -> AnyObserver<Element> {
+        self
     }
 }
 
@@ -56,16 +53,16 @@ extension ObserverType {
     /// Erases type of observer and returns canonical observer.
     ///
     /// - returns: type erased observer.
-    public func asObserver() -> AnyObserver<E> {
-        return AnyObserver(self)
+    public func asObserver() -> AnyObserver<Element> {
+        AnyObserver(self)
     }
 
     /// Transforms observer of type R to type E using custom transform method.
     /// Each event sent to result observer is transformed and sent to `self`.
     ///
     /// - returns: observer that transforms events.
-    public func mapObserver<R>(_ transform: @escaping (R) throws -> E) -> AnyObserver<R> {
-        return AnyObserver { e in
+    public func mapObserver<Result>(_ transform: @escaping (Result) throws -> Element) -> AnyObserver<Result> {
+        AnyObserver { e in
             self.on(e.map(transform))
         }
     }

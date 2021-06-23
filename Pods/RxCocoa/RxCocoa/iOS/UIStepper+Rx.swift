@@ -23,14 +23,6 @@ extension Reactive where Base: UIStepper {
             }
         )
     }
-
-    /// Reactive wrapper for `stepValue` property.
-    public var stepValue: Binder<Double> {
-        return Binder(self.base) { stepper, value in
-            stepper.stepValue = value
-        }
-    }
-    
 }
 
 #endif

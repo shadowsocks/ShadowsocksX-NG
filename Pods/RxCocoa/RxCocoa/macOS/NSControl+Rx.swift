@@ -35,7 +35,7 @@ extension Reactive where Base: NSControl {
                 
                 return observer
             }
-			.takeUntil(self.deallocated)
+            .take(until: self.deallocated)
 			.share()
         }
 
@@ -69,7 +69,7 @@ extension Reactive where Base: NSControl {
 
                     return observer
                 }
-                .takeUntil(self.deallocated)
+                .take(until: self.deallocated)
                 .share(replay: 1, scope: .whileConnected)
             }
             .flatMap { [weak base] _ -> Observable<T> in
@@ -80,13 +80,6 @@ extension Reactive where Base: NSControl {
         let bindingObserver = Binder(self.base, binding: setter)
 
         return ControlProperty(values: source, valueSink: bindingObserver)
-    }
-
-    /// Bindable sink for `enabled` property.
-    public var isEnabled: Binder<Bool> {
-        return Binder(self.base) { owner, value in
-            owner.isEnabled = value
-        }
     }
 }
 

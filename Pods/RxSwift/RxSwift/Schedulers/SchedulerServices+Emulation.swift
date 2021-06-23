@@ -15,24 +15,24 @@ final class SchedulePeriodicRecursive<State> {
     typealias RecursiveAction = (State) -> State
     typealias RecursiveScheduler = AnyRecursiveScheduler<SchedulePeriodicRecursiveCommand>
 
-    private let _scheduler: SchedulerType
-    private let _startAfter: RxTimeInterval
-    private let _period: RxTimeInterval
-    private let _action: RecursiveAction
+    private let scheduler: SchedulerType
+    private let startAfter: RxTimeInterval
+    private let period: RxTimeInterval
+    private let action: RecursiveAction
 
-    private var _state: State
-    private let _pendingTickCount = AtomicInt(0)
+    private var state: State
+    private let pendingTickCount = AtomicInt(0)
 
     init(scheduler: SchedulerType, startAfter: RxTimeInterval, period: RxTimeInterval, action: @escaping RecursiveAction, state: State) {
-        self._scheduler = scheduler
-        self._startAfter = startAfter
-        self._period = period
-        self._action = action
-        self._state = state
+        self.scheduler = scheduler
+        self.startAfter = startAfter
+        self.period = period
+        self.action = action
+        self.state = state
     }
 
     func start() -> Disposable {
-        return self._scheduler.scheduleRecursive(SchedulePeriodicRecursiveCommand.tick, dueTime: self._startAfter, action: self.tick)
+        self.scheduler.scheduleRecursive(SchedulePeriodicRecursiveCommand.tick, dueTime: self.startAfter, action: self.tick)
     }
 
     func tick(_ command: SchedulePeriodicRecursiveCommand, scheduler: RecursiveScheduler) {
@@ -41,18 +41,18 @@ final class SchedulePeriodicRecursive<State> {
         // tick interval is short.
         switch command {
         case .tick:
-            scheduler.schedule(.tick, dueTime: self._period)
+            scheduler.schedule(.tick, dueTime: self.period)
 
             // The idea is that if on tick there wasn't any item enqueued, schedule to perform work immediately.
             // Else work will be scheduled after previous enqueued work completes.
-            if increment(self._pendingTickCount) == 0 {
+            if increment(self.pendingTickCount) == 0 {
                 self.tick(.dispatchStart, scheduler: scheduler)
             }
 
         case .dispatchStart:
-            self._state = self._action(self._state)
+            self.state = self.action(self.state)
             // Start work and schedule check is this last batch of work
-            if decrement(self._pendingTickCount) > 1 {
+            if decrement(self.pendingTickCount) > 1 {
                 // This gives priority to scheduler emulation, it's not perfect, but helps
                 scheduler.schedule(SchedulePeriodicRecursiveCommand.dispatchStart)
             }

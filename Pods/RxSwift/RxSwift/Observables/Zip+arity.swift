@@ -21,8 +21,8 @@ extension ObservableType {
     - returns: An observable sequence containing the result of combining elements of the sources using the specified result selector function.
     */
     public static func zip<O1: ObservableType, O2: ObservableType>
-        (_ source1: O1, _ source2: O2, resultSelector: @escaping (O1.E, O2.E) throws -> E)
-        -> Observable<E> {
+        (_ source1: O1, _ source2: O2, resultSelector: @escaping (O1.Element, O2.Element) throws -> Element)
+        -> Observable<Element> {
         return Zip2(
             source1: source1.asObservable(), source2: source2.asObservable(),
             resultSelector: resultSelector
@@ -30,7 +30,7 @@ extension ObservableType {
     }
 }
 
-extension ObservableType where E == Any {
+extension ObservableType where Element == Any {
     /**
     Merges the specified observable sequences into one observable sequence of tuples whenever all of the observable sequences have produced an element at a corresponding index.
 
@@ -40,7 +40,7 @@ extension ObservableType where E == Any {
     */
     public static func zip<O1: ObservableType, O2: ObservableType>
         (_ source1: O1, _ source2: O2)
-        -> Observable<(O1.E, O2.E)> {
+        -> Observable<(O1.Element, O2.Element)> {
         return Zip2(
             source1: source1.asObservable(), source2: source2.asObservable(),
             resultSelector: { ($0, $1) }
@@ -48,47 +48,39 @@ extension ObservableType where E == Any {
     }
 }
 
-final class ZipSink2_<E1, E2, O: ObserverType> : ZipSink<O> {
-    typealias R = O.E
-    typealias Parent = Zip2<E1, E2, R>
+final class ZipSink2_<E1, E2, Observer: ObserverType> : ZipSink<Observer> {
+    typealias Result = Observer.Element 
+    typealias Parent = Zip2<E1, E2, Result>
 
-    let _parent: Parent
+    let parent: Parent
 
-    var _values1: Queue<E1> = Queue(capacity: 2)
-    var _values2: Queue<E2> = Queue(capacity: 2)
+    var values1: Queue<E1> = Queue(capacity: 2)
+    var values2: Queue<E2> = Queue(capacity: 2)
 
-    init(parent: Parent, observer: O, cancel: Cancelable) {
-        self._parent = parent
+    init(parent: Parent, observer: Observer, cancel: Cancelable) {
+        self.parent = parent
         super.init(arity: 2, observer: observer, cancel: cancel)
     }
 
     override func hasElements(_ index: Int) -> Bool {
         switch index {
-        case 0: return !self._values1.isEmpty
-        case 1: return !self._values2.isEmpty
+        case 0: return !self.values1.isEmpty
+        case 1: return !self.values2.isEmpty
 
         default:
             rxFatalError("Unhandled case (Function)")
         }
-
-    #if swift(>=4.2)
-        #if !compiler(>=5.0)
-        return false
-        #endif
-    #else
-    return false
-    #endif
     }
 
     func run() -> Disposable {
         let subscription1 = SingleAssignmentDisposable()
         let subscription2 = SingleAssignmentDisposable()
 
-        let observer1 = ZipObserver(lock: self._lock, parent: self, index: 0, setNextValue: { self._values1.enqueue($0) }, this: subscription1)
-        let observer2 = ZipObserver(lock: self._lock, parent: self, index: 1, setNextValue: { self._values2.enqueue($0) }, this: subscription2)
+        let observer1 = ZipObserver(lock: self.lock, parent: self, index: 0, setNextValue: { self.values1.enqueue($0) }, this: subscription1)
+        let observer2 = ZipObserver(lock: self.lock, parent: self, index: 1, setNextValue: { self.values2.enqueue($0) }, this: subscription2)
 
-        subscription1.setDisposable(self._parent.source1.subscribe(observer1))
-        subscription2.setDisposable(self._parent.source2.subscribe(observer2))
+        subscription1.setDisposable(self.parent.source1.subscribe(observer1))
+        subscription2.setDisposable(self.parent.source2.subscribe(observer2))
 
         return Disposables.create([
            subscription1,
@@ -96,27 +88,27 @@ final class ZipSink2_<E1, E2, O: ObserverType> : ZipSink<O> {
         ])
     }
 
-    override func getResult() throws -> R {
-        return try self._parent._resultSelector(self._values1.dequeue()!, self._values2.dequeue()!)
+    override func getResult() throws -> Result {
+        try self.parent.resultSelector(self.values1.dequeue()!, self.values2.dequeue()!)
     }
 }
 
-final class Zip2<E1, E2, R> : Producer<R> {
-    typealias ResultSelector = (E1, E2) throws -> R
+final class Zip2<E1, E2, Result> : Producer<Result> {
+    typealias ResultSelector = (E1, E2) throws -> Result
 
     let source1: Observable<E1>
     let source2: Observable<E2>
 
-    let _resultSelector: ResultSelector
+    let resultSelector: ResultSelector
 
     init(source1: Observable<E1>, source2: Observable<E2>, resultSelector: @escaping ResultSelector) {
         self.source1 = source1
         self.source2 = source2
 
-        self._resultSelector = resultSelector
+        self.resultSelector = resultSelector
     }
 
-    override func run<O: ObserverType>(_ observer: O, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where O.E == R {
+    override func run<Observer: ObserverType>(_ observer: Observer, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where Observer.Element == Result {
         let sink = ZipSink2_(parent: self, observer: observer, cancel: cancel)
         let subscription = sink.run()
         return (sink: sink, subscription: subscription)
@@ -137,8 +129,8 @@ extension ObservableType {
     - returns: An observable sequence containing the result of combining elements of the sources using the specified result selector function.
     */
     public static func zip<O1: ObservableType, O2: ObservableType, O3: ObservableType>
-        (_ source1: O1, _ source2: O2, _ source3: O3, resultSelector: @escaping (O1.E, O2.E, O3.E) throws -> E)
-        -> Observable<E> {
+        (_ source1: O1, _ source2: O2, _ source3: O3, resultSelector: @escaping (O1.Element, O2.Element, O3.Element) throws -> Element)
+        -> Observable<Element> {
         return Zip3(
             source1: source1.asObservable(), source2: source2.asObservable(), source3: source3.asObservable(),
             resultSelector: resultSelector
@@ -146,7 +138,7 @@ extension ObservableType {
     }
 }
 
-extension ObservableType where E == Any {
+extension ObservableType where Element == Any {
     /**
     Merges the specified observable sequences into one observable sequence of tuples whenever all of the observable sequences have produced an element at a corresponding index.
 
@@ -156,7 +148,7 @@ extension ObservableType where E == Any {
     */
     public static func zip<O1: ObservableType, O2: ObservableType, O3: ObservableType>
         (_ source1: O1, _ source2: O2, _ source3: O3)
-        -> Observable<(O1.E, O2.E, O3.E)> {
+        -> Observable<(O1.Element, O2.Element, O3.Element)> {
         return Zip3(
             source1: source1.asObservable(), source2: source2.asObservable(), source3: source3.asObservable(),
             resultSelector: { ($0, $1, $2) }
@@ -164,38 +156,30 @@ extension ObservableType where E == Any {
     }
 }
 
-final class ZipSink3_<E1, E2, E3, O: ObserverType> : ZipSink<O> {
-    typealias R = O.E
-    typealias Parent = Zip3<E1, E2, E3, R>
+final class ZipSink3_<E1, E2, E3, Observer: ObserverType> : ZipSink<Observer> {
+    typealias Result = Observer.Element 
+    typealias Parent = Zip3<E1, E2, E3, Result>
 
-    let _parent: Parent
+    let parent: Parent
 
-    var _values1: Queue<E1> = Queue(capacity: 2)
-    var _values2: Queue<E2> = Queue(capacity: 2)
-    var _values3: Queue<E3> = Queue(capacity: 2)
+    var values1: Queue<E1> = Queue(capacity: 2)
+    var values2: Queue<E2> = Queue(capacity: 2)
+    var values3: Queue<E3> = Queue(capacity: 2)
 
-    init(parent: Parent, observer: O, cancel: Cancelable) {
-        self._parent = parent
+    init(parent: Parent, observer: Observer, cancel: Cancelable) {
+        self.parent = parent
         super.init(arity: 3, observer: observer, cancel: cancel)
     }
 
     override func hasElements(_ index: Int) -> Bool {
         switch index {
-        case 0: return !self._values1.isEmpty
-        case 1: return !self._values2.isEmpty
-        case 2: return !self._values3.isEmpty
+        case 0: return !self.values1.isEmpty
+        case 1: return !self.values2.isEmpty
+        case 2: return !self.values3.isEmpty
 
         default:
             rxFatalError("Unhandled case (Function)")
         }
-
-    #if swift(>=4.2)
-        #if !compiler(>=5.0)
-        return false
-        #endif
-    #else
-    return false
-    #endif
     }
 
     func run() -> Disposable {
@@ -203,13 +187,13 @@ final class ZipSink3_<E1, E2, E3, O: ObserverType> : ZipSink<O> {
         let subscription2 = SingleAssignmentDisposable()
         let subscription3 = SingleAssignmentDisposable()
 
-        let observer1 = ZipObserver(lock: self._lock, parent: self, index: 0, setNextValue: { self._values1.enqueue($0) }, this: subscription1)
-        let observer2 = ZipObserver(lock: self._lock, parent: self, index: 1, setNextValue: { self._values2.enqueue($0) }, this: subscription2)
-        let observer3 = ZipObserver(lock: self._lock, parent: self, index: 2, setNextValue: { self._values3.enqueue($0) }, this: subscription3)
+        let observer1 = ZipObserver(lock: self.lock, parent: self, index: 0, setNextValue: { self.values1.enqueue($0) }, this: subscription1)
+        let observer2 = ZipObserver(lock: self.lock, parent: self, index: 1, setNextValue: { self.values2.enqueue($0) }, this: subscription2)
+        let observer3 = ZipObserver(lock: self.lock, parent: self, index: 2, setNextValue: { self.values3.enqueue($0) }, this: subscription3)
 
-        subscription1.setDisposable(self._parent.source1.subscribe(observer1))
-        subscription2.setDisposable(self._parent.source2.subscribe(observer2))
-        subscription3.setDisposable(self._parent.source3.subscribe(observer3))
+        subscription1.setDisposable(self.parent.source1.subscribe(observer1))
+        subscription2.setDisposable(self.parent.source2.subscribe(observer2))
+        subscription3.setDisposable(self.parent.source3.subscribe(observer3))
 
         return Disposables.create([
            subscription1,
@@ -218,29 +202,29 @@ final class ZipSink3_<E1, E2, E3, O: ObserverType> : ZipSink<O> {
         ])
     }
 
-    override func getResult() throws -> R {
-        return try self._parent._resultSelector(self._values1.dequeue()!, self._values2.dequeue()!, self._values3.dequeue()!)
+    override func getResult() throws -> Result {
+        try self.parent.resultSelector(self.values1.dequeue()!, self.values2.dequeue()!, self.values3.dequeue()!)
     }
 }
 
-final class Zip3<E1, E2, E3, R> : Producer<R> {
-    typealias ResultSelector = (E1, E2, E3) throws -> R
+final class Zip3<E1, E2, E3, Result> : Producer<Result> {
+    typealias ResultSelector = (E1, E2, E3) throws -> Result
 
     let source1: Observable<E1>
     let source2: Observable<E2>
     let source3: Observable<E3>
 
-    let _resultSelector: ResultSelector
+    let resultSelector: ResultSelector
 
     init(source1: Observable<E1>, source2: Observable<E2>, source3: Observable<E3>, resultSelector: @escaping ResultSelector) {
         self.source1 = source1
         self.source2 = source2
         self.source3 = source3
 
-        self._resultSelector = resultSelector
+        self.resultSelector = resultSelector
     }
 
-    override func run<O: ObserverType>(_ observer: O, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where O.E == R {
+    override func run<Observer: ObserverType>(_ observer: Observer, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where Observer.Element == Result {
         let sink = ZipSink3_(parent: self, observer: observer, cancel: cancel)
         let subscription = sink.run()
         return (sink: sink, subscription: subscription)
@@ -261,8 +245,8 @@ extension ObservableType {
     - returns: An observable sequence containing the result of combining elements of the sources using the specified result selector function.
     */
     public static func zip<O1: ObservableType, O2: ObservableType, O3: ObservableType, O4: ObservableType>
-        (_ source1: O1, _ source2: O2, _ source3: O3, _ source4: O4, resultSelector: @escaping (O1.E, O2.E, O3.E, O4.E) throws -> E)
-        -> Observable<E> {
+        (_ source1: O1, _ source2: O2, _ source3: O3, _ source4: O4, resultSelector: @escaping (O1.Element, O2.Element, O3.Element, O4.Element) throws -> Element)
+        -> Observable<Element> {
         return Zip4(
             source1: source1.asObservable(), source2: source2.asObservable(), source3: source3.asObservable(), source4: source4.asObservable(),
             resultSelector: resultSelector
@@ -270,7 +254,7 @@ extension ObservableType {
     }
 }
 
-extension ObservableType where E == Any {
+extension ObservableType where Element == Any {
     /**
     Merges the specified observable sequences into one observable sequence of tuples whenever all of the observable sequences have produced an element at a corresponding index.
 
@@ -280,7 +264,7 @@ extension ObservableType where E == Any {
     */
     public static func zip<O1: ObservableType, O2: ObservableType, O3: ObservableType, O4: ObservableType>
         (_ source1: O1, _ source2: O2, _ source3: O3, _ source4: O4)
-        -> Observable<(O1.E, O2.E, O3.E, O4.E)> {
+        -> Observable<(O1.Element, O2.Element, O3.Element, O4.Element)> {
         return Zip4(
             source1: source1.asObservable(), source2: source2.asObservable(), source3: source3.asObservable(), source4: source4.asObservable(),
             resultSelector: { ($0, $1, $2, $3) }
@@ -288,40 +272,32 @@ extension ObservableType where E == Any {
     }
 }
 
-final class ZipSink4_<E1, E2, E3, E4, O: ObserverType> : ZipSink<O> {
-    typealias R = O.E
-    typealias Parent = Zip4<E1, E2, E3, E4, R>
+final class ZipSink4_<E1, E2, E3, E4, Observer: ObserverType> : ZipSink<Observer> {
+    typealias Result = Observer.Element 
+    typealias Parent = Zip4<E1, E2, E3, E4, Result>
 
-    let _parent: Parent
+    let parent: Parent
 
-    var _values1: Queue<E1> = Queue(capacity: 2)
-    var _values2: Queue<E2> = Queue(capacity: 2)
-    var _values3: Queue<E3> = Queue(capacity: 2)
-    var _values4: Queue<E4> = Queue(capacity: 2)
+    var values1: Queue<E1> = Queue(capacity: 2)
+    var values2: Queue<E2> = Queue(capacity: 2)
+    var values3: Queue<E3> = Queue(capacity: 2)
+    var values4: Queue<E4> = Queue(capacity: 2)
 
-    init(parent: Parent, observer: O, cancel: Cancelable) {
-        self._parent = parent
+    init(parent: Parent, observer: Observer, cancel: Cancelable) {
+        self.parent = parent
         super.init(arity: 4, observer: observer, cancel: cancel)
     }
 
     override func hasElements(_ index: Int) -> Bool {
         switch index {
-        case 0: return !self._values1.isEmpty
-        case 1: return !self._values2.isEmpty
-        case 2: return !self._values3.isEmpty
-        case 3: return !self._values4.isEmpty
+        case 0: return !self.values1.isEmpty
+        case 1: return !self.values2.isEmpty
+        case 2: return !self.values3.isEmpty
+        case 3: return !self.values4.isEmpty
 
         default:
             rxFatalError("Unhandled case (Function)")
         }
-
-    #if swift(>=4.2)
-        #if !compiler(>=5.0)
-        return false
-        #endif
-    #else
-    return false
-    #endif
     }
 
     func run() -> Disposable {
@@ -330,15 +306,15 @@ final class ZipSink4_<E1, E2, E3, E4, O: ObserverType> : ZipSink<O> {
         let subscription3 = SingleAssignmentDisposable()
         let subscription4 = SingleAssignmentDisposable()
 
-        let observer1 = ZipObserver(lock: self._lock, parent: self, index: 0, setNextValue: { self._values1.enqueue($0) }, this: subscription1)
-        let observer2 = ZipObserver(lock: self._lock, parent: self, index: 1, setNextValue: { self._values2.enqueue($0) }, this: subscription2)
-        let observer3 = ZipObserver(lock: self._lock, parent: self, index: 2, setNextValue: { self._values3.enqueue($0) }, this: subscription3)
-        let observer4 = ZipObserver(lock: self._lock, parent: self, index: 3, setNextValue: { self._values4.enqueue($0) }, this: subscription4)
+        let observer1 = ZipObserver(lock: self.lock, parent: self, index: 0, setNextValue: { self.values1.enqueue($0) }, this: subscription1)
+        let observer2 = ZipObserver(lock: self.lock, parent: self, index: 1, setNextValue: { self.values2.enqueue($0) }, this: subscription2)
+        let observer3 = ZipObserver(lock: self.lock, parent: self, index: 2, setNextValue: { self.values3.enqueue($0) }, this: subscription3)
+        let observer4 = ZipObserver(lock: self.lock, parent: self, index: 3, setNextValue: { self.values4.enqueue($0) }, this: subscription4)
 
-        subscription1.setDisposable(self._parent.source1.subscribe(observer1))
-        subscription2.setDisposable(self._parent.source2.subscribe(observer2))
-        subscription3.setDisposable(self._parent.source3.subscribe(observer3))
-        subscription4.setDisposable(self._parent.source4.subscribe(observer4))
+        subscription1.setDisposable(self.parent.source1.subscribe(observer1))
+        subscription2.setDisposable(self.parent.source2.subscribe(observer2))
+        subscription3.setDisposable(self.parent.source3.subscribe(observer3))
+        subscription4.setDisposable(self.parent.source4.subscribe(observer4))
 
         return Disposables.create([
            subscription1,
@@ -348,20 +324,20 @@ final class ZipSink4_<E1, E2, E3, E4, O: ObserverType> : ZipSink<O> {
         ])
     }
 
-    override func getResult() throws -> R {
-        return try self._parent._resultSelector(self._values1.dequeue()!, self._values2.dequeue()!, self._values3.dequeue()!, self._values4.dequeue()!)
+    override func getResult() throws -> Result {
+        try self.parent.resultSelector(self.values1.dequeue()!, self.values2.dequeue()!, self.values3.dequeue()!, self.values4.dequeue()!)
     }
 }
 
-final class Zip4<E1, E2, E3, E4, R> : Producer<R> {
-    typealias ResultSelector = (E1, E2, E3, E4) throws -> R
+final class Zip4<E1, E2, E3, E4, Result> : Producer<Result> {
+    typealias ResultSelector = (E1, E2, E3, E4) throws -> Result
 
     let source1: Observable<E1>
     let source2: Observable<E2>
     let source3: Observable<E3>
     let source4: Observable<E4>
 
-    let _resultSelector: ResultSelector
+    let resultSelector: ResultSelector
 
     init(source1: Observable<E1>, source2: Observable<E2>, source3: Observable<E3>, source4: Observable<E4>, resultSelector: @escaping ResultSelector) {
         self.source1 = source1
@@ -369,10 +345,10 @@ final class Zip4<E1, E2, E3, E4, R> : Producer<R> {
         self.source3 = source3
         self.source4 = source4
 
-        self._resultSelector = resultSelector
+        self.resultSelector = resultSelector
     }
 
-    override func run<O: ObserverType>(_ observer: O, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where O.E == R {
+    override func run<Observer: ObserverType>(_ observer: Observer, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where Observer.Element == Result {
         let sink = ZipSink4_(parent: self, observer: observer, cancel: cancel)
         let subscription = sink.run()
         return (sink: sink, subscription: subscription)
@@ -393,8 +369,8 @@ extension ObservableType {
     - returns: An observable sequence containing the result of combining elements of the sources using the specified result selector function.
     */
     public static func zip<O1: ObservableType, O2: ObservableType, O3: ObservableType, O4: ObservableType, O5: ObservableType>
-        (_ source1: O1, _ source2: O2, _ source3: O3, _ source4: O4, _ source5: O5, resultSelector: @escaping (O1.E, O2.E, O3.E, O4.E, O5.E) throws -> E)
-        -> Observable<E> {
+        (_ source1: O1, _ source2: O2, _ source3: O3, _ source4: O4, _ source5: O5, resultSelector: @escaping (O1.Element, O2.Element, O3.Element, O4.Element, O5.Element) throws -> Element)
+        -> Observable<Element> {
         return Zip5(
             source1: source1.asObservable(), source2: source2.asObservable(), source3: source3.asObservable(), source4: source4.asObservable(), source5: source5.asObservable(),
             resultSelector: resultSelector
@@ -402,7 +378,7 @@ extension ObservableType {
     }
 }
 
-extension ObservableType where E == Any {
+extension ObservableType where Element == Any {
     /**
     Merges the specified observable sequences into one observable sequence of tuples whenever all of the observable sequences have produced an element at a corresponding index.
 
@@ -412,7 +388,7 @@ extension ObservableType where E == Any {
     */
     public static func zip<O1: ObservableType, O2: ObservableType, O3: ObservableType, O4: ObservableType, O5: ObservableType>
         (_ source1: O1, _ source2: O2, _ source3: O3, _ source4: O4, _ source5: O5)
-        -> Observable<(O1.E, O2.E, O3.E, O4.E, O5.E)> {
+        -> Observable<(O1.Element, O2.Element, O3.Element, O4.Element, O5.Element)> {
         return Zip5(
             source1: source1.asObservable(), source2: source2.asObservable(), source3: source3.asObservable(), source4: source4.asObservable(), source5: source5.asObservable(),
             resultSelector: { ($0, $1, $2, $3, $4) }
@@ -420,42 +396,34 @@ extension ObservableType where E == Any {
     }
 }
 
-final class ZipSink5_<E1, E2, E3, E4, E5, O: ObserverType> : ZipSink<O> {
-    typealias R = O.E
-    typealias Parent = Zip5<E1, E2, E3, E4, E5, R>
+final class ZipSink5_<E1, E2, E3, E4, E5, Observer: ObserverType> : ZipSink<Observer> {
+    typealias Result = Observer.Element 
+    typealias Parent = Zip5<E1, E2, E3, E4, E5, Result>
 
-    let _parent: Parent
+    let parent: Parent
 
-    var _values1: Queue<E1> = Queue(capacity: 2)
-    var _values2: Queue<E2> = Queue(capacity: 2)
-    var _values3: Queue<E3> = Queue(capacity: 2)
-    var _values4: Queue<E4> = Queue(capacity: 2)
-    var _values5: Queue<E5> = Queue(capacity: 2)
+    var values1: Queue<E1> = Queue(capacity: 2)
+    var values2: Queue<E2> = Queue(capacity: 2)
+    var values3: Queue<E3> = Queue(capacity: 2)
+    var values4: Queue<E4> = Queue(capacity: 2)
+    var values5: Queue<E5> = Queue(capacity: 2)
 
-    init(parent: Parent, observer: O, cancel: Cancelable) {
-        self._parent = parent
+    init(parent: Parent, observer: Observer, cancel: Cancelable) {
+        self.parent = parent
         super.init(arity: 5, observer: observer, cancel: cancel)
     }
 
     override func hasElements(_ index: Int) -> Bool {
         switch index {
-        case 0: return !self._values1.isEmpty
-        case 1: return !self._values2.isEmpty
-        case 2: return !self._values3.isEmpty
-        case 3: return !self._values4.isEmpty
-        case 4: return !self._values5.isEmpty
+        case 0: return !self.values1.isEmpty
+        case 1: return !self.values2.isEmpty
+        case 2: return !self.values3.isEmpty
+        case 3: return !self.values4.isEmpty
+        case 4: return !self.values5.isEmpty
 
         default:
             rxFatalError("Unhandled case (Function)")
         }
-
-    #if swift(>=4.2)
-        #if !compiler(>=5.0)
-        return false
-        #endif
-    #else
-    return false
-    #endif
     }
 
     func run() -> Disposable {
@@ -465,17 +433,17 @@ final class ZipSink5_<E1, E2, E3, E4, E5, O: ObserverType> : ZipSink<O> {
         let subscription4 = SingleAssignmentDisposable()
         let subscription5 = SingleAssignmentDisposable()
 
-        let observer1 = ZipObserver(lock: self._lock, parent: self, index: 0, setNextValue: { self._values1.enqueue($0) }, this: subscription1)
-        let observer2 = ZipObserver(lock: self._lock, parent: self, index: 1, setNextValue: { self._values2.enqueue($0) }, this: subscription2)
-        let observer3 = ZipObserver(lock: self._lock, parent: self, index: 2, setNextValue: { self._values3.enqueue($0) }, this: subscription3)
-        let observer4 = ZipObserver(lock: self._lock, parent: self, index: 3, setNextValue: { self._values4.enqueue($0) }, this: subscription4)
-        let observer5 = ZipObserver(lock: self._lock, parent: self, index: 4, setNextValue: { self._values5.enqueue($0) }, this: subscription5)
+        let observer1 = ZipObserver(lock: self.lock, parent: self, index: 0, setNextValue: { self.values1.enqueue($0) }, this: subscription1)
+        let observer2 = ZipObserver(lock: self.lock, parent: self, index: 1, setNextValue: { self.values2.enqueue($0) }, this: subscription2)
+        let observer3 = ZipObserver(lock: self.lock, parent: self, index: 2, setNextValue: { self.values3.enqueue($0) }, this: subscription3)
+        let observer4 = ZipObserver(lock: self.lock, parent: self, index: 3, setNextValue: { self.values4.enqueue($0) }, this: subscription4)
+        let observer5 = ZipObserver(lock: self.lock, parent: self, index: 4, setNextValue: { self.values5.enqueue($0) }, this: subscription5)
 
-        subscription1.setDisposable(self._parent.source1.subscribe(observer1))
-        subscription2.setDisposable(self._parent.source2.subscribe(observer2))
-        subscription3.setDisposable(self._parent.source3.subscribe(observer3))
-        subscription4.setDisposable(self._parent.source4.subscribe(observer4))
-        subscription5.setDisposable(self._parent.source5.subscribe(observer5))
+        subscription1.setDisposable(self.parent.source1.subscribe(observer1))
+        subscription2.setDisposable(self.parent.source2.subscribe(observer2))
+        subscription3.setDisposable(self.parent.source3.subscribe(observer3))
+        subscription4.setDisposable(self.parent.source4.subscribe(observer4))
+        subscription5.setDisposable(self.parent.source5.subscribe(observer5))
 
         return Disposables.create([
            subscription1,
@@ -486,13 +454,13 @@ final class ZipSink5_<E1, E2, E3, E4, E5, O: ObserverType> : ZipSink<O> {
         ])
     }
 
-    override func getResult() throws -> R {
-        return try self._parent._resultSelector(self._values1.dequeue()!, self._values2.dequeue()!, self._values3.dequeue()!, self._values4.dequeue()!, self._values5.dequeue()!)
+    override func getResult() throws -> Result {
+        try self.parent.resultSelector(self.values1.dequeue()!, self.values2.dequeue()!, self.values3.dequeue()!, self.values4.dequeue()!, self.values5.dequeue()!)
     }
 }
 
-final class Zip5<E1, E2, E3, E4, E5, R> : Producer<R> {
-    typealias ResultSelector = (E1, E2, E3, E4, E5) throws -> R
+final class Zip5<E1, E2, E3, E4, E5, Result> : Producer<Result> {
+    typealias ResultSelector = (E1, E2, E3, E4, E5) throws -> Result
 
     let source1: Observable<E1>
     let source2: Observable<E2>
@@ -500,7 +468,7 @@ final class Zip5<E1, E2, E3, E4, E5, R> : Producer<R> {
     let source4: Observable<E4>
     let source5: Observable<E5>
 
-    let _resultSelector: ResultSelector
+    let resultSelector: ResultSelector
 
     init(source1: Observable<E1>, source2: Observable<E2>, source3: Observable<E3>, source4: Observable<E4>, source5: Observable<E5>, resultSelector: @escaping ResultSelector) {
         self.source1 = source1
@@ -509,10 +477,10 @@ final class Zip5<E1, E2, E3, E4, E5, R> : Producer<R> {
         self.source4 = source4
         self.source5 = source5
 
-        self._resultSelector = resultSelector
+        self.resultSelector = resultSelector
     }
 
-    override func run<O: ObserverType>(_ observer: O, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where O.E == R {
+    override func run<Observer: ObserverType>(_ observer: Observer, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where Observer.Element == Result {
         let sink = ZipSink5_(parent: self, observer: observer, cancel: cancel)
         let subscription = sink.run()
         return (sink: sink, subscription: subscription)
@@ -533,8 +501,8 @@ extension ObservableType {
     - returns: An observable sequence containing the result of combining elements of the sources using the specified result selector function.
     */
     public static func zip<O1: ObservableType, O2: ObservableType, O3: ObservableType, O4: ObservableType, O5: ObservableType, O6: ObservableType>
-        (_ source1: O1, _ source2: O2, _ source3: O3, _ source4: O4, _ source5: O5, _ source6: O6, resultSelector: @escaping (O1.E, O2.E, O3.E, O4.E, O5.E, O6.E) throws -> E)
-        -> Observable<E> {
+        (_ source1: O1, _ source2: O2, _ source3: O3, _ source4: O4, _ source5: O5, _ source6: O6, resultSelector: @escaping (O1.Element, O2.Element, O3.Element, O4.Element, O5.Element, O6.Element) throws -> Element)
+        -> Observable<Element> {
         return Zip6(
             source1: source1.asObservable(), source2: source2.asObservable(), source3: source3.asObservable(), source4: source4.asObservable(), source5: source5.asObservable(), source6: source6.asObservable(),
             resultSelector: resultSelector
@@ -542,7 +510,7 @@ extension ObservableType {
     }
 }
 
-extension ObservableType where E == Any {
+extension ObservableType where Element == Any {
     /**
     Merges the specified observable sequences into one observable sequence of tuples whenever all of the observable sequences have produced an element at a corresponding index.
 
@@ -552,7 +520,7 @@ extension ObservableType where E == Any {
     */
     public static func zip<O1: ObservableType, O2: ObservableType, O3: ObservableType, O4: ObservableType, O5: ObservableType, O6: ObservableType>
         (_ source1: O1, _ source2: O2, _ source3: O3, _ source4: O4, _ source5: O5, _ source6: O6)
-        -> Observable<(O1.E, O2.E, O3.E, O4.E, O5.E, O6.E)> {
+        -> Observable<(O1.Element, O2.Element, O3.Element, O4.Element, O5.Element, O6.Element)> {
         return Zip6(
             source1: source1.asObservable(), source2: source2.asObservable(), source3: source3.asObservable(), source4: source4.asObservable(), source5: source5.asObservable(), source6: source6.asObservable(),
             resultSelector: { ($0, $1, $2, $3, $4, $5) }
@@ -560,44 +528,36 @@ extension ObservableType where E == Any {
     }
 }
 
-final class ZipSink6_<E1, E2, E3, E4, E5, E6, O: ObserverType> : ZipSink<O> {
-    typealias R = O.E
-    typealias Parent = Zip6<E1, E2, E3, E4, E5, E6, R>
+final class ZipSink6_<E1, E2, E3, E4, E5, E6, Observer: ObserverType> : ZipSink<Observer> {
+    typealias Result = Observer.Element 
+    typealias Parent = Zip6<E1, E2, E3, E4, E5, E6, Result>
 
-    let _parent: Parent
+    let parent: Parent
 
-    var _values1: Queue<E1> = Queue(capacity: 2)
-    var _values2: Queue<E2> = Queue(capacity: 2)
-    var _values3: Queue<E3> = Queue(capacity: 2)
-    var _values4: Queue<E4> = Queue(capacity: 2)
-    var _values5: Queue<E5> = Queue(capacity: 2)
-    var _values6: Queue<E6> = Queue(capacity: 2)
+    var values1: Queue<E1> = Queue(capacity: 2)
+    var values2: Queue<E2> = Queue(capacity: 2)
+    var values3: Queue<E3> = Queue(capacity: 2)
+    var values4: Queue<E4> = Queue(capacity: 2)
+    var values5: Queue<E5> = Queue(capacity: 2)
+    var values6: Queue<E6> = Queue(capacity: 2)
 
-    init(parent: Parent, observer: O, cancel: Cancelable) {
-        self._parent = parent
+    init(parent: Parent, observer: Observer, cancel: Cancelable) {
+        self.parent = parent
         super.init(arity: 6, observer: observer, cancel: cancel)
     }
 
     override func hasElements(_ index: Int) -> Bool {
         switch index {
-        case 0: return !self._values1.isEmpty
-        case 1: return !self._values2.isEmpty
-        case 2: return !self._values3.isEmpty
-        case 3: return !self._values4.isEmpty
-        case 4: return !self._values5.isEmpty
-        case 5: return !self._values6.isEmpty
+        case 0: return !self.values1.isEmpty
+        case 1: return !self.values2.isEmpty
+        case 2: return !self.values3.isEmpty
+        case 3: return !self.values4.isEmpty
+        case 4: return !self.values5.isEmpty
+        case 5: return !self.values6.isEmpty
 
         default:
             rxFatalError("Unhandled case (Function)")
         }
-
-    #if swift(>=4.2)
-        #if !compiler(>=5.0)
-        return false
-        #endif
-    #else
-    return false
-    #endif
     }
 
     func run() -> Disposable {
@@ -608,19 +568,19 @@ final class ZipSink6_<E1, E2, E3, E4, E5, E6, O: ObserverType> : ZipSink<O> {
         let subscription5 = SingleAssignmentDisposable()
         let subscription6 = SingleAssignmentDisposable()
 
-        let observer1 = ZipObserver(lock: self._lock, parent: self, index: 0, setNextValue: { self._values1.enqueue($0) }, this: subscription1)
-        let observer2 = ZipObserver(lock: self._lock, parent: self, index: 1, setNextValue: { self._values2.enqueue($0) }, this: subscription2)
-        let observer3 = ZipObserver(lock: self._lock, parent: self, index: 2, setNextValue: { self._values3.enqueue($0) }, this: subscription3)
-        let observer4 = ZipObserver(lock: self._lock, parent: self, index: 3, setNextValue: { self._values4.enqueue($0) }, this: subscription4)
-        let observer5 = ZipObserver(lock: self._lock, parent: self, index: 4, setNextValue: { self._values5.enqueue($0) }, this: subscription5)
-        let observer6 = ZipObserver(lock: self._lock, parent: self, index: 5, setNextValue: { self._values6.enqueue($0) }, this: subscription6)
+        let observer1 = ZipObserver(lock: self.lock, parent: self, index: 0, setNextValue: { self.values1.enqueue($0) }, this: subscription1)
+        let observer2 = ZipObserver(lock: self.lock, parent: self, index: 1, setNextValue: { self.values2.enqueue($0) }, this: subscription2)
+        let observer3 = ZipObserver(lock: self.lock, parent: self, index: 2, setNextValue: { self.values3.enqueue($0) }, this: subscription3)
+        let observer4 = ZipObserver(lock: self.lock, parent: self, index: 3, setNextValue: { self.values4.enqueue($0) }, this: subscription4)
+        let observer5 = ZipObserver(lock: self.lock, parent: self, index: 4, setNextValue: { self.values5.enqueue($0) }, this: subscription5)
+        let observer6 = ZipObserver(lock: self.lock, parent: self, index: 5, setNextValue: { self.values6.enqueue($0) }, this: subscription6)
 
-        subscription1.setDisposable(self._parent.source1.subscribe(observer1))
-        subscription2.setDisposable(self._parent.source2.subscribe(observer2))
-        subscription3.setDisposable(self._parent.source3.subscribe(observer3))
-        subscription4.setDisposable(self._parent.source4.subscribe(observer4))
-        subscription5.setDisposable(self._parent.source5.subscribe(observer5))
-        subscription6.setDisposable(self._parent.source6.subscribe(observer6))
+        subscription1.setDisposable(self.parent.source1.subscribe(observer1))
+        subscription2.setDisposable(self.parent.source2.subscribe(observer2))
+        subscription3.setDisposable(self.parent.source3.subscribe(observer3))
+        subscription4.setDisposable(self.parent.source4.subscribe(observer4))
+        subscription5.setDisposable(self.parent.source5.subscribe(observer5))
+        subscription6.setDisposable(self.parent.source6.subscribe(observer6))
 
         return Disposables.create([
            subscription1,
@@ -632,13 +592,13 @@ final class ZipSink6_<E1, E2, E3, E4, E5, E6, O: ObserverType> : ZipSink<O> {
         ])
     }
 
-    override func getResult() throws -> R {
-        return try self._parent._resultSelector(self._values1.dequeue()!, self._values2.dequeue()!, self._values3.dequeue()!, self._values4.dequeue()!, self._values5.dequeue()!, self._values6.dequeue()!)
+    override func getResult() throws -> Result {
+        try self.parent.resultSelector(self.values1.dequeue()!, self.values2.dequeue()!, self.values3.dequeue()!, self.values4.dequeue()!, self.values5.dequeue()!, self.values6.dequeue()!)
     }
 }
 
-final class Zip6<E1, E2, E3, E4, E5, E6, R> : Producer<R> {
-    typealias ResultSelector = (E1, E2, E3, E4, E5, E6) throws -> R
+final class Zip6<E1, E2, E3, E4, E5, E6, Result> : Producer<Result> {
+    typealias ResultSelector = (E1, E2, E3, E4, E5, E6) throws -> Result
 
     let source1: Observable<E1>
     let source2: Observable<E2>
@@ -647,7 +607,7 @@ final class Zip6<E1, E2, E3, E4, E5, E6, R> : Producer<R> {
     let source5: Observable<E5>
     let source6: Observable<E6>
 
-    let _resultSelector: ResultSelector
+    let resultSelector: ResultSelector
 
     init(source1: Observable<E1>, source2: Observable<E2>, source3: Observable<E3>, source4: Observable<E4>, source5: Observable<E5>, source6: Observable<E6>, resultSelector: @escaping ResultSelector) {
         self.source1 = source1
@@ -657,10 +617,10 @@ final class Zip6<E1, E2, E3, E4, E5, E6, R> : Producer<R> {
         self.source5 = source5
         self.source6 = source6
 
-        self._resultSelector = resultSelector
+        self.resultSelector = resultSelector
     }
 
-    override func run<O: ObserverType>(_ observer: O, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where O.E == R {
+    override func run<Observer: ObserverType>(_ observer: Observer, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where Observer.Element == Result {
         let sink = ZipSink6_(parent: self, observer: observer, cancel: cancel)
         let subscription = sink.run()
         return (sink: sink, subscription: subscription)
@@ -681,8 +641,8 @@ extension ObservableType {
     - returns: An observable sequence containing the result of combining elements of the sources using the specified result selector function.
     */
     public static func zip<O1: ObservableType, O2: ObservableType, O3: ObservableType, O4: ObservableType, O5: ObservableType, O6: ObservableType, O7: ObservableType>
-        (_ source1: O1, _ source2: O2, _ source3: O3, _ source4: O4, _ source5: O5, _ source6: O6, _ source7: O7, resultSelector: @escaping (O1.E, O2.E, O3.E, O4.E, O5.E, O6.E, O7.E) throws -> E)
-        -> Observable<E> {
+        (_ source1: O1, _ source2: O2, _ source3: O3, _ source4: O4, _ source5: O5, _ source6: O6, _ source7: O7, resultSelector: @escaping (O1.Element, O2.Element, O3.Element, O4.Element, O5.Element, O6.Element, O7.Element) throws -> Element)
+        -> Observable<Element> {
         return Zip7(
             source1: source1.asObservable(), source2: source2.asObservable(), source3: source3.asObservable(), source4: source4.asObservable(), source5: source5.asObservable(), source6: source6.asObservable(), source7: source7.asObservable(),
             resultSelector: resultSelector
@@ -690,7 +650,7 @@ extension ObservableType {
     }
 }
 
-extension ObservableType where E == Any {
+extension ObservableType where Element == Any {
     /**
     Merges the specified observable sequences into one observable sequence of tuples whenever all of the observable sequences have produced an element at a corresponding index.
 
@@ -700,7 +660,7 @@ extension ObservableType where E == Any {
     */
     public static func zip<O1: ObservableType, O2: ObservableType, O3: ObservableType, O4: ObservableType, O5: ObservableType, O6: ObservableType, O7: ObservableType>
         (_ source1: O1, _ source2: O2, _ source3: O3, _ source4: O4, _ source5: O5, _ source6: O6, _ source7: O7)
-        -> Observable<(O1.E, O2.E, O3.E, O4.E, O5.E, O6.E, O7.E)> {
+        -> Observable<(O1.Element, O2.Element, O3.Element, O4.Element, O5.Element, O6.Element, O7.Element)> {
         return Zip7(
             source1: source1.asObservable(), source2: source2.asObservable(), source3: source3.asObservable(), source4: source4.asObservable(), source5: source5.asObservable(), source6: source6.asObservable(), source7: source7.asObservable(),
             resultSelector: { ($0, $1, $2, $3, $4, $5, $6) }
@@ -708,46 +668,38 @@ extension ObservableType where E == Any {
     }
 }
 
-final class ZipSink7_<E1, E2, E3, E4, E5, E6, E7, O: ObserverType> : ZipSink<O> {
-    typealias R = O.E
-    typealias Parent = Zip7<E1, E2, E3, E4, E5, E6, E7, R>
+final class ZipSink7_<E1, E2, E3, E4, E5, E6, E7, Observer: ObserverType> : ZipSink<Observer> {
+    typealias Result = Observer.Element 
+    typealias Parent = Zip7<E1, E2, E3, E4, E5, E6, E7, Result>
 
-    let _parent: Parent
+    let parent: Parent
 
-    var _values1: Queue<E1> = Queue(capacity: 2)
-    var _values2: Queue<E2> = Queue(capacity: 2)
-    var _values3: Queue<E3> = Queue(capacity: 2)
-    var _values4: Queue<E4> = Queue(capacity: 2)
-    var _values5: Queue<E5> = Queue(capacity: 2)
-    var _values6: Queue<E6> = Queue(capacity: 2)
-    var _values7: Queue<E7> = Queue(capacity: 2)
+    var values1: Queue<E1> = Queue(capacity: 2)
+    var values2: Queue<E2> = Queue(capacity: 2)
+    var values3: Queue<E3> = Queue(capacity: 2)
+    var values4: Queue<E4> = Queue(capacity: 2)
+    var values5: Queue<E5> = Queue(capacity: 2)
+    var values6: Queue<E6> = Queue(capacity: 2)
+    var values7: Queue<E7> = Queue(capacity: 2)
 
-    init(parent: Parent, observer: O, cancel: Cancelable) {
-        self._parent = parent
+    init(parent: Parent, observer: Observer, cancel: Cancelable) {
+        self.parent = parent
         super.init(arity: 7, observer: observer, cancel: cancel)
     }
 
     override func hasElements(_ index: Int) -> Bool {
         switch index {
-        case 0: return !self._values1.isEmpty
-        case 1: return !self._values2.isEmpty
-        case 2: return !self._values3.isEmpty
-        case 3: return !self._values4.isEmpty
-        case 4: return !self._values5.isEmpty
-        case 5: return !self._values6.isEmpty
-        case 6: return !self._values7.isEmpty
+        case 0: return !self.values1.isEmpty
+        case 1: return !self.values2.isEmpty
+        case 2: return !self.values3.isEmpty
+        case 3: return !self.values4.isEmpty
+        case 4: return !self.values5.isEmpty
+        case 5: return !self.values6.isEmpty
+        case 6: return !self.values7.isEmpty
 
         default:
             rxFatalError("Unhandled case (Function)")
         }
-
-    #if swift(>=4.2)
-        #if !compiler(>=5.0)
-        return false
-        #endif
-    #else
-    return false
-    #endif
     }
 
     func run() -> Disposable {
@@ -759,21 +711,21 @@ final class ZipSink7_<E1, E2, E3, E4, E5, E6, E7, O: ObserverType> : ZipSink<O> 
         let subscription6 = SingleAssignmentDisposable()
         let subscription7 = SingleAssignmentDisposable()
 
-        let observer1 = ZipObserver(lock: self._lock, parent: self, index: 0, setNextValue: { self._values1.enqueue($0) }, this: subscription1)
-        let observer2 = ZipObserver(lock: self._lock, parent: self, index: 1, setNextValue: { self._values2.enqueue($0) }, this: subscription2)
-        let observer3 = ZipObserver(lock: self._lock, parent: self, index: 2, setNextValue: { self._values3.enqueue($0) }, this: subscription3)
-        let observer4 = ZipObserver(lock: self._lock, parent: self, index: 3, setNextValue: { self._values4.enqueue($0) }, this: subscription4)
-        let observer5 = ZipObserver(lock: self._lock, parent: self, index: 4, setNextValue: { self._values5.enqueue($0) }, this: subscription5)
-        let observer6 = ZipObserver(lock: self._lock, parent: self, index: 5, setNextValue: { self._values6.enqueue($0) }, this: subscription6)
-        let observer7 = ZipObserver(lock: self._lock, parent: self, index: 6, setNextValue: { self._values7.enqueue($0) }, this: subscription7)
+        let observer1 = ZipObserver(lock: self.lock, parent: self, index: 0, setNextValue: { self.values1.enqueue($0) }, this: subscription1)
+        let observer2 = ZipObserver(lock: self.lock, parent: self, index: 1, setNextValue: { self.values2.enqueue($0) }, this: subscription2)
+        let observer3 = ZipObserver(lock: self.lock, parent: self, index: 2, setNextValue: { self.values3.enqueue($0) }, this: subscription3)
+        let observer4 = ZipObserver(lock: self.lock, parent: self, index: 3, setNextValue: { self.values4.enqueue($0) }, this: subscription4)
+        let observer5 = ZipObserver(lock: self.lock, parent: self, index: 4, setNextValue: { self.values5.enqueue($0) }, this: subscription5)
+        let observer6 = ZipObserver(lock: self.lock, parent: self, index: 5, setNextValue: { self.values6.enqueue($0) }, this: subscription6)
+        let observer7 = ZipObserver(lock: self.lock, parent: self, index: 6, setNextValue: { self.values7.enqueue($0) }, this: subscription7)
 
-        subscription1.setDisposable(self._parent.source1.subscribe(observer1))
-        subscription2.setDisposable(self._parent.source2.subscribe(observer2))
-        subscription3.setDisposable(self._parent.source3.subscribe(observer3))
-        subscription4.setDisposable(self._parent.source4.subscribe(observer4))
-        subscription5.setDisposable(self._parent.source5.subscribe(observer5))
-        subscription6.setDisposable(self._parent.source6.subscribe(observer6))
-        subscription7.setDisposable(self._parent.source7.subscribe(observer7))
+        subscription1.setDisposable(self.parent.source1.subscribe(observer1))
+        subscription2.setDisposable(self.parent.source2.subscribe(observer2))
+        subscription3.setDisposable(self.parent.source3.subscribe(observer3))
+        subscription4.setDisposable(self.parent.source4.subscribe(observer4))
+        subscription5.setDisposable(self.parent.source5.subscribe(observer5))
+        subscription6.setDisposable(self.parent.source6.subscribe(observer6))
+        subscription7.setDisposable(self.parent.source7.subscribe(observer7))
 
         return Disposables.create([
            subscription1,
@@ -786,13 +738,13 @@ final class ZipSink7_<E1, E2, E3, E4, E5, E6, E7, O: ObserverType> : ZipSink<O> 
         ])
     }
 
-    override func getResult() throws -> R {
-        return try self._parent._resultSelector(self._values1.dequeue()!, self._values2.dequeue()!, self._values3.dequeue()!, self._values4.dequeue()!, self._values5.dequeue()!, self._values6.dequeue()!, self._values7.dequeue()!)
+    override func getResult() throws -> Result {
+        try self.parent.resultSelector(self.values1.dequeue()!, self.values2.dequeue()!, self.values3.dequeue()!, self.values4.dequeue()!, self.values5.dequeue()!, self.values6.dequeue()!, self.values7.dequeue()!)
     }
 }
 
-final class Zip7<E1, E2, E3, E4, E5, E6, E7, R> : Producer<R> {
-    typealias ResultSelector = (E1, E2, E3, E4, E5, E6, E7) throws -> R
+final class Zip7<E1, E2, E3, E4, E5, E6, E7, Result> : Producer<Result> {
+    typealias ResultSelector = (E1, E2, E3, E4, E5, E6, E7) throws -> Result
 
     let source1: Observable<E1>
     let source2: Observable<E2>
@@ -802,7 +754,7 @@ final class Zip7<E1, E2, E3, E4, E5, E6, E7, R> : Producer<R> {
     let source6: Observable<E6>
     let source7: Observable<E7>
 
-    let _resultSelector: ResultSelector
+    let resultSelector: ResultSelector
 
     init(source1: Observable<E1>, source2: Observable<E2>, source3: Observable<E3>, source4: Observable<E4>, source5: Observable<E5>, source6: Observable<E6>, source7: Observable<E7>, resultSelector: @escaping ResultSelector) {
         self.source1 = source1
@@ -813,10 +765,10 @@ final class Zip7<E1, E2, E3, E4, E5, E6, E7, R> : Producer<R> {
         self.source6 = source6
         self.source7 = source7
 
-        self._resultSelector = resultSelector
+        self.resultSelector = resultSelector
     }
 
-    override func run<O: ObserverType>(_ observer: O, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where O.E == R {
+    override func run<Observer: ObserverType>(_ observer: Observer, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where Observer.Element == Result {
         let sink = ZipSink7_(parent: self, observer: observer, cancel: cancel)
         let subscription = sink.run()
         return (sink: sink, subscription: subscription)
@@ -837,8 +789,8 @@ extension ObservableType {
     - returns: An observable sequence containing the result of combining elements of the sources using the specified result selector function.
     */
     public static func zip<O1: ObservableType, O2: ObservableType, O3: ObservableType, O4: ObservableType, O5: ObservableType, O6: ObservableType, O7: ObservableType, O8: ObservableType>
-        (_ source1: O1, _ source2: O2, _ source3: O3, _ source4: O4, _ source5: O5, _ source6: O6, _ source7: O7, _ source8: O8, resultSelector: @escaping (O1.E, O2.E, O3.E, O4.E, O5.E, O6.E, O7.E, O8.E) throws -> E)
-        -> Observable<E> {
+        (_ source1: O1, _ source2: O2, _ source3: O3, _ source4: O4, _ source5: O5, _ source6: O6, _ source7: O7, _ source8: O8, resultSelector: @escaping (O1.Element, O2.Element, O3.Element, O4.Element, O5.Element, O6.Element, O7.Element, O8.Element) throws -> Element)
+        -> Observable<Element> {
         return Zip8(
             source1: source1.asObservable(), source2: source2.asObservable(), source3: source3.asObservable(), source4: source4.asObservable(), source5: source5.asObservable(), source6: source6.asObservable(), source7: source7.asObservable(), source8: source8.asObservable(),
             resultSelector: resultSelector
@@ -846,7 +798,7 @@ extension ObservableType {
     }
 }
 
-extension ObservableType where E == Any {
+extension ObservableType where Element == Any {
     /**
     Merges the specified observable sequences into one observable sequence of tuples whenever all of the observable sequences have produced an element at a corresponding index.
 
@@ -856,7 +808,7 @@ extension ObservableType where E == Any {
     */
     public static func zip<O1: ObservableType, O2: ObservableType, O3: ObservableType, O4: ObservableType, O5: ObservableType, O6: ObservableType, O7: ObservableType, O8: ObservableType>
         (_ source1: O1, _ source2: O2, _ source3: O3, _ source4: O4, _ source5: O5, _ source6: O6, _ source7: O7, _ source8: O8)
-        -> Observable<(O1.E, O2.E, O3.E, O4.E, O5.E, O6.E, O7.E, O8.E)> {
+        -> Observable<(O1.Element, O2.Element, O3.Element, O4.Element, O5.Element, O6.Element, O7.Element, O8.Element)> {
         return Zip8(
             source1: source1.asObservable(), source2: source2.asObservable(), source3: source3.asObservable(), source4: source4.asObservable(), source5: source5.asObservable(), source6: source6.asObservable(), source7: source7.asObservable(), source8: source8.asObservable(),
             resultSelector: { ($0, $1, $2, $3, $4, $5, $6, $7) }
@@ -864,48 +816,40 @@ extension ObservableType where E == Any {
     }
 }
 
-final class ZipSink8_<E1, E2, E3, E4, E5, E6, E7, E8, O: ObserverType> : ZipSink<O> {
-    typealias R = O.E
-    typealias Parent = Zip8<E1, E2, E3, E4, E5, E6, E7, E8, R>
+final class ZipSink8_<E1, E2, E3, E4, E5, E6, E7, E8, Observer: ObserverType> : ZipSink<Observer> {
+    typealias Result = Observer.Element 
+    typealias Parent = Zip8<E1, E2, E3, E4, E5, E6, E7, E8, Result>
 
-    let _parent: Parent
+    let parent: Parent
 
-    var _values1: Queue<E1> = Queue(capacity: 2)
-    var _values2: Queue<E2> = Queue(capacity: 2)
-    var _values3: Queue<E3> = Queue(capacity: 2)
-    var _values4: Queue<E4> = Queue(capacity: 2)
-    var _values5: Queue<E5> = Queue(capacity: 2)
-    var _values6: Queue<E6> = Queue(capacity: 2)
-    var _values7: Queue<E7> = Queue(capacity: 2)
-    var _values8: Queue<E8> = Queue(capacity: 2)
+    var values1: Queue<E1> = Queue(capacity: 2)
+    var values2: Queue<E2> = Queue(capacity: 2)
+    var values3: Queue<E3> = Queue(capacity: 2)
+    var values4: Queue<E4> = Queue(capacity: 2)
+    var values5: Queue<E5> = Queue(capacity: 2)
+    var values6: Queue<E6> = Queue(capacity: 2)
+    var values7: Queue<E7> = Queue(capacity: 2)
+    var values8: Queue<E8> = Queue(capacity: 2)
 
-    init(parent: Parent, observer: O, cancel: Cancelable) {
-        self._parent = parent
+    init(parent: Parent, observer: Observer, cancel: Cancelable) {
+        self.parent = parent
         super.init(arity: 8, observer: observer, cancel: cancel)
     }
 
     override func hasElements(_ index: Int) -> Bool {
         switch index {
-        case 0: return !self._values1.isEmpty
-        case 1: return !self._values2.isEmpty
-        case 2: return !self._values3.isEmpty
-        case 3: return !self._values4.isEmpty
-        case 4: return !self._values5.isEmpty
-        case 5: return !self._values6.isEmpty
-        case 6: return !self._values7.isEmpty
-        case 7: return !self._values8.isEmpty
+        case 0: return !self.values1.isEmpty
+        case 1: return !self.values2.isEmpty
+        case 2: return !self.values3.isEmpty
+        case 3: return !self.values4.isEmpty
+        case 4: return !self.values5.isEmpty
+        case 5: return !self.values6.isEmpty
+        case 6: return !self.values7.isEmpty
+        case 7: return !self.values8.isEmpty
 
         default:
             rxFatalError("Unhandled case (Function)")
         }
-
-    #if swift(>=4.2)
-        #if !compiler(>=5.0)
-        return false
-        #endif
-    #else
-    return false
-    #endif
     }
 
     func run() -> Disposable {
@@ -918,23 +862,23 @@ final class ZipSink8_<E1, E2, E3, E4, E5, E6, E7, E8, O: ObserverType> : ZipSink
         let subscription7 = SingleAssignmentDisposable()
         let subscription8 = SingleAssignmentDisposable()
 
-        let observer1 = ZipObserver(lock: self._lock, parent: self, index: 0, setNextValue: { self._values1.enqueue($0) }, this: subscription1)
-        let observer2 = ZipObserver(lock: self._lock, parent: self, index: 1, setNextValue: { self._values2.enqueue($0) }, this: subscription2)
-        let observer3 = ZipObserver(lock: self._lock, parent: self, index: 2, setNextValue: { self._values3.enqueue($0) }, this: subscription3)
-        let observer4 = ZipObserver(lock: self._lock, parent: self, index: 3, setNextValue: { self._values4.enqueue($0) }, this: subscription4)
-        let observer5 = ZipObserver(lock: self._lock, parent: self, index: 4, setNextValue: { self._values5.enqueue($0) }, this: subscription5)
-        let observer6 = ZipObserver(lock: self._lock, parent: self, index: 5, setNextValue: { self._values6.enqueue($0) }, this: subscription6)
-        let observer7 = ZipObserver(lock: self._lock, parent: self, index: 6, setNextValue: { self._values7.enqueue($0) }, this: subscription7)
-        let observer8 = ZipObserver(lock: self._lock, parent: self, index: 7, setNextValue: { self._values8.enqueue($0) }, this: subscription8)
+        let observer1 = ZipObserver(lock: self.lock, parent: self, index: 0, setNextValue: { self.values1.enqueue($0) }, this: subscription1)
+        let observer2 = ZipObserver(lock: self.lock, parent: self, index: 1, setNextValue: { self.values2.enqueue($0) }, this: subscription2)
+        let observer3 = ZipObserver(lock: self.lock, parent: self, index: 2, setNextValue: { self.values3.enqueue($0) }, this: subscription3)
+        let observer4 = ZipObserver(lock: self.lock, parent: self, index: 3, setNextValue: { self.values4.enqueue($0) }, this: subscription4)
+        let observer5 = ZipObserver(lock: self.lock, parent: self, index: 4, setNextValue: { self.values5.enqueue($0) }, this: subscription5)
+        let observer6 = ZipObserver(lock: self.lock, parent: self, index: 5, setNextValue: { self.values6.enqueue($0) }, this: subscription6)
+        let observer7 = ZipObserver(lock: self.lock, parent: self, index: 6, setNextValue: { self.values7.enqueue($0) }, this: subscription7)
+        let observer8 = ZipObserver(lock: self.lock, parent: self, index: 7, setNextValue: { self.values8.enqueue($0) }, this: subscription8)
 
-        subscription1.setDisposable(self._parent.source1.subscribe(observer1))
-        subscription2.setDisposable(self._parent.source2.subscribe(observer2))
-        subscription3.setDisposable(self._parent.source3.subscribe(observer3))
-        subscription4.setDisposable(self._parent.source4.subscribe(observer4))
-        subscription5.setDisposable(self._parent.source5.subscribe(observer5))
-        subscription6.setDisposable(self._parent.source6.subscribe(observer6))
-        subscription7.setDisposable(self._parent.source7.subscribe(observer7))
-        subscription8.setDisposable(self._parent.source8.subscribe(observer8))
+        subscription1.setDisposable(self.parent.source1.subscribe(observer1))
+        subscription2.setDisposable(self.parent.source2.subscribe(observer2))
+        subscription3.setDisposable(self.parent.source3.subscribe(observer3))
+        subscription4.setDisposable(self.parent.source4.subscribe(observer4))
+        subscription5.setDisposable(self.parent.source5.subscribe(observer5))
+        subscription6.setDisposable(self.parent.source6.subscribe(observer6))
+        subscription7.setDisposable(self.parent.source7.subscribe(observer7))
+        subscription8.setDisposable(self.parent.source8.subscribe(observer8))
 
         return Disposables.create([
            subscription1,
@@ -948,13 +892,13 @@ final class ZipSink8_<E1, E2, E3, E4, E5, E6, E7, E8, O: ObserverType> : ZipSink
         ])
     }
 
-    override func getResult() throws -> R {
-        return try self._parent._resultSelector(self._values1.dequeue()!, self._values2.dequeue()!, self._values3.dequeue()!, self._values4.dequeue()!, self._values5.dequeue()!, self._values6.dequeue()!, self._values7.dequeue()!, self._values8.dequeue()!)
+    override func getResult() throws -> Result {
+        try self.parent.resultSelector(self.values1.dequeue()!, self.values2.dequeue()!, self.values3.dequeue()!, self.values4.dequeue()!, self.values5.dequeue()!, self.values6.dequeue()!, self.values7.dequeue()!, self.values8.dequeue()!)
     }
 }
 
-final class Zip8<E1, E2, E3, E4, E5, E6, E7, E8, R> : Producer<R> {
-    typealias ResultSelector = (E1, E2, E3, E4, E5, E6, E7, E8) throws -> R
+final class Zip8<E1, E2, E3, E4, E5, E6, E7, E8, Result> : Producer<Result> {
+    typealias ResultSelector = (E1, E2, E3, E4, E5, E6, E7, E8) throws -> Result
 
     let source1: Observable<E1>
     let source2: Observable<E2>
@@ -965,7 +909,7 @@ final class Zip8<E1, E2, E3, E4, E5, E6, E7, E8, R> : Producer<R> {
     let source7: Observable<E7>
     let source8: Observable<E8>
 
-    let _resultSelector: ResultSelector
+    let resultSelector: ResultSelector
 
     init(source1: Observable<E1>, source2: Observable<E2>, source3: Observable<E3>, source4: Observable<E4>, source5: Observable<E5>, source6: Observable<E6>, source7: Observable<E7>, source8: Observable<E8>, resultSelector: @escaping ResultSelector) {
         self.source1 = source1
@@ -977,10 +921,10 @@ final class Zip8<E1, E2, E3, E4, E5, E6, E7, E8, R> : Producer<R> {
         self.source7 = source7
         self.source8 = source8
 
-        self._resultSelector = resultSelector
+        self.resultSelector = resultSelector
     }
 
-    override func run<O: ObserverType>(_ observer: O, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where O.E == R {
+    override func run<Observer: ObserverType>(_ observer: Observer, cancel: Cancelable) -> (sink: Disposable, subscription: Disposable) where Observer.Element == Result {
         let sink = ZipSink8_(parent: self, observer: observer, cancel: cancel)
         let subscription = sink.run()
         return (sink: sink, subscription: subscription)

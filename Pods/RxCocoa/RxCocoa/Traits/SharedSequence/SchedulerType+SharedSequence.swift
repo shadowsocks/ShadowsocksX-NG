@@ -18,8 +18,8 @@ public enum SharingScheduler {
 
      **This shouldn't be used in normal release builds.**
     */
-    static public func mock(scheduler: SchedulerType, action: () -> Void) {
-        return mock(makeScheduler: { scheduler }, action: action)
+    static public func mock(scheduler: SchedulerType, action: () throws -> Void) rethrows {
+        return try mock(makeScheduler: { scheduler }, action: action)
     }
 
     /**
@@ -28,24 +28,25 @@ public enum SharingScheduler {
 
      **This shouldn't be used in normal release builds.**
      */
-    static public func mock(makeScheduler: @escaping () -> SchedulerType, action: () -> Void) {
+    static public func mock(makeScheduler: @escaping () -> SchedulerType, action: () throws -> Void) rethrows {
         let originalMake = make
         make = makeScheduler
+        defer {
+            make = originalMake
+        }
 
-        action()
+        try action()
 
         // If you remove this line , compiler buggy optimizations will change behavior of this code
         _forceCompilerToStopDoingInsaneOptimizationsThatBreakCode(makeScheduler)
         // Scary, I know
-
-        make = originalMake
     }
 }
 
 #if os(Linux)
     import Glibc
 #else
-    import func Foundation.arc4random
+    import Foundation
 #endif
 
 func _forceCompilerToStopDoingInsaneOptimizationsThatBreakCode(_ scheduler: () -> SchedulerType) {

@@ -6,6 +6,8 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
+import Foundation
+
 /// Parametrization for virtual time used by `VirtualTimeScheduler`s.
 public protocol VirtualTimeConverterType {
     /// Virtual time unit used that represents ticks of virtual clock.
@@ -36,7 +38,7 @@ public protocol VirtualTimeConverterType {
      - parameter virtualTimeInterval: Virtual time interval to convert to `NSTimeInterval`.
      - returns: `NSTimeInterval` corresponding to virtual time interval.
     */
-    func convertFromVirtualTimeInterval(_ virtualTimeInterval: VirtualTimeIntervalUnit) -> RxTimeInterval
+    func convertFromVirtualTimeInterval(_ virtualTimeInterval: VirtualTimeIntervalUnit) -> TimeInterval
 
     /**
      Converts from `NSTimeInterval` to virtual time interval.
@@ -44,7 +46,7 @@ public protocol VirtualTimeConverterType {
      - parameter timeInterval: `NSTimeInterval` to convert to virtual time interval.
      - returns: Virtual time interval corresponding to time interval.
     */
-    func convertToVirtualTimeInterval(_ timeInterval: RxTimeInterval) -> VirtualTimeIntervalUnit
+    func convertToVirtualTimeInterval(_ timeInterval: TimeInterval) -> VirtualTimeIntervalUnit
 
     /**
      Offsets virtual time by virtual time interval.
@@ -80,16 +82,16 @@ public enum VirtualTimeComparison {
 extension VirtualTimeComparison {
     /// lhs < rhs.
     var lessThen: Bool {
-        return self == .lessThan
+        self == .lessThan
     }
 
     /// lhs > rhs
     var greaterThan: Bool {
-        return self == .greaterThan
+        self == .greaterThan
     }
 
     /// lhs == rhs
     var equal: Bool {
-        return self == .equal
+        self == .equal
     }
 }

@@ -7,13 +7,13 @@ target 'ShadowsocksX-NG' do
   use_frameworks!
 
   # Pods for ShadowsocksX-NG
-  pod 'Alamofire', '~> 4.7.2'
+  pod 'Alamofire', '~> 5.4.3'
   pod "GCDWebServer", "~> 3.0"
   pod 'MASShortcut', '~> 2'
   
   # https://github.com/ReactiveX/RxSwift/blob/master/Documentation/GettingStarted.md
-  pod 'RxSwift',    '~> 4.5.0'
-  pod 'RxCocoa',    '~> 4.5.0'
+  pod 'RxSwift',    '~> 6.2.0'
+  pod 'RxCocoa',    '~> 6.2.0'
 
   target 'ShadowsocksX-NGTests' do
     inherit! :search_paths

@@ -29,11 +29,11 @@ In case explicit disposal is necessary, there is also `CompositeDisposable`.
 */
 public final class DisposeBag: DisposeBase {
     
-    private var _lock = SpinLock()
+    private var lock = SpinLock()
     
     // state
-    fileprivate var _disposables = [Disposable]()
-    fileprivate var _isDisposed = false
+    private var disposables = [Disposable]()
+    private var isDisposed = false
     
     /// Constructs new empty dispose bag.
     public override init() {
@@ -48,14 +48,15 @@ public final class DisposeBag: DisposeBase {
     }
     
     private func _insert(_ disposable: Disposable) -> Disposable? {
-        self._lock.lock(); defer { self._lock.unlock() }
-        if self._isDisposed {
-            return disposable
+        self.lock.performLocked {
+            if self.isDisposed {
+                return disposable
+            }
+
+            self.disposables.append(disposable)
+
+            return nil
         }
-
-        self._disposables.append(disposable)
-
-        return nil
     }
 
     /// This is internal on purpose, take a look at `CompositeDisposable` instead.
@@ -68,14 +69,14 @@ public final class DisposeBag: DisposeBase {
     }
 
     private func _dispose() -> [Disposable] {
-        self._lock.lock(); defer { self._lock.unlock() }
-
-        let disposables = self._disposables
-        
-        self._disposables.removeAll(keepingCapacity: false)
-        self._isDisposed = true
-        
-        return disposables
+        self.lock.performLocked {
+            let disposables = self.disposables
+            
+            self.disposables.removeAll(keepingCapacity: false)
+            self.isDisposed = true
+            
+            return disposables
+        }
     }
     
     deinit {
@@ -84,17 +85,22 @@ public final class DisposeBag: DisposeBase {
 }
 
 extension DisposeBag {
-
     /// Convenience init allows a list of disposables to be gathered for disposal.
     public convenience init(disposing disposables: Disposable...) {
         self.init()
-        self._disposables += disposables
+        self.disposables += disposables
+    }
+
+    /// Convenience init which utilizes a function builder to let you pass in a list of
+    /// disposables to make a DisposeBag of.
+    public convenience init(@DisposableBuilder builder: () -> [Disposable]) {
+      self.init(disposing: builder())
     }
 
     /// Convenience init allows an array of disposables to be gathered for disposal.
     public convenience init(disposing disposables: [Disposable]) {
         self.init()
-        self._disposables += disposables
+        self.disposables += disposables
     }
 
     /// Convenience function allows a list of disposables to be gathered for disposal.
@@ -102,13 +108,37 @@ extension DisposeBag {
         self.insert(disposables)
     }
 
+    /// Convenience function allows a list of disposables to be gathered for disposal.
+    public func insert(@DisposableBuilder builder: () -> [Disposable]) {
+        self.insert(builder())
+    }
+
     /// Convenience function allows an array of disposables to be gathered for disposal.
     public func insert(_ disposables: [Disposable]) {
-        self._lock.lock(); defer { self._lock.unlock() }
-        if self._isDisposed {
-            disposables.forEach { $0.dispose() }
-        } else {
-            self._disposables += disposables
+        self.lock.performLocked {
+            if self.isDisposed {
+                disposables.forEach { $0.dispose() }
+            } else {
+                self.disposables += disposables
+            }
         }
     }
+
+    /// A function builder accepting a list of Disposables and returning them as an array.
+    #if swift(>=5.4)
+    @resultBuilder
+    public struct DisposableBuilder {
+      public static func buildBlock(_ disposables: Disposable...) -> [Disposable] {
+        return disposables
+      }
+    }
+    #else
+    @_functionBuilder
+    public struct DisposableBuilder {
+      public static func buildBlock(_ disposables: Disposable...) -> [Disposable] {
+        return disposables
+      }
+    }
+    #endif
+    
 }

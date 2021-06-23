@@ -27,19 +27,19 @@ import RxSwift
  
  To find out more about units and how to use them, please visit `Documentation/Traits.md`.
  */
-public typealias Signal<E> = SharedSequence<SignalSharingStrategy, E>
+public typealias Signal<Element> = SharedSequence<SignalSharingStrategy, Element>
 
-public struct SignalSharingStrategy : SharingStrategyProtocol {
-    public static var scheduler: SchedulerType { return SharingScheduler.make() }
+public struct SignalSharingStrategy: SharingStrategyProtocol {
+    public static var scheduler: SchedulerType { SharingScheduler.make() }
     
-    public static func share<E>(_ source: Observable<E>) -> Observable<E> {
-        return source.share(scope: .whileConnected)
+    public static func share<Element>(_ source: Observable<Element>) -> Observable<Element> {
+        source.share(scope: .whileConnected)
     }
 }
 
 extension SharedSequenceConvertibleType where SharingStrategy == SignalSharingStrategy {
     /// Adds `asPublisher` to `SharingSequence` with `PublishSharingStrategy`.
-    public func asSignal() -> Signal<E> {
-        return self.asSharedSequence()
+    public func asSignal() -> Signal<Element> {
+        self.asSharedSequence()
     }
 }

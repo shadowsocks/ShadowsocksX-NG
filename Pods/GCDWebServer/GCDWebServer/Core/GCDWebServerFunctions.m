@@ -302,7 +302,10 @@ NSString* GCDWebServerComputeMD5Digest(NSString* format, ...) {
   const char* string = [[[NSString alloc] initWithFormat:format arguments:arguments] UTF8String];
   va_end(arguments);
   unsigned char md5[CC_MD5_DIGEST_LENGTH];
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
   CC_MD5(string, (CC_LONG)strlen(string), md5);
+#pragma clang diagnostic pop
   char buffer[2 * CC_MD5_DIGEST_LENGTH + 1];
   for (int i = 0; i < CC_MD5_DIGEST_LENGTH; ++i) {
     unsigned char byte = md5[i];

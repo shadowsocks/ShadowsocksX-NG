@@ -15,14 +15,14 @@ extension UITableView: HasDataSource {
     public typealias DataSource = UITableViewDataSource
 }
 
-fileprivate let tableViewDataSourceNotSet = TableViewDataSourceNotSet()
+private let tableViewDataSourceNotSet = TableViewDataSourceNotSet()
 
-fileprivate final class TableViewDataSourceNotSet
+private final class TableViewDataSourceNotSet
     : NSObject
     , UITableViewDataSource {
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 0
+        0
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -50,18 +50,18 @@ open class RxTableViewDataSourceProxy
         self.register { RxTableViewDataSourceProxy(tableView: $0) }
     }
 
-    fileprivate weak var _requiredMethodsDataSource: UITableViewDataSource? = tableViewDataSourceNotSet
+    private weak var _requiredMethodsDataSource: UITableViewDataSource? = tableViewDataSourceNotSet
 
     // MARK: delegate
 
     /// Required delegate method implementation.
     public func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return (_requiredMethodsDataSource ?? tableViewDataSourceNotSet).tableView(tableView, numberOfRowsInSection: section)
+        (_requiredMethodsDataSource ?? tableViewDataSourceNotSet).tableView(tableView, numberOfRowsInSection: section)
     }
 
     /// Required delegate method implementation.
     public func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        return (_requiredMethodsDataSource ?? tableViewDataSourceNotSet).tableView(tableView, cellForRowAt: indexPath)
+        (_requiredMethodsDataSource ?? tableViewDataSourceNotSet).tableView(tableView, cellForRowAt: indexPath)
     }
 
     /// For more information take a look at `DelegateProxyType`.

@@ -9,28 +9,28 @@
 /// Represents an Action-based disposable.
 ///
 /// When dispose method is called, disposal action will be dereferenced.
-fileprivate final class AnonymousDisposable : DisposeBase, Cancelable {
+private final class AnonymousDisposable : DisposeBase, Cancelable {
     public typealias DisposeAction = () -> Void
 
-    private let _isDisposed = AtomicInt(0)
-    private var _disposeAction: DisposeAction?
+    private let disposed = AtomicInt(0)
+    private var disposeAction: DisposeAction?
 
     /// - returns: Was resource disposed.
     public var isDisposed: Bool {
-        return isFlagSet(self._isDisposed, 1)
+        isFlagSet(self.disposed, 1)
     }
 
     /// Constructs a new disposable with the given action used for disposal.
     ///
     /// - parameter disposeAction: Disposal action which will be run upon calling `dispose`.
-    fileprivate init(_ disposeAction: @escaping DisposeAction) {
-        self._disposeAction = disposeAction
+    private init(_ disposeAction: @escaping DisposeAction) {
+        self.disposeAction = disposeAction
         super.init()
     }
 
     // Non-deprecated version of the constructor, used by `Disposables.create(with:)`
     fileprivate init(disposeAction: @escaping DisposeAction) {
-        self._disposeAction = disposeAction
+        self.disposeAction = disposeAction
         super.init()
     }
 
@@ -38,9 +38,9 @@ fileprivate final class AnonymousDisposable : DisposeBase, Cancelable {
     ///
     /// After invoking disposal action, disposal action will be dereferenced.
     fileprivate func dispose() {
-        if fetchOr(self._isDisposed, 1) == 0 {
-            if let action = self._disposeAction {
-                self._disposeAction = nil
+        if fetchOr(self.disposed, 1) == 0 {
+            if let action = self.disposeAction {
+                self.disposeAction = nil
                 action()
             }
         }
@@ -53,7 +53,7 @@ extension Disposables {
     ///
     /// - parameter dispose: Disposal action which will be run upon calling `dispose`.
     public static func create(with dispose: @escaping () -> Void) -> Cancelable {
-        return AnonymousDisposable(disposeAction: dispose)
+        AnonymousDisposable(disposeAction: dispose)
     }
 
 }

@@ -14,13 +14,13 @@ extension ObservableType {
 
      - returns: An observable sequence with no elements.
      */
-    public static func empty() -> Observable<E> {
-        return EmptyProducer<E>()
+    public static func empty() -> Observable<Element> {
+        EmptyProducer<Element>()
     }
 }
 
 final private class EmptyProducer<Element>: Producer<Element> {
-    override func subscribe<O: ObserverType>(_ observer: O) -> Disposable where O.E == Element {
+    override func subscribe<Observer: ObserverType>(_ observer: Observer) -> Disposable where Observer.Element == Element {
         observer.on(.completed)
         return Disposables.create()
     }

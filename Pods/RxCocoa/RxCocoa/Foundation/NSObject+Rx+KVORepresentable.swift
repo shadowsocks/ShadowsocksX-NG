@@ -8,7 +8,7 @@
 
 #if !os(Linux)
 
-import Foundation.NSObject
+import Foundation
 import RxSwift
 
 /// Key value observing options
@@ -36,9 +36,9 @@ extension Reactive where Base: NSObject {
 
      For more information take a look at `observe` method.
      */
-    public func observe<E: KVORepresentable>(_ type: E.Type, _ keyPath: String, options: KeyValueObservingOptions = [.new, .initial], retainSelf: Bool = true) -> Observable<E?> {
-        return self.observe(E.KVOType.self, keyPath, options: options, retainSelf: retainSelf)
-            .map(E.init)
+    public func observe<Element: KVORepresentable>(_ type: Element.Type, _ keyPath: String, options: KeyValueObservingOptions = [.new, .initial], retainSelf: Bool = true) -> Observable<Element?> {
+        return self.observe(Element.KVOType.self, keyPath, options: options, retainSelf: retainSelf)
+            .map(Element.init)
     }
 }
 
@@ -50,9 +50,9 @@ extension Reactive where Base: NSObject {
 
         For more information take a look at `observeWeakly` method.
         */
-        public func observeWeakly<E: KVORepresentable>(_ type: E.Type, _ keyPath: String, options: KeyValueObservingOptions = [.new, .initial]) -> Observable<E?> {
-            return self.observeWeakly(E.KVOType.self, keyPath, options: options)
-                .map(E.init)
+        public func observeWeakly<Element: KVORepresentable>(_ type: Element.Type, _ keyPath: String, options: KeyValueObservingOptions = [.new, .initial]) -> Observable<Element?> {
+            return self.observeWeakly(Element.KVOType.self, keyPath, options: options)
+                .map(Element.init)
         }
     }
 #endif

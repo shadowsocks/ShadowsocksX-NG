@@ -22,24 +22,25 @@ public final class AsyncSubject<Element>
 
     /// Indicates whether the subject has any observers
     public var hasObservers: Bool {
-        self._lock.lock(); defer { self._lock.unlock() }
-        return self._observers.count > 0
-    }
-
-    let _lock = RecursiveLock()
-
-    // state
-    private var _observers = Observers()
-    private var _isStopped = false
-    private var _stoppedEvent = nil as Event<Element>? {
-        didSet {
-            self._isStopped = self._stoppedEvent != nil
+        self.lock.performLocked {
+            self.observers.count > 0
         }
     }
-    private var _lastElement: Element?
+
+    let lock = RecursiveLock()
+
+    // state
+    private var observers = Observers()
+    private var isStopped = false
+    private var stoppedEvent = nil as Event<Element>? {
+        didSet {
+            self.isStopped = self.stoppedEvent != nil
+        }
+    }
+    private var lastElement: Element?
 
     #if DEBUG
-        fileprivate let _synchronizationTracker = SynchronizationTracker()
+        private let synchronizationTracker = SynchronizationTracker()
     #endif
 
 
@@ -54,12 +55,12 @@ public final class AsyncSubject<Element>
     /// Notifies all subscribed observers about next event.
     ///
     /// - parameter event: Event to send to the observers.
-    public func on(_ event: Event<E>) {
+    public func on(_ event: Event<Element>) {
         #if DEBUG
-            self._synchronizationTracker.register(synchronizationErrorMessage: .default)
-            defer { self._synchronizationTracker.unregister() }
+            self.synchronizationTracker.register(synchronizationErrorMessage: .default)
+            defer { self.synchronizationTracker.unregister() }
         #endif
-        let (observers, event) = self._synchronized_on(event)
+        let (observers, event) = self.synchronized_on(event)
         switch event {
         case .next:
             dispatch(observers, event)
@@ -71,34 +72,34 @@ public final class AsyncSubject<Element>
         }
     }
 
-    func _synchronized_on(_ event: Event<E>) -> (Observers, Event<E>) {
-        self._lock.lock(); defer { self._lock.unlock() }
-        if self._isStopped {
+    func synchronized_on(_ event: Event<Element>) -> (Observers, Event<Element>) {
+        self.lock.lock(); defer { self.lock.unlock() }
+        if self.isStopped {
             return (Observers(), .completed)
         }
 
         switch event {
         case .next(let element):
-            self._lastElement = element
+            self.lastElement = element
             return (Observers(), .completed)
         case .error:
-            self._stoppedEvent = event
+            self.stoppedEvent = event
 
-            let observers = self._observers
-            self._observers.removeAll()
+            let observers = self.observers
+            self.observers.removeAll()
 
             return (observers, event)
         case .completed:
 
-            let observers = self._observers
-            self._observers.removeAll()
+            let observers = self.observers
+            self.observers.removeAll()
 
-            if let lastElement = self._lastElement {
-                self._stoppedEvent = .next(lastElement)
+            if let lastElement = self.lastElement {
+                self.stoppedEvent = .next(lastElement)
                 return (observers, .next(lastElement))
             }
             else {
-                self._stoppedEvent = event
+                self.stoppedEvent = event
                 return (observers, .completed)
             }
         }
@@ -108,13 +109,12 @@ public final class AsyncSubject<Element>
     ///
     /// - parameter observer: Observer to subscribe to the subject.
     /// - returns: Disposable object that can be used to unsubscribe the observer from the subject.
-    public override func subscribe<O: ObserverType>(_ observer: O) -> Disposable where O.E == Element {
-        self._lock.lock(); defer { self._lock.unlock() }
-        return self._synchronized_subscribe(observer)
+    public override func subscribe<Observer: ObserverType>(_ observer: Observer) -> Disposable where Observer.Element == Element {
+        self.lock.performLocked { self.synchronized_subscribe(observer) }
     }
 
-    func _synchronized_subscribe<O: ObserverType>(_ observer: O) -> Disposable where O.E == E {
-        if let stoppedEvent = self._stoppedEvent {
+    func synchronized_subscribe<Observer: ObserverType>(_ observer: Observer) -> Disposable where Observer.Element == Element {
+        if let stoppedEvent = self.stoppedEvent {
             switch stoppedEvent {
             case .next:
                 observer.on(stoppedEvent)
@@ -127,23 +127,22 @@ public final class AsyncSubject<Element>
             return Disposables.create()
         }
 
-        let key = self._observers.insert(observer.on)
+        let key = self.observers.insert(observer.on)
 
         return SubscriptionDisposable(owner: self, key: key)
     }
 
     func synchronizedUnsubscribe(_ disposeKey: DisposeKey) {
-        self._lock.lock(); defer { self._lock.unlock() }
-        self._synchronized_unsubscribe(disposeKey)
+        self.lock.performLocked { self.synchronized_unsubscribe(disposeKey) }
     }
     
-    func _synchronized_unsubscribe(_ disposeKey: DisposeKey) {
-        _ = self._observers.removeKey(disposeKey)
+    func synchronized_unsubscribe(_ disposeKey: DisposeKey) {
+        _ = self.observers.removeKey(disposeKey)
     }
     
     /// Returns observer interface for subject.
     public func asObserver() -> AsyncSubject<Element> {
-        return self
+        self
     }
 
     #if TRACE_RESOURCES

@@ -16,7 +16,7 @@ extension Reactive where Base: NSSlider {
     /// Reactive wrapper for `value` property.
     public var value: ControlProperty<Double> {
         return self.base.rx.controlProperty(
-            getter: { control in
+            getter: { control -> Double in
                 return control.doubleValue
             },
             setter: { control, value in

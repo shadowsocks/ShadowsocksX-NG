@@ -6,7 +6,7 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-import struct Foundation.Date
+import Foundation
 
 /// Converts historical virtual time into real time.
 ///
@@ -16,30 +16,30 @@ public struct HistoricalSchedulerTimeConverter : VirtualTimeConverterType {
     public typealias VirtualTimeUnit = RxTime
 
     /// Virtual time unit used to represent differences of virtual times.
-    public typealias VirtualTimeIntervalUnit = RxTimeInterval
+    public typealias VirtualTimeIntervalUnit = TimeInterval
 
     /// Returns identical value of argument passed because historical virtual time is equal to real time, just
     /// decoupled from local machine clock.
     public func convertFromVirtualTime(_ virtualTime: VirtualTimeUnit) -> RxTime {
-        return virtualTime
+        virtualTime
     }
 
     /// Returns identical value of argument passed because historical virtual time is equal to real time, just
     /// decoupled from local machine clock.
     public func convertToVirtualTime(_ time: RxTime) -> VirtualTimeUnit {
-        return time
+        time
     }
 
     /// Returns identical value of argument passed because historical virtual time is equal to real time, just
     /// decoupled from local machine clock.
-    public func convertFromVirtualTimeInterval(_ virtualTimeInterval: VirtualTimeIntervalUnit) -> RxTimeInterval {
-        return virtualTimeInterval
+    public func convertFromVirtualTimeInterval(_ virtualTimeInterval: VirtualTimeIntervalUnit) -> TimeInterval {
+        virtualTimeInterval
     }
 
     /// Returns identical value of argument passed because historical virtual time is equal to real time, just
     /// decoupled from local machine clock.
-    public func convertToVirtualTimeInterval(_ timeInterval: RxTimeInterval) -> VirtualTimeIntervalUnit {
-        return timeInterval
+    public func convertToVirtualTimeInterval(_ timeInterval: TimeInterval) -> VirtualTimeIntervalUnit {
+        timeInterval
     }
 
     /**
@@ -50,7 +50,7 @@ public struct HistoricalSchedulerTimeConverter : VirtualTimeConverterType {
      - returns: Time offsetted by time interval.
     */
     public func offsetVirtualTime(_ time: VirtualTimeUnit, offset: VirtualTimeIntervalUnit) -> VirtualTimeUnit {
-        return time.addingTimeInterval(offset)
+        time.addingTimeInterval(offset)
     }
 
     /// Compares two `Date`s.

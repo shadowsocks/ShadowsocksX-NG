@@ -16,8 +16,17 @@ import RxSwift
 /// For more information take a look at `DelegateProxyType`.
 open class RxTextViewDelegateProxy: DelegateProxy<NSTextView, NSTextViewDelegate>, DelegateProxyType, NSTextViewDelegate {
 
+    #if compiler(>=5.2)
+    /// Typed parent object.
+    /// 
+    /// - note: Since Swift 5.2 and Xcode 11.4, Apple have suddenly
+    ///         disallowed using `weak` for NSTextView. For more details
+    ///         see this GitHub Issue: https://git.io/JvSRn
+    public private(set) var textView: NSTextView?
+    #else
     /// Typed parent object.
     public weak private(set) var textView: NSTextView?
+    #endif
 
     /// Initializes `RxTextViewDelegateProxy`
     ///
@@ -46,7 +55,7 @@ open class RxTextViewDelegateProxy: DelegateProxy<NSTextView, NSTextViewDelegate
 
     /// For more information take a look at `DelegateProxyType`.
     open class func currentDelegate(for object: ParentObject) -> NSTextViewDelegate? {
-        return object.delegate
+        object.delegate
     }
 
     /// For more information take a look at `DelegateProxyType`.
@@ -62,7 +71,7 @@ extension Reactive where Base: NSTextView {
     ///
     /// For more information take a look at `DelegateProxyType` protocol documentation.
     public var delegate: DelegateProxy<NSTextView, NSTextViewDelegate> {
-        return RxTextViewDelegateProxy.proxy(for: self.base)
+        RxTextViewDelegateProxy.proxy(for: self.base)
     }
 
     /// Reactive wrapper for `string` property.
@@ -71,7 +80,7 @@ extension Reactive where Base: NSTextView {
 
         let source = Observable.deferred { [weak textView = self.base] in
             delegate.textSubject.startWith(textView?.string ?? "")
-        }.takeUntil(self.deallocated)
+        }.take(until: self.deallocated)
 
         let observer = Binder(self.base) { control, value in
             control.string = value

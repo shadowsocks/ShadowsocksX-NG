@@ -7,20 +7,17 @@
 //
 
 /// Sequence that repeats `repeatedValue` infinite number of times.
-struct InfiniteSequence<E> : Sequence {
-    typealias Element = E
-    typealias Iterator = AnyIterator<E>
+struct InfiniteSequence<Element> : Sequence {
+    typealias Iterator = AnyIterator<Element>
     
-    private let _repeatedValue: E
+    private let repeatedValue: Element
     
-    init(repeatedValue: E) {
-        _repeatedValue = repeatedValue
+    init(repeatedValue: Element) {
+        self.repeatedValue = repeatedValue
     }
     
     func makeIterator() -> Iterator {
-        let repeatedValue = _repeatedValue
-        return AnyIterator {
-            return repeatedValue
-        }
+        let repeatedValue = self.repeatedValue
+        return AnyIterator { repeatedValue }
     }
 }

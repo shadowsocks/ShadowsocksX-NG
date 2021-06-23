@@ -9,8 +9,7 @@
 #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
 
     import Darwin
-    import class Foundation.Thread
-    import protocol Foundation.NSCopying
+    import Foundation
 
     extension Thread {
         static func setThreadLocalStorageValue<T: AnyObject>(_ value: T?, forKey key: NSCopying) {

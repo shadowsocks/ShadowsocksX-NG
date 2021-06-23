@@ -6,9 +6,7 @@
 //  Copyright © 2015 Krunoslav Zaher. All rights reserved.
 //
 
-import class Foundation.NotificationCenter
-import struct Foundation.Notification
-
+import Foundation
 import RxSwift
 
 extension Reactive where Base: NotificationCenter {

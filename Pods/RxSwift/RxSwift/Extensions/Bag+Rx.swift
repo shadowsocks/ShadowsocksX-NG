@@ -10,7 +10,7 @@
 // MARK: forEach
 
 @inline(__always)
-func dispatch<E>(_ bag: Bag<(Event<E>) -> Void>, _ event: Event<E>) {
+func dispatch<Element>(_ bag: Bag<(Event<Element>) -> Void>, _ event: Event<Element>) {
     bag._value0?(event)
 
     if bag._onlyFastPath {

@@ -6,7 +6,7 @@
 //  Copyright © 2016 Krunoslav Zaher. All rights reserved.
 //
 
-import class Foundation.NSRecursiveLock
+import Foundation
 
 #if TRACE_RESOURCES
     class RecursiveLock: NSRecursiveLock {

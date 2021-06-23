@@ -2,7 +2,7 @@ Overview
 ========
 
 [![Build Status](https://travis-ci.org/swisspol/GCDWebServer.svg?branch=master)](https://travis-ci.org/swisspol/GCDWebServer)
-[![Version](http://cocoapod-badges.herokuapp.com/v/GCDWebServer/badge.png)](http://cocoadocs.org/docsets/GCDWebServer)
+[![Version](http://cocoapod-badges.herokuapp.com/v/GCDWebServer/badge.png)](https://cocoapods.org/pods/GCDWebServer)
 [![Platform](http://cocoapod-badges.herokuapp.com/p/GCDWebServer/badge.png)](https://github.com/swisspol/GCDWebServer)
 [![License](http://img.shields.io/cocoapods/l/GCDWebServer.svg)](LICENSE)
 
