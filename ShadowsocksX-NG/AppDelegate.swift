@@ -115,7 +115,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             ])
         
         statusItem = NSStatusBar.system.statusItem(withLength: AppDelegate.StatusItemIconWidth)
-        let image : NSImage = NSImage(named: NSImage.Name(rawValue: "menu_icon"))!
+        let image : NSImage = NSImage(named: "menu_icon")!
         image.isTemplate = true
         statusItem.image = image
         statusItem.menu = statusMenu
@@ -282,7 +282,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         if editUserRulesWinCtrl != nil {
             editUserRulesWinCtrl.close()
         }
-        let ctrl = UserRulesController(windowNibName: NSNib.Name(rawValue: "UserRulesController"))
+        let ctrl = UserRulesController(windowNibName: "UserRulesController")
         editUserRulesWinCtrl = ctrl
         
         ctrl.showWindow(self)
@@ -294,7 +294,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         if shareWinCtrl != nil {
             shareWinCtrl.close()
         }
-        shareWinCtrl = ShareServerProfilesWindowController(windowNibName: NSNib.Name(rawValue: "ShareServerProfilesWindowController"))
+        shareWinCtrl = ShareServerProfilesWindowController(windowNibName: "ShareServerProfilesWindowController")
         shareWinCtrl.showWindow(self)
         NSApp.activate(ignoringOtherApps: true)
         shareWinCtrl.window?.makeKeyAndOrderFront(nil)
@@ -304,7 +304,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         if importWinCtrl != nil {
             importWinCtrl.close()
         }
-        importWinCtrl = ImportWindowController(windowNibName: .init(rawValue: "ImportWindowController"))
+        importWinCtrl = ImportWindowController(windowNibName: "ImportWindowController")
         importWinCtrl.showWindow(self)
         NSApp.activate(ignoringOtherApps: true)
         importWinCtrl.window?.makeKeyAndOrderFront(nil)
@@ -377,7 +377,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         if preferencesWinCtrl != nil {
             preferencesWinCtrl.close()
         }
-        preferencesWinCtrl = PreferencesWindowController(windowNibName: NSNib.Name(rawValue: "PreferencesWindowController"))
+        preferencesWinCtrl = PreferencesWindowController(windowNibName: "PreferencesWindowController")
         
         preferencesWinCtrl.showWindow(self)
         NSApp.activate(ignoringOtherApps: true)
@@ -388,7 +388,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             allInOnePreferencesWinCtrl.close()
         }
         
-        allInOnePreferencesWinCtrl = PreferencesWinController(windowNibName: NSNib.Name(rawValue: "PreferencesWinController"))
+        allInOnePreferencesWinCtrl = PreferencesWinController(windowNibName: "PreferencesWinController")
         
         allInOnePreferencesWinCtrl.showWindow(self)
         NSApp.activate(ignoringOtherApps: true)
@@ -530,19 +530,19 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             if let m = mode {
                 switch m {
                     case "auto":
-                        statusItem.image = NSImage(named: NSImage.Name(rawValue: "menu_p_icon"))
+                        statusItem.image = NSImage(named: "menu_p_icon")
                     case "global":
-                        statusItem.image = NSImage(named: NSImage.Name(rawValue: "menu_g_icon"))
+                        statusItem.image = NSImage(named: "menu_g_icon")
                     case "manual":
-                        statusItem.image = NSImage(named: NSImage.Name(rawValue: "menu_m_icon"))
+                        statusItem.image = NSImage(named: "menu_m_icon")
                     case "externalPAC":
-                        statusItem.image = NSImage(named: NSImage.Name(rawValue: "menu_e_icon"))
+                        statusItem.image = NSImage(named: "menu_e_icon")
                 default: break
                 }
                 statusItem.image?.isTemplate = true
             }
         } else {
-            statusItem.image = NSImage(named: NSImage.Name(rawValue: "menu_icon_disabled"))
+            statusItem.image = NSImage(named: "menu_icon_disabled")
             statusItem.image?.isTemplate = true
         }
     }
@@ -552,15 +552,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         let isOn = defaults.bool(forKey: "ShadowsocksOn")
         if isOn {
             runningStatusMenuItem.title = "Shadowsocks: On".localized
-            runningStatusMenuItem.image = NSImage(named: NSImage.Name(rawValue: "NSStatusAvailable"))
+            runningStatusMenuItem.image = NSImage(named: "NSStatusAvailable")
             toggleRunningMenuItem.title = "Turn Shadowsocks Off".localized
-            let image = NSImage(named: NSImage.Name(rawValue: "menu_icon"))
+            let image = NSImage(named: "menu_icon")
             statusItem.image = image
         } else {
             runningStatusMenuItem.title = "Shadowsocks: Off".localized
             toggleRunningMenuItem.title = "Turn Shadowsocks On".localized
-            runningStatusMenuItem.image = NSImage(named: NSImage.Name(rawValue: "NSStatusNone"))
-            let image = NSImage(named: NSImage.Name(rawValue: "menu_icon_disabled"))
+            runningStatusMenuItem.image = NSImage(named: "NSStatusNone")
+            let image = NSImage(named: "menu_icon_disabled")
             statusItem.image = image
         }
         statusItem.image?.isTemplate = true
@@ -680,7 +680,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
         if toastWindowCtrl != nil {
             toastWindowCtrl.close()
         }
-        toastWindowCtrl = ToastWindowController(windowNibName: NSNib.Name(rawValue: "ToastWindowController"))
+        toastWindowCtrl = ToastWindowController(windowNibName: "ToastWindowController")
         toastWindowCtrl.message = message
         toastWindowCtrl.showWindow(self)
         //NSApp.activate(ignoringOtherApps: true)

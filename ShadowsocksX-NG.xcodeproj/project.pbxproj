@@ -607,7 +607,7 @@
 					9B0BFFE41D0460A70040E62B = {
 						CreatedOnToolsVersion = 7.3.1;
 						DevelopmentTeam = RJX3H8KBAF;
-						LastSwiftMigration = 0900;
+						LastSwiftMigration = 1250;
 						ProvisioningStyle = Automatic;
 					};
 					9B3FFF431D09CD3B0019A709 = {
@@ -1072,7 +1072,7 @@
 				SWIFT_OBJC_BRIDGING_HEADER = "ShadowsocksX-NG/ShadowsocksX-NG-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
 		};
@@ -1106,7 +1106,7 @@
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "ShadowsocksX-NG/ShadowsocksX-NG-Bridging-Header.h";
 				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
 		};
