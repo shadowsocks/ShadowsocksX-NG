@@ -1,5 +1,0 @@
-language: objective-c
-osx_image: xcode10
-xcode_workspace: ShadowsocksX-NG.xcworkspace
-xcode_scheme: ShadowsocksX-NG
-script: set -o pipefail && xcodebuild test -workspace ShadowsocksX-NG.xcworkspace -scheme ShadowsocksX-NG|xcpretty
