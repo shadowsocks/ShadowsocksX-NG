@@ -102,8 +102,7 @@
 				TargetAttributes = {
 					9B9F138C1E8A282C00DE4794 = {
 						CreatedOnToolsVersion = 8.2.1;
-						DevelopmentTeam = RJX3H8KBAF;
-						ProvisioningStyle = Automatic;
+						ProvisioningStyle = Manual;
 					};
 				};
 			};
@@ -273,10 +272,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = RJX3H8KBAF;
+				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = LaunchHelper/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
@@ -291,10 +290,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = RJX3H8KBAF;
+				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = LaunchHelper/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
