@@ -24,8 +24,8 @@ macOS 10.12+
 
 ### Building
 
-- Xcode 11.1+
-- CocoaPods 1.5.3+
+- Xcode 12.5.1+
+- CocoaPods 1.10.1+
 
 ## Download
 
