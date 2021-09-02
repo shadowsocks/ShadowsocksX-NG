@@ -13,8 +13,9 @@ jobs:
       run: |
         set -o pipefail && xcodebuild test -workspace ShadowsocksX-NG.xcworkspace -scheme ShadowsocksX-NG|xcpretty
     - uses: sersoft-gmbh/xcodebuild-action@v1
+    - name: build
     - with:
-       project: MyApp.xcodeproj
-       scheme: MyApp
+       project: ShadowsocksX-NG.xcodeproj
+       scheme: ShadowsocksX-NG
        destination: platform=macOS
        action: build
