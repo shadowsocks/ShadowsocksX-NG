@@ -8,7 +8,7 @@ jobs:
     runs-on: macos-latest
     
     steps:
-    - uses: hhdys412/ShadowsocksX-NG@develop
+    - uses: actions/ShadowsocksX-NG@develop
     - name: Run unit test
       run: |
         set -o pipefail && xcodebuild test -workspace ShadowsocksX-NG.xcworkspace -scheme ShadowsocksX-NG|xcpretty
