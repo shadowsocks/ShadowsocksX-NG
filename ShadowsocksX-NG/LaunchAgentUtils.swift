@@ -278,13 +278,19 @@ func generatePrivoxyLauchAgentPlist() -> Bool {
     
     let arguments = [privoxyPath, "--no-daemon", "privoxy.config"]
     
+    let dyld_library_paths = [
+        NSHomeDirectory() + APP_SUPPORT_DIR + "ss-local-latest/",
+        NSHomeDirectory() + APP_SUPPORT_DIR + "privoxy-latest/",
+        ]
+    
     // For a complete listing of the keys, see the launchd.plist manual page.
     let dict: NSMutableDictionary = [
         "Label": "com.qiuyuzhou.shadowsocksX-NG.http",
         "WorkingDirectory": NSHomeDirectory() + APP_SUPPORT_DIR,
         "StandardOutPath": logFilePath,
         "StandardErrorPath": logFilePath,
-        "ProgramArguments": arguments
+        "ProgramArguments": arguments,
+        "EnvironmentVariables": ["DYLD_LIBRARY_PATH": dyld_library_paths.joined(separator: ":")]
     ]
     dict.write(toFile: plistFilepath, atomically: true)
     let Sha1Sum = getFileSHA1Sum(plistFilepath)
