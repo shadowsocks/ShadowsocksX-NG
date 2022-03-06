@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="14490.70" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="19529" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14490.70"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="19529"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="NSApplication">
@@ -133,7 +133,7 @@
                         <action selector="exportDiagnosis:" target="Voe-Tx-rLC" id="YM9-l3-PHa"/>
                     </connections>
                 </menuItem>
-                <menuItem title="Check for Updates..." id="hLv-bp-doM">
+                <menuItem title="Check for Updates..." enabled="NO" id="hLv-bp-doM">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
                         <action selector="checkForUpdates:" target="Voe-Tx-rLC" id="rWL-H9-me8"/>
@@ -163,7 +163,7 @@
         <userDefaultsController representsSharedInstance="YES" id="jhL-aG-BFA"/>
     </objects>
     <resources>
-        <image name="NSShareTemplate" width="11" height="16"/>
+        <image name="NSShareTemplate" width="15" height="17"/>
         <image name="terminal-logo" width="22.695652008056641" height="17.217391967773438"/>
     </resources>
 </document>
