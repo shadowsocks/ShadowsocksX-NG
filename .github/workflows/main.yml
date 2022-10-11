@@ -19,7 +19,7 @@ jobs:
     - name: Run unit test
       run: |
         set -o pipefail && xcodebuild test -workspace ShadowsocksX-NG.xcworkspace -scheme ShadowsocksX-NG|xcpretty
-    - uses: sersoft-gmbh/xcodebuild-action@v1
+    - uses: sersoft-gmbh/xcodebuild-action@v2
       name: build
       with:
        project: ShadowsocksX-NG.xcodeproj
