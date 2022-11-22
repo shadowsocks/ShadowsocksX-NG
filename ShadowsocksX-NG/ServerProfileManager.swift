@@ -73,7 +73,12 @@ class ServerProfileManager: NSObject {
             return nil
         }
     }
-    
+
+	func removeAllProfiles() {
+		self.profiles.removeAll()
+		save()
+	}
+
     func addServerProfileByURL(urls: [URL]) -> Int {
         var addCount = 0
         

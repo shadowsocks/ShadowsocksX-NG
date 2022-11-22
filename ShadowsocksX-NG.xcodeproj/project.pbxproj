@@ -602,7 +602,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 1250;
-				LastUpgradeCheck = 1250;
+				LastUpgradeCheck = 1320;
 				ORGANIZATIONNAME = qiuyuzhou;
 				TargetAttributes = {
 					9B0BFFE41D0460A70040E62B = {
@@ -1002,7 +1002,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 11.5;
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
@@ -1054,7 +1054,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 11.5;
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = macosx;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
@@ -1073,6 +1073,7 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 220306;
 				DEVELOPMENT_TEAM = K34Z59STMC;
+				ENABLE_HARDENED_RUNTIME = YES;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)/libcork/include/",
@@ -1086,7 +1087,6 @@
 					"$(PROJECT_DIR)/ShadowsocksX-NG",
 					"$(PROJECT_DIR)/ShadowsocksX-NG/simple-obfs",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 11.5;
 				MARKETING_VERSION = 2.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.qiuyuzhou.ShadowsocksX-NG";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1110,6 +1110,7 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 220306;
 				DEVELOPMENT_TEAM = K34Z59STMC;
+				ENABLE_HARDENED_RUNTIME = YES;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)/libcork/include/",
@@ -1123,7 +1124,6 @@
 					"$(PROJECT_DIR)/ShadowsocksX-NG",
 					"$(PROJECT_DIR)/ShadowsocksX-NG/simple-obfs",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 11.5;
 				MARKETING_VERSION = 2.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.qiuyuzhou.ShadowsocksX-NG";
 				PRODUCT_NAME = "$(TARGET_NAME)";

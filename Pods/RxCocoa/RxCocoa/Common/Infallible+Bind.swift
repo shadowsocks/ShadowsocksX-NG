@@ -13,7 +13,7 @@ extension InfallibleType {
      Creates new subscription and sends elements to observer(s).
      In this form, it's equivalent to the `subscribe` method, but it better conveys intent, and enables
      writing more consistent binding code.
-     - parameter to: Observers to receives events.
+     - parameter observers: Observers to receives events.
      - returns: Disposable object that can be used to unsubscribe the observers.
      */
     public func bind<Observer: ObserverType>(to observers: Observer...) -> Disposable where Observer.Element == Element {
@@ -26,7 +26,7 @@ extension InfallibleType {
      Creates new subscription and sends elements to observer(s).
      In this form, it's equivalent to the `subscribe` method, but it better conveys intent, and enables
      writing more consistent binding code.
-     - parameter to: Observers to receives events.
+     - parameter observers: Observers to receives events.
      - returns: Disposable object that can be used to unsubscribe the observers.
      */
     public func bind<Observer: ObserverType>(to observers: Observer...) -> Disposable where Observer.Element == Element? {
@@ -39,7 +39,7 @@ extension InfallibleType {
     /**
     Subscribes to observable sequence using custom binder function.
 
-    - parameter to: Function used to bind elements from `self`.
+    - parameter binder: Function used to bind elements from `self`.
     - returns: Object representing subscription.
     */
     public func bind<Result>(to binder: (Self) -> Result) -> Result {
@@ -54,7 +54,7 @@ extension InfallibleType {
             return binder(self)(curriedArgument)
         }
 
-    - parameter to: Function used to bind elements from `self`.
+    - parameter binder: Function used to bind elements from `self`.
     - parameter curriedArgument: Final argument passed to `binder` to finish binding process.
     - returns: Object representing subscription.
     */
@@ -77,7 +77,7 @@ extension InfallibleType {
     /**
     Creates new subscription and sends elements to `BehaviorRelay`.
 
-    - parameter relay: Target relay for sequence elements.
+    - parameter relays: Target relay for sequence elements.
     - returns: Disposable object that can be used to unsubscribe the observer from the relay.
     */
     public func bind(to relays: BehaviorRelay<Element>...) -> Disposable {
@@ -89,7 +89,7 @@ extension InfallibleType {
     /**
      Creates new subscription and sends elements to `BehaviorRelay`.
 
-     - parameter relay: Target relay for sequence elements.
+     - parameter relays: Target relay for sequence elements.
      - returns: Disposable object that can be used to unsubscribe the observer from the relay.
      */
     public func bind(to relays: BehaviorRelay<Element?>...) -> Disposable {
@@ -101,7 +101,7 @@ extension InfallibleType {
     /**
     Creates new subscription and sends elements to `PublishRelay`.
 
-    - parameter relay: Target relay for sequence elements.
+    - parameter relays: Target relay for sequence elements.
     - returns: Disposable object that can be used to unsubscribe the observer from the relay.
     */
     public func bind(to relays: PublishRelay<Element>...) -> Disposable {
@@ -113,7 +113,7 @@ extension InfallibleType {
     /**
      Creates new subscription and sends elements to `PublishRelay`.
 
-     - parameter relay: Target relay for sequence elements.
+     - parameter relays: Target relay for sequence elements.
      - returns: Disposable object that can be used to unsubscribe the observer from the relay.
      */
     public func bind(to relays: PublishRelay<Element?>...) -> Disposable {
@@ -125,7 +125,7 @@ extension InfallibleType {
     /**
     Creates new subscription and sends elements to `ReplayRelay`.
 
-    - parameter relay: Target relay for sequence elements.
+    - parameter relays: Target relay for sequence elements.
     - returns: Disposable object that can be used to unsubscribe the observer from the relay.
     */
     public func bind(to relays: ReplayRelay<Element>...) -> Disposable {
@@ -137,7 +137,7 @@ extension InfallibleType {
     /**
      Creates new subscription and sends elements to `ReplayRelay`.
 
-     - parameter relay: Target relay for sequence elements.
+     - parameter relays: Target relay for sequence elements.
      - returns: Disposable object that can be used to unsubscribe the observer from the relay.
      */
     public func bind(to relays: ReplayRelay<Element?>...) -> Disposable {

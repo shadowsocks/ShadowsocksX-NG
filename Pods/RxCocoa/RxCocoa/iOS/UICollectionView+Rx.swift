@@ -140,7 +140,7 @@ extension Reactive where Base: UICollectionView {
         -> Disposable where DataSource.Element == Source.Element
           {
         return { source in
-            // This is called for sideeffects only, and to make sure delegate proxy is in place when
+            // This is called for side effects only, and to make sure delegate proxy is in place when
             // data source is being bound.
             // This is needed because theoretically the data source subscription itself might
             // call `self.rx.delegate`. If that happens, it might cause weird side effects since

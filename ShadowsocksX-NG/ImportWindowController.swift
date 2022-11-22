@@ -37,6 +37,9 @@ class ImportWindowController: NSWindowController {
     @IBAction func handleImport(_ sender: NSButton) {
         let mgr = ServerProfileManager.instance
         let urls = ServerProfileManager.findURLSInText(inputBox.stringValue)
+
+		mgr.removeAllProfiles()
+
         let addCount = mgr.addServerProfileByURL(urls: urls)
 
         if addCount > 0 {

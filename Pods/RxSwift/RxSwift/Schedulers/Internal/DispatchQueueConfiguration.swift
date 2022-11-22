@@ -40,7 +40,7 @@ extension DispatchQueueConfiguration {
 
         // TODO:
         // This looks horrible, and yes, it is.
-        // It looks like Apple has made a conceputal change here, and I'm unsure why.
+        // It looks like Apple has made a conceptual change here, and I'm unsure why.
         // Need more info on this.
         // It looks like just setting timer to fire and not holding a reference to it
         // until deadline causes timer cancellation.
@@ -74,7 +74,7 @@ extension DispatchQueueConfiguration {
         
         // TODO:
         // This looks horrible, and yes, it is.
-        // It looks like Apple has made a conceputal change here, and I'm unsure why.
+        // It looks like Apple has made a conceptual change here, and I'm unsure why.
         // Need more info on this.
         // It looks like just setting timer to fire and not holding a reference to it
         // until deadline causes timer cancellation.

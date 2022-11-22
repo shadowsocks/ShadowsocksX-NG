@@ -92,7 +92,7 @@ public struct ControlProperty<PropertyType> : ControlPropertyType {
     /// Binds event to user interface.
     ///
     /// - In case next element is received, it is being set to control value.
-    /// - In case error is received, DEBUG buids raise fatal error, RELEASE builds log event to standard output.
+    /// - In case error is received, DEBUG builds raise fatal error, RELEASE builds log event to standard output.
     /// - In case sequence completes, nothing happens.
     public func on(_ event: Event<Element>) {
         switch event {

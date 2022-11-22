@@ -13,9 +13,11 @@ If an underlying disposable resource has already been set, future attempts to se
 */
 public final class SingleAssignmentDisposable : DisposeBase, Cancelable {
 
-    private enum DisposeState: Int32 {
-        case disposed = 1
-        case disposableSet = 2
+    private struct DisposeState: OptionSet {
+        let rawValue: Int32
+        
+        static let disposed = DisposeState(rawValue: 1 << 0)
+        static let disposableSet = DisposeState(rawValue: 1 << 1)
     }
 
     // state

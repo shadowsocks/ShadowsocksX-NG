@@ -183,7 +183,7 @@ extension HTTPHeaders: Collection {
 
 extension HTTPHeaders: CustomStringConvertible {
     public var description: String {
-        headers.map { $0.description }
+        headers.map(\.description)
             .joined(separator: "\n")
     }
 }
@@ -360,9 +360,7 @@ extension HTTPHeader {
     /// `preferredLanguages`.
     ///
     /// See the [Accept-Language HTTP header documentation](https://tools.ietf.org/html/rfc7231#section-5.3.5).
-    public static let defaultAcceptLanguage: HTTPHeader = {
-        .acceptLanguage(Locale.preferredLanguages.prefix(6).qualityEncoded())
-    }()
+    public static let defaultAcceptLanguage: HTTPHeader = .acceptLanguage(Locale.preferredLanguages.prefix(6).qualityEncoded())
 
     /// Returns Alamofire's default `User-Agent` header.
     ///

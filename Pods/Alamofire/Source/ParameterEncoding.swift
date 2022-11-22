@@ -85,13 +85,17 @@ public struct URLEncoding: ParameterEncoding {
         case brackets
         /// No brackets are appended. The key is encoded as is.
         case noBrackets
+        /// Brackets containing the item index are appended. This matches the jQuery and Node.js behavior.
+        case indexInBrackets
 
-        func encode(key: String) -> String {
+        func encode(key: String, atIndex index: Int) -> String {
             switch self {
             case .brackets:
                 return "\(key)[]"
             case .noBrackets:
                 return key
+            case .indexInBrackets:
+                return "\(key)[\(index)]"
             }
         }
     }
@@ -193,8 +197,8 @@ public struct URLEncoding: ParameterEncoding {
                 components += queryComponents(fromKey: "\(key)[\(nestedKey)]", value: value)
             }
         case let array as [Any]:
-            for value in array {
-                components += queryComponents(fromKey: arrayEncoding.encode(key: key), value: value)
+            for (index, value) in array.enumerated() {
+                components += queryComponents(fromKey: arrayEncoding.encode(key: key, atIndex: index), value: value)
             }
         case let number as NSNumber:
             if number.isBool {
@@ -235,6 +239,10 @@ public struct URLEncoding: ParameterEncoding {
 /// Uses `JSONSerialization` to create a JSON representation of the parameters object, which is set as the body of the
 /// request. The `Content-Type` HTTP header field of an encoded request is set to `application/json`.
 public struct JSONEncoding: ParameterEncoding {
+    public enum Error: Swift.Error {
+        case invalidJSONObject
+    }
+
     // MARK: Properties
 
     /// Returns a `JSONEncoding` instance with default writing options.
@@ -261,6 +269,10 @@ public struct JSONEncoding: ParameterEncoding {
         var urlRequest = try urlRequest.asURLRequest()
 
         guard let parameters = parameters else { return urlRequest }
+
+        guard JSONSerialization.isValidJSONObject(parameters) else {
+            throw AFError.parameterEncodingFailed(reason: .jsonEncodingFailed(error: Error.invalidJSONObject))
+        }
 
         do {
             let data = try JSONSerialization.data(withJSONObject: parameters, options: options)
@@ -290,6 +302,10 @@ public struct JSONEncoding: ParameterEncoding {
 
         guard let jsonObject = jsonObject else { return urlRequest }
 
+        guard JSONSerialization.isValidJSONObject(jsonObject) else {
+            throw AFError.parameterEncodingFailed(reason: .jsonEncodingFailed(error: Error.invalidJSONObject))
+        }
+
         do {
             let data = try JSONSerialization.data(withJSONObject: jsonObject, options: options)
 
@@ -303,6 +319,15 @@ public struct JSONEncoding: ParameterEncoding {
         }
 
         return urlRequest
+    }
+}
+
+extension JSONEncoding.Error {
+    public var localizedDescription: String {
+        """
+        Invalid JSON object provided for parameter or object encoding. \
+        This is most likely due to a value which can't be represented in Objective-C.
+        """
     }
 }
 
