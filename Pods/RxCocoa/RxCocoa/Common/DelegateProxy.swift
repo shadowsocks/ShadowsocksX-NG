@@ -200,7 +200,7 @@
         /// Sets reference of normal delegate that receives all forwarded messages
         /// through `self`.
         ///
-        /// - parameter forwardToDelegate: Reference of delegate that receives all messages through `self`.
+        /// - parameter delegate: Reference of delegate that receives all messages through `self`.
         /// - parameter retainDelegate: Should `self` retain `forwardToDelegate`.
         open func setForwardToDelegate(_ delegate: Delegate?, retainDelegate: Bool) {
             #if DEBUG // 4.0 all configurations
@@ -225,6 +225,7 @@
         }
 
         override open func responds(to aSelector: Selector!) -> Bool {
+            guard let aSelector = aSelector else { return false }
             return super.responds(to: aSelector)
                 || (self._forwardToDelegate?.responds(to: aSelector) ?? false)
                 || (self.voidDelegateMethodsContain(aSelector) && self.hasObservers(selector: aSelector))

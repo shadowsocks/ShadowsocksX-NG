@@ -110,7 +110,7 @@ extension SharedSequenceConvertibleType where SharingStrategy == DriverSharingSt
     Subscribes to observable sequence using custom binder function.
     This method can be only called from `MainThread`.
 
-    - parameter with: Function used to bind elements from `self`.
+    - parameter transformation: Function used to bind elements from `self`.
     - returns: Object representing subscription.
     */
     public func drive<Result>(_ transformation: (Observable<Element>) -> Result) -> Result {

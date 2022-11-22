@@ -427,10 +427,19 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
     
     @IBAction func showLogs(_ sender: NSMenuItem) {
         let ws = NSWorkspace.shared
-        if let appUrl = ws.urlForApplication(withBundleIdentifier: "com.apple.Console") {
-            try! ws.launchApplication(at: appUrl
-                ,options: NSWorkspace.LaunchOptions.default
-                ,configuration: [NSWorkspace.LaunchConfigurationKey.arguments: "~/Library/Logs/ss-local.log"])
+        if let appUrl = ws.urlForApplication(toOpen: URL(fileURLWithPath: "/System/Applications/Utilities/Console.app")) {
+			let config = NSWorkspace.OpenConfiguration();
+
+			config.arguments = ["~/Library/Logs/ss-local.log"]
+			ws.open(appUrl, configuration: config) { app, error in
+				if let err = error {
+					print(err)
+				}
+			}
+
+//            try! ws.launchApplication(at: appUrl
+//                ,options: NSWorkspace.LaunchOptions.default
+//                ,configuration: [NSWorkspace.LaunchConfigurationKey.arguments: ])
         }
     }
     
@@ -596,11 +605,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSUserNotificationCenterDele
             item.state = (mgr.activeProfileId == profile.uuid) ? .on : .off
             item.isEnabled = profile.isValid()
             // Use number keys for faster switch between the first 10 servers from main menu
-            if i < 10 {
-                var key = i + 1
-                if key == 10 {
-                    key = 0
-                }
+//            if i < 10 {
+//                var key = i + 1
+//                if key == 10 {
+//                    key = 0
+//                }
+			if let c = Unicode.Scalar.init(97 + i) {
+				let key = Character(c)
                 item.keyEquivalent = String(key)
                 item.keyEquivalentModifierMask = .init()
             }

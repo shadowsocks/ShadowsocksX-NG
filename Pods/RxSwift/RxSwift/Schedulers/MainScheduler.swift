@@ -41,14 +41,14 @@ public final class MainScheduler : SerialDispatchQueueScheduler {
     public static let asyncInstance = SerialDispatchQueueScheduler(serialQueue: DispatchQueue.main)
 
     /// In case this method is called on a background thread it will throw an exception.
-    public class func ensureExecutingOnScheduler(errorMessage: String? = nil) {
+    public static func ensureExecutingOnScheduler(errorMessage: String? = nil) {
         if !DispatchQueue.isMain {
             rxFatalError(errorMessage ?? "Executing on background thread. Please use `MainScheduler.instance.schedule` to schedule work on main thread.")
         }
     }
 
     /// In case this method is running on a background thread it will throw an exception.
-    public class func ensureRunningOnMainThread(errorMessage: String? = nil) {
+    public static func ensureRunningOnMainThread(errorMessage: String? = nil) {
         #if !os(Linux) // isMainThread is not implemented in Linux Foundation
             guard Thread.isMainThread else {
                 rxFatalError(errorMessage ?? "Running on background thread.")

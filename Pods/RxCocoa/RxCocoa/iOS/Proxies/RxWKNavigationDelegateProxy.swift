@@ -14,8 +14,7 @@ import WebKit
 @available(iOS 8.0, OSX 10.10, OSXApplicationExtension 10.10, *)
 open class RxWKNavigationDelegateProxy
     : DelegateProxy<WKWebView, WKNavigationDelegate>
-    , DelegateProxyType
-, WKNavigationDelegate {
+    , DelegateProxyType {
 
     /// Typed parent object.
     public weak private(set) var webView: WKWebView?
@@ -39,5 +38,8 @@ open class RxWKNavigationDelegateProxy
         object.navigationDelegate = delegate
     }
 }
+
+@available(iOS 8.0, OSX 10.10, OSXApplicationExtension 10.10, *)
+extension RxWKNavigationDelegateProxy: WKNavigationDelegate {}
 
 #endif

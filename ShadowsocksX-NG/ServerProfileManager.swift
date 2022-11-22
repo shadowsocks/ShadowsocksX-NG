@@ -73,14 +73,26 @@ class ServerProfileManager: NSObject {
             return nil
         }
     }
-    
+
+	func removeAllProfiles() {
+		self.profiles.removeAll()
+		save()
+	}
+
     func addServerProfileByURL(urls: [URL]) -> Int {
         var addCount = 0
         
         for url in urls {
             if let profile = ServerProfile(url: url) {
-                profiles.append(profile)
-                addCount = addCount + 1
+				for (i, tmpPro) in profiles.enumerated() {
+					if tmpPro.serverHost == profile.serverHost {
+						// Replace old one
+						profiles.remove(at: i)
+					}
+				}
+
+				profiles.append(profile)
+				addCount = addCount + 1
             }
         }
         
@@ -99,7 +111,7 @@ class ServerProfileManager: NSObject {
             .map { URL(string: $0) }
             .filter { $0 != nil }
             .map { $0! }
-        urls = urls.filter { $0.scheme == "ss" }
+		urls = urls.filter { $0.scheme?.lowercased() == "ss" || $0.scheme?.lowercased() == "ssr"}
         return urls
     }
 }

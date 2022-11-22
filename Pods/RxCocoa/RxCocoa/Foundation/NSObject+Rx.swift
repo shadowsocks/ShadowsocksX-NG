@@ -57,7 +57,7 @@ extension Reactive where Base: NSObject {
 
      If support for weak properties is needed or observing arbitrary or unknown relationships in the
      ownership tree, `observeWeakly` is the preferred option.
-
+     - parameter type: Optional type hint of the observed sequence elements.
      - parameter keyPath: Key path of property names to observe.
      - parameter options: KVO mechanism notification options.
      - parameter retainSelf: Retains self during observation if set `true`.
@@ -107,7 +107,7 @@ extension Reactive where Base: NSObject {
      * it can be used to observe `weak` properties
 
      **Since it needs to intercept object deallocation process it needs to perform swizzling of `dealloc` method on observed object.**
-
+     - parameter type: Optional type hint of the observed sequence elements.
      - parameter keyPath: Key path of property names to observe.
      - parameter options: KVO mechanism notification options.
      - returns: Observable sequence of objects on `keyPath`.

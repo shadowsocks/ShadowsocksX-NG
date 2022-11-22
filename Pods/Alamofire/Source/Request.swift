@@ -120,6 +120,8 @@ public class Request {
         /// Whether the instance has had `finish()` called and is running the serializers. Should be replaced with a
         /// representation in the state machine in the future.
         var isFinishing = false
+        /// Actions to run when requests are finished. Use for concurrency support.
+        var finishHandlers: [() -> Void] = []
     }
 
     /// Protected `MutableState` value that provides thread-safe access to state values.
@@ -127,7 +129,7 @@ public class Request {
     fileprivate var mutableState = MutableState()
 
     /// `State` of the `Request`.
-    public var state: State { mutableState.state }
+    public var state: State { $mutableState.state }
     /// Returns whether `state` is `.initialized`.
     public var isInitialized: Bool { state == .initialized }
     /// Returns whether `state is `.resumed`.
@@ -150,38 +152,38 @@ public class Request {
     public let downloadProgress = Progress(totalUnitCount: 0)
     /// `ProgressHandler` called when `uploadProgress` is updated, on the provided `DispatchQueue`.
     private var uploadProgressHandler: (handler: ProgressHandler, queue: DispatchQueue)? {
-        get { mutableState.uploadProgressHandler }
-        set { mutableState.uploadProgressHandler = newValue }
+        get { $mutableState.uploadProgressHandler }
+        set { $mutableState.uploadProgressHandler = newValue }
     }
 
     /// `ProgressHandler` called when `downloadProgress` is updated, on the provided `DispatchQueue`.
     fileprivate var downloadProgressHandler: (handler: ProgressHandler, queue: DispatchQueue)? {
-        get { mutableState.downloadProgressHandler }
-        set { mutableState.downloadProgressHandler = newValue }
+        get { $mutableState.downloadProgressHandler }
+        set { $mutableState.downloadProgressHandler = newValue }
     }
 
     // MARK: Redirect Handling
 
     /// `RedirectHandler` set on the instance.
     public private(set) var redirectHandler: RedirectHandler? {
-        get { mutableState.redirectHandler }
-        set { mutableState.redirectHandler = newValue }
+        get { $mutableState.redirectHandler }
+        set { $mutableState.redirectHandler = newValue }
     }
 
     // MARK: Cached Response Handling
 
     /// `CachedResponseHandler` set on the instance.
     public private(set) var cachedResponseHandler: CachedResponseHandler? {
-        get { mutableState.cachedResponseHandler }
-        set { mutableState.cachedResponseHandler = newValue }
+        get { $mutableState.cachedResponseHandler }
+        set { $mutableState.cachedResponseHandler = newValue }
     }
 
     // MARK: URLCredential
 
     /// `URLCredential` used for authentication challenges. Created by calling one of the `authenticate` methods.
     public private(set) var credential: URLCredential? {
-        get { mutableState.credential }
-        set { mutableState.credential = newValue }
+        get { $mutableState.credential }
+        set { $mutableState.credential = newValue }
     }
 
     // MARK: Validators
@@ -193,7 +195,7 @@ public class Request {
     // MARK: URLRequests
 
     /// All `URLRequests` created on behalf of the `Request`, including original and adapted requests.
-    public var requests: [URLRequest] { mutableState.requests }
+    public var requests: [URLRequest] { $mutableState.requests }
     /// First `URLRequest` created on behalf of the `Request`. May not be the first one actually executed.
     public var firstRequest: URLRequest? { requests.first }
     /// Last `URLRequest` created on behalf of the `Request`.
@@ -203,7 +205,7 @@ public class Request {
 
     /// `URLRequest`s from all of the `URLSessionTask`s executed on behalf of the `Request`. May be different from
     /// `requests` due to `URLSession` manipulation.
-    public var performedRequests: [URLRequest] { $mutableState.read { $0.tasks.compactMap { $0.currentRequest } } }
+    public var performedRequests: [URLRequest] { $mutableState.read { $0.tasks.compactMap(\.currentRequest) } }
 
     // MARK: HTTPURLResponse
 
@@ -214,7 +216,7 @@ public class Request {
     // MARK: Tasks
 
     /// All `URLSessionTask`s created on behalf of the `Request`.
-    public var tasks: [URLSessionTask] { mutableState.tasks }
+    public var tasks: [URLSessionTask] { $mutableState.tasks }
     /// First `URLSessionTask` created on behalf of the `Request`.
     public var firstTask: URLSessionTask? { tasks.first }
     /// Last `URLSessionTask` crated on behalf of the `Request`.
@@ -225,7 +227,7 @@ public class Request {
     // MARK: Metrics
 
     /// All `URLSessionTaskMetrics` gathered on behalf of the `Request`. Should correspond to the `tasks` created.
-    public var allMetrics: [URLSessionTaskMetrics] { mutableState.metrics }
+    public var allMetrics: [URLSessionTaskMetrics] { $mutableState.metrics }
     /// First `URLSessionTaskMetrics` gathered on behalf of the `Request`.
     public var firstMetrics: URLSessionTaskMetrics? { allMetrics.first }
     /// Last `URLSessionTaskMetrics` gathered on behalf of the `Request`.
@@ -236,14 +238,14 @@ public class Request {
     // MARK: Retry Count
 
     /// Number of times the `Request` has been retried.
-    public var retryCount: Int { mutableState.retryCount }
+    public var retryCount: Int { $mutableState.retryCount }
 
     // MARK: Error
 
     /// `Error` returned from Alamofire internally, from the network request directly, or any validators executed.
     public fileprivate(set) var error: AFError? {
-        get { mutableState.error }
-        set { mutableState.error = newValue }
+        get { $mutableState.error }
+        set { $mutableState.error = newValue }
     }
 
     /// Default initializer for the `Request` superclass.
@@ -491,7 +493,7 @@ public class Request {
     func retryOrFinish(error: AFError?) {
         dispatchPrecondition(condition: .onQueue(underlyingQueue))
 
-        guard let error = error, let delegate = delegate else { finish(); return }
+        guard !isCancelled, let error = error, let delegate = delegate else { finish(); return }
 
         delegate.retryResult(for: self, dueTo: error) { retryResult in
             switch retryResult {
@@ -511,9 +513,9 @@ public class Request {
     func finish(error: AFError? = nil) {
         dispatchPrecondition(condition: .onQueue(underlyingQueue))
 
-        guard !mutableState.isFinishing else { return }
+        guard !$mutableState.isFinishing else { return }
 
-        mutableState.isFinishing = true
+        $mutableState.isFinishing = true
 
         if let error = error { self.error = error }
 
@@ -752,7 +754,7 @@ public class Request {
     /// - Returns:              The instance.
     @discardableResult
     public func authenticate(with credential: URLCredential) -> Self {
-        mutableState.credential = credential
+        $mutableState.credential = credential
 
         return self
     }
@@ -768,7 +770,7 @@ public class Request {
     /// - Returns:   The instance.
     @discardableResult
     public func downloadProgress(queue: DispatchQueue = .main, closure: @escaping ProgressHandler) -> Self {
-        mutableState.downloadProgressHandler = (handler: closure, queue: queue)
+        $mutableState.downloadProgressHandler = (handler: closure, queue: queue)
 
         return self
     }
@@ -784,7 +786,7 @@ public class Request {
     /// - Returns:   The instance.
     @discardableResult
     public func uploadProgress(queue: DispatchQueue = .main, closure: @escaping ProgressHandler) -> Self {
-        mutableState.uploadProgressHandler = (handler: closure, queue: queue)
+        $mutableState.uploadProgressHandler = (handler: closure, queue: queue)
 
         return self
     }
@@ -920,10 +922,25 @@ public class Request {
 
     // MARK: Cleanup
 
+    /// Adds a `finishHandler` closure to be called when the request completes.
+    ///
+    /// - Parameter closure: Closure to be called when the request finishes.
+    func onFinish(perform finishHandler: @escaping () -> Void) {
+        guard !isFinished else { finishHandler(); return }
+
+        $mutableState.write { state in
+            state.finishHandlers.append(finishHandler)
+        }
+    }
+
     /// Final cleanup step executed when the instance finishes response serialization.
     func cleanup() {
         delegate?.cleanup(after: self)
-        // No-op: override in subclass
+        let handlers = $mutableState.finishHandlers
+        handlers.forEach { $0() }
+        $mutableState.write { state in
+            state.finishHandlers.removeAll()
+        }
     }
 }
 
@@ -1128,7 +1145,7 @@ public class DataRequest: Request {
         return session.dataTask(with: copiedRequest)
     }
 
-    /// Called to updated the `downloadProgress` of the instance.
+    /// Called to update the `downloadProgress` of the instance.
     func updateDownloadProgress() {
         let totalBytesReceived = Int64(data?.count ?? 0)
         let totalBytesExpected = task?.response?.expectedContentLength ?? NSURLSessionTransferSizeUnknown
@@ -1298,12 +1315,14 @@ public final class DataStreamRequest: Request {
 
     func didReceive(data: Data) {
         $streamMutableState.write { state in
+            #if !(os(Linux) || os(Windows))
             if let stream = state.outputStream {
                 underlyingQueue.async {
                     var bytes = Array(data)
                     stream.write(&bytes, maxLength: bytes.count)
                 }
             }
+            #endif
             state.numberOfExecutingStreams += state.streams.count
             let localState = state
             underlyingQueue.async { localState.streams.forEach { $0(data) } }
@@ -1337,6 +1356,7 @@ public final class DataStreamRequest: Request {
         return self
     }
 
+    #if !(os(Linux) || os(Windows))
     /// Produces an `InputStream` that receives the `Data` received by the instance.
     ///
     /// - Note: The `InputStream` produced by this method must have `open()` called before being able to read `Data`.
@@ -1359,6 +1379,7 @@ public final class DataStreamRequest: Request {
 
         return inputStream
     }
+    #endif
 
     func capturingError(from closure: () throws -> Void) {
         do {
@@ -1532,9 +1553,16 @@ public class DownloadRequest: Request {
     /// using the `download(resumingWith data:)` API.
     ///
     /// - Note: For more information about `resumeData`, see [Apple's documentation](https://developer.apple.com/documentation/foundation/urlsessiondownloadtask/1411634-cancel).
-    public var resumeData: Data? { mutableDownloadState.resumeData ?? error?.downloadResumeData }
+    public var resumeData: Data? {
+        #if !(os(Linux) || os(Windows))
+        return $mutableDownloadState.resumeData ?? error?.downloadResumeData
+        #else
+        return $mutableDownloadState.resumeData
+        #endif
+    }
+
     /// If the download is successful, the `URL` where the file was downloaded.
-    public var fileURL: URL? { mutableDownloadState.fileURL }
+    public var fileURL: URL? { $mutableDownloadState.fileURL }
 
     // MARK: Initial State
 
@@ -1592,7 +1620,7 @@ public class DownloadRequest: Request {
         eventMonitor?.request(self, didFinishDownloadingUsing: task, with: result)
 
         switch result {
-        case let .success(url): mutableDownloadState.fileURL = url
+        case let .success(url): $mutableDownloadState.fileURL = url
         case let .failure(error): self.error = error
         }
     }
@@ -1686,14 +1714,14 @@ public class DownloadRequest: Request {
                 // Resume to ensure metrics are gathered.
                 task.resume()
                 task.cancel { resumeData in
-                    self.mutableDownloadState.resumeData = resumeData
+                    self.$mutableDownloadState.resumeData = resumeData
                     self.underlyingQueue.async { self.didCancelTask(task) }
                     completionHandler(resumeData)
                 }
             } else {
                 // Resume to ensure metrics are gathered.
                 task.resume()
-                task.cancel(byProducingResumeData: { _ in })
+                task.cancel()
                 self.underlyingQueue.async { self.didCancelTask(task) }
             }
         }
@@ -1771,6 +1799,8 @@ public class UploadRequest: DataRequest {
     ///                         `underlyingQueue`, but can be passed another queue from a `Session`.
     ///   - eventMonitor:       `EventMonitor` called for event callbacks from internal `Request` actions.
     ///   - interceptor:        `RequestInterceptor` used throughout the request lifecycle.
+    ///   - fileManager:        `FileManager` used to perform cleanup tasks, including the removal of multipart form
+    ///                         encoded payloads written to disk.
     ///   - delegate:           `RequestDelegate` that provides an interface to actions not performed by the `Request`.
     init(id: UUID = UUID(),
          convertible: UploadConvertible,
@@ -1854,7 +1884,7 @@ public class UploadRequest: DataRequest {
         defer { super.cleanup() }
 
         guard
-            let uploadable = self.uploadable,
+            let uploadable = uploadable,
             case let .file(url, shouldRemove) = uploadable,
             shouldRemove
         else { return }

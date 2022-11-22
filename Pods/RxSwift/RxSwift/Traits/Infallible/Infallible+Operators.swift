@@ -650,7 +650,7 @@ extension InfallibleType {
     /**
      Provides an unretained, safe to use (i.e. not implicitly unwrapped), reference to an object along with the events emitted by the sequence.
      
-     In the case the provided object cannot be retained successfully, the seqeunce will complete.
+     In the case the provided object cannot be retained successfully, the sequence will complete.
      
      - note: Be careful when using this operator in a sequence that has a buffer or replay, for example `share(replay: 1)`, as the sharing buffer will also include the provided object, which could potentially cause a retain cycle.
      
@@ -668,7 +668,7 @@ extension InfallibleType {
     /**
      Provides an unretained, safe to use (i.e. not implicitly unwrapped), reference to an object along with the events emitted by the sequence.
      
-     In the case the provided object cannot be retained successfully, the seqeunce will complete.
+     In the case the provided object cannot be retained successfully, the sequence will complete.
      
      - note: Be careful when using this operator in a sequence that has a buffer or replay, for example `share(replay: 1)`, as the sharing buffer will also include the provided object, which could potentially cause a retain cycle.
      

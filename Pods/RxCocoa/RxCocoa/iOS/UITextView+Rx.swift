@@ -42,7 +42,7 @@ extension Reactive where Base: UITextView {
 
         let bindingObserver = Binder(self.base) { (textView, text: String?) in
             // This check is important because setting text value always clears control state
-            // including marked text selection which is imporant for proper input 
+            // including marked text selection which is important for proper input
             // when IME input method is used.
             if textView.text != text {
                 textView.text = text
@@ -78,7 +78,7 @@ extension Reactive where Base: UITextView {
         
         let bindingObserver = Binder(self.base) { (textView, attributedText: NSAttributedString?) in
             // This check is important because setting text value always clears control state
-            // including marked text selection which is imporant for proper input
+            // including marked text selection which is important for proper input
             // when IME input method is used.
             if textView.attributedText != attributedText {
                 textView.attributedText = attributedText

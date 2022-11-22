@@ -35,20 +35,26 @@ class ServerProfile: NSObject, NSCopying {
         self.init()
 
         func padBase64(string: String) -> String {
+			var finalStr: String
+
             var length = string.utf8.count
             if length % 4 == 0 {
-                return string
+				finalStr = string
             } else {
                 length = 4 - length % 4 + length
-                return string.padding(toLength: length, withPad: "=", startingAt: 0)
+				finalStr = string.padding(toLength: length, withPad: "=", startingAt: 0)
             }
+
+			finalStr = finalStr.replacingOccurrences(of: "-", with: "+")
+			finalStr = finalStr.replacingOccurrences(of: "_", with: "/")
+
+			return finalStr
         }
 
         func decodeUrl(url: URL) -> (String?,String?) {
-            let urlStr = url.absoluteString
-            let base64Begin = urlStr.index(urlStr.startIndex, offsetBy: 5)
-            let base64End = urlStr.firstIndex(of: "#")
-            let encodedStr = String(urlStr[base64Begin..<(base64End ?? urlStr.endIndex)])
+			guard let encodedStr = url.host else {
+				return (nil, nil)
+			}
             guard let data = Data(base64Encoded: padBase64(string: encodedStr)) else {
                 // Not legacy format URI
                 return (url.absoluteString, nil)
@@ -56,91 +62,139 @@ class ServerProfile: NSObject, NSCopying {
             guard let decoded = String(data: data, encoding: String.Encoding.utf8) else {
                 return (nil, nil)
             }
-            var s = decoded.trimmingCharacters(in: CharacterSet(charactersIn: "\n"))
-            
+
+//			let base64End = url.absoluteString.firstIndex(of: "#")
+
+			var plainUrlStr = decoded.trimmingCharacters(in: CharacterSet(charactersIn: "\n"))
+
             // May be legacy format URI
             // Note that the legacy URI doesn't follow RFC3986. It means the password here
             // should be plain text, not percent-encoded.
             // Ref: https://shadowsocks.org/en/config/quick-guide.html
-            let parser = try? NSRegularExpression(
-                pattern: "(.+):(.+)@(.+)", options: .init())
-            if let match = parser?.firstMatch(in:s, options: [], range: NSRange(location: 0, length: s.utf16.count)) {
-                // Convert legacy format to SIP002 format
-                let r1 = Range(match.range(at: 1), in: s)!
-                let r2 = Range(match.range(at: 2), in: s)!
-                let r3 = Range(match.range(at: 3), in: s)!
-                let user = String(s[r1])
-                let password = String(s[r2])
-                let hostAndPort = String(s[r3])
-                
-                let rawUserInfo = "\(user):\(password)".data(using: .utf8)!
-                let userInfo = rawUserInfo.base64EncodedString()
-                
-                s = "ss://\(userInfo)@\(hostAndPort)"
-            }
+			guard let scheme = url.scheme?.lowercased() else { return (nil, nil) }
+			switch scheme {
+			case "ss":
+				let parser = try? NSRegularExpression(
+					pattern: "(.+):(.+)@(.+)", options: .init())
+				if let match = parser?.firstMatch(in:plainUrlStr, options: [], range: NSRange(location: 0, length: plainUrlStr.utf16.count)) {
+					// Convert legacy format to SIP002 format
+					let r1 = Range(match.range(at: 1), in: plainUrlStr)!
+					let r2 = Range(match.range(at: 2), in: plainUrlStr)!
+					let r3 = Range(match.range(at: 3), in: plainUrlStr)!
+					let user = String(plainUrlStr[r1])
+					let password = String(plainUrlStr[r2])
+					let hostAndPort = String(plainUrlStr[r3])
+
+					let rawUserInfo = "\(user):\(password)".data(using: .utf8)!
+					let userInfo = rawUserInfo.base64EncodedString()
+
+					plainUrlStr = "ss://\(userInfo)@\(hostAndPort)"
+				}
+
+			case "ssr":
+				// ssr://server:port:protocol:method:obfs:password_base64/?params_base64
+				// params_base64 为 obfsparam=obfsparam_base64&protoparam=protoparam_base64&remarks=remarks_base64&group=group_base64
+
+				let compsList = plainUrlStr.components(separatedBy: "/?")
+				let uriPart = compsList.first ?? ""
+				let paraPart = compsList.last
+
+				let comps = uriPart.components(separatedBy: ":")
+				guard comps.count == 6 else { return (nil, nil) }
+
+				self.serverHost = comps[0]
+				self.serverPort = UInt16(comps[1]) ?? 0
+				self.method = comps[3]
+
+				if let data = Data(base64Encoded: padBase64(string: comps[5])) {
+					self.password = String(data: data, encoding: .utf8) ?? ""
+				}
+
+				if let parasList = paraPart {
+					let kvlist = parasList.components(separatedBy: "&")
+
+					for kv in kvlist {
+						let comps = kv.components(separatedBy: "=")
+
+						if comps.count == 2 {
+							if comps.first?.lowercased() == "remarks",
+								let remarkValue = comps.last,
+							let data = Data(base64Encoded: padBase64(string: remarkValue)) {
+								self.remark = String(data: data, encoding: .utf8) ??  ""
+								break
+							}
+						}
+					}
+				}
+			default:
+				break
+			}
             
-            if let index = base64End {
-                let i = urlStr.index(index, offsetBy: 1)
-                let fragment = String(urlStr[i...])
-                return (s, fragment.removingPercentEncoding)
-            }
-            return (s, nil)
-        }
-        func decodeLegacyFormat(url: String) -> (URL?,String?) {
-            return (nil, nil)
+//            if let index = base64End {
+//                let i = urlStr.index(index, offsetBy: 1)
+//                let fragment = String(urlStr[i...])
+//                return (s, fragment.removingPercentEncoding)
+//            }
+            return (plainUrlStr, nil)
         }
         
         let (_decodedUrl, _tag) = decodeUrl(url: url)
         guard let decodedUrl = _decodedUrl else {
             return nil
         }
-        guard let parsedUrl = URLComponents(string: decodedUrl) else {
-            return nil
-        }
-        guard let host = parsedUrl.host, let port = parsedUrl.port,
-            let user = parsedUrl.user else {
-            return nil
-        }
 
-        self.serverHost = host
-        self.serverPort = UInt16(port)
+		if url.scheme?.lowercased() == "ss" {
+			guard let parsedUrl = URLComponents(string: decodedUrl) else {
+				return nil
+			}
+			guard let host = parsedUrl.host, let port = parsedUrl.port,
+				  let user = parsedUrl.user else {
+					  return nil
+				  }
 
-        // This can be overriden by the fragment part of SIP002 URL
-        remark = parsedUrl.queryItems?
-            .filter({ $0.name == "Remark" }).first?.value ?? ""
-        
-        if let tag = _tag {
-            remark = tag
-        }
+			self.serverHost = host
+			self.serverPort = UInt16(port)
 
-        // SIP002 URL have no password section
-        guard let data = Data(base64Encoded: padBase64(string: user)),
-            let userInfo = String(data: data, encoding: .utf8) else {
-            return nil
-        }
+			// This can be overriden by the fragment part of SIP002 URL
+			remark = parsedUrl.queryItems?
+				.filter({ $0.name == "Remark" }).first?.value ?? ""
 
-        let parts = userInfo.split(separator: ":", maxSplits: 1, omittingEmptySubsequences: false)
-        if parts.count != 2 {
-            return nil
-        }
-        self.method = String(parts[0]).lowercased()
-        self.password = String(parts[1])
+			if let tag = _tag {
+				remark = tag
+			}
 
-        // SIP002 defines where to put the profile name
-        if let profileName = parsedUrl.fragment {
-            self.remark = profileName
-        }
+			// SIP002 URL have no password section
+			guard let data = Data(base64Encoded: padBase64(string: user)),
+				  let userInfo = String(data: data, encoding: .utf8) else {
+					  return nil
+				  }
 
-        if let pluginStr = parsedUrl.queryItems?
-            .filter({ $0.name == "plugin" }).first?.value {
-            let parts = pluginStr.split(separator: ";", maxSplits: 1)
-            if parts.count == 2 {
-                plugin = String(parts[0])
-                pluginOptions = String(parts[1])
-            } else if parts.count == 1 {
-                plugin = String(parts[0])
-            }
-        }
+			let parts = userInfo.split(separator: ":", maxSplits: 1, omittingEmptySubsequences: false)
+			if parts.count != 2 {
+				return nil
+			}
+			self.method = String(parts[0]).lowercased()
+			self.password = String(parts[1])
+
+			// SIP002 defines where to put the profile name
+			if let profileName = parsedUrl.fragment {
+				self.remark = profileName
+			}
+
+			if let pluginStr = parsedUrl.queryItems?
+				.filter({ $0.name == "plugin" }).first?.value {
+				let parts = pluginStr.split(separator: ";", maxSplits: 1)
+				if parts.count == 2 {
+					plugin = String(parts[0])
+					pluginOptions = String(parts[1])
+				} else if parts.count == 1 {
+					plugin = String(parts[0])
+				}
+			}
+		}
+
+		print(decodedUrl)
+		print(self.toDictionary())
     }
     
     public func copy(with zone: NSZone? = nil) -> Any {
@@ -209,6 +263,8 @@ class ServerProfile: NSObject, NSCopying {
         conf["server"] = serverHost as AnyObject
         conf["server_port"] = NSNumber(value: serverPort as UInt16)
 
+		conf["remark"] = remark as AnyObject?
+
         if !plugin.isEmpty {
             // all plugin binaries should be located in the plugins dir
             // so that we don't have to mess up with PATH envvars
@@ -227,6 +283,7 @@ class ServerProfile: NSObject, NSCopying {
         print("Password=\(String(repeating: "*", count: password.count))", to: &buf)
         print("Plugin=\(plugin)", to: &buf)
         print("PluginOptions=\(pluginOptions)", to: &buf)
+		print("Remark=\(remark)", to: &buf)
         return buf
     }
 

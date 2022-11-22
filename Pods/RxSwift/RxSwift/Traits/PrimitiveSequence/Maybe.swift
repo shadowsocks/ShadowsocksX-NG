@@ -335,11 +335,11 @@ extension PrimitiveSequenceType where Trait == MaybeTrait {
     }
 
     /**
-     Returns the elements of the specified sequence or `switchTo` sequence if the sequence is empty.
+     Returns the elements of the specified sequence or `other` sequence if the sequence is empty.
 
      - seealso: [DefaultIfEmpty operator on reactivex.io](http://reactivex.io/documentation/operators/defaultifempty.html)
 
-     - parameter switchTo: Observable sequence being returned when source sequence is empty.
+     - parameter other: Observable sequence being returned when source sequence is empty.
      - returns: Observable sequence that contains elements from switchTo sequence if source is empty, otherwise returns source sequence elements.
      */
     public func ifEmpty(switchTo other: Maybe<Element>) -> Maybe<Element> {
@@ -347,11 +347,11 @@ extension PrimitiveSequenceType where Trait == MaybeTrait {
     }
 
     /**
-     Returns the elements of the specified sequence or `switchTo` sequence if the sequence is empty.
+     Returns the elements of the specified sequence or `other` sequence if the sequence is empty.
 
      - seealso: [DefaultIfEmpty operator on reactivex.io](http://reactivex.io/documentation/operators/defaultifempty.html)
 
-     - parameter switchTo: Observable sequence being returned when source sequence is empty.
+     - parameter other: Observable sequence being returned when source sequence is empty.
      - returns: Observable sequence that contains elements from switchTo sequence if source is empty, otherwise returns source sequence elements.
      */
     public func ifEmpty(switchTo other: Single<Element>) -> Single<Element> {
