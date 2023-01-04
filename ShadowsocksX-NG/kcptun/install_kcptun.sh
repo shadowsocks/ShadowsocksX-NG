@@ -10,12 +10,10 @@
 # We use an adatper to handle it.
 # https://github.com/xtaci/kcptun/releases
 
-VERSION="v20190905_1"
-
 cd "$(dirname "${BASH_SOURCE[0]}")"
 
-mkdir -p "$HOME/Library/Application Support/ShadowsocksX-NG/kcptun_$VERSION"
-cp -f client "$HOME/Library/Application Support/ShadowsocksX-NG/kcptun_$VERSION/"
+mkdir -p "$HOME/Library/Application Support/ShadowsocksX-NG/kcptun"
+cp -f client "$HOME/Library/Application Support/ShadowsocksX-NG/kcptun/"
 
 # Delete old kcptun symbol link
 rm -f "$HOME/Library/Application Support/ShadowsocksX-NG/plugins/kcptun"

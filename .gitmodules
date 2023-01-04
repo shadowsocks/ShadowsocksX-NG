@@ -1,0 +1,30 @@
+[submodule "shadowsocks-libev"]
+	path = deps/shadowsocks-libev
+	url = https://github.com/shadowsocks/shadowsocks-libev
+[submodule "libsodium"]
+	path = deps/libsodium
+	url = https://github.com/jedisct1/libsodium
+[submodule "mbedtls"]
+	path = deps/mbedtls
+	url = https://github.com/Mbed-TLS/mbedtls
+[submodule "c-ares"]
+	path = deps/c-ares
+	url = https://github.com/c-ares/c-ares
+[submodule "deps/shadowsocks-libev"]
+	path = deps/shadowsocks-libev
+	url = https://github.com/shadowsocks/shadowsocks-libev
+[submodule "deps/libsodium"]
+	path = deps/libsodium
+	url = https://github.com/jedisct1/libsodium
+[submodule "deps/mbedtls"]
+	path = deps/mbedtls
+	url = https://github.com/Mbed-TLS/mbedtls
+[submodule "deps/c-ares"]
+	path = deps/c-ares
+	url = https://github.com/c-ares/c-ares
+[submodule "deps/v2ray-plugin"]
+	path = deps/v2ray-plugin
+	url = https://github.com/shadowsocks/v2ray-plugin
+[submodule "deps/kcptun"]
+	path = deps/kcptun
+	url = https://github.com/xtaci/kcptun

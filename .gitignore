@@ -69,3 +69,10 @@ profile
 Carthage/Build
 
 IDEWorkspaceChecks.plist
+
+####
+# Dependencies
+deps/dist
+deps/pcre*
+deps/libev*
+deps/privoxy*

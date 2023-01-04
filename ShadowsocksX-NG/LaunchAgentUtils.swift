@@ -8,10 +8,10 @@
 
 import Foundation
 
-let SS_LOCAL_VERSION = "3.2.5"
-let KCPTUN_CLIENT_VERSION = "v20190905_1"
-let V2RAY_PLUGIN_VERSION = "v1.3.1-9-gddd7ab4"
-let PRIVOXY_VERSION = "3.0.26.static"
+//let SS_LOCAL_VERSION = "3.2.5"
+//let KCPTUN_CLIENT_VERSION = "v20190905_1"
+//let V2RAY_PLUGIN_VERSION = "v1.3.1-9-gddd7ab4"
+//let PRIVOXY_VERSION = "3.0.26.static"
 let SIMPLE_OBFS_VERSION = "0.0.5_1"
 let APP_SUPPORT_DIR = "/Library/Application Support/ShadowsocksX-NG/"
 let USER_CONFIG_DIR = "/.ShadowsocksX-NG/"
@@ -34,7 +34,7 @@ func getFileSHA1Sum(_ filepath: String) -> String {
 //  MARK: sslocal
 
 func generateSSLocalLauchAgentPlist() -> Bool {
-    let sslocalPath = NSHomeDirectory() + APP_SUPPORT_DIR + "ss-local-latest/ss-local"
+    let sslocalPath = NSHomeDirectory() + APP_SUPPORT_DIR + "ss-local/ss-local"
     let logFilePath = NSHomeDirectory() + "/Library/Logs/ss-local.log"
     let launchAgentDirPath = NSHomeDirectory() + LAUNCH_AGENT_DIR
     let plistFilepath = launchAgentDirPath + LAUNCH_AGENT_CONF_SSLOCAL_NAME
@@ -62,7 +62,7 @@ func generateSSLocalLauchAgentPlist() -> Bool {
     
     // For a complete listing of the keys, see the launchd.plist manual page.
     let dyld_library_paths = [
-        NSHomeDirectory() + APP_SUPPORT_DIR + "ss-local-latest/",
+        NSHomeDirectory() + APP_SUPPORT_DIR + "ss-local/",
         NSHomeDirectory() + APP_SUPPORT_DIR + "plugins/",
         ]
     
@@ -113,8 +113,7 @@ func InstallSSLocal() {
     let fileMgr = FileManager.default
     let homeDir = NSHomeDirectory()
     let appSupportDir = homeDir+APP_SUPPORT_DIR
-    if !fileMgr.fileExists(atPath: appSupportDir + "ss-local-\(SS_LOCAL_VERSION)/ss-local")
-       || !fileMgr.fileExists(atPath: appSupportDir + "ss-local-\(SS_LOCAL_VERSION)/libmbedcrypto.0.dylib") {
+    if !fileMgr.fileExists(atPath: appSupportDir + "ss-local/ss-local") {
         let bundle = Bundle.main
         let installerPath = bundle.path(forResource: "install_ss_local.sh", ofType: nil)
         let task = Process.launchedProcess(launchPath: installerPath!, arguments: [""])
@@ -226,7 +225,7 @@ func InstallKcptun() {
     let fileMgr = FileManager.default
     let homeDir = NSHomeDirectory()
     let appSupportDir = homeDir+APP_SUPPORT_DIR
-    if !fileMgr.fileExists(atPath: appSupportDir + "kcptun_\(KCPTUN_CLIENT_VERSION)/client") {
+    if !fileMgr.fileExists(atPath: appSupportDir + "kcptun/client") {
         let bundle = Bundle.main
         let installerPath = bundle.path(forResource: "install_kcptun", ofType: "sh")
         let task = Process.launchedProcess(launchPath: "/bin/sh", arguments: [installerPath!])
@@ -246,7 +245,7 @@ func InstallV2rayPlugin() {
     let fileMgr = FileManager.default
     let homeDir = NSHomeDirectory()
     let appSupportDir = homeDir+APP_SUPPORT_DIR
-    if !fileMgr.fileExists(atPath: appSupportDir + "v2ray-plugin_\(V2RAY_PLUGIN_VERSION)/v2ray-plugin") {
+    if !fileMgr.fileExists(atPath: appSupportDir + "v2ray-plugin/v2ray-plugin") {
         let bundle = Bundle.main
         let installerPath = bundle.path(forResource: "install_v2ray_plugin", ofType: "sh")
         let task = Process.launchedProcess(launchPath: "/bin/sh", arguments: [installerPath!])
@@ -323,7 +322,7 @@ func InstallPrivoxy() {
     let fileMgr = FileManager.default
     let homeDir = NSHomeDirectory()
     let appSupportDir = homeDir+APP_SUPPORT_DIR
-    if !fileMgr.fileExists(atPath: appSupportDir + "privoxy-\(PRIVOXY_VERSION)/privoxy") {
+    if !fileMgr.fileExists(atPath: appSupportDir + "privoxy/privoxy") {
         let bundle = Bundle.main
         let installerPath = bundle.path(forResource: "install_privoxy.sh", ofType: nil)
         let task = Process.launchedProcess(launchPath: installerPath!, arguments: [""])

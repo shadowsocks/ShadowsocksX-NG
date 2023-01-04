@@ -13,14 +13,13 @@
 # v2ray-plugin_darwin_universal: Mach-O universal binary with 2 architectures: [x86_64:Mach-O 64-bit executable x86_64] [arm64]
 # v2ray-plugin_darwin_universal (for architecture x86_64):        Mach-O 64-bit executable x86_64
 # v2ray-plugin_darwin_universal (for architecture arm64): Mach-O 64-bit executable arm64
-VERSION="v1.3.1-9-gddd7ab4"
 
 cd "$(dirname "${BASH_SOURCE[0]}")"
 
-mkdir -p "$HOME/Library/Application Support/ShadowsocksX-NG/v2ray-plugin_$VERSION"
-cp -f v2ray-plugin "$HOME/Library/Application Support/ShadowsocksX-NG/v2ray-plugin_$VERSION/"
+mkdir -p "$HOME/Library/Application Support/ShadowsocksX-NG/v2ray-plugin"
+cp -f v2ray-plugin "$HOME/Library/Application Support/ShadowsocksX-NG/v2ray-plugin/"
 
-ln -sfh "$HOME/Library/Application Support/ShadowsocksX-NG/v2ray-plugin_$VERSION/v2ray-plugin" "$HOME/Library/Application Support/ShadowsocksX-NG/plugins/v2ray-plugin"
-ln -sfh "$HOME/Library/Application Support/ShadowsocksX-NG/v2ray-plugin_$VERSION/v2ray-plugin" "$HOME/Library/Application Support/ShadowsocksX-NG/plugins/v2ray"
+ln -sfh "$HOME/Library/Application Support/ShadowsocksX-NG/v2ray-plugin/v2ray-plugin" "$HOME/Library/Application Support/ShadowsocksX-NG/plugins/v2ray-plugin"
+ln -sfh "$HOME/Library/Application Support/ShadowsocksX-NG/v2ray-plugin/v2ray-plugin" "$HOME/Library/Application Support/ShadowsocksX-NG/plugins/v2ray"
 
 echo "install v2ray-plugin done"
