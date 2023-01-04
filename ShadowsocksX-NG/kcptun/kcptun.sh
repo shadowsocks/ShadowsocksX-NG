@@ -34,10 +34,9 @@ for i in "${_OPTS[@]}"; do
 done
 
 PLUGIN_NAME="kcptun"
-PLUGIN_VERSION="v20190905_1"
 PLUGIN_BINARY_NAME="client"
 
-CMD="$(dirname "${BASH_SOURCE[0]}")/../${PLUGIN_NAME}_${PLUGIN_VERSION}/${PLUGIN_BINARY_NAME}"
+CMD="$(dirname "${BASH_SOURCE[0]}")/../${PLUGIN_NAME}/${PLUGIN_BINARY_NAME}"
 
 # Check if it is an IPv6 address
 if  [[ $SS_REMOTE_HOST == *":"* ]]; then

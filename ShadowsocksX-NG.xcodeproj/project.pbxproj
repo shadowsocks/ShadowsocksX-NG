@@ -18,7 +18,6 @@
 		9B2491B41D0ACC3A003BBECC /* PreferencesWindowController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9B2491B61D0ACC3A003BBECC /* PreferencesWindowController.xib */; };
 		9B3546721E802B1200B510B4 /* ToastWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B3546701E802B1200B510B4 /* ToastWindowController.swift */; };
 		9B3546731E802B1200B510B4 /* ToastWindowController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9B3546711E802B1200B510B4 /* ToastWindowController.xib */; };
-		9B3F7BFF1E82BF5B00C68B75 /* libev.4.dylib in Resources */ = {isa = PBXBuildFile; fileRef = 9B3F7BF71E82BF2D00C68B75 /* libev.4.dylib */; };
 		9B3FFF0D1D05FEB30019A709 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B3FFF0C1D05FEB30019A709 /* Utils.swift */; };
 		9B3FFF141D0705810019A709 /* Notifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B3FFF131D0705810019A709 /* Notifications.swift */; };
 		9B3FFF171D072FDE0019A709 /* LaunchAtLoginController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9B3FFF161D072FDE0019A709 /* LaunchAtLoginController.m */; };
@@ -41,7 +40,6 @@
 		9B5DD7B02683A354005EFEF7 /* ShadowsocksX_NGTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B5DD7AF2683A354005EFEF7 /* ShadowsocksX_NGTests.swift */; };
 		9B5DD7B82683A369005EFEF7 /* ServerProfileTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B5DD7B72683A369005EFEF7 /* ServerProfileTests.swift */; };
 		9B6BF9541E27B2570061B9A7 /* ServiceManagement.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B6BF9531E27B2570061B9A7 /* ServiceManagement.framework */; };
-		9B7297E7214D69C300FD24AA /* libmbedcrypto.2.12.0.dylib in Resources */ = {isa = PBXBuildFile; fileRef = 9B7297E5214D68F800FD24AA /* libmbedcrypto.2.12.0.dylib */; };
 		9B7297EA214D7C6B00FD24AA /* ShareServerProfilesWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B7297E8214D7C6B00FD24AA /* ShareServerProfilesWindowController.swift */; };
 		9B7297EC214DA88A00FD24AA /* ShareServerProfilesWindowController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9B7297EE214DA88A00FD24AA /* ShareServerProfilesWindowController.xib */; };
 		9B72FB62232782A300C6AAAE /* ImportWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B72FB60232782A300C6AAAE /* ImportWindowController.swift */; };
@@ -52,7 +50,6 @@
 		9B84DAED2163A72F00DFF068 /* Diagnose.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B84DAEC2163A72F00DFF068 /* Diagnose.swift */; };
 		9B86459D1E7C2CAD00A84029 /* ProxyInterfacesViewCtrl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B86459C1E7C2CAD00A84029 /* ProxyInterfacesViewCtrl.swift */; };
 		9B9B9966236992CA0036600F /* v2ray-plugin in Resources */ = {isa = PBXBuildFile; fileRef = 9B9B9965236992C90036600F /* v2ray-plugin */; };
-		9B9CBCAF1E263B1600FC61AA /* libpcre.1.dylib in Resources */ = {isa = PBXBuildFile; fileRef = 9B9CBCAD1E263A6600FC61AA /* libpcre.1.dylib */; };
 		9B9F13A71E8A28B300DE4794 /* LaunchHelper.app in CopyFiles */ = {isa = PBXBuildFile; fileRef = 9B9F13A61E8A282D00DE4794 /* LaunchHelper.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		9BA04B231D23D5A5005AAD7F /* ProxyConfTool.m in Sources */ = {isa = PBXBuildFile; fileRef = 9BA04B221D23D5A5005AAD7F /* ProxyConfTool.m */; };
 		9BAA662723295FAB00F5CC99 /* icons8-Eye Filled-50.png in Resources */ = {isa = PBXBuildFile; fileRef = 9BAA661723295FAB00F5CC99 /* icons8-Eye Filled-50.png */; };
@@ -76,8 +73,6 @@
 		9BB706A71D1B982300551F0E /* SWBApplication.m in Sources */ = {isa = PBXBuildFile; fileRef = 9BB706A51D1B982300551F0E /* SWBApplication.m */; };
 		9BBE7B751F508A0E00E8FFE5 /* fix_dir_owner.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9BBE7B711F50790500E8FFE5 /* fix_dir_owner.sh */; };
 		9BC70EDC1D2E3E3100EDA4CA /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 9B172A6C1D0ADDDD00B87B9A /* Localizable.strings */; };
-		9BCB1D6C20A15B0E005BABE7 /* libsodium.23.dylib in Resources */ = {isa = PBXBuildFile; fileRef = 9B5AA09F209C100C00E8B659 /* libsodium.23.dylib */; };
-		9BCB1D6D20A15B0E005BABE7 /* libcares.2.dylib in Resources */ = {isa = PBXBuildFile; fileRef = 9B5AA0A2209C103900E8B659 /* libcares.2.dylib */; };
 		9BEEF0691D04D4D500FC52B3 /* install_ss_local.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9BEEF0651D04CB8500FC52B3 /* install_ss_local.sh */; };
 		9BEEF06A1D04D4D500FC52B3 /* start_ss_local.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9BEEF0661D04CE8D00FC52B3 /* start_ss_local.sh */; };
 		9BEEF06B1D04D4D500FC52B3 /* stop_ss_local.sh in Resources */ = {isa = PBXBuildFile; fileRef = 9BEEF0671D04CE9A00FC52B3 /* stop_ss_local.sh */; };
@@ -166,7 +161,6 @@
 		9B2491B51D0ACC3A003BBECC /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/PreferencesWindowController.xib; sourceTree = "<group>"; };
 		9B3546701E802B1200B510B4 /* ToastWindowController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ToastWindowController.swift; sourceTree = "<group>"; };
 		9B3546711E802B1200B510B4 /* ToastWindowController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ToastWindowController.xib; sourceTree = "<group>"; };
-		9B3F7BF71E82BF2D00C68B75 /* libev.4.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libev.4.dylib; sourceTree = "<group>"; };
 		9B3FFF0C1D05FEB30019A709 /* Utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		9B3FFF131D0705810019A709 /* Notifications.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Notifications.swift; sourceTree = "<group>"; };
 		9B3FFF151D072FDE0019A709 /* LaunchAtLoginController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LaunchAtLoginController.h; sourceTree = "<group>"; };
@@ -193,8 +187,6 @@
 		9B5831F51E7302F8009D5B7D /* ShortcutsController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ShortcutsController.m; sourceTree = "<group>"; };
 		9B5831FA1E73098F009D5B7D /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		9B5831FD1E741969009D5B7D /* PreferencesWinController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreferencesWinController.swift; sourceTree = "<group>"; };
-		9B5AA09F209C100C00E8B659 /* libsodium.23.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libsodium.23.dylib; sourceTree = "<group>"; };
-		9B5AA0A2209C103900E8B659 /* libcares.2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libcares.2.dylib; sourceTree = "<group>"; };
 		9B5AA0AB209C43C200E8B659 /* Credits.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = Credits.rtf; sourceTree = "<group>"; };
 		9B5D13272154A50700F99F03 /* install_kcptun.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = install_kcptun.sh; sourceTree = "<group>"; };
 		9B5DD7AD2683A354005EFEF7 /* ShadowsocksX-NGTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "ShadowsocksX-NGTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -202,7 +194,6 @@
 		9B5DD7B12683A354005EFEF7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9B5DD7B72683A369005EFEF7 /* ServerProfileTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ServerProfileTests.swift; sourceTree = "<group>"; };
 		9B6BF9531E27B2570061B9A7 /* ServiceManagement.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ServiceManagement.framework; path = System/Library/Frameworks/ServiceManagement.framework; sourceTree = SDKROOT; };
-		9B7297E5214D68F800FD24AA /* libmbedcrypto.2.12.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libmbedcrypto.2.12.0.dylib; sourceTree = "<group>"; };
 		9B7297E8214D7C6B00FD24AA /* ShareServerProfilesWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareServerProfilesWindowController.swift; sourceTree = "<group>"; };
 		9B7297ED214DA88A00FD24AA /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/ShareServerProfilesWindowController.xib; sourceTree = "<group>"; };
 		9B7297F0214DA89000FD24AA /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/ShareServerProfilesWindowController.strings"; sourceTree = "<group>"; };
@@ -215,7 +206,6 @@
 		9B84DAEC2163A72F00DFF068 /* Diagnose.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Diagnose.swift; sourceTree = "<group>"; };
 		9B86459C1E7C2CAD00A84029 /* ProxyInterfacesViewCtrl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ProxyInterfacesViewCtrl.swift; sourceTree = "<group>"; };
 		9B9B9965236992C90036600F /* v2ray-plugin */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = "v2ray-plugin"; sourceTree = "<group>"; };
-		9B9CBCAD1E263A6600FC61AA /* libpcre.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libpcre.1.dylib; sourceTree = "<group>"; };
 		9B9F13A11E8A282C00DE4794 /* LaunchHelper.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = LaunchHelper.xcodeproj; path = LaunchHelper/LaunchHelper.xcodeproj; sourceTree = "<group>"; };
 		9BA04B211D23D5A5005AAD7F /* ProxyConfTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ProxyConfTool.h; sourceTree = "<group>"; };
 		9BA04B221D23D5A5005AAD7F /* ProxyConfTool.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ProxyConfTool.m; sourceTree = "<group>"; };
@@ -428,11 +418,6 @@
 		9B5AA0A9209C41EC00E8B659 /* ss-local */ = {
 			isa = PBXGroup;
 			children = (
-				9B7297E5214D68F800FD24AA /* libmbedcrypto.2.12.0.dylib */,
-				9B3F7BF71E82BF2D00C68B75 /* libev.4.dylib */,
-				9B5AA09F209C100C00E8B659 /* libsodium.23.dylib */,
-				9B5AA0A2209C103900E8B659 /* libcares.2.dylib */,
-				9B9CBCAD1E263A6600FC61AA /* libpcre.1.dylib */,
 				9B07EFA61D048BBB0052D9DF /* ss-local */,
 				9BEEF0651D04CB8500FC52B3 /* install_ss_local.sh */,
 				9BEEF0661D04CE8D00FC52B3 /* start_ss_local.sh */,
@@ -596,6 +581,7 @@
 		9B0BFFDD1D0460A70040E62B /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				BuildIndependentTargetsInParallel = NO;
 				LastSwiftUpdateCheck = 1250;
 				LastUpgradeCheck = 1250;
 				ORGANIZATIONNAME = qiuyuzhou;
@@ -603,11 +589,11 @@
 					9B0BFFE41D0460A70040E62B = {
 						CreatedOnToolsVersion = 7.3.1;
 						LastSwiftMigration = 1250;
-						ProvisioningStyle = Manual;
+						ProvisioningStyle = Automatic;
 					};
 					9B3FFF431D09CD3B0019A709 = {
 						CreatedOnToolsVersion = 7.3.1;
-						ProvisioningStyle = Manual;
+						ProvisioningStyle = Automatic;
 					};
 					9B5DD7AC2683A354005EFEF7 = {
 						CreatedOnToolsVersion = 12.5.1;
@@ -660,19 +646,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				9B5D132A2154A62600F99F03 /* install_kcptun.sh in Resources */,
-				9B7297E7214D69C300FD24AA /* libmbedcrypto.2.12.0.dylib in Resources */,
-				9BCB1D6C20A15B0E005BABE7 /* libsodium.23.dylib in Resources */,
-				9BCB1D6D20A15B0E005BABE7 /* libcares.2.dylib in Resources */,
 				9BBE7B751F508A0E00E8FFE5 /* fix_dir_owner.sh in Resources */,
 				9BAA66382329636200F5CC99 /* user-privoxy.config in Resources */,
-				9B3F7BFF1E82BF5B00C68B75 /* libev.4.dylib in Resources */,
 				9BAA662D23295FAC00F5CC99 /* icons8-Blind Filled-50.png in Resources */,
 				9BAA663623295FAC00F5CC99 /* menu_g_icon.png in Resources */,
 				9BAA662E23295FAC00F5CC99 /* menu_p_icon@2x.png in Resources */,
 				1C82DBAA1FA96FB600B32551 /* install_simple_obfs.sh in Resources */,
 				9B74B5E9232949B100DEA386 /* ImportWindowController.xib in Resources */,
 				9BAA663523295FAC00F5CC99 /* virtual-server-icon-3.png in Resources */,
-				9B9CBCAF1E263B1600FC61AA /* libpcre.1.dylib in Resources */,
 				9B3FFF541D09E2D10019A709 /* proxy_conf_helper in Resources */,
 				9BAA662723295FAB00F5CC99 /* icons8-Eye Filled-50.png in Resources */,
 				9BEEF0691D04D4D500FC52B3 /* install_ss_local.sh in Resources */,
@@ -1041,7 +1022,8 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "-";
-				CODE_SIGN_STYLE = Manual;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
+				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = "";
 				HEADER_SEARCH_PATHS = (
@@ -1050,6 +1032,7 @@
 					"$(SRCROOT)/libipset/include/",
 				);
 				INFOPLIST_FILE = "ShadowsocksX-NG/Info.plist";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1076,7 +1059,8 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "-";
-				CODE_SIGN_STYLE = Manual;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
+				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = "";
 				HEADER_SEARCH_PATHS = (
@@ -1085,6 +1069,7 @@
 					"$(SRCROOT)/libipset/include/",
 				);
 				INFOPLIST_FILE = "ShadowsocksX-NG/Info.plist";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1107,9 +1092,11 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = B4E6A97CA843F3943524B686 /* Pods-proxy_conf_helper.debug.xcconfig */;
 			buildSettings = {
-				CODE_SIGN_IDENTITY = "-";
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
+				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = "";
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
@@ -1120,9 +1107,13 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 297AF069022A197FD8E9D226 /* Pods-proxy_conf_helper.release.xcconfig */;
 			buildSettings = {
-				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
+				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = "";
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
 			};
 			name = Release;
