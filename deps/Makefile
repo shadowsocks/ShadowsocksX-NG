@@ -1,7 +1,9 @@
-ARCH ?= $(shell uname -m)
+override ARCH ?= $(shell uname -m)
+
 ifeq ($(ARCH),arm64)
-ARCH := aarch64
+override ARCH := aarch64
 endif
+
 TARGET := $(ARCH)-apple-macos10.12
 JOBS := $(shell getconf _NPROCESSORS_ONLN)
 GOROOT := $${PWD}/../dist/go
@@ -173,7 +175,7 @@ shadowsocks-libev: pcre libev c-ares libsodium mbedtls
 simple-obfs:
 	cd simple-obfs \
 		&& ./autogen.sh \
-		&& CXXFLAGS="-target $(TARGET)" CFLAGS="-target $(TARGET)" ./configure --prefix=$${PWD}/../dist/$(ARCH)/simple-obfs \
+		&& CFLAGS="-target $(TARGET)" ./configure --prefix=$${PWD}/../dist/$(ARCH)/simple-obfs \
 		--host=$(TARGET) \
 		--disable-dependency-tracking \
 		--disable-documentation \
