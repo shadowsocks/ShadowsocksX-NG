@@ -111,8 +111,8 @@ privoxy:
 		&& patch -Ru configure.in < $${PWD}/../patch/privoxy/configure.in.patch \
 		&& autoreconf -fi \
 		&& LDFLAGS="-target $(TARGET) -L$${PWD}/../dist/$(ARCH)/pcre/lib" \
-		CPPFLAGS="-target $(TARGET) -Dunix" \
-		CFLAGS="-target $(TARGET) -Dunix" \
+		CPPFLAGS="-target $(TARGET) -Dunix -I$${PWD}/../dist/$(ARCH)/pcre/include" \
+		CFLAGS="-target $(TARGET) -Dunix -I$${PWD}/../dist/$(ARCH)/pcre/include" \
 		./configure --prefix $${PWD}/../dist/$(ARCH)/privoxy \
 		--host=$(TARGET) \
 		--disable-debug \
