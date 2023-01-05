@@ -176,6 +176,7 @@ simple-obfs:
 		&& CXXFLAGS="-target $(TARGET)" CFLAGS="-target $(TARGET)" ./configure --prefix=$${PWD}/../dist/$(ARCH)/simple-obfs \
 		--host=$(TARGET) \
 		--disable-dependency-tracking \
+		--disable-documentation \
 		--enable-static \
 		--disable-shared \
 		--with-ev=$${PWD}/../dist/$(ARCH)/libev \
