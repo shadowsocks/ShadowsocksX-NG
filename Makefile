@@ -1,6 +1,5 @@
 .PHONY: all
 all: debug
-	echo "Deps build done"
 
 .PHONY: debug
 debug: deps/dist

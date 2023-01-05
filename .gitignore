@@ -76,3 +76,9 @@ deps/dist
 deps/pcre*
 deps/libev*
 deps/privoxy*
+
+ShadowsocksX-NG/kcptun/client
+ShadowsocksX-NG/privoxy/privoxy
+ShadowsocksX-NG/simple-obfs/obfs-local
+ShadowsocksX-NG/ss-local/ss-local
+ShadowsocksX-NG/v2ray-plugin/v2ray-plugin

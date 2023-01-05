@@ -11,7 +11,5 @@ cd "$(dirname "${BASH_SOURCE[0]}")"
 
 mkdir -p "$HOME/Library/Application Support/ShadowsocksX-NG/privoxy"
 cp -f privoxy "$HOME/Library/Application Support/ShadowsocksX-NG/privoxy/"
-rm -f "$HOME/Library/Application Support/ShadowsocksX-NG/privoxy"
-ln -s "$HOME/Library/Application Support/ShadowsocksX-NG/privoxy/privoxy" "$HOME/Library/Application Support/ShadowsocksX-NG/privoxy"
 
 echo done
