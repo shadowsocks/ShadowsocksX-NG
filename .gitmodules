@@ -28,3 +28,6 @@
 [submodule "deps/kcptun"]
 	path = deps/kcptun
 	url = https://github.com/xtaci/kcptun
+[submodule "deps/simple-obfs"]
+	path = deps/simple-obfs
+	url = https://github.com/shadowsocks/simple-obfs

@@ -8,11 +8,6 @@
 
 import Foundation
 
-//let SS_LOCAL_VERSION = "3.2.5"
-//let KCPTUN_CLIENT_VERSION = "v20190905_1"
-//let V2RAY_PLUGIN_VERSION = "v1.3.1-9-gddd7ab4"
-//let PRIVOXY_VERSION = "3.0.26.static"
-let SIMPLE_OBFS_VERSION = "0.0.5_1"
 let APP_SUPPORT_DIR = "/Library/Application Support/ShadowsocksX-NG/"
 let USER_CONFIG_DIR = "/.ShadowsocksX-NG/"
 let LAUNCH_AGENT_DIR = "/Library/LaunchAgents/"
@@ -64,7 +59,7 @@ func generateSSLocalLauchAgentPlist() -> Bool {
     let dyld_library_paths = [
         NSHomeDirectory() + APP_SUPPORT_DIR + "ss-local/",
         NSHomeDirectory() + APP_SUPPORT_DIR + "plugins/",
-        ]
+    ]
     
     let dict: NSMutableDictionary = [
         "Label": "com.qiuyuzhou.shadowsocksX-NG.local",
@@ -113,24 +108,31 @@ func InstallSSLocal() {
     let fileMgr = FileManager.default
     let homeDir = NSHomeDirectory()
     let appSupportDir = homeDir+APP_SUPPORT_DIR
-    if !fileMgr.fileExists(atPath: appSupportDir + "ss-local/ss-local") {
-        let bundle = Bundle.main
-        let installerPath = bundle.path(forResource: "install_ss_local.sh", ofType: nil)
-        let task = Process.launchedProcess(launchPath: installerPath!, arguments: [""])
-        task.waitUntilExit()
-        if task.terminationStatus == 0 {
-            NSLog("Install ss-local succeeded.")
-        } else {
-            NSLog("Install ss-local failed.")
+    if fileMgr.fileExists(atPath: appSupportDir + "ss-local/ss-local") {
+        do {
+            try fileMgr.removeItem(atPath: appSupportDir + "ss-local/ss-local")
+        } catch {
+            NSLog("Remove old ss-local error")
         }
     }
+    
+    let bundle = Bundle.main
+    let installerPath = bundle.path(forResource: "install_ss_local.sh", ofType: nil)
+    let task = Process.launchedProcess(launchPath: installerPath!, arguments: [""])
+    task.waitUntilExit()
+    if task.terminationStatus == 0 {
+        NSLog("Install ss-local succeeded.")
+    } else {
+        NSLog("Install ss-local failed.")
+    }
+    
 }
 
 func writeSSLocalConfFile(_ conf:[String:AnyObject]) -> Bool {
     do {
         let filepath = NSHomeDirectory() + APP_SUPPORT_DIR + "ss-local-config.json"
         var data: Data = try JSONSerialization.data(withJSONObject: conf, options: .prettyPrinted)
-
+        
         // https://github.com/shadowsocks/ShadowsocksX-NG/issues/1104
         // This is NSJSONSerialization.dataWithJSONObject that likes to insert additional backslashes.
         // Escaped forward slashes is also valid json.
@@ -182,7 +184,7 @@ func SyncSSLocal() {
                     execute: {
                         () in
                         StartSSLocal()
-                })
+                    })
             } else {
                 StartSSLocal()
             }
@@ -204,18 +206,24 @@ func InstallSimpleObfs() {
     let fileMgr = FileManager.default
     let homeDir = NSHomeDirectory()
     let appSupportDir = homeDir + APP_SUPPORT_DIR
-    if !fileMgr.fileExists(atPath: appSupportDir + "simple-obfs-\(SIMPLE_OBFS_VERSION)/obfs-local")
-        || !fileMgr.fileExists(atPath: appSupportDir + "plugins/obfs-local") {
-        let bundle = Bundle.main
-        let installerPath = bundle.path(forResource: "install_simple_obfs.sh", ofType: nil)
-        let task = Process.launchedProcess(launchPath: "/bin/sh", arguments: [installerPath!])
-        task.waitUntilExit()
-        if task.terminationStatus == 0 {
-            NSLog("Install simple-obfs succeeded.")
-        } else {
-            NSLog("Install simple-obfs failed.")
+    if fileMgr.fileExists(atPath: appSupportDir + "simple-obfs/obfs-local") {
+        do {
+            try fileMgr.removeItem(atPath: appSupportDir + "simple-obfs/obfs-local")
+        } catch {
+            NSLog("Remove old simple-obfs error")
         }
     }
+    
+    let bundle = Bundle.main
+    let installerPath = bundle.path(forResource: "install_simple_obfs.sh", ofType: nil)
+    let task = Process.launchedProcess(launchPath: "/bin/sh", arguments: [installerPath!])
+    task.waitUntilExit()
+    if task.terminationStatus == 0 {
+        NSLog("Install simple-obfs succeeded.")
+    } else {
+        NSLog("Install simple-obfs failed.")
+    }
+    
 }
 
 // --------------------------------------------------------------------------------
@@ -225,16 +233,21 @@ func InstallKcptun() {
     let fileMgr = FileManager.default
     let homeDir = NSHomeDirectory()
     let appSupportDir = homeDir+APP_SUPPORT_DIR
-    if !fileMgr.fileExists(atPath: appSupportDir + "kcptun/client") {
-        let bundle = Bundle.main
-        let installerPath = bundle.path(forResource: "install_kcptun", ofType: "sh")
-        let task = Process.launchedProcess(launchPath: "/bin/sh", arguments: [installerPath!])
-        task.waitUntilExit()
-        if task.terminationStatus == 0 {
-            NSLog("Install kcptun succeeded.")
-        } else {
-            NSLog("Install kcptun failed.")
+    if fileMgr.fileExists(atPath: appSupportDir + "kcptun/client") {
+        do {
+            try fileMgr.removeItem(atPath: appSupportDir + "kcptun/client")
+        } catch {
+            NSLog("Remove old kcptun client error")
         }
+    }
+    let bundle = Bundle.main
+    let installerPath = bundle.path(forResource: "install_kcptun", ofType: "sh")
+    let task = Process.launchedProcess(launchPath: "/bin/sh", arguments: [installerPath!])
+    task.waitUntilExit()
+    if task.terminationStatus == 0 {
+        NSLog("Install kcptun succeeded.")
+    } else {
+        NSLog("Install kcptun failed.")
     }
 }
 
@@ -245,16 +258,21 @@ func InstallV2rayPlugin() {
     let fileMgr = FileManager.default
     let homeDir = NSHomeDirectory()
     let appSupportDir = homeDir+APP_SUPPORT_DIR
-    if !fileMgr.fileExists(atPath: appSupportDir + "v2ray-plugin/v2ray-plugin") {
-        let bundle = Bundle.main
-        let installerPath = bundle.path(forResource: "install_v2ray_plugin", ofType: "sh")
-        let task = Process.launchedProcess(launchPath: "/bin/sh", arguments: [installerPath!])
-        task.waitUntilExit()
-        if task.terminationStatus == 0 {
-            NSLog("Install v2ray-plugin succeeded.")
-        } else {
-            NSLog("Install v2ray-plugin failed.")
+    if fileMgr.fileExists(atPath: appSupportDir + "v2ray-plugin/v2ray-plugin") {
+        do {
+            try fileMgr.removeItem(atPath: appSupportDir + "v2ray-plugin/v2ray-plugin")
+        } catch {
+            NSLog("Remove old v2ray-plugin error")
         }
+    }
+    let bundle = Bundle.main
+    let installerPath = bundle.path(forResource: "install_v2ray_plugin", ofType: "sh")
+    let task = Process.launchedProcess(launchPath: "/bin/sh", arguments: [installerPath!])
+    task.waitUntilExit()
+    if task.terminationStatus == 0 {
+        NSLog("Install v2ray-plugin succeeded.")
+    } else {
+        NSLog("Install v2ray-plugin failed.")
     }
 }
 
@@ -262,7 +280,7 @@ func InstallV2rayPlugin() {
 //  MARK: privoxy
 
 func generatePrivoxyLauchAgentPlist() -> Bool {
-    let privoxyPath = NSHomeDirectory() + APP_SUPPORT_DIR + "privoxy"
+    let privoxyPath = NSHomeDirectory() + APP_SUPPORT_DIR + "privoxy/privoxy"
     let logFilePath = NSHomeDirectory() + "/Library/Logs/privoxy.log"
     let launchAgentDirPath = NSHomeDirectory() + LAUNCH_AGENT_DIR
     let plistFilepath = launchAgentDirPath + LAUNCH_AGENT_CONF_PRIVOXY_NAME
@@ -322,25 +340,31 @@ func InstallPrivoxy() {
     let fileMgr = FileManager.default
     let homeDir = NSHomeDirectory()
     let appSupportDir = homeDir+APP_SUPPORT_DIR
-    if !fileMgr.fileExists(atPath: appSupportDir + "privoxy/privoxy") {
-        let bundle = Bundle.main
-        let installerPath = bundle.path(forResource: "install_privoxy.sh", ofType: nil)
-        let task = Process.launchedProcess(launchPath: installerPath!, arguments: [""])
-        task.waitUntilExit()
-        if task.terminationStatus == 0 {
-            NSLog("Install privoxy succeeded.")
-        } else {
-            NSLog("Install privoxy failed.")
+    if fileMgr.fileExists(atPath: appSupportDir + "privoxy/privoxy") {
+        do {
+            try fileMgr.removeItem(atPath: appSupportDir + "privoxy/privoxy")
+        } catch {
+            NSLog("Remove old privoxy error")
         }
+    }
+    
+    let bundle = Bundle.main
+    let installerPath = bundle.path(forResource: "install_privoxy.sh", ofType: nil)
+    let task = Process.launchedProcess(launchPath: installerPath!, arguments: [""])
+    task.waitUntilExit()
+    if task.terminationStatus == 0 {
+        NSLog("Install privoxy succeeded.")
+    } else {
+        NSLog("Install privoxy failed.")
     }
     
     let userConfigDir = homeDir + USER_CONFIG_DIR
     // Make dir: '~/.ShadowsocksX-NG'
     if !fileMgr.fileExists(atPath: userConfigDir) {
         try! fileMgr.createDirectory(atPath: userConfigDir
-        , withIntermediateDirectories: true, attributes: nil)
+                                     , withIntermediateDirectories: true, attributes: nil)
     }
-
+    
     // Install empty `user-privoxy.config` file.
     let userConfigPath = userConfigDir + "user-privoxy.config"
     if !fileMgr.fileExists(atPath: userConfigPath) {
@@ -410,7 +434,7 @@ func SyncPrivoxy() {
                     execute: {
                         () in
                         StartPrivoxy()
-                })
+                    })
             } else {
                 StartPrivoxy()
             }

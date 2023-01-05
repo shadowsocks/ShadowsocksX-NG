@@ -1,12 +1,11 @@
 ARCH ?= $(shell uname -m)
+ifeq ($(ARCH),arm64)
+ARCH := aarch64
+endif
 TARGET := $(ARCH)-apple-macos10.12
 JOBS := $(shell getconf _NPROCESSORS_ONLN)
 GOROOT := $${PWD}/../dist/go
 GO := $(GOROOT)/bin/go
-
-ifeq ($(ARCH),arm64)
-ARCH := aarch64
-endif
 
 ifeq ($(ARCH),x86_64)
 GOARCH := amd64
@@ -16,8 +15,8 @@ endif
 
 .PHONY: all
 all: 
-	$(MAKE) ARCH=x86_64 shadowsocks-libev privoxy v2ray-plugin kcptun
-	$(MAKE) ARCH=aarch64 shadowsocks-libev privoxy v2ray-plugin kcptun
+	$(MAKE) ARCH=x86_64 shadowsocks-libev privoxy simple-obfs v2ray-plugin kcptun
+	$(MAKE) ARCH=aarch64 shadowsocks-libev privoxy simple-obfs v2ray-plugin kcptun
 	$(MAKE) universal
 
 .PHONY: universal
@@ -39,6 +38,15 @@ universal:
 		-create \
 		-output $${PWD}/dist/universal/privoxy/sbin/privoxy
 	cp $${PWD}/dist/universal/privoxy/sbin/privoxy $${PWD}/../ShadowsocksX-NG/privoxy/
+
+	# simple-obfs
+	mkdir -p $${PWD}/dist/universal/simple-obfs/bin
+	lipo \
+		$${PWD}/dist/x86_64/simple-obfs/bin/obfs-local \
+		$${PWD}/dist/aarch64/simple-obfs/bin/obfs-local \
+		-create \
+		-output $${PWD}/dist/universal/simple-obfs/bin/obfs-local
+	cp $${PWD}/dist/universal/simple-obfs/bin/obfs-local $${PWD}/../ShadowsocksX-NG/simple-obfs/
 
 	# v2ray-plugin
 	mkdir -p $${PWD}/dist/universal/v2ray-plugin/bin
@@ -95,15 +103,17 @@ libev:
 
 .PHONY: privoxy
 privoxy:
-	[ -f privoxy.tar.gz ] || curl -L -o privoxy.tar.gz 'https://www.privoxy.org/sf-download-mirror/Sources/3.0.28%20%28stable%29/privoxy-3.0.28-stable-src.tar.gz'
+	[ -f privoxy.tar.gz ] || curl -L -o privoxy.tar.gz 'https://www.privoxy.org/sf-download-mirror/Sources/3.0.33%20%28stable%29/privoxy-3.0.33-stable-src.tar.gz'
 	tar -xf privoxy.tar.gz
-	cd privoxy-3.0.28-stable \
+	cd privoxy-3.0.33-stable \
+		&& patch -Ru configure.in < $${PWD}/../patch/privoxy/configure.in.patch \
 		&& autoreconf -fi \
-		&& LDFLAGS="-target $(TARGET)" CFLAGS="-target $(TARGET)" ./configure --prefix $${PWD}/../dist/$(ARCH)/privoxy \
+		&& LDFLAGS="-target $(TARGET) -L$${PWD}/../dist/$(ARCH)/pcre/lib" \
+		CPPFLAGS="-target $(TARGET) -Dunix" \
+		CFLAGS="-target $(TARGET) -Dunix" \
+		./configure --prefix $${PWD}/../dist/$(ARCH)/privoxy \
 		--host=$(TARGET) \
-		--disable-dependency-tracking \
-		--enable-static \
-		--disable-shared \
+		--disable-debug \
 		&& make -j$(JOBS) \
 		&& make install \
 		&& make clean
@@ -154,6 +164,20 @@ shadowsocks-libev: pcre libev c-ares libsodium mbedtls
 		--with-pcre=$${PWD}/../dist/$(ARCH)/pcre \
 		--with-sodium=$${PWD}/../dist/$(ARCH)/libsodium \
 		--with-cares=$${PWD}/../dist/$(ARCH)/c-ares \
+		--with-ev=$${PWD}/../dist/$(ARCH)/libev \
+		&& make -j$(JOBS) \
+		&& make install \
+		&& make clean
+
+.PHONY: simple-obfs
+simple-obfs:
+	cd simple-obfs \
+		&& ./autogen.sh \
+		&& CXXFLAGS="-target $(TARGET)" CFLAGS="-target $(TARGET)" ./configure --prefix=$${PWD}/../dist/$(ARCH)/simple-obfs \
+		--host=$(TARGET) \
+		--disable-dependency-tracking \
+		--enable-static \
+		--disable-shared \
 		--with-ev=$${PWD}/../dist/$(ARCH)/libev \
 		&& make -j$(JOBS) \
 		&& make install \

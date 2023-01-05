@@ -1,0 +1,11 @@
+--- configure.in	2023-01-05 14:37:57
++++ configure.in.1	2023-01-05 14:37:40
+@@ -1090,7 +1090,7 @@
+   fi
+ fi
+ 
+-use_static_pcre="yes"
++
+ # If we have libpcre and either we also have pcreposix or
+ # we don't need pcreposix, then link pcre dynamically; else
+ # build it and link statically
