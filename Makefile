@@ -1,12 +1,14 @@
+VERSION ?= 0.0.0
+
 .PHONY: all
 all: debug
 
 .PHONY: debug
-debug: deps/dist
+debug: deps/dist set-version
 	xcodebuild -workspace ShadowsocksX-NG.xcworkspace -scheme ShadowsocksX-NG -configuration Debug SYMROOT=$${PWD}/build
 
 .PHONY: release
-release: deps/dist
+release: deps/dist set-version
 	xcodebuild -workspace ShadowsocksX-NG.xcworkspace -scheme ShadowsocksX-NG -configuration Release SYMROOT=$${PWD}/build
 
 .PHONY: debug-dmg release-dmg
@@ -19,6 +21,10 @@ debug-dmg release-dmg:
 	  && ln -s /Applications build/$${t}/ShadowsocksX-NG/Applications \
 	  && hdiutil create build/$${t}/ShadowsocksX-NG.dmg -ov -volname "ShadowsocksX-NG" -fs HFS+ -srcfolder build/$${t}/ShadowsocksX-NG/ \
           && rm -rf build/$${t}/ShadowsocksX-NG/
+
+.PHONY: set-version
+set-version:
+	agvtool new-marketing-version $(VERSION)
 
 deps/dist:
 	$(MAKE) -C deps
