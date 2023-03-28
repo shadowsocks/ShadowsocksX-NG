@@ -32,6 +32,7 @@ func generateSSLocalLauchAgentPlist() -> Bool {
     let sslocalPath = NSHomeDirectory() + APP_SUPPORT_DIR + "ss-local/ss-local"
     let logFilePath = NSHomeDirectory() + "/Library/Logs/ss-local.log"
     let launchAgentDirPath = NSHomeDirectory() + LAUNCH_AGENT_DIR
+    let plistTempFilepath = NSHomeDirectory() + APP_SUPPORT_DIR + LAUNCH_AGENT_CONF_SSLOCAL_NAME
     let plistFilepath = launchAgentDirPath + LAUNCH_AGENT_CONF_SSLOCAL_NAME
     
     // Ensure launch agent directory is existed.
@@ -69,9 +70,10 @@ func generateSSLocalLauchAgentPlist() -> Bool {
         "ProgramArguments": arguments,
         "EnvironmentVariables": ["DYLD_LIBRARY_PATH": dyld_library_paths.joined(separator: ":")]
     ]
-    dict.write(toFile: plistFilepath, atomically: true)
-    let Sha1Sum = getFileSHA1Sum(plistFilepath)
+    dict.write(toFile: plistTempFilepath, atomically: true)
+    let Sha1Sum = getFileSHA1Sum(plistTempFilepath)
     if oldSha1Sum != Sha1Sum {
+        dict.write(toFile: plistFilepath, atomically: true)
         NSLog("generateSSLocalLauchAgentPlist - File has been changed.")
         return true
     } else {
@@ -283,6 +285,7 @@ func generatePrivoxyLauchAgentPlist() -> Bool {
     let privoxyPath = NSHomeDirectory() + APP_SUPPORT_DIR + "privoxy/privoxy"
     let logFilePath = NSHomeDirectory() + "/Library/Logs/privoxy.log"
     let launchAgentDirPath = NSHomeDirectory() + LAUNCH_AGENT_DIR
+    let plistTempFilePath = NSHomeDirectory() + APP_SUPPORT_DIR + LAUNCH_AGENT_CONF_PRIVOXY_NAME
     let plistFilepath = launchAgentDirPath + LAUNCH_AGENT_CONF_PRIVOXY_NAME
     
     // Ensure launch agent directory is existed.
@@ -303,9 +306,10 @@ func generatePrivoxyLauchAgentPlist() -> Bool {
         "StandardErrorPath": logFilePath,
         "ProgramArguments": arguments
     ]
-    dict.write(toFile: plistFilepath, atomically: true)
-    let Sha1Sum = getFileSHA1Sum(plistFilepath)
+    dict.write(toFile: plistTempFilePath, atomically: true)
+    let Sha1Sum = getFileSHA1Sum(plistTempFilePath)
     if oldSha1Sum != Sha1Sum {
+        dict.write(toFile: plistFilepath, atomically: true)
         return true
     } else {
         return false
