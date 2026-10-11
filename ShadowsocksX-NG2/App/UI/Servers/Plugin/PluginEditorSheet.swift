@@ -33,7 +33,7 @@ struct PluginEditorSheet: View {
       Text(title).font(.title2)
       ScrollView {
         VStack(alignment: .leading, spacing: 16) {
-          VStack(alignment: .leading, spacing: 5) {
+          VStack(alignment: .leading, spacing: 8) {
             Text("插件名称")
             if isManaged {
               Text(nameValues.joined(separator: ", ")).textSelection(.enabled)
@@ -43,12 +43,13 @@ struct PluginEditorSheet: View {
             }
           }
           if !isManaged {
-            VStack(alignment: .leading, spacing: 5) {
+            VStack(alignment: .leading, spacing: 8) {
               Text("可执行文件路径")
               HStack {
                 TextField("可执行文件路径", text: $path).textFieldStyle(.roundedBorder)
                 Button("选择文件…") { showFilePicker = true }
               }
+              .padding(.all, 4)
               if let issue = model.pathIssue(path) { fieldError(issue) }
             }
             if nameValues.contains(where: {
@@ -59,7 +60,7 @@ struct PluginEditorSheet: View {
                 .font(.caption).foregroundStyle(.secondary)
             }
           }
-          VStack(alignment: .leading, spacing: 5) {
+          VStack(alignment: .leading, spacing: 8) {
             Text("本地启动参数")
             PluginValueList(values: $arguments, placeholder: "参数", allowsReordering: true)
             Text("每项作为一个完整参数传递，无需 shell 引号。仅在本机生效。")
@@ -116,7 +117,7 @@ private struct PluginValueList: View {
   let allowsReordering: Bool
 
   var body: some View {
-    VStack(alignment: .leading, spacing: 6) {
+    VStack(alignment: .leading, spacing: 8) {
       ForEach($values) { $item in
         HStack {
           TextField(placeholder, text: $item.value).textFieldStyle(.roundedBorder)
@@ -149,6 +150,7 @@ private struct PluginValueList: View {
       }
       Button("添加一项") { values.append(PluginTextDraft(value: "")) }
     }
+    .padding(.all, 4)
   }
 
   private func move(_ id: UUID, by offset: Int) {
