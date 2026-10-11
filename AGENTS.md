@@ -8,6 +8,10 @@ macOS Shadowsocks 客户端。旧版实现已从本仓库移除,归档在 [shado
 
 Issue 跟踪在本仓库的 GitHub Issues,统一用 `gh` CLI 操作,并在每条命令上显式指定本仓库。见 `docs/agents/issue-tracker.md`。
 
+### Code comments
+
+编写或修改代码注释时，禁止引用 fork 仓库的 Issue 编号（包括 `#123`、`owner/repo#123` 或 Issue 链接），因为合并到上游后无法依靠上游 Issue 跟踪这些引用。注释应直接说明行为、约束或设计原因，使其无需查阅 fork Issue 也能理解。
+
 ### Triage labels
 
 triage 标签使用五个默认角色名作为标签字符串(needs-triage / needs-info / ready-for-agent / ready-for-human / wontfix)。见 `docs/agents/triage-labels.md`。
