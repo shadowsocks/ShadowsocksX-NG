@@ -81,49 +81,51 @@ struct PluginManagementSection: View {
 
   private func pluginRow(_ entry: PluginManagementRow) -> some View {
     VStack(alignment: .leading, spacing: 6) {
-      HStack(alignment: .top, spacing: 16) {
-        VStack(alignment: .leading, spacing: 3) {
-          Text(entry.names.joined(separator: ", ")).font(.body)
-          Text(
-            entry.managedProgram != nil
-              ? String(localized: "内置")
-              : entry.overridesManaged ? String(localized: "用户覆盖") : String(localized: "用户添加")
-          ).font(.caption).foregroundStyle(.secondary)
-          if let path = entry.path {
-            Text(path).font(.caption).foregroundStyle(.secondary)
-              .lineLimit(1).truncationMode(.middle).help(path).textSelection(.enabled)
+      VStack(alignment: .leading, spacing: 3) {
+        HStack(alignment: .top, spacing: 16) {
+          VStack(alignment: .leading, spacing: 3) {
+            Text(entry.names.joined(separator: ", ")).font(.body)
+            Text(
+              entry.managedProgram != nil
+                ? String(localized: "内置")
+                : entry.overridesManaged ? String(localized: "用户覆盖") : String(localized: "用户添加")
+            ).font(.caption).foregroundStyle(.secondary)
+          }
+          .frame(maxWidth: .infinity, alignment: .leading)
+          if let program = entry.managedProgram {
+            Button {
+              editor = model.beginManagedSettings(program)
+            } label: {
+              HStack(spacing: 8) {
+                Text("设置")
+                Image(systemName: "chevron.right")
+                  .font(.caption.weight(.semibold))
+              }
+            }
+            .buttonStyle(.bordered)
+            Menu("覆盖名称") {
+              ForEach(entry.names, id: \.self) { name in
+                Button(name) { editor = model.beginOverriding(name) }
+                  .disabled(entry.overriddenNames.contains(name))
+              }
+            }
+          } else if let id = entry.recordID {
+            Button {
+              editor = model.beginEditing(id)
+            } label: {
+              HStack(spacing: 8) {
+                Text("编辑")
+                Image(systemName: "chevron.right")
+                  .font(.caption.weight(.semibold))
+              }
+            }
+            .buttonStyle(.bordered)
+            Button("删除") { removal = entry }
           }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        if let program = entry.managedProgram {
-          Button {
-            editor = model.beginManagedSettings(program)
-          } label: {
-            HStack(spacing: 8) {
-              Text("设置")
-              Image(systemName: "chevron.right")
-                .font(.caption.weight(.semibold))
-            }
-          }
-          .buttonStyle(.bordered)
-          Menu("覆盖名称") {
-            ForEach(entry.names, id: \.self) { name in
-              Button(name) { editor = model.beginOverriding(name) }
-                .disabled(entry.overriddenNames.contains(name))
-            }
-          }
-        } else if let id = entry.recordID {
-          Button {
-            editor = model.beginEditing(id)
-          } label: {
-            HStack(spacing: 8) {
-              Text("编辑")
-              Image(systemName: "chevron.right")
-                .font(.caption.weight(.semibold))
-            }
-          }
-          .buttonStyle(.bordered)
-          Button("删除") { removal = entry }
+        if let path = entry.path {
+          Text(path).font(.caption).foregroundStyle(.secondary)
+            .lineLimit(1).truncationMode(.middle).help(path).textSelection(.enabled)
         }
       }
       if !entry.overriddenNames.isEmpty {
