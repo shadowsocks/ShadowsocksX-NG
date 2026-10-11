@@ -26,7 +26,16 @@ struct PluginManagementSection: View {
           pluginRow(entry)
         }
         HStack {
-          Button("新增插件…") { editor = model.beginAdding() }
+          Button {
+            editor = model.beginAdding()
+          } label: {
+            HStack(spacing: 8) {
+              Text("新增插件")
+              Image(systemName: "chevron.right")
+                .font(.caption.weight(.semibold))
+            }
+          }
+          .buttonStyle(.bordered)
           Spacer()
           Button("刷新") { model.refresh() }
         }
@@ -87,21 +96,39 @@ struct PluginManagementSection: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         if let program = entry.managedProgram {
-          Button("启动参数…") { editor = model.beginManagedArguments(program) }
+          Button {
+            editor = model.beginManagedArguments(program)
+          } label: {
+            HStack(spacing: 8) {
+              Text("启动参数")
+              Image(systemName: "chevron.right")
+                .font(.caption.weight(.semibold))
+            }
+          }
+          .buttonStyle(.bordered)
           Button("清空参数") {
             do { try model.clearManagedArguments(program) } catch {
               failure = PluginManagementCopy.error(error)
             }
           }.disabled(model.snapshot.managedArguments[program] == nil)
-          Menu("覆盖名称…") {
+          Menu("覆盖名称") {
             ForEach(entry.names, id: \.self) { name in
               Button(name) { editor = model.beginOverriding(name) }
                 .disabled(entry.overriddenNames.contains(name))
             }
           }
         } else if let id = entry.recordID {
-          Button("编辑…") { editor = model.beginEditing(id) }
-          Button("删除…") { removal = entry }
+          Button {
+            editor = model.beginEditing(id)
+          } label: {
+            HStack(spacing: 8) {
+              Text("编辑")
+              Image(systemName: "chevron.right")
+                .font(.caption.weight(.semibold))
+            }
+          }
+          .buttonStyle(.bordered)
+          Button("删除") { removal = entry }
         }
       }
       if !entry.overriddenNames.isEmpty {

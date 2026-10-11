@@ -463,6 +463,17 @@
         }
       }
     },
+    "编辑": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit"
+          }
+        }
+      }
+    },
     "编辑…": {
       "extractionState": "manual",
       "localizations": {
@@ -1332,13 +1343,13 @@
         }
       }
     },
-    "启动参数…": {
+    "启动参数": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Startup Arguments…"
+            "value": "Startup Arguments"
           }
         }
       }
@@ -1354,13 +1365,13 @@
         }
       }
     },
-    "覆盖名称…": {
+    "覆盖名称": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Override Name…"
+            "value": "Override Name"
           }
         }
       }
