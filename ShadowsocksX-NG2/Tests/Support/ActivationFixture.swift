@@ -9,8 +9,8 @@ enum ActivationFixture {
   struct TestManagedPlugins: PluginExecutableResolving {
     let pathsByProgram: [String: String]
 
-    func executablePath(forProgram program: String) -> String? {
-      pathsByProgram[program]
+    func resolve(program: String) -> ResolvedPlugin? {
+      pathsByProgram[program].map { ResolvedPlugin(path: $0, arguments: []) }
     }
   }
 

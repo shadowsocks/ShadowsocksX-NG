@@ -1,0 +1,187 @@
+import Foundation
+import Testing
+
+@testable import ShadowsocksX_NG2
+
+struct PluginRecordTests {
+  @Test @MainActor func sharingKeepsReferenceAndOptionsWithoutLocalArguments() async throws {
+    let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+    defer { try? FileManager.default.removeItem(at: root) }
+    try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+    let binary = root.appendingPathComponent("tool")
+    try Data("#!/bin/sh\n".utf8).write(to: binary)
+    try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: binary.path)
+    let plugins = PluginCatalog(
+      store: PluginMappingFileStore(fileURL: root.appendingPathComponent("plugins.json")),
+      inspector: QuietPluginInspector())
+    try plugins.commit([
+      .save(
+        UserPluginRecord(
+          names: ["tool", "tool-v2"], path: binary.path,
+          arguments: ["--local-argument-sentinel"]))
+    ])
+    let workflow = makeCatalogWorkflow(
+      coordinator: CatalogCommitCoordinator(
+        fileStore: CatalogFileStore(fileURL: root.appendingPathComponent("catalog.json")),
+        runtime: FakeCatalogRuntime()), credentials: InMemoryCredentialStore(), plugins: plugins)
+    let group = try await workflow.createGroup(named: "Share", into: nil)
+    let id = try await workflow.createServer(
+      ServerEditDraft(
+        address: "example.com", port: 8388,
+        encryptionMethod: "aes-256-gcm", password: "pw", remark: "Plugin",
+        plugin: .named(program: "tool-v2"), pluginOptions: "tls;host=example.com"), into: group)
+    let draft = try workflow.configurationGroupExportDraft(for: group)
+    let json = try #require(JSONSerialization.jsonObject(with: draft.data) as? [String: Any])
+    let server = try #require((json["servers"] as? [[String: Any]])?.first)
+    #expect(server["plugin"] as? String == "tool-v2")
+    #expect(server["plugin_opts"] as? String == "tls;host=example.com")
+    #expect(server["plugin_args"] == nil)
+    let uri = try workflow.shareURI(for: id)
+    #expect(uri.contains("tool-v2"))
+    #expect(!uri.contains("local-argument-sentinel"))
+    #expect(!String(decoding: draft.data, as: UTF8.self).contains(binary.path))
+  }
+
+  @Test @MainActor func managedArgumentsRemainWithUncoveredAliasesAndCanBeCleared() throws {
+    let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+    defer { try? FileManager.default.removeItem(at: root) }
+    let binary = root.appendingPathComponent("Contents/Helpers/Plugins/v2ray-plugin")
+    try FileManager.default.createDirectory(
+      at: binary.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try Data("#!/bin/sh\n".utf8).write(to: binary)
+    try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: binary.path)
+    let store = PluginMappingFileStore(fileURL: root.appendingPathComponent("plugins.json"))
+    let managed = BundleManagedPluginProvider(bundleURL: root)
+    let catalog = PluginCatalog(store: store, managed: managed, inspector: QuietPluginInspector())
+    try catalog.commit([.managedArguments(program: "v2ray-plugin", arguments: ["--verbose"])])
+    #expect(catalog.resolve(program: "v2ray-plugin-v1")?.arguments == ["--verbose"])
+    let user = UserPluginRecord(
+      names: ["v2ray-plugin"], path: binary.path, arguments: ["--threads", "4"])
+    try catalog.commit([.save(user)])
+    #expect(catalog.resolve(program: "v2ray-plugin")?.arguments == ["--threads", "4"])
+    let restored = PluginCatalog(store: store, managed: managed, inspector: QuietPluginInspector())
+    #expect(restored.resolve(program: "v2ray-plugin-v1")?.arguments == ["--verbose"])
+    try restored.commit([.managedArguments(program: "v2ray-plugin", arguments: [])])
+    #expect(restored.resolve(program: "v2ray-plugin-v1")?.arguments == [])
+    #expect(restored.resolve(program: "v2ray-plugin")?.arguments == ["--threads", "4"])
+    try restored.commit([.remove(user.id)])
+    #expect(restored.resolve(program: "v2ray-plugin")?.arguments == [])
+  }
+
+  @Test @MainActor func nameConflictAndInvalidArgumentsDoNotPublish() throws {
+    let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+    defer { try? FileManager.default.removeItem(at: root) }
+    try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+    let binary = root.appendingPathComponent("tool")
+    try Data("#!/bin/sh\n".utf8).write(to: binary)
+    try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: binary.path)
+    let store = PluginMappingFileStore(fileURL: root.appendingPathComponent("plugins.json"))
+    let catalog = PluginCatalog(store: store, inspector: QuietPluginInspector())
+    let first = UserPluginRecord(names: ["tool", "tool-v2"], path: binary.path)
+    try catalog.commit([.save(first)])
+    let bytes = try Data(contentsOf: store.fileURL)
+    let generation = catalog.catalogSnapshot().generation
+    #expect(throws: PluginMappingError.nameExists) {
+      try catalog.commit([.save(UserPluginRecord(names: ["tool-v2"], path: binary.path))])
+    }
+    #expect(throws: PluginMappingError.invalidArguments) {
+      try catalog.commit([.managedArguments(program: "v2ray-plugin", arguments: ["bad\0value"])])
+    }
+    #expect(try Data(contentsOf: store.fileURL) == bytes)
+    #expect(catalog.catalogSnapshot().generation == generation)
+    #expect(catalog.userRecords == [first])
+    var renamed = first
+    renamed.names = ["tool-v2"]
+    try catalog.commit([.save(renamed)])
+    #expect(catalog.resolve(program: "tool") == nil)
+    #expect(catalog.userRecords.first?.id == first.id)
+    #expect(catalog.resolve(program: "tool-v2")?.path == binary.path)
+  }
+
+  @Test func legacyMappingsMigrateIndependentlyAndReadDoesNotRewriteFile() throws {
+    let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+    defer { try? FileManager.default.removeItem(at: root) }
+    try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+    let store = PluginMappingFileStore(fileURL: root.appendingPathComponent("plugins.json"))
+    let original = Data(
+      #"{"version":1,"mappings":{"tool":"/missing/tool","tool-v2":"/missing/tool"}}"#.utf8)
+    try original.write(to: store.fileURL)
+    let configuration = try store.load()
+    #expect(configuration.userPlugins.count == 2)
+    #expect(Set(configuration.userPlugins.map(\.id)).count == 2)
+    #expect(configuration.userPlugins.map(\.names) == [["tool"], ["tool-v2"]])
+    #expect(
+      configuration.userPlugins.allSatisfy { $0.arguments.isEmpty && $0.path == "/missing/tool" })
+    #expect(try Data(contentsOf: store.fileURL) == original)
+    try store.save(configuration)
+    #expect(try store.load() == configuration)
+    let json = try #require(
+      JSONSerialization.jsonObject(with: Data(contentsOf: store.fileURL)) as? [String: Any])
+    #expect(json["version"] as? Int == 2)
+  }
+
+  @Test @MainActor func activationWritesLocalArgumentsWithoutChangingServerOptions() throws {
+    let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+    defer { try? FileManager.default.removeItem(at: root) }
+    try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+    let binary = root.appendingPathComponent("tool")
+    try Data("#!/bin/sh\n".utf8).write(to: binary)
+    try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: binary.path)
+    let plugins = PluginCatalog(
+      store: PluginMappingFileStore(fileURL: root.appendingPathComponent("plugins.json")),
+      inspector: QuietPluginInspector())
+    try plugins.commit([
+      .save(
+        UserPluginRecord(
+          names: ["tool", "tool-v2"], path: binary.path,
+          arguments: ["--threads", "4", "--log-file", "/tmp/My Log.txt", ""]))
+    ])
+    let credentials = InMemoryCredentialStore()
+    var catalog = ConfigurationCatalog()
+    let leaf = try ActivationFixture.addPlainServer(
+      "Plugin", in: &catalog, credentials: credentials)
+    var fields = try ActivationFixture.serverFields(of: leaf, in: catalog)
+    fields.pluginProgram = "tool-v2"
+    fields.pluginOptionsRef = .fresh()
+    try credentials.save("tls;host=example.com", for: #require(fields.pluginOptionsRef))
+    try catalog.updateServer(leaf, with: fields)
+    var machine = ActivationStateMachine()
+    let runtime = try machine.activate(
+      leaf, in: catalog, credentials: credentials, plugins: plugins,
+      options: RuntimeDocumentOptions(listen: ActivationFixture.listen))
+    let json = try #require(
+      JSONSerialization.jsonObject(with: runtime.document.jsonData()) as? [String: Any])
+    let server = try #require((json["servers"] as? [[String: Any]])?.first)
+    #expect(
+      server["plugin_args"] as? [String] == ["--threads", "4", "--log-file", "/tmp/My Log.txt", ""])
+    #expect(server["plugin"] as? String == binary.path)
+    #expect(server["plugin_opts"] as? String == "tls;host=example.com")
+    #expect(try ActivationFixture.serverFields(of: leaf, in: catalog).pluginProgram == "tool-v2")
+  }
+
+  @Test @MainActor func aliasesShareArgumentsAndOnlyExplicitNamesOverrideManaged() throws {
+    let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+    defer { try? FileManager.default.removeItem(at: root) }
+    let binary = root.appendingPathComponent("Contents/Helpers/Plugins/v2ray-plugin")
+    try FileManager.default.createDirectory(
+      at: binary.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try Data("#!/bin/sh\n".utf8).write(to: binary)
+    try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: binary.path)
+    let store = PluginMappingFileStore(fileURL: root.appendingPathComponent("plugins.json"))
+    let catalog = PluginCatalog(
+      store: store, managed: BundleManagedPluginProvider(bundleURL: root),
+      inspector: QuietPluginInspector())
+    let record = UserPluginRecord(
+      names: ["v2ray-plugin", "custom-v2"], path: binary.path,
+      arguments: ["--config", "/Users/me/My Config.json", "", "--verbose"])
+    try catalog.commit([.save(record)])
+    let snapshot = catalog.catalogSnapshot()
+    #expect(snapshot.resolve(program: "custom-v2")?.arguments == record.arguments)
+    #expect(snapshot.resolve(program: "v2ray-plugin") == snapshot.resolve(program: "custom-v2"))
+    #expect(snapshot.entry(for: "v2ray-plugin-v1")?.source == .managed)
+    #expect(snapshot.resolve(program: "v2ray-plugin-v1")?.arguments == [])
+    let restored = PluginCatalog(store: store, inspector: QuietPluginInspector())
+    #expect(restored.userRecords == [record])
+  }
+
+}

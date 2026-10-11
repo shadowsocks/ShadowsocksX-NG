@@ -99,7 +99,7 @@ final class CatalogWorkflowPluginTests: XCTestCase {
     XCTAssertEqual(plugin.programs.first?.availability, .available, "二进制在位即提供")
     XCTAssertTrue(plugin.optionsPresent)
     XCTAssertEqual(plugin.options, "mode=websocket", "参数明文供输入框预填")
-    XCTAssertEqual(plugin.programs.map(\.program), [pluginBinaryName])
+    XCTAssertEqual(plugin.programs.map(\.program), [pluginBinaryName, "v2ray-plugin-v1"])
   }
 
   func testMissingBinaryShowsManagedButNotProvided() async throws {

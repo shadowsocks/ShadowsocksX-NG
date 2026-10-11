@@ -40,6 +40,14 @@ final class BundleManagedPluginProviderTests: XCTestCase {
     BundleManagedPluginProvider(bundleURL: bundleRoot)
   }
 
+  func testMajorVersionAliasResolvesToSameBundledExecutable() throws {
+    try writePluginBinary(permissions: 0o755)
+    XCTAssertEqual(
+      makeProvider().executablePath(forProgram: "v2ray-plugin-v1"),
+      makeProvider().executablePath(forProgram: "v2ray-plugin"))
+    XCTAssertNotNil(makeProvider().executablePath(forProgram: "v2ray-plugin-v1"))
+  }
+
   func testReturnsBundleAbsolutePathForProvidedManagedProgram() throws {
     try writePluginBinary(permissions: 0o755)
     let path = try XCTUnwrap(makeProvider().executablePath(forProgram: pluginBinaryName))

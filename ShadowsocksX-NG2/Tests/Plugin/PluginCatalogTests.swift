@@ -4,7 +4,7 @@ import XCTest
 
 @testable import ShadowsocksX_NG2
 
-private struct QuietPluginInspector: PluginInspecting {
+struct QuietPluginInspector: PluginInspecting {
   func inspect(_ executable: URL) async -> PluginSecurityFacts {
     PluginSecurityFacts(quarantine: .absent, signature: .notApplicable, policy: .notApplicable)
   }
@@ -34,12 +34,12 @@ struct PluginCatalogTests {
     try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: binary.path)
     let store = PluginMappingFileStore(fileURL: root.appendingPathComponent("plugins.json"))
     let catalog = PluginCatalog(store: store, inspector: QuietPluginInspector())
-    try catalog.commit([.add(program: "custom-plugin", path: binary.path)])
+    try catalog.addPlugin(program: "custom-plugin", path: binary.path)
     #expect(catalog.catalogSnapshot().executablePath(forProgram: "custom-plugin") == binary.path)
     #expect(
       PluginCatalog(store: store, inspector: QuietPluginInspector()).catalogSnapshot().entry(
         for: "custom-plugin")?.source == .user)
-    try catalog.commit([.remove(program: "custom-plugin")])
+    try catalog.removePlugin(program: "custom-plugin")
     #expect(catalog.catalogSnapshot().entry(for: "custom-plugin") == nil)
   }
 
@@ -53,7 +53,7 @@ struct PluginCatalogTests {
     let plugins = PluginCatalog(
       store: PluginMappingFileStore(fileURL: root.appendingPathComponent("plugins.json")),
       inspector: QuietPluginInspector())
-    try plugins.commit([.add(program: "custom-plugin", path: binary.path)])
+    try plugins.addPlugin(program: "custom-plugin", path: binary.path)
     let workflow = makeCatalogWorkflow(
       coordinator: CatalogCommitCoordinator(
         fileStore: CatalogFileStore(fileURL: root.appendingPathComponent("catalog.json")),
@@ -89,7 +89,7 @@ struct PluginCatalogTests {
         events.append("apply")
         applied.continuation.yield(())
       })
-    try catalog.commit([.add(program: "custom-plugin", path: binary.path)])
+    try catalog.addPlugin(program: "custom-plugin", path: binary.path)
     #expect(events == ["invalidate", "publish"])
     for await _ in applied.stream { break }
     #expect(events == ["invalidate", "publish", "apply"])
@@ -120,7 +120,7 @@ struct PluginCatalogTests {
     #expect(catalog.executablePath(forProgram: "v2ray-plugin") == nil)
     #expect(catalog.catalogSnapshot().entry(for: "v2ray-plugin")?.source == .unknown)
     #expect(throws: PluginMappingError.unreadable) { try catalog.commit([]) }
-    try catalog.replaceMappings([:])
+    try catalog.replaceTestMappings([:])
     #expect(catalog.executablePath(forProgram: "v2ray-plugin") == binary.path)
   }
 
@@ -136,7 +136,7 @@ struct PluginCatalogTests {
     catalog.connect(
       invalidateRuntime: { published = true }, revalidate: { published = true }, converge: {})
     #expect(throws: PluginMappingError.unreadable) {
-      try catalog.commit([.add(program: "tool", path: binary.path)])
+      try catalog.addPlugin(program: "tool", path: binary.path)
     }
     #expect(!published)
     #expect(catalog.catalogSnapshot().generation == 0)
@@ -155,16 +155,16 @@ struct PluginCatalogTests {
     let catalog = PluginCatalog(
       store: PluginMappingFileStore(fileURL: root.appendingPathComponent("plugins.json")),
       inspector: QuietPluginInspector())
-    try catalog.commit([.add(program: " Tool ", path: link.path)])
+    try catalog.addPlugin(program: " Tool ", path: link.path)
     #expect(catalog.executablePath(forProgram: "Tool") == link.path)
     #expect(catalog.executablePath(forProgram: "tool") == nil)
     let captured = catalog.catalogSnapshot()
-    try catalog.commit([.rename(program: "Tool", newProgram: "Other", path: link.path)])
+    try catalog.renamePlugin(program: "Tool", newProgram: "Other", path: link.path)
     #expect(catalog.executablePath(forProgram: "Tool") == nil)
     #expect(captured.executablePath(forProgram: "Tool") == link.path)
     try FileManager.default.removeItem(at: binary)
     #expect(catalog.executablePath(forProgram: "Other") == nil)
-    try catalog.commit([.remove(program: "Other")])
+    try catalog.removePlugin(program: "Other")
     #expect(catalog.catalogSnapshot().entry(for: "Other") == nil)
   }
 
@@ -208,7 +208,7 @@ struct PluginCatalogTests {
       store: PluginMappingFileStore(
         fileURL: runtime.directory.appendingPathComponent("plugins.json")),
       inspector: QuietPluginInspector())
-    try plugins.commit([.add(program: "tool", path: first.path)])
+    try plugins.addPlugin(program: "tool", path: first.path)
     let credentials = InMemoryCredentialStore()
     var catalog = ConfigurationCatalog()
     let id = try ActivationFixture.addPlainServer("Plugin", in: &catalog, credentials: credentials)
@@ -256,7 +256,7 @@ struct PluginCatalogTests {
         _ = await controller.catalogDidCommit(snapshot: catalog)
         applied.continuation.yield(())
       })
-    try plugins.commit([.update(program: "tool", path: second.path)])
+    try plugins.updatePlugin(program: "tool", path: second.path)
     probe.release()
     _ = try await oldActivation.value
     for await _ in applied.stream { break }
@@ -279,7 +279,7 @@ struct PluginCatalogSecurityTests {
     let catalog = PluginCatalog(
       store: PluginMappingFileStore(fileURL: root.appendingPathComponent("plugins.json")),
       inspector: inspector)
-    try catalog.commit([.add(program: "tool", path: binary.path)])
+    try catalog.addPlugin(program: "tool", path: binary.path)
     let check = catalog.refreshSecurityFacts()
     var started = inspector.started.makeAsyncIterator()
     _ = await started.next()
@@ -289,7 +289,7 @@ struct PluginCatalogSecurityTests {
     } else if change == "permissions" {
       try FileManager.default.setAttributes([.posixPermissions: 0o644], ofItemAtPath: binary.path)
     } else if change == "remove" {
-      try catalog.commit([.remove(program: "tool")])
+      try catalog.removePlugin(program: "tool")
     }
     await inspector.release()
     await check.value
@@ -343,8 +343,8 @@ struct PluginCatalogSecurityTests {
 }
 
 private struct FailingMappingStore: PluginMappingStoring {
-  func load() throws -> [String: String] { [:] }
-  func save(_ mappings: [String: String]) throws { throw PluginMappingError.unreadable }
+  func load() throws -> PluginConfiguration { PluginConfiguration() }
+  func save(_ configuration: PluginConfiguration) throws { throw PluginMappingError.unreadable }
 }
 
 extension CatalogEntry {
@@ -445,7 +445,7 @@ struct PluginFormCatalogTests {
     let plugins = PluginCatalog(
       store: PluginMappingFileStore(fileURL: root.appendingPathComponent("plugins.json")),
       managed: BundleManagedPluginProvider(bundleURL: root), inspector: QuietPluginInspector())
-    try plugins.commit([.add(program: "tool", path: managedBinary.path)])
+    try plugins.addPlugin(program: "tool", path: managedBinary.path)
     let workflow = makeCatalogWorkflow(
       coordinator: CatalogCommitCoordinator(
         fileStore: CatalogFileStore(fileURL: root.appendingPathComponent("catalog.json")),
@@ -460,12 +460,12 @@ struct PluginFormCatalogTests {
     fields.showServer(id, load: workflow.serverEditForm)
     fields.remark = "Unsaved"
     fields.pluginOptions.load("host=unsaved")
-    try plugins.commit([.remove(program: "tool")])
+    try plugins.removePlugin(program: "tool")
     fields.updatePresentation(
       workflow.serverFormPresentation(for: id), load: workflow.serverEditForm)
     #expect(fields.pluginChoice == .unknown(program: "tool"))
     #expect(fields.pluginOptions.composedString == "host=unsaved")
-    try plugins.commit([.add(program: "tool", path: managedBinary.path)])
+    try plugins.addPlugin(program: "tool", path: managedBinary.path)
     fields.updatePresentation(
       workflow.serverFormPresentation(for: id), load: workflow.serverEditForm)
     #expect(fields.pluginChoice == .named(program: "tool"))
@@ -475,7 +475,7 @@ struct PluginFormCatalogTests {
 
     // An unsaved choice disappearing must retain a selectable unresolved reference.
     fields.pluginChoice = .named(program: "tool")
-    try plugins.commit([.remove(program: "tool")])
+    try plugins.removePlugin(program: "tool")
     fields.updatePresentation(
       workflow.serverFormPresentation(for: id), load: workflow.serverEditForm)
     #expect(fields.presentation?.plugin.unresolvedProgram(for: .named(program: "tool")) == "tool")
@@ -485,12 +485,12 @@ struct PluginFormCatalogTests {
     #expect(fields.pluginOptions.composedString == "host=unsaved")
 
     fields.pluginChoice = .named(program: "v2ray-plugin")
-    try plugins.commit([.add(program: "v2ray-plugin", path: managedBinary.path)])
+    try plugins.addPlugin(program: "v2ray-plugin", path: managedBinary.path)
     fields.updatePresentation(
       workflow.serverFormPresentation(for: id), load: workflow.serverEditForm)
     #expect(
       fields.presentation?.plugin.programs.first { $0.program == "v2ray-plugin" }?.source == .user)
-    try plugins.commit([.remove(program: "v2ray-plugin")])
+    try plugins.removePlugin(program: "v2ray-plugin")
     fields.updatePresentation(
       workflow.serverFormPresentation(for: id), load: workflow.serverEditForm)
     #expect(

@@ -1210,6 +1210,182 @@
           }
         }
       }
+    },
+    "请至少填写一个非空插件名称。": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter at least one nonempty plugin name."
+          }
+        }
+      }
+    },
+    "启动参数不能包含空字符（NUL）。": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Startup arguments cannot contain NUL characters."
+          }
+        }
+      }
+    },
+    "保存后将覆盖所列名称对应的内置插件。": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saving overrides the built-in plugin for the listed names."
+          }
+        }
+      }
+    },
+    "本地启动参数": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Local Startup Arguments"
+          }
+        }
+      }
+    },
+    "参数": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Argument"
+          }
+        }
+      }
+    },
+    "每项作为一个完整参数传递，无需 shell 引号。仅在本机生效。": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Each item is passed as one complete argument, without shell quoting. Applies only on this Mac."
+          }
+        }
+      }
+    },
+    "内置插件启动参数": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Built-in Plugin Startup Arguments"
+          }
+        }
+      }
+    },
+    "上移": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Move Up"
+          }
+        }
+      }
+    },
+    "下移": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Move Down"
+          }
+        }
+      }
+    },
+    "删除此项": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove Item"
+          }
+        }
+      }
+    },
+    "添加一项": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add Item"
+          }
+        }
+      }
+    },
+    "启动参数…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Startup Arguments…"
+          }
+        }
+      }
+    },
+    "清空参数": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clear Arguments"
+          }
+        }
+      }
+    },
+    "覆盖名称…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Override Name…"
+          }
+        }
+      }
+    },
+    "已被用户覆盖：": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Overridden by user: "
+          }
+        }
+      }
+    },
+    "删除此记录的全部名称。服务器引用保留，同名内置插件恢复；其他名称可能无法连接。": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove all names in this record. Server references are kept. Built-in plugins with matching names are restored; other names may no longer connect."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

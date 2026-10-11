@@ -5,14 +5,13 @@ import Foundation
 /// File availability is captured anew for each derivation, not cached for the session.
 final class PluginCatalog: ObservableObject, PluginExecutableResolving {
   enum Change {
-    case add(program: String, path: String)
-    case update(program: String, path: String)
-    case remove(program: String)
-    case rename(program: String, newProgram: String, path: String)
+    case save(UserPluginRecord)
+    case remove(UUID)
+    case managedArguments(program: String, arguments: [String])
   }
 
   private struct State {
-    var mappings: [String: String]
+    var configuration: PluginConfiguration
     var generation = 0
     var unreadable: Bool
   }
@@ -50,76 +49,71 @@ final class PluginCatalog: ObservableObject, PluginExecutableResolving {
     self.managed = managed
     self.inspector = inspector
     do {
-      state = State(mappings: try store.load(), unreadable: false)
+      state = State(configuration: try store.load(), unreadable: false)
     } catch {
-      state = State(mappings: [:], unreadable: true)
+      state = State(configuration: PluginConfiguration(), unreadable: true)
     }
   }
 
   func catalogSnapshot() -> PluginCatalogSnapshot {
     let captured = lock.withLock { state }
     return PluginCatalogSnapshot(
-      mappings: captured.mappings, managed: managed, generation: captured.generation,
+      configuration: captured.configuration, managed: managed, generation: captured.generation,
       mappingsUnreadable: captured.unreadable)
   }
 
-  func executablePath(forProgram program: String) -> String? {
-    catalogSnapshot().executablePath(forProgram: program)
+  func resolve(program: String) -> ResolvedPlugin? {
+    catalogSnapshot().resolve(program: program)
   }
 
-  var userMappings: [String: String] { lock.withLock { state.mappings } }
+  var userRecords: [UserPluginRecord] { lock.withLock { state.configuration.userPlugins } }
 
   @MainActor
   func commit(_ changes: [Change]) throws {
     let captured = lock.withLock { state }
     guard !captured.unreadable else { throw PluginMappingError.unreadable }
-    var proposed = captured.mappings
+    var proposed = captured.configuration
     for change in changes {
       switch change {
-      case .add(let program, let path):
-        let name = try validatedName(program)
-        guard proposed[name] == nil else { throw PluginMappingError.nameExists }
-        proposed[name] = try validatedPath(path)
-      case .update(let program, let path):
-        guard proposed[program] != nil else { throw PluginMappingError.nameMissing }
-        proposed[program] = try validatedPath(path)
-      case .remove(let program):
-        guard proposed.removeValue(forKey: program) != nil else {
+      case .save(var record):
+        record.names = record.names.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+        record.path = try validatedPath(record.path)
+        if let index = proposed.userPlugins.firstIndex(where: { $0.id == record.id }) {
+          proposed.userPlugins[index] = record
+        } else {
+          proposed.userPlugins.append(record)
+        }
+      case .remove(let id):
+        guard let index = proposed.userPlugins.firstIndex(where: { $0.id == id }) else {
           throw PluginMappingError.nameMissing
         }
-      case .rename(let program, let newProgram, let path):
-        try rename(program, newProgram: newProgram, path: path, mappings: &proposed)
+        proposed.userPlugins.remove(at: index)
+      case .managedArguments(let program, let arguments):
+        guard ManagedPluginCatalog.plugins.contains(where: { $0.program == program }) else {
+          throw PluginMappingError.nameMissing
+        }
+        if arguments.isEmpty {
+          proposed.managedArguments.removeValue(forKey: program)
+        } else {
+          proposed.managedArguments[program] = arguments
+        }
       }
     }
-    guard proposed != captured.mappings else { return }
+    try proposed.validate()
+    guard proposed != captured.configuration else { return }
     try publishAfterSaving(proposed)
   }
 
-  private func rename(
-    _ program: String, newProgram: String, path: String, mappings: inout [String: String]
-  ) throws {
-    let name = try validatedName(newProgram)
-    guard mappings[program] != nil else { throw PluginMappingError.nameMissing }
-    guard name == program || mappings[name] == nil else { throw PluginMappingError.nameExists }
-    let path = try validatedPath(path)
-    mappings.removeValue(forKey: program)
-    mappings[name] = path
-  }
-
-  /// Explicit repair; a corrupt store never silently becomes an empty override set.
+  /// Explicit repair; a corrupt store never silently becomes empty user intent.
   @MainActor
-  func replaceMappings(_ mappings: [String: String]) throws {
-    var proposed: [String: String] = [:]
-    for (program, path) in mappings {
-      let name = try validatedName(program)
-      guard proposed[name] == nil else { throw PluginMappingError.nameExists }
-      proposed[name] = try validatedPath(path)
-    }
-    try publishAfterSaving(proposed)
+  func replaceConfiguration(_ configuration: PluginConfiguration) throws {
+    try configuration.validate()
+    for record in configuration.userPlugins { _ = try validatedPath(record.path) }
+    try publishAfterSaving(configuration)
   }
 
   @MainActor
-  private func publishAfterSaving(_ proposed: [String: String]) throws {
+  private func publishAfterSaving(_ proposed: PluginConfiguration) throws {
     try store.save(proposed)
     publish(proposed)
   }
@@ -133,10 +127,10 @@ final class PluginCatalog: ObservableObject, PluginExecutableResolving {
   }
 
   @MainActor
-  private func publish(_ proposed: [String: String]) {
+  private func publish(_ proposed: PluginConfiguration) {
     objectWillChange.send()
     let generation = lock.withLock {
-      state.mappings = proposed
+      state.configuration = proposed
       state.unreadable = false
       state.generation += 1
       return state.generation
@@ -161,7 +155,10 @@ final class PluginCatalog: ObservableObject, PluginExecutableResolving {
     inspectionTasks.removeAll()
     securityFacts.removeAll()
     let snapshot = catalogSnapshot()
+    var inspected = Set<UUID>()
     for entry in snapshot.entries where entry.source == .user {
+      guard let recordID = entry.recordID, inspected.insert(recordID).inserted else { continue }
+      let names = snapshot.entries.filter { $0.recordID == recordID }.map(\.program)
       guard let path = entry.path, let identity = PluginFileIdentity(path: path) else { continue }
       let inspector = inspector
       inspectionTasks[entry.program] = Task { @MainActor [weak self] in
@@ -172,7 +169,7 @@ final class PluginCatalog: ObservableObject, PluginExecutableResolving {
           self.catalogSnapshot().entry(for: entry.program)?.path == path,
           PluginFileIdentity(path: path) == identity
         else { return }
-        self.securityFacts[entry.program] = facts
+        for name in names { self.securityFacts[name] = facts }
         self.inspectionTasks.removeValue(forKey: entry.program)
       }
     }
@@ -180,12 +177,6 @@ final class PluginCatalog: ObservableObject, PluginExecutableResolving {
     return Task { @MainActor in
       for task in tasks { await task.value }
     }
-  }
-
-  private func validatedName(_ program: String) throws -> String {
-    let name = program.trimmingCharacters(in: .whitespacesAndNewlines)
-    guard !name.isEmpty, !name.contains("\0") else { throw PluginMappingError.invalidName }
-    return name
   }
 
   private func validatedPath(_ path: String) throws -> String {

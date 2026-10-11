@@ -186,12 +186,14 @@ struct SslocalServerDocument: Codable, Equatable, Sendable {
   let method: String
   let plugin: String?
   let pluginOpts: String?
+  var pluginArgs: [String]?
 
   enum CodingKeys: String, CodingKey {
     case id, server
     case serverPort = "server_port"
     case password, method, plugin
     case pluginOpts = "plugin_opts"
+    case pluginArgs = "plugin_args"
   }
 }
 

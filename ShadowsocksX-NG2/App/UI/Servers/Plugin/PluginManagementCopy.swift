@@ -10,11 +10,13 @@ enum PluginManagementCopy {
     case .unreadable, .unsupportedVersion:
       return String(localized: "无法读取插件配置。请修复配置文件后重试读取。")
     case .invalidName:
-      return String(localized: "请输入插件名称；已保存的名称不能修改。")
+      return String(localized: "请至少填写一个非空插件名称。")
     case .nameExists:
       return String(localized: "已有同名用户插件，请编辑现有条目或使用其他名称。")
     case .invalidPath:
       return String(localized: "请输入可执行文件的绝对路径。")
+    case .invalidArguments:
+      return String(localized: "启动参数不能包含空字符（NUL）。")
     case .unavailableFile:
       return String(localized: "文件不存在或不可执行，请选择可执行文件。")
     case .nameMissing:

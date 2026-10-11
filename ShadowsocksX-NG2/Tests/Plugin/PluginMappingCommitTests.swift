@@ -13,13 +13,13 @@ struct PluginMappingCommitTests {
     #expect(fixture.controller.state == .running)
     try FileManager.default.removeItem(at: fixture.files.pidFileURL)
     fixture.agent.registerError = NSError(domain: "PluginMappingCommitTests", code: 1)
-    try fixture.plugins.commit([.update(program: "tool", path: fixture.second.path)])
+    try fixture.plugins.updatePlugin(program: "tool", path: fixture.second.path)
     let outcome = await fixture.nextApplication()
     guard case .failed = outcome else {
       Issue.record("Expected runtime failure after the mapping was saved")
       return
     }
-    #expect(fixture.plugins.userMappings["tool"] == fixture.second.path)
+    #expect(fixture.plugins.testMappings["tool"] == fixture.second.path)
     let restored = PluginCatalog(store: fixture.store, inspector: CommitPluginInspector())
     #expect(restored.executablePath(forProgram: "tool") == fixture.second.path)
   }
@@ -33,14 +33,14 @@ struct PluginMappingCommitTests {
     let unregistered = fixture.agent.unregisterCount
     let signals = fixture.signals.count
     let deployed = try #require(fixture.files.readData())
-    try fixture.plugins.commit([.add(program: "unused", path: fixture.second.path)])
+    try fixture.plugins.addPlugin(program: "unused", path: fixture.second.path)
     _ = await fixture.nextApplication()
     #expect(fixture.agent.registerCount == registered)
     #expect(fixture.agent.unregisterCount == unregistered)
     #expect(fixture.signals.count == signals)
     #expect(fixture.files.readData() == deployed)
     let generation = fixture.plugins.catalogSnapshot().generation
-    try fixture.plugins.commit([.update(program: "unused", path: fixture.second.path)])
+    try fixture.plugins.updatePlugin(program: "unused", path: fixture.second.path)
     await fixture.drainMainQueue()
     #expect(fixture.plugins.catalogSnapshot().generation == generation)
     #expect(fixture.agent.registerCount == registered)
@@ -53,7 +53,7 @@ struct PluginMappingCommitTests {
     defer { fixture.cleanUp() }
     try await fixture.controller.activate(fixture.group)
     #expect(fixture.controller.state == .running)
-    try fixture.plugins.commit([.remove(program: "tool")])
+    try fixture.plugins.removePlugin(program: "tool")
     let group = try #require(fixture.workflow.tree.roots.first)
     #expect(group.invalidDescendantCount == 1)
     #expect(
@@ -79,17 +79,19 @@ struct PluginMappingCommitTests {
     #expect(fixture.controller.state == .running)
     let started = XCTestExpectation(description: "mapping A entered health check")
     if inFlight { fixture.probe.arm(started: started) }
-    try fixture.plugins.commit([.update(program: "tool", path: fixture.second.path)])
+    try fixture.plugins.updatePlugin(program: "tool", path: fixture.second.path)
     if inFlight {
       let result = await XCTWaiter.fulfillment(of: [started], timeout: 3)
       #expect(result == .completed)
     }
-    try fixture.plugins.commit([.update(program: "tool", path: fixture.third.path)])
+    try fixture.plugins.updatePlugin(program: "tool", path: fixture.third.path)
     fixture.probe.release()
     _ = await fixture.nextApplication()
     if inFlight { _ = await fixture.nextApplication() }
-    #expect(fixture.plugins.userMappings["tool"] == fixture.third.path)
-    #expect(try fixture.store.load()["tool"] == fixture.third.path)
+    #expect(fixture.plugins.testMappings["tool"] == fixture.third.path)
+    #expect(
+      try fixture.store.load().userPlugins.first { $0.names.contains("tool") }?.path
+        == fixture.third.path)
     #expect(fixture.files.loadDocument()?.servers.first?.plugin == fixture.third.path)
     #expect(fixture.controller.state == .running)
     if !inFlight { #expect(fixture.applicationPaths == [fixture.third.path]) }
@@ -108,9 +110,9 @@ struct PluginMappingCommitTests {
     try FileManager.default.moveItem(at: mappingsDirectory, to: backup)
     try Data("blocks temporary file creation".utf8).write(to: mappingsDirectory)
     #expect(throws: (any Error).self) {
-      try fixture.plugins.commit([.update(program: "tool", path: fixture.second.path)])
+      try fixture.plugins.updatePlugin(program: "tool", path: fixture.second.path)
     }
-    #expect(fixture.plugins.userMappings["tool"] == fixture.first.path)
+    #expect(fixture.plugins.testMappings["tool"] == fixture.first.path)
     #expect(fixture.plugins.catalogSnapshot().generation == generation)
     #expect(fixture.workflow.tree == tree)
     #expect(fixture.agent.registerCount == registered)
@@ -120,7 +122,9 @@ struct PluginMappingCommitTests {
     #expect(fixture.applicationPaths.isEmpty)
     try FileManager.default.removeItem(at: mappingsDirectory)
     try FileManager.default.moveItem(at: backup, to: mappingsDirectory)
-    #expect(try fixture.store.load()["tool"] == fixture.first.path)
+    #expect(
+      try fixture.store.load().userPlugins.first { $0.names.contains("tool") }?.path
+        == fixture.first.path)
   }
 
 }
@@ -166,7 +170,7 @@ private final class PluginMappingCommitFixture {
     store = PluginMappingFileStore(
       fileURL: directory.appendingPathComponent("mappings/plugins.json"))
     plugins = PluginCatalog(store: store, inspector: CommitPluginInspector())
-    try plugins.commit([.add(program: "tool", path: first.path)])
+    try plugins.addPlugin(program: "tool", path: first.path)
     let credentials = InMemoryCredentialStore()
     var catalog = ConfigurationCatalog()
     group = try catalog.addGroup("Group")

@@ -205,11 +205,13 @@ struct ActivationStateMachine: Equatable, Sendable {
     }
     var pluginPath: String?
     var pluginOpts: String?
+    var pluginArgs: [String]?
     if let program = fields.pluginProgram {
-      guard let path = plugins.executablePath(forProgram: program) else {
+      guard let resolved = plugins.resolve(program: program) else {
         return .failure(.invalidLeaf(node: leafID, reason: .pluginNotProvided(program: program)))
       }
-      pluginPath = path
+      pluginPath = resolved.path
+      pluginArgs = resolved.arguments.isEmpty ? nil : resolved.arguments
       if let optionsRef = fields.pluginOptionsRef {
         switch resolveCredential(optionsRef, of: leafID, credentials: credentials) {
         case .success(let resolved):
@@ -227,7 +229,7 @@ struct ActivationStateMachine: Equatable, Sendable {
         password: password,
         method: fields.encryptionMethod.trimmingCharacters(in: .whitespacesAndNewlines),
         plugin: pluginPath,
-        pluginOpts: pluginOpts))
+        pluginOpts: pluginOpts, pluginArgs: pluginArgs))
   }
 
   /// 凭据解析：无条目与读取失败分别点名（D5「凭据不可解析 → 停止并清理」）。

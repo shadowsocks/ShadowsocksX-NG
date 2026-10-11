@@ -1,20 +1,32 @@
 import Foundation
 
-/// 插件解析 seam：当前路径查询与一次派生使用的只读目录快照。
+/// 插件解析 seam：路径与本地启动参数，以及一次派生使用的只读目录快照。
 /// nil 表示本地不可用；托管与用户映射共用这一激活语义。
+struct ResolvedPlugin: Equatable, Sendable {
+  let path: String
+  let arguments: [String]
+}
+
 protocol PluginExecutableResolving {
-  func executablePath(forProgram program: String) -> String?
+  func resolve(program: String) -> ResolvedPlugin?
   func catalogSnapshot() -> PluginCatalogSnapshot
 }
 
 extension PluginExecutableResolving {
+  func executablePath(forProgram program: String) -> String? {
+    resolve(program: program)?.path
+  }
+
   func catalogSnapshot() -> PluginCatalogSnapshot {
     PluginCatalogSnapshot(
-      entries: ManagedPluginCatalog.plugins.map { info in
-        let path = executablePath(forProgram: info.program)
-        return PluginCatalogSnapshot.Entry(
-          program: info.program, path: path, source: .managed,
-          availability: path == nil ? .missing : .available, managedInfo: info)
+      entries: ManagedPluginCatalog.plugins.flatMap { info in
+        info.names.map { program in
+          let resolved = resolve(program: program)
+          return PluginCatalogSnapshot.Entry(
+            program: program, path: resolved?.path, source: .managed,
+            availability: resolved == nil ? .missing : .available, managedInfo: info,
+            arguments: resolved?.arguments ?? [])
+        }
       })
   }
 }
@@ -24,8 +36,10 @@ extension PluginExecutableResolving {
 /// 或升级插件须同步 `Vendor/<name>/manifest.json` 与锚点测试
 /// `ManagedPluginCatalogTests`，两处漂移即构建期失败。
 struct ManagedPluginInfo: Equatable, Sendable {
-  /// SIP003 程序名，同时是 bundle 内二进制名与目录里的引用键。
+  /// 内置记录的固定身份，与可引用名称及打包文件名分别维护。
   let program: String
+  let names: [String]
+  let executableName: String
   /// 来源项目（GitHub owner/repo）。
   let project: String
   let projectURL: String
@@ -42,6 +56,8 @@ enum ManagedPluginCatalog {
   static let plugins: [ManagedPluginInfo] = [
     ManagedPluginInfo(
       program: "v2ray-plugin",
+      names: ["v2ray-plugin", "v2ray-plugin-v1"],
+      executableName: "v2ray-plugin",
       project: "shadowsocks/v2ray-plugin",
       projectURL: "https://github.com/shadowsocks/v2ray-plugin",
       release: "v1.3.2",
@@ -50,7 +66,7 @@ enum ManagedPluginCatalog {
   ]
 
   static func info(forProgram program: String) -> ManagedPluginInfo? {
-    plugins.first { $0.program == program }
+    plugins.first { $0.names.contains(program) }
   }
 }
 
@@ -63,19 +79,19 @@ struct BundleManagedPluginProvider: PluginExecutableResolving {
   var bundleURL: URL = Bundle.main.bundleURL
   var fileManager: FileManager = .default
 
-  func executablePath(forProgram program: String) -> String? {
+  func resolve(program: String) -> ResolvedPlugin? {
     guard let info = ManagedPluginCatalog.info(forProgram: program) else { return nil }
     let url =
       bundleURL
       .appendingPathComponent("Contents/Helpers/Plugins")
-      .appendingPathComponent(info.program)
+      .appendingPathComponent(info.executableName)
     guard fileManager.isExecutableFile(atPath: url.path) else { return nil }
-    return url.path
+    return ResolvedPlugin(path: url.path, arguments: [])
   }
 }
 
 /// 显式「本版本什么都不提供」的实现（测试与不涉插件的场景注入用）：任何插件
 /// 引用都是无效激活候选（点名原因），不是静默失败。
 struct NoManagedPluginProvider: PluginExecutableResolving {
-  func executablePath(forProgram program: String) -> String? { nil }
+  func resolve(program: String) -> ResolvedPlugin? { nil }
 }

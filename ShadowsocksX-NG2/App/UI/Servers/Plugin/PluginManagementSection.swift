@@ -5,7 +5,7 @@ struct PluginManagementSection: View {
   @ObservedObject var model: PluginManagementModel
   @ObservedObject private var catalog: PluginCatalog
   @State private var editor: PluginEditorSession?
-  @State private var removal: PluginCatalogSnapshot.Entry?
+  @State private var removal: PluginManagementRow?
   @State private var failure: String?
 
   init(model: PluginManagementModel) {
@@ -22,7 +22,7 @@ struct PluginManagementSection: View {
           do { try model.retryReading() } catch { failure = PluginManagementCopy.error(error) }
         }
       } else {
-        ForEach(model.snapshot.entries, id: \.program) { entry in
+        ForEach(model.rows) { entry in
           pluginRow(entry)
         }
         HStack {
@@ -44,23 +44,19 @@ struct PluginManagementSection: View {
       PluginEditorSheet(model: model, session: session)
     }
     .confirmationDialog(
-      removalIsOverride ? String(localized: "恢复内置插件？") : String(localized: "删除用户插件？"),
+      String(localized: "删除用户插件？"),
       isPresented: Binding(get: { removal != nil }, set: { if !$0 { removal = nil } }),
       titleVisibility: .visible, presenting: removal
     ) { entry in
-      Button(
-        removalIsOverride ? String(localized: "恢复内置") : String(localized: "删除"),
-        role: .destructive
-      ) {
-        do { try model.remove(entry.program) } catch { failure = PluginManagementCopy.error(error) }
+      Button("删除", role: .destructive) {
+        guard let id = entry.recordID else { return }
+        do { try model.remove(id) } catch { failure = PluginManagementCopy.error(error) }
       }
       Button("取消", role: .cancel) {}
     } message: { entry in
       Text(
-        entry.program + "\n\n"
-          + (removalIsOverride
-            ? String(localized: "服务器配置将保留，后续连接使用同名内置插件。")
-            : String(localized: "服务器配置将保留，使用此名称的服务器可能无法连接。")))
+        entry.names.joined(separator: ", ") + "\n\n"
+          + String(localized: "删除此记录的全部名称。服务器引用保留，同名内置插件恢复；其他名称可能无法连接。"))
     }
     .alert(
       "插件配置操作失败",
@@ -74,38 +70,52 @@ struct PluginManagementSection: View {
     }
   }
 
-  private var removalIsOverride: Bool {
-    removal.map { ManagedPluginCatalog.info(forProgram: $0.program) != nil } ?? false
-  }
-
-  private func pluginRow(_ entry: PluginCatalogSnapshot.Entry) -> some View {
+  private func pluginRow(_ entry: PluginManagementRow) -> some View {
     VStack(alignment: .leading, spacing: 6) {
       HStack(alignment: .top, spacing: 16) {
         VStack(alignment: .leading, spacing: 3) {
-          Text(entry.program).font(.body)
-          Text(PluginManagementCopy.source(entry)).font(.caption).foregroundStyle(.secondary)
+          Text(entry.names.joined(separator: ", ")).font(.body)
+          Text(
+            entry.managedProgram != nil
+              ? String(localized: "内置")
+              : entry.overridesManaged ? String(localized: "用户覆盖") : String(localized: "用户添加")
+          ).font(.caption).foregroundStyle(.secondary)
           if let path = entry.path {
             Text(path).font(.caption).foregroundStyle(.secondary)
               .lineLimit(1).truncationMode(.middle).help(path).textSelection(.enabled)
           }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        if entry.source == .managed {
-          Button("覆盖…") { editor = model.beginOverriding(entry.program) }
-        } else {
-          Button("编辑…") { editor = model.beginEditing(entry.program) }
-          Button(
-            ManagedPluginCatalog.info(forProgram: entry.program) == nil
-              ? String(localized: "删除…") : String(localized: "恢复内置…")
-          ) { removal = entry }
+        if let program = entry.managedProgram {
+          Button("启动参数…") { editor = model.beginManagedArguments(program) }
+          Button("清空参数") {
+            do { try model.clearManagedArguments(program) } catch {
+              failure = PluginManagementCopy.error(error)
+            }
+          }.disabled(model.snapshot.managedArguments[program] == nil)
+          Menu("覆盖名称…") {
+            ForEach(entry.names, id: \.self) { name in
+              Button(name) { editor = model.beginOverriding(name) }
+                .disabled(entry.overriddenNames.contains(name))
+            }
+          }
+        } else if let id = entry.recordID {
+          Button("编辑…") { editor = model.beginEditing(id) }
+          Button("删除…") { removal = entry }
         }
       }
-      if let issue = PluginManagementCopy.availability(entry.availability) {
+      if !entry.overriddenNames.isEmpty {
+        Text(String(localized: "已被用户覆盖：") + entry.overriddenNames.joined(separator: ", "))
+          .font(.caption).foregroundStyle(.secondary)
+      }
+      if let availability = entry.availability,
+        let issue = PluginManagementCopy.availability(availability)
+      {
         Label(issue, systemImage: "exclamationmark.triangle.fill")
           .font(.caption).foregroundStyle(.red)
       }
-      if entry.source == .user && entry.availability == .available {
-        PluginSecurityDetails(facts: catalog.securityFacts[entry.program])
+      if let program = entry.securityProgram, entry.availability == .available {
+        PluginSecurityDetails(facts: catalog.securityFacts[program])
       }
     }
     .padding(.vertical, 4)
