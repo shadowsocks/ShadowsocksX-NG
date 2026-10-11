@@ -97,20 +97,15 @@ struct PluginManagementSection: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         if let program = entry.managedProgram {
           Button {
-            editor = model.beginManagedArguments(program)
+            editor = model.beginManagedSettings(program)
           } label: {
             HStack(spacing: 8) {
-              Text("启动参数")
+              Text("设置")
               Image(systemName: "chevron.right")
                 .font(.caption.weight(.semibold))
             }
           }
           .buttonStyle(.bordered)
-          Button("清空参数") {
-            do { try model.clearManagedArguments(program) } catch {
-              failure = PluginManagementCopy.error(error)
-            }
-          }.disabled(model.snapshot.managedArguments[program] == nil)
           Menu("覆盖名称") {
             ForEach(entry.names, id: \.self) { name in
               Button(name) { editor = model.beginOverriding(name) }

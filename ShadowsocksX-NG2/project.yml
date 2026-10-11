@@ -195,6 +195,7 @@ targets:
       - path: Domain/Runtime/ProxyACL.swift
       - path: Domain/Rules/ProxyRule.swift
       - path: Domain/Runtime/SslocalRuntimeDocument.swift
+      - path: Domain/Plugin/PluginTransportMode.swift
       - path: Domain/Runtime/SslocalListenSettings.swift
       - path: Domain/Runtime/RuntimeLog.swift
       - path: Domain/Runtime/EndpointHealthProbe.swift

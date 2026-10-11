@@ -6,6 +6,23 @@ import XCTest
 
 @MainActor
 struct PluginMappingCommitTests {
+  @Test func savedTransportModeUpdatesActiveRuntime() async throws {
+    let fixture = try PluginMappingCommitFixture()
+    defer { fixture.cleanUp() }
+    try await fixture.controller.activate(fixture.group)
+    var record = try #require(fixture.plugins.userRecords.first { $0.names.contains("tool") })
+    record.mode = .tcpAndUDP
+    try fixture.plugins.commit([.save(record)])
+    _ = await fixture.nextApplication()
+    #expect(
+      fixture.files.loadDocument()?.servers.first { $0.plugin != nil }?.pluginMode == .tcpAndUDP)
+    #expect(fixture.controller.state == .running)
+    record.mode = .tcpOnly
+    try fixture.plugins.commit([.save(record)])
+    _ = await fixture.nextApplication()
+    #expect(fixture.files.loadDocument()?.servers.first { $0.plugin != nil }?.pluginMode == nil)
+  }
+
   @Test func runtimeFailureDoesNotUndoSavedMapping() async throws {
     let fixture = try PluginMappingCommitFixture()
     defer { fixture.cleanUp() }

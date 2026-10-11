@@ -1,10 +1,11 @@
 import Foundation
 
-/// 插件解析 seam：路径与本地启动参数，以及一次派生使用的只读目录快照。
+/// 插件解析 seam：路径、本地启动参数与传输模式，以及一次派生使用的只读目录快照。
 /// nil 表示本地不可用；托管与用户映射共用这一激活语义。
 struct ResolvedPlugin: Equatable, Sendable {
   let path: String
   let arguments: [String]
+  var mode: PluginTransportMode = .tcpOnly
 }
 
 protocol PluginExecutableResolving {
@@ -25,7 +26,7 @@ extension PluginExecutableResolving {
           return PluginCatalogSnapshot.Entry(
             program: program, path: resolved?.path, source: .managed,
             availability: resolved == nil ? .missing : .available, managedInfo: info,
-            arguments: resolved?.arguments ?? [])
+            arguments: resolved?.arguments ?? [], mode: resolved?.mode ?? .tcpOnly)
         }
       })
   }

@@ -23,6 +23,7 @@ struct PluginCatalogSnapshot: PluginExecutableResolving, Equatable, Sendable {
     let availability: Availability
     let managedInfo: ManagedPluginInfo?
     var arguments: [String] = []
+    var mode: PluginTransportMode = .tcpOnly
     var recordID: UUID?
   }
 
@@ -60,6 +61,7 @@ struct PluginCatalogSnapshot: PluginExecutableResolving, Equatable, Sendable {
         managedInfo: source == .managed ? info : nil,
         arguments: user?.arguments ?? info.flatMap { configuration.managedArguments[$0.program] }
           ?? [],
+        mode: user?.mode ?? info.flatMap { configuration.managedModes[$0.program] } ?? .tcpOnly,
         recordID: user?.id)
     }
     self.managedRecords = Dictionary(
@@ -72,7 +74,8 @@ struct PluginCatalogSnapshot: PluginExecutableResolving, Equatable, Sendable {
             program: info.program, path: path, source: .managed,
             availability: mappingsUnreadable
               ? .unreadable : Self.availability(at: path, fileManager: managed.fileManager),
-            managedInfo: info, arguments: configuration.managedArguments[info.program] ?? [])
+            managedInfo: info, arguments: configuration.managedArguments[info.program] ?? [],
+            mode: configuration.managedModes[info.program] ?? .tcpOnly)
         )
       })
     self.managedArguments = configuration.managedArguments
@@ -124,7 +127,7 @@ struct PluginCatalogSnapshot: PluginExecutableResolving, Equatable, Sendable {
     guard !mappingsUnreadable, let entry = entry(for: program),
       entry.availability == .available, let path = entry.path
     else { return nil }
-    return ResolvedPlugin(path: path, arguments: entry.arguments)
+    return ResolvedPlugin(path: path, arguments: entry.arguments, mode: entry.mode)
   }
 
   func catalogSnapshot() -> PluginCatalogSnapshot { self }

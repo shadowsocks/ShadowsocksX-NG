@@ -8,6 +8,7 @@ final class PluginCatalog: ObservableObject, PluginExecutableResolving {
     case save(UserPluginRecord)
     case remove(UUID)
     case managedArguments(program: String, arguments: [String])
+    case managedMode(program: String, mode: PluginTransportMode)
   }
 
   private struct State {
@@ -88,6 +89,15 @@ final class PluginCatalog: ObservableObject, PluginExecutableResolving {
           throw PluginMappingError.nameMissing
         }
         proposed.userPlugins.remove(at: index)
+      case .managedMode(let program, let mode):
+        guard ManagedPluginCatalog.plugins.contains(where: { $0.program == program }) else {
+          throw PluginMappingError.nameMissing
+        }
+        if mode == .tcpOnly {
+          proposed.managedModes.removeValue(forKey: program)
+        } else {
+          proposed.managedModes[program] = mode
+        }
       case .managedArguments(let program, let arguments):
         guard ManagedPluginCatalog.plugins.contains(where: { $0.program == program }) else {
           throw PluginMappingError.nameMissing

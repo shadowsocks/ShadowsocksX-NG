@@ -4,6 +4,66 @@ import Testing
 @testable import ShadowsocksX_NG2
 
 struct PluginRecordTests {
+  @Test(arguments: [
+    #"{"userPlugins":[{"id":"00000000-0000-0000-0000-000000000001","names":["tool"],"path":"/missing/tool","arguments":[],"plugin_mode":"udp_only"}],"managedArguments":{}}"#,
+    #"{"userPlugins":[],"managedArguments":{},"managedModes":{"v2ray-plugin":"udp_only"}}"#,
+  ])
+  func unknownTransportModeBlocksReadingWithoutRewriting(configurationJSON: String) throws {
+    let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+    defer { try? FileManager.default.removeItem(at: root) }
+    try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+    let store = PluginMappingFileStore(fileURL: root.appendingPathComponent("plugins.json"))
+    let original = Data(
+      "{\"version\":2,\"configuration\":\(configurationJSON)}".utf8)
+    try original.write(to: store.fileURL)
+    #expect(throws: PluginMappingError.unreadable) { try store.load() }
+    #expect(try Data(contentsOf: store.fileURL) == original)
+  }
+
+  @Test func oldV2RecordsDefaultToTCPWithoutRewriting() throws {
+    let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+    defer { try? FileManager.default.removeItem(at: root) }
+    try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+    let store = PluginMappingFileStore(fileURL: root.appendingPathComponent("plugins.json"))
+    let original = Data(
+      #"{"version":2,"configuration":{"userPlugins":[{"id":"00000000-0000-0000-0000-000000000001","names":["tool"],"path":"/missing/tool","arguments":[]}],"managedArguments":{}}}"#
+        .utf8)
+    try original.write(to: store.fileURL)
+    let configuration = try store.load()
+    #expect(configuration.userPlugins.first?.mode == .tcpOnly)
+    #expect(
+      PluginCatalogSnapshot(configuration: configuration).managedRecords["v2ray-plugin"]?.mode
+        == .tcpOnly)
+    #expect(try Data(contentsOf: store.fileURL) == original)
+    try store.save(configuration)
+    #expect(try store.load() == configuration)
+  }
+
+  @Test @MainActor func managedModePersistsAcrossAliasesAndArgumentClearing() throws {
+    let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+    defer { try? FileManager.default.removeItem(at: root) }
+    let binary = root.appendingPathComponent("Contents/Helpers/Plugins/v2ray-plugin")
+    try FileManager.default.createDirectory(
+      at: binary.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try Data("#!/bin/sh\n".utf8).write(to: binary)
+    try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: binary.path)
+    let store = PluginMappingFileStore(fileURL: root.appendingPathComponent("plugins.json"))
+    try Data(
+      #"{"version":2,"configuration":{"userPlugins":[],"managedArguments":{"v2ray-plugin":["--verbose"]},"managedModes":{"v2ray-plugin":"tcp_and_udp"}}}"#
+        .utf8
+    ).write(to: store.fileURL)
+    let managed = BundleManagedPluginProvider(bundleURL: root)
+    let catalog = PluginCatalog(store: store, managed: managed, inspector: QuietPluginInspector())
+    #expect(catalog.resolve(program: "v2ray-plugin-v1")?.mode == .tcpAndUDP)
+    try catalog.commit([.managedArguments(program: "v2ray-plugin", arguments: [])])
+    let restored = PluginCatalog(store: store, managed: managed, inspector: QuietPluginInspector())
+    #expect(restored.resolve(program: "v2ray-plugin")?.mode == .tcpAndUDP)
+    #expect(restored.resolve(program: "v2ray-plugin")?.arguments == [])
+    try restored.commit([.save(UserPluginRecord(names: ["v2ray-plugin"], path: binary.path))])
+    #expect(restored.resolve(program: "v2ray-plugin")?.mode == .tcpOnly)
+    #expect(restored.resolve(program: "v2ray-plugin-v1")?.mode == .tcpAndUDP)
+  }
+
   @Test @MainActor func sharingKeepsReferenceAndOptionsWithoutLocalArguments() async throws {
     let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     defer { try? FileManager.default.removeItem(at: root) }
@@ -18,7 +78,7 @@ struct PluginRecordTests {
       .save(
         UserPluginRecord(
           names: ["tool", "tool-v2"], path: binary.path,
-          arguments: ["--local-argument-sentinel"]))
+          arguments: ["--local-argument-sentinel"], mode: .tcpAndUDP))
     ])
     let workflow = makeCatalogWorkflow(
       coordinator: CatalogCommitCoordinator(
@@ -36,9 +96,11 @@ struct PluginRecordTests {
     #expect(server["plugin"] as? String == "tool-v2")
     #expect(server["plugin_opts"] as? String == "tls;host=example.com")
     #expect(server["plugin_args"] == nil)
+    #expect(server["plugin_mode"] == nil)
     let uri = try workflow.shareURI(for: id)
     #expect(uri.contains("tool-v2"))
     #expect(!uri.contains("local-argument-sentinel"))
+    #expect(!uri.contains("tcp_and_udp"))
     #expect(!String(decoding: draft.data, as: UTF8.self).contains(binary.path))
   }
 
@@ -111,7 +173,9 @@ struct PluginRecordTests {
     #expect(Set(configuration.userPlugins.map(\.id)).count == 2)
     #expect(configuration.userPlugins.map(\.names) == [["tool"], ["tool-v2"]])
     #expect(
-      configuration.userPlugins.allSatisfy { $0.arguments.isEmpty && $0.path == "/missing/tool" })
+      configuration.userPlugins.allSatisfy {
+        $0.arguments.isEmpty && $0.path == "/missing/tool" && $0.mode == .tcpOnly
+      })
     #expect(try Data(contentsOf: store.fileURL) == original)
     try store.save(configuration)
     #expect(try store.load() == configuration)
@@ -120,7 +184,10 @@ struct PluginRecordTests {
     #expect(json["version"] as? Int == 2)
   }
 
-  @Test @MainActor func activationWritesLocalArgumentsWithoutChangingServerOptions() throws {
+  @Test(arguments: [PluginTransportMode.tcpOnly, .tcpAndUDP])
+  @MainActor func activationWritesLocalArgumentsWithoutChangingServerOptions(
+    mode: PluginTransportMode
+  ) throws {
     let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     defer { try? FileManager.default.removeItem(at: root) }
     try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
@@ -134,7 +201,7 @@ struct PluginRecordTests {
       .save(
         UserPluginRecord(
           names: ["tool", "tool-v2"], path: binary.path,
-          arguments: ["--threads", "4", "--log-file", "/tmp/My Log.txt", ""]))
+          arguments: ["--threads", "4", "--log-file", "/tmp/My Log.txt", ""], mode: mode))
     ])
     let credentials = InMemoryCredentialStore()
     var catalog = ConfigurationCatalog()
@@ -154,6 +221,7 @@ struct PluginRecordTests {
     let server = try #require((json["servers"] as? [[String: Any]])?.first)
     #expect(
       server["plugin_args"] as? [String] == ["--threads", "4", "--log-file", "/tmp/My Log.txt", ""])
+    #expect(server["plugin_mode"] as? String == (mode == .tcpAndUDP ? "tcp_and_udp" : nil))
     #expect(server["plugin"] as? String == binary.path)
     #expect(server["plugin_opts"] as? String == "tls;host=example.com")
     #expect(try ActivationFixture.serverFields(of: leaf, in: catalog).pluginProgram == "tool-v2")

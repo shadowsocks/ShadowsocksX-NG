@@ -5,12 +5,60 @@ struct UserPluginRecord: Codable, Equatable, Identifiable, Sendable {
   var names: [String]
   var path: String
   var arguments: [String] = []
+  var mode: PluginTransportMode = .tcpOnly
+
+  enum CodingKeys: String, CodingKey {
+    case id, names, path, arguments
+    case mode = "plugin_mode"
+  }
+
+  init(
+    id: UUID = UUID(), names: [String], path: String, arguments: [String] = [],
+    mode: PluginTransportMode = .tcpOnly
+  ) {
+    self.id = id
+    self.names = names
+    self.path = path
+    self.arguments = arguments
+    self.mode = mode
+  }
+
+  init(from decoder: any Decoder) throws {
+    let values = try decoder.container(keyedBy: CodingKeys.self)
+    id = try values.decode(UUID.self, forKey: .id)
+    names = try values.decode([String].self, forKey: .names)
+    path = try values.decode(String.self, forKey: .path)
+    arguments = try values.decode([String].self, forKey: .arguments)
+    mode =
+      values.contains(.mode) ? try values.decode(PluginTransportMode.self, forKey: .mode) : .tcpOnly
+  }
 }
 
 struct PluginConfiguration: Codable, Equatable, Sendable {
   var userPlugins: [UserPluginRecord] = []
   /// Keys are fixed managed-record identities, independent of their aliases.
   var managedArguments: [String: [String]] = [:]
+  var managedModes: [String: PluginTransportMode] = [:]
+
+  enum CodingKeys: String, CodingKey { case userPlugins, managedArguments, managedModes }
+
+  init(
+    userPlugins: [UserPluginRecord] = [], managedArguments: [String: [String]] = [:],
+    managedModes: [String: PluginTransportMode] = [:]
+  ) {
+    self.userPlugins = userPlugins
+    self.managedArguments = managedArguments
+    self.managedModes = managedModes
+  }
+
+  init(from decoder: any Decoder) throws {
+    let values = try decoder.container(keyedBy: CodingKeys.self)
+    userPlugins = try values.decode([UserPluginRecord].self, forKey: .userPlugins)
+    managedArguments = try values.decode([String: [String]].self, forKey: .managedArguments)
+    managedModes =
+      values.contains(.managedModes)
+      ? try values.decode([String: PluginTransportMode].self, forKey: .managedModes) : [:]
+  }
 
   func validate() throws {
     var names = Set<String>()
@@ -29,6 +77,11 @@ struct PluginConfiguration: Codable, Equatable, Sendable {
         throw PluginMappingError.invalidPath
       }
       try Self.validateArguments(record.arguments)
+    }
+    for program in managedModes.keys {
+      guard ManagedPluginCatalog.plugins.contains(where: { $0.program == program }) else {
+        throw PluginMappingError.nameMissing
+      }
     }
     for (program, arguments) in managedArguments {
       guard ManagedPluginCatalog.plugins.contains(where: { $0.program == program }) else {

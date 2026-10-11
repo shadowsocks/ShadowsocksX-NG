@@ -5,6 +5,35 @@ import Testing
 
 @MainActor
 struct PluginManagementTests {
+  @Test func editingTransportModePersistsForUserAndManagedRecords() throws {
+    let fixture = try ManagementFixture()
+    defer { fixture.cleanUp() }
+    let model = PluginManagementModel(catalog: fixture.catalog)
+    let add = model.beginAdding()
+    #expect(add.initialMode == .tcpOnly)
+    try model.save(
+      add, names: ["custom", "custom-v2"], path: fixture.first.path,
+      arguments: ["--verbose"], mode: .tcpAndUDP)
+    let edit = try #require(model.testBeginEditing("custom"))
+    #expect(edit.initialMode == .tcpAndUDP)
+    try model.save(
+      edit, names: edit.initialNames, path: edit.initialPath,
+      arguments: [], mode: edit.initialMode)
+    #expect(model.snapshot.resolve(program: "custom-v2")?.mode == .tcpAndUDP)
+    #expect(model.snapshot.resolve(program: "custom-v2")?.arguments == [])
+    let managed = try #require(model.beginManagedSettings("v2ray-plugin"))
+    #expect(managed.initialMode == .tcpOnly)
+    try model.save(
+      managed, names: managed.initialNames, path: "",
+      arguments: ["--verbose"], mode: .tcpAndUDP)
+    let restored = PluginManagementModel(
+      catalog: PluginCatalog(store: fixture.store, inspector: ManagementInspector()))
+    #expect(restored.beginManagedSettings("v2ray-plugin")?.initialMode == .tcpAndUDP)
+    #expect(restored.testBeginEditing("custom")?.initialMode == .tcpAndUDP)
+    try restored.save(managed, names: managed.initialNames, path: "", mode: .tcpOnly)
+    #expect(restored.beginManagedSettings("v2ray-plugin")?.initialMode == .tcpOnly)
+  }
+
   @Test func fullyOverriddenManagedRecordKeepsItsOwnFileFacts() throws {
     let fixture = try ManagementFixture()
     defer { fixture.cleanUp() }
@@ -18,12 +47,12 @@ struct PluginManagementTests {
     #expect(covered.availability == original.availability)
     #expect(covered.overriddenNames == ["v2ray-plugin", "v2ray-plugin-v1"])
     #expect(covered.path != fixture.first.path)
-    let edit = try #require(model.beginManagedArguments("v2ray-plugin"))
+    let edit = try #require(model.beginManagedSettings("v2ray-plugin"))
     try model.save(edit, names: edit.initialNames, path: "", arguments: ["--threads", "8"])
-    #expect(model.beginManagedArguments("v2ray-plugin")?.initialArguments == ["--threads", "8"])
+    #expect(model.beginManagedSettings("v2ray-plugin")?.initialArguments == ["--threads", "8"])
     #expect(model.snapshot.resolve(program: "v2ray-plugin")?.arguments == ["--verbose"])
     try model.clearManagedArguments("v2ray-plugin")
-    #expect(model.beginManagedArguments("v2ray-plugin")?.initialArguments == [])
+    #expect(model.beginManagedSettings("v2ray-plugin")?.initialArguments == [])
   }
 
   @Test func editingChangesNamesAndUpdatesExecutable() throws {
@@ -95,14 +124,16 @@ struct PluginManagementTests {
     try FileManager.default.moveItem(at: config, to: backup)
     try Data("blocking file".utf8).write(to: config)
     #expect(throws: (any Error).self) {
-      try model.save(edit, names: ["custom"], path: fixture.second.path)
+      try model.save(edit, names: ["custom"], path: fixture.second.path, mode: .tcpAndUDP)
     }
     #expect(model.snapshot.entry(for: "custom")?.path == fixture.first.path)
     #expect(model.testBeginEditing("custom")?.initialPath == fixture.first.path)
+    #expect(model.testBeginEditing("custom")?.initialMode == .tcpOnly)
     try FileManager.default.removeItem(at: config)
     try FileManager.default.moveItem(at: backup, to: config)
-    try model.save(edit, names: ["custom"], path: fixture.second.path)
+    try model.save(edit, names: ["custom"], path: fixture.second.path, mode: .tcpAndUDP)
     #expect(model.snapshot.entry(for: "custom")?.path == fixture.second.path)
+    #expect(model.testBeginEditing("custom")?.initialMode == .tcpAndUDP)
   }
 
   @Test func unavailableFilesAndDuplicateNamesAreRejectedAndRemovalKeepsOtherMappings() throws {

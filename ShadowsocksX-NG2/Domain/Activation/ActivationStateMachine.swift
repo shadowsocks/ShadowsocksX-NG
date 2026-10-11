@@ -206,10 +206,12 @@ struct ActivationStateMachine: Equatable, Sendable {
     var pluginPath: String?
     var pluginOpts: String?
     var pluginArgs: [String]?
+    var pluginMode: PluginTransportMode?
     if let program = fields.pluginProgram {
       guard let resolved = plugins.resolve(program: program) else {
         return .failure(.invalidLeaf(node: leafID, reason: .pluginNotProvided(program: program)))
       }
+      pluginMode = resolved.mode == .tcpOnly ? nil : resolved.mode
       pluginPath = resolved.path
       pluginArgs = resolved.arguments.isEmpty ? nil : resolved.arguments
       if let optionsRef = fields.pluginOptionsRef {
@@ -229,7 +231,7 @@ struct ActivationStateMachine: Equatable, Sendable {
         password: password,
         method: fields.encryptionMethod.trimmingCharacters(in: .whitespacesAndNewlines),
         plugin: pluginPath,
-        pluginOpts: pluginOpts, pluginArgs: pluginArgs))
+        pluginOpts: pluginOpts, pluginArgs: pluginArgs, pluginMode: pluginMode))
   }
 
   /// 凭据解析：无条目与读取失败分别点名（D5「凭据不可解析 → 停止并清理」）。

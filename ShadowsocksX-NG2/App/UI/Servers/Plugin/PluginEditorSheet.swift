@@ -13,6 +13,7 @@ struct PluginEditorSheet: View {
   /// Each presentation seeds fresh drafts; row identities survive edits and moves.
   @State private var names: [PluginTextDraft]
   @State private var arguments: [PluginTextDraft]
+  @State private var mode: PluginTransportMode
   @State private var path: String
   @State private var failure: String?
   @State private var showFilePicker = false
@@ -23,6 +24,7 @@ struct PluginEditorSheet: View {
     _names = State(initialValue: session.initialNames.map { PluginTextDraft(value: $0) })
     _arguments = State(initialValue: session.initialArguments.map { PluginTextDraft(value: $0) })
     _path = State(initialValue: session.initialPath)
+    _mode = State(initialValue: session.initialMode)
   }
 
   private var nameValues: [String] { names.map(\.value) }
@@ -60,8 +62,20 @@ struct PluginEditorSheet: View {
                 .font(.caption).foregroundStyle(.secondary)
             }
           }
+          Picker("插件传输模式", selection: $mode) {
+            ForEach(PluginTransportMode.allCases, id: \.self) { mode in
+              Text(verbatim: mode.rawValue).tag(mode)
+            }
+          }
+          .pickerStyle(.menu)
           VStack(alignment: .leading, spacing: 8) {
-            Text("本地启动参数")
+            HStack {
+              Text("本地启动参数")
+              Spacer()
+              if isManaged {
+                Button("清空参数") { arguments.removeAll() }.disabled(arguments.isEmpty)
+              }
+            }
             PluginValueList(values: $arguments, placeholder: "参数", allowsReordering: true)
             Text("每项作为一个完整参数传递，无需 shell 引号。仅在本机生效。")
               .font(.caption).foregroundStyle(.secondary)
@@ -78,7 +92,7 @@ struct PluginEditorSheet: View {
         Button("保存") {
           do {
             try model.save(
-              session, names: nameValues, path: path, arguments: arguments.map(\.value))
+              session, names: nameValues, path: path, arguments: arguments.map(\.value), mode: mode)
             dismiss()
           } catch { failure = PluginManagementCopy.error(error) }
         }
@@ -102,7 +116,7 @@ struct PluginEditorSheet: View {
   }
 
   private var title: String {
-    if isManaged { return String(localized: "内置插件启动参数") }
+    if isManaged { return String(localized: "内置插件设置") }
     return session.isEditing ? String(localized: "编辑插件") : String(localized: "新增插件")
   }
 

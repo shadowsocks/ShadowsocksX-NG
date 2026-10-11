@@ -9,6 +9,7 @@ struct PluginEditorSession: Identifiable {
   let initialNames: [String]
   let initialPath: String
   let initialArguments: [String]
+  var initialMode: PluginTransportMode = .tcpOnly
 }
 
 struct PluginManagementRow: Identifiable {
@@ -74,7 +75,8 @@ final class PluginManagementModel: ObservableObject {
     else { return nil }
     return PluginEditorSession(
       recordID: id, managedProgram: nil, isEditing: true,
-      initialNames: record.names, initialPath: record.path, initialArguments: record.arguments)
+      initialNames: record.names, initialPath: record.path, initialArguments: record.arguments,
+      initialMode: record.mode)
   }
 
   func beginOverriding(_ program: String) -> PluginEditorSession? {
@@ -86,14 +88,15 @@ final class PluginManagementModel: ObservableObject {
       initialNames: [program], initialPath: "", initialArguments: [])
   }
 
-  func beginManagedArguments(_ program: String) -> PluginEditorSession? {
+  func beginManagedSettings(_ program: String) -> PluginEditorSession? {
     guard !snapshot.mappingsUnreadable,
       let info = ManagedPluginCatalog.plugins.first(where: { $0.program == program })
     else { return nil }
     return PluginEditorSession(
       recordID: nil, managedProgram: program, isEditing: true,
       initialNames: info.names, initialPath: "",
-      initialArguments: snapshot.managedArguments[program] ?? [])
+      initialArguments: snapshot.managedArguments[program] ?? [],
+      initialMode: snapshot.managedRecords[program]?.mode ?? .tcpOnly)
   }
 
   func namesIssue(_ names: [String], session: PluginEditorSession) -> PluginMappingError? {
@@ -110,11 +113,17 @@ final class PluginManagementModel: ObservableObject {
     path.hasPrefix("/") && !path.contains("\0") ? nil : .invalidPath
   }
 
-  func save(_ session: PluginEditorSession, names: [String], path: String, arguments: [String] = [])
+  func save(
+    _ session: PluginEditorSession, names: [String], path: String, arguments: [String] = [],
+    mode: PluginTransportMode = .tcpOnly
+  )
     throws
   {
     if let program = session.managedProgram {
-      try catalog.commit([.managedArguments(program: program, arguments: arguments)])
+      try catalog.commit([
+        .managedArguments(program: program, arguments: arguments),
+        .managedMode(program: program, mode: mode),
+      ])
     } else {
       if let issue = namesIssue(names, session: session) { throw issue }
       if let issue = pathIssue(path) { throw issue }
@@ -122,7 +131,7 @@ final class PluginManagementModel: ObservableObject {
         !session.isEditing || catalog.userRecords.contains(where: { $0.id == id })
       else { throw PluginMappingError.nameMissing }
       try catalog.commit([
-        .save(UserPluginRecord(id: id, names: names, path: path, arguments: arguments))
+        .save(UserPluginRecord(id: id, names: names, path: path, arguments: arguments, mode: mode))
       ])
     }
     refresh()
