@@ -4,6 +4,10 @@ macOS Shadowsocks 客户端。旧版实现已从本仓库移除,归档在 [shado
 
 ## Agent skills
 
+### Git commits
+
+Git 提交消息使用英文 Conventional Commits 格式。
+
 ### Issue tracker
 
 Issue 跟踪在本仓库的 GitHub Issues,统一用 `gh` CLI 操作,并在每条命令上显式指定本仓库。见 `docs/agents/issue-tracker.md`。
