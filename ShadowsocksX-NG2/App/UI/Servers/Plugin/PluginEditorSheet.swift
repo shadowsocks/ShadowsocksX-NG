@@ -125,6 +125,7 @@ private struct PluginValueList: View {
               move(item.id, by: -1)
             } label: {
               Image(systemName: "arrow.up")
+                .frame(width: 16, height: 16)
             }
             .help("上移").accessibilityLabel("上移")
             .disabled(values.first?.id == item.id)
@@ -132,6 +133,7 @@ private struct PluginValueList: View {
               move(item.id, by: 1)
             } label: {
               Image(systemName: "arrow.down")
+                .frame(width: 16, height: 16)
             }
             .help("下移").accessibilityLabel("下移")
             .disabled(values.last?.id == item.id)
@@ -140,6 +142,7 @@ private struct PluginValueList: View {
             values.removeAll { $0.id == item.id }
           } label: {
             Image(systemName: "minus")
+              .frame(width: 16, height: 16)
           }
           .help("删除此项").accessibilityLabel("删除此项")
         }
