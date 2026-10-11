@@ -114,6 +114,7 @@ struct PluginManagementSection: View {
 
 private struct PluginSecurityDetails: View {
   let facts: PluginSecurityFacts?
+  @State private var isExpanded = false
 
   var body: some View {
     if let facts {
@@ -121,7 +122,7 @@ private struct PluginSecurityDetails: View {
         Label(warning, systemImage: "exclamationmark.triangle")
           .font(.caption).foregroundStyle(.orange)
       }
-      DisclosureGroup("安全检查详情") {
+      DisclosureGroup(isExpanded: $isExpanded) {
         VStack(alignment: .leading, spacing: 3) {
           Text(PluginManagementCopy.quarantine(facts.quarantine))
           Text(PluginManagementCopy.signature(facts.signature))
@@ -130,6 +131,12 @@ private struct PluginSecurityDetails: View {
             .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+      } label: {
+        // macOS 上 DisclosureGroup 默认仅三角图标可点，整行铺开让文字也响应点击。
+        Text("安全检查详情")
+          .frame(maxWidth: .infinity, alignment: .leading)
+          .contentShape(Rectangle())
+          .onTapGesture { withAnimation { isExpanded.toggle() } }
       }
       .font(.caption)
     } else {
