@@ -1,6 +1,6 @@
 import XCTest
 
-/// Vendor 外部二进制清单的固定 schema 与锚点值（spec #21 D6，#24）。
+/// Vendor 外部二进制清单的固定 schema 与锚点值。
 /// 供应链脚本（fetch/sign/gate）与这里共同守护同一份事实：
 /// tag + 资产 URL + 归档 SHA-256 一经固定，改动必须显式重做静态清单。
 final class ExternalBinaryManifestTests: XCTestCase {
@@ -10,7 +10,8 @@ final class ExternalBinaryManifestTests: XCTestCase {
     var asset: String
     var url: String
     var archiveSHA256: String
-    var archiveMember: String
+    var archiveMember: String?
+    var assetFormat: String?
     var binary: String
     var bundleSubpath: String
     var signIdentifier: String
@@ -38,7 +39,11 @@ final class ExternalBinaryManifestTests: XCTestCase {
       manifest.archiveSHA256.range(of: "^[0-9a-f]{64}$", options: .regularExpression) != nil,
       "\(name): archiveSHA256 必须是 64 位小写十六进制")
 
-    XCTAssertFalse(manifest.archiveMember.isEmpty, "\(name): archiveMember 必须显式")
+    let format = manifest.assetFormat ?? "tar"
+    XCTAssertTrue(["tar", "binary"].contains(format))
+    if format == "tar" {
+      XCTAssertFalse(try XCTUnwrap(manifest.archiveMember).isEmpty)
+    }
     XCTAssertEqual(manifest.binary, name, "\(name): bundle 内二进制名与清单目录一致")
 
     XCTAssertFalse(
@@ -78,4 +83,18 @@ final class ExternalBinaryManifestTests: XCTestCase {
     // SIP003 插件的签名 identifier 形如 <bundle-id>.plugin.<name>（D10）。
     XCTAssertEqual(manifest.signIdentifier, Self.bundleID + ".plugin.v2ray-plugin")
   }
+  func testCloakClientManifestPinned() throws {
+    let manifest = try manifest("ck-client")
+    try assertPinnedSchema(manifest, name: "ck-client")
+    XCTAssertEqual(manifest.project, "Cloak")
+    XCTAssertEqual(manifest.release, "v2.12.0")
+    XCTAssertEqual(manifest.assetFormat, "binary")
+    XCTAssertNil(manifest.archiveMember)
+    XCTAssertEqual(
+      manifest.archiveSHA256,
+      "dbef5cd5dd1b551a046c422e07854eb4736fc958e684c6532eb7e809b593ad5c")
+    XCTAssertEqual(manifest.bundleSubpath, "Helpers/Plugins")
+    XCTAssertEqual(manifest.signIdentifier, Self.bundleID + ".plugin.ck-client")
+  }
+
 }

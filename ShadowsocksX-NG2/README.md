@@ -40,7 +40,7 @@ ShadowsocksX-NG 的现代化重写版本。新工程的全部源码与构建配�
   - `Fixtures/RuleSnapshots/` — 生成的内置规则快照夹具，作为 folder resource 随测试 bundle 发布（`GeneratedRuleSnapshotTests` 按 `subdirectory:` 读）。
 
   断言需要读源码树（`Vendor/` 清单、`App/`、`Domain/`）时一律经 `Support/TestSourceTree.swift` 从 `#filePath` 沿父目录上溯定位 `ShadowsocksX-NG2/`，不写死父目录层数——测试文件处于不同深度，写死层数会在文件移动后静默指错。布局守卫 `TestsLayoutTests` 只断言根层无平铺 `.swift`（比 `Domain/` 那条弱一档：根层的 `Info.plist` 与 `Fixtures/` 下的 JSON 都必须在）。`Tests/Support/AppArtifact.swift` 同时编入 Smoke target，是 `project.yml` 里的显式文件路径，移动需同步。
-- `Vendor/<name>/manifest.json` — 外部二进制的固定供应链清单（tag + 资产 URL + 归档 SHA-256 + bundle 内位置 + 签名 identifier）；二进制本体与 `.fetched.sha256` 戳是构建缓存，不入库。
+- `Vendor/<name>/manifest.json` — 外部二进制的固定供应链清单（tag + 资产 URL + 资产 SHA-256 + bundle 内位置 + 签名 identifier）；二进制本体与 `.fetched.sha256` 戳是构建缓存，不入库。
 - `Vendor/rules/geolocation-cn/` — 内置中国域名规则快照（issue #63）：`snapshot.json`（规范化规则 + 元数据 + 损失报告）、`manifest.json`（上游版本与快照 SHA-256）、`NOTICE`（许可证与归属）。普通构建只读本地快照，绝不抓取或转换。
 - `Vendor/rules/china-ipv4/` — 内置中国 IPv4 CIDR 直连候选快照（issue #64）：同上三件套，来源为 [gaoyifan/china-operator-ip](https://github.com/gaoyifan/china-operator-ip) `china.txt` 固定 commit。规则模式的 `proxy_all` ACL 同时编入中国域名与 IPv4 CIDR 直连候选。
 - `Vendor/rules/gfwlist/` — 内置 GFWList 代理候选快照（issue #65）：同上三件套，来源为 [gfwlist/gfwlist](https://github.com/gfwlist/gfwlist) 官方 Base64 AutoProxy `gfwlist.txt` 固定 commit。域名锚点转换为后缀匹配，满足条件的空路径或根路径 URL 前缀转换为精确域名匹配；「未匹配时直连」的 `bypass_all` ACL 编入这些代理候选。
@@ -48,10 +48,10 @@ ShadowsocksX-NG 的现代化重写版本。新工程的全部源码与构建配�
 
 ## 外部二进制供应链
 
-外部二进制只用上游官方构建产物：`sslocal`（shadowsocks-rust v1.25.0，装于 `Contents/Helpers/`）与 `v2ray-plugin`（v1.3.2，装于 `Contents/Helpers/Plugins/`）。信任根是提交在库里的清单哈希；构建链如下（spec #21 D6/D10）：
+外部二进制只用上游官方构建产物：`sslocal`（shadowsocks-rust v1.25.0，装于 `Contents/Helpers/`）、`v2ray-plugin`（v1.3.2）与 Cloak `ck-client`（v2.12.0，两个插件均装于 `Contents/Helpers/Plugins/`）。信任根是提交在库里的清单哈希；构建链如下（spec #21 D6/D10）：
 
-1. **fetch** — `Scripts/fetch-external-binaries.sh` 下载清单固定 URL 的归档、逐字节校验归档 SHA-256、只提取清单指名的成员并确认 arm64，落盘 `Vendor/<name>/` 并记录戳。归档哈希不符 → 立即失败；本地缓存漂移或清单变更 → 自动重新下载复验。
-2. **generate** — `xcodegen generate` 把两个二进制作为 Copy Files 项装入 `Contents/Helpers[/Plugins]`。注意顺序：**先 fetch 再 generate**，文件在生成时必须已存在，否则 Copy Files 阶段会被静默丢弃（generate 也会直接报缺文件）。
+1. **fetch** — `Scripts/fetch-external-binaries.sh` 下载清单固定 URL 的资产、逐字节校验 `archiveSHA256`，按 `assetFormat` 处理 tar 归档（默认，提取 `archiveMember`）或直接二进制（`binary`），并确认 arm64，落盘 `Vendor/<name>/` 并记录戳。资产哈希不符 → 立即失败；本地缓存漂移或清单变更 → 自动重新下载复验。
+2. **generate** — `xcodegen generate` 把清单对应二进制作为 Copy Files 项装入 `Contents/Helpers[/Plugins]`。注意顺序：**先 fetch 再 generate**，文件在生成时必须已存在，否则 Copy Files 阶段会被静默丢弃（generate 也会直接报缺文件）。
 3. **verify on every build** — 预构建脚本阶段重跑 fetch 脚本（缓存命中时只对本地戳快速复验），哈希或清单漂移使构建即失败。
 4. **sign** — `Scripts/sign-embedded-helpers.sh`（post-build 阶段）对每个二进制 Developer ID 重签：`--options runtime --timestamp --identifier <清单 signIdentifier>`（插件形如 `<bundle-id>.plugin.<name>`）；随后 Xcode 完成 app 外层签名，封存重签后的嵌套代码。
 5. **gate** — 构建产物必须过 `Scripts/packaging-gate.sh <App.app>`：嵌套代码签名严格校验、主应用 DevID + Hardened Runtime 且无 App Sandbox entitlement、逐二进制清单覆盖（Helpers 下每个 Mach-O 都在清单内且 DevID 重签通过）。篡改任一二进制会因签名失效被断言发现。
@@ -158,3 +158,13 @@ Python 是唯一的上游转换实现；Swift 只加载、校验并消费快照�
 设置页底部的“插件”区域统一展示内置与用户插件，按记录展示全部名称，支持新增、编辑名称集合与路径、逐名称覆盖内置、删除记录与恢复同名内置。用户与内置记录可以设置插件传输模式 `tcp_only` 或 `tcp_and_udp`；默认 `tcp_only`，生成 sslocal 配置时省略 `plugin_mode`。应用不探测插件的 SIP003u 支持。内置编辑器中的“清空参数”只清空草稿启动参数并保留模式，保存后生效。名称与启动参数使用列表编辑，启动参数保留顺序和完整字符串；路径支持手动输入与文件选择。读取失败时隐藏条目并提供只读重试，管理 UI 不提供整体重置。映射提交与显式修复 interface 在组合根统一接入表单、激活与诊断。保存成功后刷新激活候选并异步收敛，运行失败不撤销保存。没有文件替换监控。`plugins.json` v1 每项独立迁移为带持久身份的用户记录，下一次保存写入 v2，不按相同路径合并。现有内置程序同时提供 `v2ray-plugin` 和 `v2ray-plugin-v1`。详见 [ADR-0033](../docs/adr/0033-plugin-records-own-aliases-and-local-arguments.md)。
 
 `MacOSPluginInspection` 只读取下载隔离、签名与系统评估事实，不启动用户插件、不修改系统策略。检查失败或不适用为未知；策略评估拒绝不等于实际执行禁令，也不阻止映射保存或激活。真实 macOS 拦截提示不由 hostless 替身测试证明。
+
+## Cloak 托管插件
+
+随应用提供官方 [Cloak v2.12.0](https://github.com/cbeuw/Cloak/releases/tag/v2.12.0) 的 darwin-arm64 `ck-client`，服务器引用名称为 `cloak` 或 `cloak-v2`，两者共享一条内置记录。`ck-client` 是打包文件名，不是可引用名称。同名用户插件仍优先；失效覆盖不会自动回退到内置程序。
+
+服务器插件选项原样传给上游，不进行 Cloak 字段语义校验。可以使用分号分隔的 `Key=value` 参数，或使用外部 JSON 配置文件的绝对路径。外部文件由用户维护，应用不复制文件、不管理文件凭据或生命周期；分享路径不包含文件内容，接收方需要自行提供对应文件。本地启动参数仍独立保存，不随服务器资料分享。
+
+[固定版本配置解析](https://github.com/cbeuw/Cloak/blob/v2.12.0/internal/client/state.go)存在以下限制：只有同时含 `;` 和 `=` 的字符串才被识别为参数列表，单个 `Key=value` 会被当作文件路径；转义分号仍会被切分，引号和反斜杠也不能按通用 SIP003 转义方式可靠传递；空段会终止后续解析。需要复杂值时可自行维护 JSON 文件。提供 `UID`、`PublicKey`、`ServerName`、`EncryptionMethod`，并按需显式设置 `NumConn=4`，不能依赖 README 所述的默认 4；省略时固定版本实现关闭连接复用。显式端点字段会覆盖 SIP003 环境变量，因此通常应省略 `LocalHost`、`LocalPort`、`RemoteHost`、`RemotePort`。
+
+默认插件传输模式为 `tcp_only`。上游 `UDP=true` 切换为 UDP 监听，不代表同时承载 TCP 与 UDP 的 SIP003u 支持；应用仍允许用户设置现有传输模式，本次只验收 TCP 配置接入。托管程序的 GPL-3.0 许可证、来源与第三方声明随应用装入 `Contents/Resources/ThirdParty/Cloak/`，源码与构建入口见其中 NOTICE。

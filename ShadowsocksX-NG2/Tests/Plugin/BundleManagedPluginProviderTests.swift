@@ -2,7 +2,7 @@ import XCTest
 
 @testable import ShadowsocksX_NG2
 
-/// 受管插件提供（issue #38，D10）：受管集内且 bundle 内可执行文件在位才返回
+/// 受管插件提供：受管集内且 bundle 内可执行文件在位才返回
 /// 绝对路径；集外引用与文件缺失都归一为「本版本未提供」（nil → 状态机点名
 /// 拒绝）。路径只从静态事实表派生，绝不拼接引用原文。
 final class BundleManagedPluginProviderTests: XCTestCase {
@@ -48,6 +48,34 @@ final class BundleManagedPluginProviderTests: XCTestCase {
     XCTAssertNotNil(makeProvider().executablePath(forProgram: "v2ray-plugin-v1"))
   }
 
+  func testCloakAliasesUseClientBinaryAndPreserveOptions() throws {
+    let client = bundleRoot.appendingPathComponent("Contents/Helpers/Plugins/ck-client")
+    try Data("#!/bin/sh\n".utf8).write(to: client)
+    try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: client.path)
+    let provider = makeProvider()
+    for name in ["cloak", "cloak-v2"] {
+      XCTAssertEqual(provider.resolve(program: name)?.path, client.path)
+      XCTAssertEqual(provider.resolve(program: name)?.mode, .tcpOnly)
+      var catalog = ConfigurationCatalog()
+      var fields = ActivationFixture.plainFields(remark: "Cloak", passwordRef: .fresh())
+      fields.pluginProgram = name
+      fields.pluginOptionsRef = .fresh()
+      let options = "UID=test;PublicKey=test;ServerName=example.com;EncryptionMethod=plain"
+      try credentials.save("pw", for: fields.passwordRef)
+      try credentials.save(options, for: XCTUnwrap(fields.pluginOptionsRef))
+      let id = try catalog.addServer(fields)
+      var machine = ActivationStateMachine()
+      let runtime = try machine.activate(
+        id, in: catalog, credentials: credentials, plugins: provider,
+        options: RuntimeDocumentOptions(listen: ActivationFixture.listen))
+      let server = try XCTUnwrap(runtime.document.servers.first)
+      XCTAssertEqual(server.plugin, client.path)
+      XCTAssertEqual(server.pluginOpts, options)
+    }
+    XCTAssertNil(provider.resolve(program: "ck-client"))
+    XCTAssertNil(provider.resolve(program: "Cloak"))
+  }
+
   func testReturnsBundleAbsolutePathForProvidedManagedProgram() throws {
     try writePluginBinary(permissions: 0o755)
     let path = try XCTUnwrap(makeProvider().executablePath(forProgram: pluginBinaryName))
@@ -83,6 +111,20 @@ final class BundleManagedPluginProviderTests: XCTestCase {
         .executablePath(forProgram: pluginBinaryName),
       "app bundle 未嵌入受管插件（先跑 fetch-external-binaries.sh）")
     XCTAssertTrue(path.hasSuffix("Contents/Helpers/Plugins/\(pluginBinaryName)"))
+  }
+
+  func testHostAppBundleProvidesCloakAliasesAndNotices() throws {
+    let bundle = AppArtifact.bundleURL
+    let provider = BundleManagedPluginProvider(bundleURL: bundle)
+    let path = try XCTUnwrap(provider.executablePath(forProgram: "cloak"))
+    XCTAssertTrue(path.hasSuffix("Contents/Helpers/Plugins/ck-client"))
+    XCTAssertEqual(provider.executablePath(forProgram: "cloak-v2"), path)
+    for name in ["LICENSE", "NOTICE", "THIRD-PARTY-NOTICES"] {
+      XCTAssertTrue(
+        FileManager.default.fileExists(
+          atPath:
+            bundle.appendingPathComponent("Contents/Resources/ThirdParty/Cloak/" + name).path))
+    }
   }
 
   /// 与状态机缝的契约：文件缺失 → provider nil → 激活以 pluginNotProvided

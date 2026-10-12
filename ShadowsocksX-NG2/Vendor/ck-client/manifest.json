@@ -1,0 +1,12 @@
+{
+  "project": "Cloak",
+  "release": "v2.12.0",
+  "target": "darwin-arm64",
+  "asset": "ck-client-darwin-arm64-v2.12.0",
+  "url": "https://github.com/cbeuw/Cloak/releases/download/v2.12.0/ck-client-darwin-arm64-v2.12.0",
+  "archiveSHA256": "dbef5cd5dd1b551a046c422e07854eb4736fc958e684c6532eb7e809b593ad5c",
+  "assetFormat": "binary",
+  "binary": "ck-client",
+  "bundleSubpath": "Helpers/Plugins",
+  "signIdentifier": "com.qiuyuzhou.ShadowsocksX-NG2.plugin.ck-client"
+}

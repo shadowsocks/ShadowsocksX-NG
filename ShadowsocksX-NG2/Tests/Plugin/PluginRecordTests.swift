@@ -253,3 +253,36 @@ struct PluginRecordTests {
   }
 
 }
+
+extension PluginRecordTests {
+  @Test @MainActor func cloakOverrideOnlyReplacesExplicitAlias() throws {
+    let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+    defer { try? FileManager.default.removeItem(at: root) }
+    let client = root.appendingPathComponent("Contents/Helpers/Plugins/ck-client")
+    try FileManager.default.createDirectory(
+      at: client.deletingLastPathComponent(),
+      withIntermediateDirectories: true)
+    try Data("#!/bin/sh\n".utf8).write(to: client)
+    try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: client.path)
+    let catalog = PluginCatalog(
+      store: PluginMappingFileStore(fileURL: root.appendingPathComponent("plugins.json")),
+      managed: BundleManagedPluginProvider(bundleURL: root), inspector: QuietPluginInspector())
+    try catalog.commit([.managedArguments(program: "ck-client", arguments: ["-v"])])
+    let userClient = root.appendingPathComponent("user-client")
+    try Data("#!/bin/sh\n".utf8).write(to: userClient)
+    try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: userClient.path)
+    let user = UserPluginRecord(
+      names: ["cloak"], path: userClient.path, arguments: ["-c", "local.json"])
+    try catalog.commit([.save(user)])
+    #expect(catalog.resolve(program: "cloak")?.arguments == user.arguments)
+    #expect(catalog.resolve(program: "cloak-v2")?.arguments == ["-v"])
+    #expect(catalog.catalogSnapshot().entry(for: "cloak")?.source == .user)
+    #expect(catalog.catalogSnapshot().entry(for: "cloak-v2")?.source == .managed)
+    try FileManager.default.removeItem(at: userClient)
+    #expect(catalog.resolve(program: "cloak") == nil)
+    #expect(catalog.resolve(program: "cloak-v2")?.path == client.path)
+    #expect(catalog.catalogSnapshot().entry(for: "cloak")?.source == .user)
+    try catalog.commit([.remove(user.id)])
+    #expect(catalog.resolve(program: "cloak")?.arguments == ["-v"])
+  }
+}

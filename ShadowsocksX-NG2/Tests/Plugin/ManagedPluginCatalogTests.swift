@@ -2,7 +2,7 @@ import XCTest
 
 @testable import ShadowsocksX_NG2
 
-/// 受管集静态事实表与 Vendor 供应链清单的双向锚定（issue #38，D6/D10）：
+/// 受管集静态事实表与 Vendor 供应链清单的双向锚定：
 /// 插件新增/升级必须显式重做静态清单——事实表与 `Vendor/*/manifest.json`
 /// 任何一侧漂移即测试失败，与 `ExternalBinaryManifestTests` 共同守护同一份事实。
 final class ManagedPluginCatalogTests: XCTestCase {
@@ -39,9 +39,9 @@ final class ManagedPluginCatalogTests: XCTestCase {
       "受管事实表与 Vendor 插件清单数量不一致（升级须同步重做两处静态清单）")
     for (directory, manifest) in manifests {
       let info = try XCTUnwrap(
-        ManagedPluginCatalog.info(forProgram: manifest.binary),
-        "\(directory): 清单里的插件「\(manifest.binary)」不在受管事实表内")
-      XCTAssertEqual(info.program, directory, "\(directory): 程序名须与清单目录一致")
+        ManagedPluginCatalog.plugins.first { $0.program == directory },
+        "\(directory): 清单里的记录「\(directory)」不在受管事实表内")
+      XCTAssertEqual(info.executableName, manifest.binary, "\(directory): 打包文件名漂移")
       XCTAssertTrue(
         info.project.hasSuffix(manifest.project),
         "\(directory): 受管事实表 project（\(info.project)）须锚定清单 project（\(manifest.project)）")

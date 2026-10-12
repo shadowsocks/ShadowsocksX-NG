@@ -3,8 +3,10 @@
 # Sourced by those scripts; not runnable on its own.
 #
 # A manifest is Vendor/<name>/manifest.json with the fields fixed by
-# spec #21 D6: project, release, target, asset, url, archiveSHA256,
-# archiveMember, binary, bundleSubpath, signIdentifier. JSON is parsed with
+# project, release, target, asset, url, archiveSHA256,
+# binary, bundleSubpath, signIdentifier. assetFormat defaults to tar; tar
+# requires archiveMember, while binary uses the downloaded asset directly.
+# JSON is parsed with
 # plutil + PlistBuddy so the scripts depend only on base macOS tooling.
 
 PLIST_BUDDY=${PLIST_BUDDY:-/usr/libexec/PlistBuddy}

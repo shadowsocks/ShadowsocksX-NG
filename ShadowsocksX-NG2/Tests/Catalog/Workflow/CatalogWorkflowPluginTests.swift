@@ -96,17 +96,23 @@ final class CatalogWorkflowPluginTests: XCTestCase {
     let id = try await addPluginServer(program: pluginBinaryName, options: "mode=websocket")
     let plugin = try XCTUnwrap(try workflow.serverEditForm(for: id)?.plugin)
     XCTAssertEqual(plugin.selection, .named(program: pluginBinaryName))
-    XCTAssertEqual(plugin.programs.first?.availability, .available, "二进制在位即提供")
+    XCTAssertEqual(
+      plugin.programs.first { $0.program == pluginBinaryName }?.availability, .available, "二进制在位即提供"
+    )
     XCTAssertTrue(plugin.optionsPresent)
     XCTAssertEqual(plugin.options, "mode=websocket", "参数明文供输入框预填")
-    XCTAssertEqual(plugin.programs.map(\.program), [pluginBinaryName, "v2ray-plugin-v1"])
+    XCTAssertEqual(
+      Set(plugin.programs.map(\.program)),
+      Set(["cloak", "cloak-v2", pluginBinaryName, "v2ray-plugin-v1"]))
   }
 
   func testMissingBinaryShowsManagedButNotProvided() async throws {
     let id = try await addPluginServer(program: pluginBinaryName, options: nil)
     let plugin = try XCTUnwrap(try workflow.serverEditForm(for: id)?.plugin)
     XCTAssertEqual(plugin.selection, .named(program: pluginBinaryName))
-    XCTAssertEqual(plugin.programs.first?.availability, .missing, "打包损坏/降级丢插件时点名呈现")
+    XCTAssertEqual(
+      plugin.programs.first { $0.program == pluginBinaryName }?.availability, .missing,
+      "打包损坏/降级丢插件时点名呈现")
   }
 
   func testUnknownProgramRendersExplicitUnknownState() async throws {

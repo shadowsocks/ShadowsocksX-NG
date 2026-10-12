@@ -4,9 +4,9 @@
 # For every Vendor/<name>/manifest.json (see lib-manifests.sh for the schema):
 #   1. If the extracted binary is present and its recorded SHA-256 stamp still
 #      matches, nothing is downloaded (build cache hit).
-#   2. Otherwise the pinned release asset is downloaded and its archive
+#   2. Otherwise the pinned release asset is downloaded and its asset
 #      SHA-256 must equal manifest archiveSHA256 — a mismatch fails the build.
-#   3. Only manifest archiveMember is extracted, must be an arm64-only Mach-O,
+#   3. A tar member or direct binary must be an arm64-only Mach-O,
 #      and is installed as Vendor/<name>/<binary> with a fresh stamp.
 #
 # Trust root is the committed manifest (tag + asset URL + archive SHA-256);
@@ -31,7 +31,12 @@ fetch_one() {
     plist="$tmproot/manifest.plist"
     manifest_to_plist "$manifest" "$plist"
     binary=$(manifest_field "$plist" binary "$manifest")
-    member=$(manifest_field "$plist" archiveMember "$manifest")
+    format=$("$PLIST_BUDDY" -c "Print :assetFormat" "$plist" 2>/dev/null || printf 'tar')
+    case "$format" in
+        tar) member=$(manifest_field "$plist" archiveMember "$manifest") ;;
+        binary) ;;
+        *) echo "error: $manifest: unsupported assetFormat '$format'" >&2; return 1 ;;
+    esac
     asset=$(manifest_field "$plist" asset "$manifest")
     url=$(manifest_field "$plist" url "$manifest")
     expected=$(manifest_field "$plist" archiveSHA256 "$manifest")
@@ -73,26 +78,31 @@ error: $name: the pinned release asset changed; redo the static manifest before 
         return 1
     }
 
-    if tar -tf "$archive" | grep -Eq '(^|/)\.\.(/|$)|^/'; then
-        echo "error: $name: archive contains unsafe member paths" >&2
-        return 1
-    fi
-    if ! tar -tf "$archive" | grep -Fqx "$member"; then
-        echo "error: $name: archive has no member '$member'" >&2
-        return 1
-    fi
+    case "$format" in
+        binary) extracted="$archive" ;;
+        tar)
+            if tar -tf "$archive" | grep -Eq '(^|/)\.\.(/|$)|^/'; then
+                echo "error: $name: archive contains unsafe member paths" >&2
+                return 1
+            fi
+            if ! tar -tf "$archive" | grep -Fqx "$member"; then
+                echo "error: $name: archive has no member '$member'" >&2
+                return 1
+            fi
 
-    xdir="$tmproot/extracted"
-    mkdir -p "$xdir"
-    tar -xf "$archive" -C "$xdir" "$member"
-    extracted="$xdir/$member"
+            xdir="$tmproot/extracted"
+            mkdir -p "$xdir"
+            tar -xf "$archive" -C "$xdir" "$member"
+            extracted="$xdir/$member"
+            ;;
+    esac
     [ -f "$extracted" ] && [ ! -L "$extracted" ] || {
-        echo "error: $name: extracted member is not a regular file: $member" >&2
+        echo "error: $name: selected binary is not a regular file: $extracted" >&2
         return 1
     }
 
     lipo -archs "$extracted" >/dev/null 2>&1 || {
-        echo "error: $name: extracted member is not a Mach-O binary: $member" >&2
+        echo "error: $name: selected binary is not a Mach-O binary: $extracted" >&2
         return 1
     }
     archs=$(lipo -archs "$extracted" | xargs)

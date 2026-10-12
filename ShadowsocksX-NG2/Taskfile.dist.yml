@@ -60,6 +60,7 @@ tasks:
     deps:
       - gen:prj
     cmds:
+      - task: test:binaries
       - task: test:rules
       - >-
         xcodebuild
@@ -68,6 +69,11 @@ tasks:
         -destination 'platform=macOS,arch=arm64'
         -derivedDataPath {{ .DERIVED_DATA_DIR }}
         test
+
+  test:binaries:
+    desc: 'Verify pinned external binary downloads with local assets'
+    cmds:
+      - PYTHONDONTWRITEBYTECODE=1 python3 Scripts/test-external-binary-fetch.py
 
   test:rules:
     desc: 'Run offline rule conversion and generated fixture checks'

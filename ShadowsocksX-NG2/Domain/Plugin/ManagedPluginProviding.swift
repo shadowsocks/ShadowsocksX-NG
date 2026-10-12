@@ -32,8 +32,8 @@ extension PluginExecutableResolving {
   }
 }
 
-/// 受管插件静态事实（#38）：来源项目、许可证、固定版本与重签标识，供编辑器
-/// 插件区与诊断导出展示。事实只随发版变更（D6「升级前重做静态清单」）：新增
+/// 受管插件静态事实：来源项目、许可证、固定版本与重签标识，供编辑器
+/// 插件区与诊断导出展示。事实只随发版变更：新增
 /// 或升级插件须同步 `Vendor/<name>/manifest.json` 与锚点测试
 /// `ManagedPluginCatalogTests`，两处漂移即构建期失败。
 struct ManagedPluginInfo: Equatable, Sendable {
@@ -51,7 +51,7 @@ struct ManagedPluginInfo: Equatable, Sendable {
   let signIdentifier: String
 }
 
-/// 本版本受管集（D10）：首版仅 v2ray-plugin v1.3.2；shadow-tls、Cloak 暂缓，
+/// 本版本受管集：固定版本的 v2ray-plugin 与 Cloak 客户端。
 /// 此目录只描述随 app 发布的程序；用户自备程序由 PluginCatalog 的本机映射提供。
 enum ManagedPluginCatalog {
   static let plugins: [ManagedPluginInfo] = [
@@ -63,7 +63,16 @@ enum ManagedPluginCatalog {
       projectURL: "https://github.com/shadowsocks/v2ray-plugin",
       release: "v1.3.2",
       license: "MIT",
-      signIdentifier: "com.qiuyuzhou.ShadowsocksX-NG2.plugin.v2ray-plugin")
+      signIdentifier: "com.qiuyuzhou.ShadowsocksX-NG2.plugin.v2ray-plugin"),
+    ManagedPluginInfo(
+      program: "ck-client",
+      names: ["cloak", "cloak-v2"],
+      executableName: "ck-client",
+      project: "cbeuw/Cloak",
+      projectURL: "https://github.com/cbeuw/Cloak",
+      release: "v2.12.0",
+      license: "GPL-3.0",
+      signIdentifier: "com.qiuyuzhou.ShadowsocksX-NG2.plugin.ck-client"),
   ]
 
   static func info(forProgram program: String) -> ManagedPluginInfo? {

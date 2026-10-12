@@ -86,6 +86,26 @@ targets:
           copyFiles:
             destination: wrapper
             subpath: Contents/Helpers/Plugins
+      - path: Vendor/ck-client/ck-client
+        buildPhase:
+          copyFiles:
+            destination: wrapper
+            subpath: Contents/Helpers/Plugins
+      - path: Vendor/ck-client/LICENSE
+        buildPhase:
+          copyFiles:
+            destination: resources
+            subpath: ThirdParty/Cloak
+      - path: Vendor/ck-client/NOTICE
+        buildPhase:
+          copyFiles:
+            destination: resources
+            subpath: ThirdParty/Cloak
+      - path: Vendor/ck-client/THIRD-PARTY-NOTICES
+        buildPhase:
+          copyFiles:
+            destination: resources
+            subpath: ThirdParty/Cloak
       # 内置规则快照（issue #63/#64）：普通构建只读本地已固定快照，离线且不重新
       # 抓取或转换；缺失、损坏或版本不匹配时 verify-rule-snapshots.sh 使构建失败。
       # folder reference 保留 rules/<source>/snapshot.json 结构，避免多个
