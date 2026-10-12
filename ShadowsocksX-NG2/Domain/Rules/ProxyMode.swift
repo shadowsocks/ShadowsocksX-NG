@@ -87,7 +87,7 @@ enum ProxyMode: Codable, Equatable, Hashable, Sendable {
     guard ProxyPortRange.valid.contains(document.httpPort) else {
       throw ProxyModeError.invalidHTTPPort(document.httpPort)
     }
-    let loopback = document.listen.listenerMode.proxyLoopbackAddress
+    let loopback = "127.0.0.1"
     return SystemProxyConfiguration(
       socks: .init(host: loopback, port: document.socksPort),
       http: .init(host: loopback, port: document.httpPort),

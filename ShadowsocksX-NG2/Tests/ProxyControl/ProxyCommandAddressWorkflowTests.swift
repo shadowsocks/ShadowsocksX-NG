@@ -23,12 +23,13 @@ final class ProxyCommandAddressWorkflowTests: XCTestCase {
   /// 把已保存监听事实切到指定方式并触发重观察。
   private func setListenerMode(_ mode: ListenerMode) {
     runtime.listenFacts = RuntimeListenFacts(
-      listenerMode: mode, socksPort: 11086, httpPort: 11087)
+      listenerMode: .disabled, socksPort: 11086, httpPort: 11087)
+    runtime.listenFacts.lan.mode = mode
     runtime.emitChange()
   }
 
   func testLocalhostModeHidesPickerWithLoopbackOnlyCandidates() {
-    setListenerMode(.localhost)
+    setListenerMode(.disabled)
     interfaceFacts.interfaces = [
       FakeLocalInterfaceFacts.wifi(addresses: [.ipv4("192.168.1.10")]),
       FakeLocalInterfaceFacts.loopback(),
@@ -80,7 +81,7 @@ final class ProxyCommandAddressWorkflowTests: XCTestCase {
     let picker = workflow.snapshot.commandAddressPicker
     XCTAssertEqual(
       picker.candidates.map(\.address),
-      ["127.0.0.1", "::1", "169.254.9.9", "192.168.1.10", "2001:db8::1"],
+      ["127.0.0.1", "169.254.9.9", "192.168.1.10", "2001:db8::1"],
       "双栈提供两个回环（127.0.0.1 在前）、允许 IPv4 链路本地、排除 IPv6 链路本地，同接口 IPv4 先于 IPv6")
     XCTAssertEqual(picker.selected.address, "127.0.0.1")
   }
@@ -100,7 +101,7 @@ final class ProxyCommandAddressWorkflowTests: XCTestCase {
     let picker = workflow.snapshot.commandAddressPicker
     XCTAssertEqual(
       picker.candidates.map(\.address),
-      ["127.0.0.1", "::1", "240e::17", "240e::8150"],
+      ["127.0.0.1", "240e::17", "240e::8150"],
       "RFC 4941 隐私临时地址被过滤（会轮换）；其余按地址稳定排序")
     let secured = picker.candidates.first { $0.address == "240e::8150" }
     XCTAssertEqual(secured?.displayName, "Wi-Fi")
@@ -120,9 +121,9 @@ final class ProxyCommandAddressWorkflowTests: XCTestCase {
 
     let picker = workflow.snapshot.commandAddressPicker
     XCTAssertEqual(
-      picker.candidates.map(\.address), ["::1", "2001:db8::1"],
+      picker.candidates.map(\.address), ["127.0.0.1", "2001:db8::1"],
       "仅 IPv6 方式默认 ::1 且候选只有 IPv6")
-    XCTAssertEqual(picker.selected.address, "::1")
+    XCTAssertEqual(picker.selected.address, "127.0.0.1")
   }
 
   func testDisplayNamesUseLocalizedNameWithBSDNameFallback() {
@@ -194,13 +195,17 @@ final class ProxyCommandAddressLifecycleTests: XCTestCase {
 
   private func setListenerMode(_ mode: ListenerMode) {
     runtime.listenFacts = RuntimeListenFacts(
-      listenerMode: mode, socksPort: 11086, httpPort: 11087)
+      listenerMode: .disabled, socksPort: 11086, httpPort: 11087)
+    runtime.listenFacts.lan.mode = mode
     runtime.emitChange()
   }
 
   func testSelectionDrivesBothShellsAndSavedPorts() {
     runtime.listenFacts = RuntimeListenFacts(
-      listenerMode: .allIPv4Interfaces, socksPort: 12086, httpPort: 12087)
+      listenerMode: .disabled, socksPort: 11086, httpPort: 11087)
+    runtime.listenFacts.lan.mode = .allIPv4Interfaces
+    runtime.listenFacts.lan.socksPort = 12086
+    runtime.listenFacts.lan.httpPort = 12087
     runtime.emitChange()
     interfaceFacts.interfaces = [
       FakeLocalInterfaceFacts.wifi(addresses: [.ipv4("192.168.1.10")])
@@ -238,15 +243,15 @@ final class ProxyCommandAddressLifecycleTests: XCTestCase {
     ]
     interfaceFacts.emitChange()
 
-    let v6Candidate = workflow.snapshot.commandAddressPicker.candidates[2]
+    let v6Candidate = workflow.snapshot.commandAddressPicker.candidates[1]
     _ = workflow.selectCommandAddress(v6Candidate)
 
     let commands = workflow.snapshot.terminalProxyEnvironmentCommands
     XCTAssertTrue(
-      commands.zshBash.contains("export http_proxy='http://[2001:db8::1]:11087'"),
+      commands.zshBash.contains("export http_proxy='http://[2001:db8::1]:11089'"),
       "IPv6 URL 使用方括号与已保存 HTTP 端口")
     XCTAssertTrue(
-      commands.fish.contains("set -gx all_proxy 'socks5://[2001:db8::1]:11086'"))
+      commands.fish.contains("set -gx all_proxy 'socks5://[2001:db8::1]:11088'"))
     XCTAssertFalse(
       commands.zshBash.contains("autoconf"), "类型注记只进标签，不进命令")
   }
@@ -309,7 +314,7 @@ final class ProxyCommandAddressLifecycleTests: XCTestCase {
       FakeLocalInterfaceFacts.wifi(addresses: [.ipv6("2001:db8::1")])
     ]
     interfaceFacts.emitChange()
-    let v6Candidate = workflow.snapshot.commandAddressPicker.candidates[2]
+    let v6Candidate = workflow.snapshot.commandAddressPicker.candidates[1]
     _ = workflow.selectCommandAddress(v6Candidate)
 
     setListenerMode(.allIPv4Interfaces)
@@ -346,7 +351,8 @@ final class ProxyCommandAddressLifecycleTests: XCTestCase {
 
   func testCopyPreparationRefreshesFallsBackAndMatchesProjection() {
     runtime.listenFacts = RuntimeListenFacts(
-      listenerMode: .allIPv4Interfaces, socksPort: 11086, httpPort: 11087)
+      listenerMode: .disabled, socksPort: 11086, httpPort: 11087)
+    runtime.listenFacts.lan.mode = .allIPv4Interfaces
     runtime.emitChange()
     interfaceFacts.interfaces = [
       FakeLocalInterfaceFacts.wifi(addresses: [.ipv4("192.168.1.10")])

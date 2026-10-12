@@ -39,9 +39,9 @@ struct TerminalCommandAddressIdentity: Equatable, Hashable, Sendable {
 /// 首页命令地址选择器投影：可见性、候选与生效选择一次观察
 /// 产出，所有字段来自同一时间点。
 struct TerminalCommandAddressPicker: Equatable, Sendable {
-  /// 仅本机监听方式隐藏。
+  /// 局域网关闭时隐藏。
   let isVisible: Bool
-  /// 用户可见候选（已过滤、已排序；至少含兼容回环项）。
+  /// 用户可见候选（已过滤、已排序；至少含本地回环项）。
   let candidates: [TerminalCommandAddress]
   /// 当前生效选择；恒为候选之一（选择失效自动回退默认回环）。
   let selected: TerminalCommandAddress
@@ -49,7 +49,7 @@ struct TerminalCommandAddressPicker: Equatable, Sendable {
 
 // MARK: - 派生策略
 
-/// 首页命令地址策略：接口原始事实 + 已保存监听方式 → 用户可见
+/// 首页命令地址策略：接口原始事实 + 已保存局域网监听方式 → 用户可见
 /// 候选与生效选择。纯派生：类型白名单、地址族过滤、链路本地/通配排除、名称
 /// 回退、排序合并与失效回退全部在此。测试以原始事实替身驱动本策略，不直接
 /// 注入已过滤候选。
@@ -66,7 +66,7 @@ enum TerminalCommandAddressPolicy {
   private static let wildcardAddresses: Set<String> = ["0.0.0.0", "::"]
 
   /// 一次观察的完整选择器事实。`selection` 不在候选中（地址消失、地址族
-  /// 不兼容或枚举失败）时回退当前监听方式的默认回环地址。
+  /// 不兼容或枚举失败）时回退本地入口 127.0.0.1。
   static func picker(
     mode: ListenerMode,
     interfaces: [LocalInterfaceFacts]?,
@@ -75,37 +75,30 @@ enum TerminalCommandAddressPolicy {
     let candidates = candidates(for: mode, interfaces: interfaces)
     let selected = candidates.first { $0.identity == selection } ?? defaultLoopback(for: mode)
     return TerminalCommandAddressPicker(
-      isVisible: mode != .localhost,
+      isVisible: mode != .disabled,
       candidates: candidates,
       selected: selected)
   }
 
-  /// 候选列表：回环项置顶（双栈 127.0.0.1 先于 ::1），其余来自白名单接口；
+  /// 候选列表：本地入口 127.0.0.1 置顶，其余来自白名单接口；
   /// 仅本机方式监听器只绑定 127.0.0.1，候选不含接口地址。枚举失败（nil）
-  /// 仅提供兼容回环候选。
+  /// 仅提供本地回环候选。
   static func candidates(
     for mode: ListenerMode,
     interfaces: [LocalInterfaceFacts]?
   ) -> [TerminalCommandAddress] {
-    let loopbacks = loopbackCandidates(for: mode)
-    guard mode != .localhost, let interfaces else { return loopbacks }
+    let loopbacks = [defaultLoopback(for: mode)]
+    guard mode != .disabled, let interfaces else { return loopbacks }
     return loopbacks + interfaceCandidates(mode: mode, interfaces: interfaces)
   }
 
-  /// 当前监听方式的默认回环地址（Domain 回环清单首项）。
+  /// 始终有效的本地回环地址。
   static func defaultLoopback(for mode: ListenerMode) -> TerminalCommandAddress {
     TerminalCommandAddress(
-      bsdName: "lo0", address: mode.proxyLoopbackAddress, displayName: "lo0", annotation: nil)
+      bsdName: "lo0", address: "127.0.0.1", displayName: "lo0", annotation: nil)
   }
 
   // MARK: - 派生细节
-
-  /// 回环候选（置顶）直接来自 Domain 的监听方式回环清单，展示名固定 lo0。
-  private static func loopbackCandidates(for mode: ListenerMode) -> [TerminalCommandAddress] {
-    mode.compatibleLoopbackAddresses.map {
-      TerminalCommandAddress(bsdName: "lo0", address: $0, displayName: "lo0", annotation: nil)
-    }
-  }
 
   /// 待排序的接口分组：显示名 + BSD 名 + 该接口的地址候选。
   private struct InterfaceGroup {

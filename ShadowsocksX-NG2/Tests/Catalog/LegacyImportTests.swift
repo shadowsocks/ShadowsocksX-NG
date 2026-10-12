@@ -74,8 +74,7 @@ final class LegacyImportTests: XCTestCase {
     existingSettings.listen.httpPort = 2087
     existingSettings.preferredMode = .global
     let settingsStore = ProxySettingsFileStore(
-      fileURL: settingsURL,
-      legacyListenFileURL: directory.appendingPathComponent("legacy-listen.json"))
+      fileURL: settingsURL)
     try settingsStore.save(existingSettings)
 
     let existingTarget = NodeID(rawValue: "existing-target")

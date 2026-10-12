@@ -1,15 +1,15 @@
 import Foundation
 
-/// One of the supported address-family policies for both local proxy inbounds.
+/// Address-family policy for the optional LAN SOCKS and HTTP inbounds.
 enum ListenerMode: String, Codable, CaseIterable, Equatable, Sendable {
-  case localhost
+  case disabled
   case allIPv4Interfaces = "all_ipv4_interfaces"
   case allIPv4AndIPv6Interfaces = "all_ipv4_and_ipv6_interfaces"
   case allIPv6Interfaces = "all_ipv6_interfaces"
 
   var bindAddress: String {
     switch self {
-    case .localhost: "127.0.0.1"
+    case .disabled: "127.0.0.1"
     case .allIPv4Interfaces: "0.0.0.0"
     case .allIPv4AndIPv6Interfaces, .allIPv6Interfaces: "::"
     }
@@ -19,30 +19,15 @@ enum ListenerMode: String, Codable, CaseIterable, Equatable, Sendable {
   /// explicitly select dual-stack or IPv6-only behavior.
   var ipv6Only: Bool? {
     switch self {
-    case .localhost, .allIPv4Interfaces: nil
+    case .disabled, .allIPv4Interfaces: nil
     case .allIPv4AndIPv6Interfaces: false
     case .allIPv6Interfaces: true
     }
   }
 
-  /// 此监听方式可接受的回环地址（默认地址在前）：IPv4/仅本机只接受
-  /// 127.0.0.1，双栈通配绑定同时接受两个回环族，仅 IPv6 只接受 ::1。
-  var compatibleLoopbackAddresses: [String] {
-    switch self {
-    case .localhost, .allIPv4Interfaces: ["127.0.0.1"]
-    case .allIPv4AndIPv6Interfaces: ["127.0.0.1", "::1"]
-    case .allIPv6Interfaces: ["::1"]
-    }
-  }
-
-  /// 健康探测、系统代理与 HTTP 导出行使用的默认兼容回环地址。
-  var proxyLoopbackAddress: String {
-    compatibleLoopbackAddresses[0]
-  }
-
   var bindingHint: String {
     switch self {
-    case .localhost: "127.0.0.1"
+    case .disabled: "127.0.0.1"
     case .allIPv4Interfaces: "0.0.0.0"
     case .allIPv4AndIPv6Interfaces: ":: / IPV6_V6ONLY=false"
     case .allIPv6Interfaces: ":: / IPV6_V6ONLY=true"
@@ -51,14 +36,14 @@ enum ListenerMode: String, Codable, CaseIterable, Equatable, Sendable {
 
   var displayName: String {
     switch self {
-    case .localhost: "仅本机"
-    case .allIPv4Interfaces: "所有 IPv4 接口"
-    case .allIPv4AndIPv6Interfaces: "所有 IPv4 与 IPv6 接口"
-    case .allIPv6Interfaces: "仅所有 IPv6 接口"
+    case .disabled: String(localized: "关闭")
+    case .allIPv4Interfaces: String(localized: "所有 IPv4 接口")
+    case .allIPv4AndIPv6Interfaces: String(localized: "所有 IPv4 与 IPv6 接口")
+    case .allIPv6Interfaces: String(localized: "所有 IPv6 接口")
     }
   }
 
-  var exposesNetworkInterfaces: Bool { self != .localhost }
+  var exposesNetworkInterfaces: Bool { self != .disabled }
 }
 
 /// `sslocal` 的一个本地入站。上游 v1.25.0 通过 `locals[]` 同时承载 SOCKS5
@@ -68,9 +53,13 @@ struct SslocalLocalDocument: Codable, Equatable, Sendable {
   let localAddress: String
   let localPort: Int
   let mode: String
+  var socks5AuthConfigPath: String?
+  var httpAuthConfigPath: String?
 
   enum CodingKeys: String, CodingKey {
     case mode
+    case socks5AuthConfigPath = "socks5_auth_config_path"
+    case httpAuthConfigPath = "http_auth_config_path"
     case inboundProtocol = "protocol"
     case localAddress = "local_address"
     case localPort = "local_port"
@@ -83,8 +72,11 @@ struct SslocalLocalDocument: Codable, Equatable, Sendable {
 struct RuntimeListenDocument: Codable, Equatable, Sendable {
   let listenerMode: ListenerMode
   let bindAddress: String
+  var lan = LANListeningSettings()
+  var authentication: RuntimeListenerAuthentication?
 
   enum CodingKeys: String, CodingKey {
+    case lan, authentication
     case listenerMode = "listener_mode"
     case bindAddress = "bind_address"
   }
@@ -94,9 +86,9 @@ struct RuntimeListenDocument: Codable, Equatable, Sendable {
 /// 密码与插件参数已在此解析为明文——只供运行时落盘，永不入日志。
 struct SslocalRuntimeDocument: Codable, Equatable, Sendable {
   let servers: [SslocalServerDocument]
-  let locals: [SslocalLocalDocument]
+  var locals: [SslocalLocalDocument]
   let ipv6Only: Bool?
-  let listen: RuntimeListenDocument
+  var listen: RuntimeListenDocument
   /// Upstream sslocal ACL file path. The wrapper-owned extension carries the
   /// matching content and digest so both inbounds use the same validated file.
   let aclFilePath: String?
@@ -119,7 +111,7 @@ struct SslocalRuntimeDocument: Codable, Equatable, Sendable {
     locals = listen.locals
     self.listen = RuntimeListenDocument(
       listenerMode: listen.listenerMode,
-      bindAddress: listen.bindAddress)
+      bindAddress: listen.bindAddress, lan: listen.lan)
     ipv6Only = listen.listenerMode.ipv6Only
     aclFilePath = acl?.path
     aclRuntime = acl
@@ -221,7 +213,9 @@ extension SslocalRuntimeDocument {
   }
 
   var listenFingerprint: SslocalListenFingerprint {
-    SslocalListenFingerprint(locals: locals, ipv6Only: ipv6Only, acl: aclRuntime)
+    SslocalListenFingerprint(
+      locals: locals, ipv6Only: ipv6Only, acl: aclRuntime,
+      authentication: listen.authentication)
   }
 
   var socksLocal: SslocalLocalDocument? {
@@ -247,29 +241,45 @@ extension SslocalRuntimeDocument {
       aclRuntime.map({ $0.isWellFormed && $0.path == aclFilePath }) ?? true
     else { return false }
 
-    let expectedBind = listen.listenerMode.bindAddress
-    guard listen.bindAddress == expectedBind, ipv6Only == listen.listenerMode.ipv6Only else {
-      return false
-    }
-
-    let socks = locals.filter { $0.inboundProtocol == "socks" }
-    let http = locals.filter { $0.inboundProtocol == "http" }
-    guard socks.count == 1, http.count <= 1, locals.count == socks.count + http.count else {
-      return false
-    }
-    guard socks[0].mode == "tcp_and_udp" else { return false }
-    guard http.allSatisfy({ $0.mode == "tcp_only" }) else { return false }
-
-    let localPorts = locals.map(\.localPort)
-    guard Set(localPorts).count == localPorts.count else { return false }
-    guard
-      locals.allSatisfy({ local in
-        let expectedMode = local.inboundProtocol == "socks" ? "tcp_and_udp" : "tcp_only"
-        return local.localAddress == expectedBind
-          && ProxyPortRange.valid.contains(local.localPort)
-          && local.mode == expectedMode
+    guard listen.bindAddress == "127.0.0.1", listen.listenerMode == listen.lan.mode,
+      ipv6Only == listen.lan.mode.ipv6Only
+    else { return false }
+    let local = locals.filter { $0.localAddress == "127.0.0.1" }
+    let network = locals.filter { $0.localAddress != "127.0.0.1" }
+    guard local.count == 2, local.filter({ $0.inboundProtocol == "socks" }).count == 1,
+      local.filter({ $0.inboundProtocol == "http" }).count == 1,
+      local.allSatisfy({
+        $0.mode == ($0.inboundProtocol == "socks" ? "tcp_and_udp" : "tcp_only")
+          && $0.socks5AuthConfigPath == nil && $0.httpAuthConfigPath == nil
       })
     else { return false }
+    var expected = SslocalListenSettings()
+    expected.local.socksPort = socksPort
+    expected.local.httpPort = httpPort
+    expected.lan = listen.lan
+    guard network.count == (listen.lan.isEnabled ? 2 : 0),
+      expected.configuredPorts.allSatisfy({ ProxyPortRange.valid.contains($0) }),
+      Set(expected.configuredPorts).count == 4
+    else { return false }
+    for (actual, desired) in zip(locals, expected.locals) {
+      guard actual.inboundProtocol == desired.inboundProtocol,
+        actual.localAddress == desired.localAddress, actual.localPort == desired.localPort,
+        actual.mode == desired.mode
+      else { return false }
+    }
+    if listen.lan.isEnabled && listen.lan.authenticationEnabled {
+      guard let auth = listen.authentication, auth.isValid, auth.username == listen.lan.username,
+        network.first(where: { $0.inboundProtocol == "socks" })?.socks5AuthConfigPath
+          == auth.socksPath,
+        network.first(where: { $0.inboundProtocol == "http" })?.httpAuthConfigPath == auth.httpPath
+      else { return false }
+    } else if listen.authentication != nil
+      || network.contains(where: {
+        $0.socks5AuthConfigPath != nil || $0.httpAuthConfigPath != nil
+      })
+    {
+      return false
+    }
 
     return servers.allSatisfy { server in
       (1...65535).contains(server.serverPort)

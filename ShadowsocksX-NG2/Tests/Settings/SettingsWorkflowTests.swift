@@ -32,9 +32,11 @@ final class SettingsWorkflowTests: XCTestCase {
   func testListenerModeSavePersistsWithoutStartingAnOffAgent() async throws {
     let pair = makePair()
 
-    let outcome = await pair.workflow.saveListenerMode(.allIPv4AndIPv6Interfaces)
+    var draft = try pair.workflow.beginLANListeningEditing()
+    draft.mode = .allIPv4AndIPv6Interfaces
+    let outcome = await pair.workflow.saveLANListening(draft)
 
-    XCTAssertEqual(outcome, .saved(unknownOccupancy: []))
+    XCTAssertEqual(outcome, .persisted)
     XCTAssertEqual(pair.controller.settings.listen.listenerMode, .allIPv4AndIPv6Interfaces)
     XCTAssertEqual(settingsStore.saved?.listen.listenerMode, .allIPv4AndIPv6Interfaces)
     XCTAssertEqual(pair.controller.state, .off)
@@ -70,7 +72,7 @@ final class SettingsWorkflowTests: XCTestCase {
       sendSignal: { _, _ in 0 },
       processIsAlive: { $0 == 42 })
     let workflow = SettingsWorkflow(
-      committing: controller, occupancyProbe: FakeOccupancyProbe())
+      committing: controller, occupancyProbe: FakeOccupancyProbe(), credentials: credentials)
     return (controller, workflow)
   }
 

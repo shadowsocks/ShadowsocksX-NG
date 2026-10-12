@@ -44,7 +44,7 @@ final class RuntimeDocumentTests: XCTestCase {
     XCTAssertEqual(locals[1]["local_port"] as? Int, 11087)
     XCTAssertEqual(locals[1]["protocol"] as? String, "http")
     let listen = try XCTUnwrap(dictionary["x_shadowsocksx_ng_listen"] as? [String: Any])
-    XCTAssertEqual(listen["listener_mode"] as? String, "localhost")
+    XCTAssertEqual(listen["listener_mode"] as? String, "disabled")
     XCTAssertEqual(listen["bind_address"] as? String, "127.0.0.1")
     XCTAssertFalse(listen.keys.contains("advertised_address"))
     XCTAssertFalse(dictionary.keys.contains("ipv6_only"))
@@ -144,7 +144,7 @@ final class RuntimeDocumentTests: XCTestCase {
 
   func testLocalhostModeDerivesBothSslocalInbounds() {
     let listen = SslocalListenSettings(
-      listenerMode: .localhost,
+      listenerMode: .disabled,
       socksPort: 1086,
       httpPort: 1087)
 
@@ -167,8 +167,8 @@ final class RuntimeDocumentTests: XCTestCase {
       socksPort: 1086,
       httpPort: 1087)
 
-    XCTAssertEqual(listen.bindAddress, "0.0.0.0")
-    XCTAssertEqual(Set(listen.locals.map(\.localAddress)), ["0.0.0.0"])
+    XCTAssertEqual(listen.bindAddress, "127.0.0.1")
+    XCTAssertEqual(Set(listen.locals.map(\.localAddress)), ["127.0.0.1", "0.0.0.0"])
   }
 
   func testDualStackModeSetsIPv6OnlyFalseAndChangesListenerFingerprint() throws {
@@ -178,7 +178,7 @@ final class RuntimeDocumentTests: XCTestCase {
     let dictionary = try encodedDictionary(dualStack)
 
     XCTAssertEqual(dictionary["ipv6_only"] as? Bool, false)
-    XCTAssertEqual(dualStack.socksLocal?.probeHost, "::1")
+    XCTAssertEqual(dualStack.socksLocal?.probeHost, "127.0.0.1")
 
     listen.listenerMode = .allIPv6Interfaces
     let ipv6Only = SslocalRuntimeDocument(servers: [], listen: listen)
@@ -209,14 +209,16 @@ final class RuntimeDocumentTests: XCTestCase {
         ":: / IPV6_V6ONLY=false",
         ":: / IPV6_V6ONLY=true",
       ])
-    XCTAssertEqual(
-      ListenerMode.allCases.map(\.proxyLoopbackAddress),
-      ["127.0.0.1", "127.0.0.1", "127.0.0.1", "::1"])
+    for mode in ListenerMode.allCases {
+      let document = SslocalRuntimeDocument(
+        servers: [], listen: SslocalListenSettings(listenerMode: mode))
+      XCTAssertEqual(document.socksLocal?.probeHost, "127.0.0.1")
+    }
   }
 
   func testHTTPInboundIsAlwaysPresentAlongsideSOCKS() {
     let listen = SslocalListenSettings(
-      listenerMode: .localhost, socksPort: 2086, httpPort: 2087)
+      listenerMode: .disabled, socksPort: 2086, httpPort: 2087)
 
     XCTAssertEqual(listen.locals.map(\.inboundProtocol), ["socks", "http"])
   }

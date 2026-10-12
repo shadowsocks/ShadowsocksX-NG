@@ -99,7 +99,7 @@ enum ProxyRuntimeFixture {
     serverAddress: String = "203.0.113.7",
     password: String = "resolved-password",
     pluginOpts: String? = nil,
-    listenerMode: ListenerMode = .localhost,
+    listenerMode: ListenerMode = .disabled,
     localPort: Int? = nil,
     inboundProtocol: String = "socks"
   ) -> SslocalRuntimeDocument {

@@ -10,9 +10,13 @@ enum SettingsPortID: CaseIterable, Hashable, Sendable {
 }
 
 /// The SOCKS5 and HTTP ports edited and saved together as one settings item.
+enum SettingsListeningGroup: Sendable { case local, lan }
+
 struct SettingsPortDraft: Equatable, Sendable {
   var socksPort: Int
   var httpPort: Int
+  var group: SettingsListeningGroup = .local
+  var listenerMode: ListenerMode = .disabled
 
   func portValue(for id: SettingsPortID) -> Int {
     switch id {
@@ -113,8 +117,21 @@ enum SettingsWorkflowFailure: Error, Equatable, Sendable {
   case unknown
 }
 
-enum ListenerModeSaveOutcome: Equatable, Sendable {
-  case saved(unknownOccupancy: [SettingsPortID])
-  case rejected(SettingsCommandRejection)
-  case persistenceFailed(SettingsPersistenceFailure)
+/// 局域网 sheet 的完整草稿；密码只属于编辑会话。
+struct LANListeningDraft: Equatable, Sendable {
+  var ports: SettingsPortDraft
+  var udpRelayEnabled: Bool
+  var authenticationEnabled: Bool
+  var username: String
+  var password: String
+
+  var hasValidCredentials: Bool {
+    RuntimeListenerAuthentication.validUsername(username)
+      && RuntimeListenerAuthentication.validPassword(password)
+  }
+
+  var mode: ListenerMode {
+    get { ports.listenerMode }
+    set { ports.listenerMode = newValue }
+  }
 }

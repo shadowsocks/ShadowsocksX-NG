@@ -191,8 +191,7 @@ final class BuiltinRuleCatalogTests: XCTestCase {
     defer { try? FileManager.default.removeItem(at: dir) }
 
     let store = ProxySettingsFileStore(
-      fileURL: dir.appendingPathComponent("settings.json"),
-      legacyListenFileURL: dir.appendingPathComponent("listen.json"))
+      fileURL: dir.appendingPathComponent("settings.json"))
 
     var settings = ProxySettings()
     settings.preferredMode = .rule

@@ -10,7 +10,6 @@ protocol SettingsCommitting: AnyObject {
   var runtimeListenFacts: RuntimeListenFacts? { get }
   var runtimeListenerProcessID: Int32? { get }
   func updateSettings(_ proposed: ProxySettings) async throws
-  func updateListenerMode(_ mode: ListenerMode) async throws
 }
 
 extension ProxyRuntimeController: SettingsCommitting {
@@ -18,11 +17,6 @@ extension ProxyRuntimeController: SettingsCommitting {
   var runtimeListenFacts: RuntimeListenFacts? { effectiveRuntimeListenFacts }
   var runtimeListenerProcessID: Int32? { effectiveRuntimeListenerProcessID }
 
-  func updateListenerMode(_ mode: ListenerMode) async throws {
-    var proposed = settings
-    proposed.listen.listenerMode = mode
-    try await updateSettings(proposed)
-  }
 }
 
 /// Settings field adapters keep port IDs, endpoints, and validation facts aligned.
@@ -53,8 +47,8 @@ enum SettingsPortAdapter {
 
   private static func portID(for endpoint: ProxyEndpointKind) -> SettingsPortID {
     switch endpoint {
-    case .socks: .socks
-    case .http: .http
+    case .socks, .lanSocks: .socks
+    case .http, .lanHTTP: .http
     }
   }
 }

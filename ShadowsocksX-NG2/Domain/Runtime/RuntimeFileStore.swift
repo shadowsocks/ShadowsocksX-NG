@@ -179,6 +179,8 @@ struct RuntimeFileStore {
         // 变体实文件，或 AtomicFileWriter 的暂存残留。
         if name.hasPrefix("acl-") && name.hasSuffix(".ini") {
           try? fileManager.removeItem(at: directoryURL.appendingPathComponent(name))
+        } else if name.hasPrefix("lan-auth-") && name.hasSuffix(".json") {
+          try? fileManager.removeItem(at: directoryURL.appendingPathComponent(name))
         } else if AtomicFileWriter.isResidueName(name) {
           try? fileManager.removeItem(at: directoryURL.appendingPathComponent(name))
         }

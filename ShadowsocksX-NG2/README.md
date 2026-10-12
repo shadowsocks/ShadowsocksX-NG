@@ -31,7 +31,7 @@ ShadowsocksX-NG 的现代化重写版本。新工程的全部源码与构建配�
   - `Plugin/` — 托管插件、用户插件映射与插件安全校验。
   - `Credentials/`、`LegacyImport/`、`Diagnostics/` — 凭据存储与写入日志、旧版导入、诊断报告。
 
-  跨进程契约按**文件**编入其它 target：`Runtime/` 的 9 个文件同时编入 wrapper（`RuntimePaths`、`SslocalRuntimeDocument`、`RuntimeLog` 等），`SystemProxy/` 全部 6 个文件编入特权 helper。`project.yml` 里这 15 条是显式路径，在 `Domain/` 内移动文件必须同步，漏改会让 `xcodegen generate` 以缺文件直接失败。布局守卫（`Tests/Architecture/SkeletonTests.swift` 的 `DomainLayoutTests`）断言根下无平铺 `.swift`、树下只有 `.swift`（非源码文件会被 XcodeGen 收进 Resources 阶段并封进签名后的 bundle）。
+  跨进程契约按**文件**编入其它 target：`Runtime/` 的 10 个文件同时编入 wrapper（`RuntimePaths`、`SslocalRuntimeDocument`、`RuntimeLog` 等），`SystemProxy/` 全部 6 个文件编入特权 helper。`project.yml` 里这 16 条是显式路径，在 `Domain/` 内移动文件必须同步，漏改会让 `xcodegen generate` 以缺文件直接失败。布局守卫（`Tests/Architecture/SkeletonTests.swift` 的 `DomainLayoutTests`）断言根下无平铺 `.swift`、树下只有 `.swift`（非源码文件会被 XcodeGen 收进 Resources 阶段并封进签名后的 bundle）。
 - `Tests/` — 单元测试 target，随 `ShadowsocksX-NG2` scheme 运行。目录即主题，根下不留平铺测试文件：
   - `Architecture/` — 跨切面工程约束守卫（分层与布局、平台效应 seam、开窗落点、清单完整性），扫源码或构建产物而不驱动行为。
   - `Support/` — 夹具、替身与 helper，不含用例（`CatalogFixtures`、`ProxyRuntimeFixture`、`SystemProxyFakes`、`AppArtifact`、`TestSourceTree` 等）。
@@ -168,3 +168,11 @@ Python 是唯一的上游转换实现；Swift 只加载、校验并消费快照�
 [固定版本配置解析](https://github.com/cbeuw/Cloak/blob/v2.12.0/internal/client/state.go)存在以下限制：只有同时含 `;` 和 `=` 的字符串才被识别为参数列表，单个 `Key=value` 会被当作文件路径；转义分号仍会被切分，引号和反斜杠也不能按通用 SIP003 转义方式可靠传递；空段会终止后续解析。需要复杂值时可自行维护 JSON 文件。提供 `UID`、`PublicKey`、`ServerName`、`EncryptionMethod`，并按需显式设置 `NumConn=4`，不能依赖 README 所述的默认 4；省略时固定版本实现关闭连接复用。显式端点字段会覆盖 SIP003 环境变量，因此通常应省略 `LocalHost`、`LocalPort`、`RemoteHost`、`RemotePort`。
 
 默认插件传输模式为 `tcp_only`。上游 `UDP=true` 切换为 UDP 监听，不代表同时承载 TCP 与 UDP 的 SIP003u 支持；应用仍允许用户设置现有传输模式，本次只验收 TCP 配置接入。托管程序的 GPL-3.0 许可证、来源与第三方声明随应用装入 `Contents/Resources/ThirdParty/Cloak/`，源码与构建入口见其中 NOTICE。
+
+## 本地与局域网监听
+
+后台代理客户端运行时，本地 SOCKS/HTTP 始终监听 `127.0.0.1`，默认端口为 `11086`/`11087`；本地 SOCKS 固定开启 UDP 中继。局域网入口默认关闭，使用独立端口 `11088`/`11089`，支持 IPv4、双栈和仅 IPv6 三种方式。四端口必须在 `1025...65535` 内且全部不同。
+
+局域网 SOCKS 的 UDP 中继和 SOCKS/HTTP 共用的身份验证独立设置。密码保存在 Keychain，运行时派生当前用户专用的认证文件；上游认证失败日志中的密码会隐藏。设置只检查 TCP 占用，不设置独立 UDP 端口。首页命令按选择地址使用本地或局域网端口，局域网身份验证开启时加入编码后的凭据；tooltip 显示完整命令。
+
+未发布的旧监听配置不迁移，新监听使用默认值；其他偏好与服务器资料保留。设计见 [ADR-0034](../docs/adr/0034-separate-local-and-lan-listeners.md)。

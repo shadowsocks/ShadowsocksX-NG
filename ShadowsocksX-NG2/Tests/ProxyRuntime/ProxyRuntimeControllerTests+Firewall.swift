@@ -19,7 +19,7 @@ final class ProxyRuntimeFirewallTests: ProxyRuntimeControllerTests {
 
     XCTAssertEqual(controller.state, .running)
     XCTAssertTrue(firewall.checkedURLs.isEmpty, "回环态与应用防火墙零交互")
-    XCTAssertEqual(controller.effectiveRuntimeListenFacts?.listenerMode, .localhost)
+    XCTAssertEqual(controller.effectiveRuntimeListenFacts?.lan.mode, .disabled)
   }
 
   func testAllIPv4InterfacesBlockedByFirewallPresentsTargetedRepair() async throws {
@@ -46,7 +46,7 @@ final class ProxyRuntimeFirewallTests: ProxyRuntimeControllerTests {
       AppPresentation.message(for: RuntimeFailureFacts.firewallBlocked(facts)).contains("允许传入连接"))
     XCTAssertEqual(firewall.checkedURLs.map(\.lastPathComponent), ["sslocal"])
     XCTAssertEqual(
-      controller.effectiveRuntimeListenFacts?.listenerMode,
+      controller.effectiveRuntimeListenFacts?.lan.mode,
       .allIPv4Interfaces)
   }
 

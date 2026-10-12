@@ -190,7 +190,8 @@ private struct AppComposition {
       interfaceFacts: SystemInterfaceFactsProvider())
     // 设置工作流 module（Candidate 02）：设置窗口的唯一 seam，组合根接线一次；
     // 写入侧经窄缝 SettingsCommitting，运行时控制器薄扩展即生产实现。
-    let settingsWorkflow = SettingsWorkflow(committing: controller)
+    let settingsWorkflow = SettingsWorkflow(
+      committing: controller, credentials: controller.credentials)
     // 诊断工作流 module：诊断区唯一 seam，组合根接线一次；进程期
     // 实例供独立诊断窗口使用。
     let diagnosticsWorkflow = DiagnosticsWorkflow(

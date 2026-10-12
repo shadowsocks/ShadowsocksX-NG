@@ -41,6 +41,16 @@ final class ControllerProxyRuntimeAdapter: ProxyRuntimeAdapting {
     HTTPExportCapability(listen: controller.listenSettings)
   }
 
+  func terminalLANPassword() throws -> String {
+    guard let raw = controller.listenSettings.lan.passwordReference,
+      let password = try controller.credentials.secret(for: CredentialReference(rawValue: raw)),
+      RuntimeListenerAuthentication.validPassword(password)
+    else {
+      throw TerminalCommandFailure.credentialUnreadable
+    }
+    return password
+  }
+
   var listenFacts: RuntimeListenFacts {
     RuntimeListenFacts(listen: controller.listenSettings)
   }
@@ -102,11 +112,40 @@ extension HTTPExportCapability {
 /// SOCKS 用已保存 SOCKS 端口；变量集合、小写变量名、单引号转义、socks5
 /// 协议与 no_proxy 内容保持不变；IPv6 URL 使用方括号。
 extension TerminalProxyEnvironmentCommands {
-  init(listen: RuntimeListenFacts, commandAddress: TerminalCommandAddress) {
+  init(
+    listen: RuntimeListenFacts, commandAddress: TerminalCommandAddress,
+    password: () throws -> String = { throw TerminalCommandFailure.credentialUnreadable }
+  ) {
     let host = commandAddress.address
     let urlHost = host.contains(":") ? "[\(host)]" : host
-    let httpEndpoint = "'http://\(urlHost):\(listen.httpPort)'"
-    let socksEndpoint = "'socks5://\(urlHost):\(listen.socksPort)'"
+    let isLAN = host != "127.0.0.1"
+    let httpPort = isLAN ? listen.lan.httpPort : listen.httpPort
+    let socksPort = isLAN ? listen.lan.socksPort : listen.socksPort
+    var userInfo = ""
+    if isLAN && listen.lan.authenticationEnabled {
+      do {
+        let secret = try password()
+        guard RuntimeListenerAuthentication.validUsername(listen.lan.username),
+          RuntimeListenerAuthentication.validPassword(secret)
+        else {
+          throw TerminalCommandFailure.credentialUnreadable
+        }
+        let allowed = CharacterSet(
+          charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._~")
+        guard
+          let username = listen.lan.username.addingPercentEncoding(withAllowedCharacters: allowed),
+          let encodedPassword = secret.addingPercentEncoding(withAllowedCharacters: allowed)
+        else {
+          throw TerminalCommandFailure.credentialUnreadable
+        }
+        userInfo = "\(username):\(encodedPassword)@"
+      } catch {
+        self.init(zshBash: "", fish: "", failure: .credentialUnreadable)
+        return
+      }
+    }
+    let httpEndpoint = "'http://\(userInfo)\(urlHost):\(httpPort)'"
+    let socksEndpoint = "'socks5://\(userInfo)\(urlHost):\(socksPort)'"
     let noProxy = "'localhost,127.0.0.1,::1,.local'"
     let zshBash =
       [
@@ -130,7 +169,7 @@ extension TerminalProxyEnvironmentCommands {
 
 extension SslocalListenSettings {
   fileprivate var proxyLoopbackURLHost: String {
-    let host = listenerMode.proxyLoopbackAddress
+    let host = "127.0.0.1"
     return host.contains(":") ? "[\(host)]" : host
   }
 }

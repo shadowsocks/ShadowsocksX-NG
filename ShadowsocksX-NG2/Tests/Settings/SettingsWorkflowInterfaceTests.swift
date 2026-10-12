@@ -16,7 +16,8 @@ final class SettingsWorkflowInterfaceTests: XCTestCase {
   }
 
   func makeWorkflow() -> SettingsWorkflow {
-    SettingsWorkflow(committing: committing, occupancyProbe: probe)
+    SettingsWorkflow(
+      committing: committing, occupancyProbe: probe, credentials: InMemoryCredentialStore())
   }
 
   func testPortEditorMapsValidationIssuesToTheAffectedFields() {
@@ -70,19 +71,20 @@ final class SettingsWorkflowInterfaceTests: XCTestCase {
     let draft = workflow.beginPortSettingsEditing()
     workflow.refreshPortEditorOccupancy(for: draft)
     let expected = RuntimeListenFacts(
-      listenerMode: .allIPv4Interfaces,
+      listenerMode: .disabled,
       socksPort: draft.socksPort,
       httpPort: draft.httpPort)
 
     await waitUntil(probe.requests.contains { $0.listen == expected })
 
     XCTAssertEqual(probe.requests.first(where: { $0.listen == expected })?.endpoint, .socks)
-    XCTAssertEqual(probe.requests.first(where: { $0.listen == expected })?.bindAddress, "0.0.0.0")
+    XCTAssertEqual(probe.requests.first(where: { $0.listen == expected })?.bindAddress, "127.0.0.1")
   }
 
-  func testRuntimePortExceptionRequiresTheCompleteUnchangedListenIdentity() async {
-    probe = FakeOccupancyProbe(occupiedPorts: [11_086])
+  func testRuntimePortExceptionRequiresVerifiedOwnership() async {
+    probe = FakeOccupancyProbe(occupiedPorts: [11_086], occupierProcessIDs: [123])
     committing.isProxyRunning = true
+    committing.runtimeListenerProcessID = 123
     let workflow = makeWorkflow()
     let draft = workflow.beginPortSettingsEditing()
     workflow.refreshPortEditorOccupancy(for: draft)
@@ -92,8 +94,7 @@ final class SettingsWorkflowInterfaceTests: XCTestCase {
     XCTAssertFalse(workflow.portFieldState(for: .socks, editorDraft: draft).canSuggestFreePort)
     XCTAssertTrue(workflow.canSavePortSettings(draft))
 
-    committing.runtimeListenFacts = RuntimeListenFacts(
-      listenerMode: .allIPv4Interfaces, socksPort: 11_086, httpPort: 11_087)
+    committing.runtimeListenerProcessID = 456
     workflow.refreshPortEditorOccupancy(for: draft)
     await waitUntil(workflow.portFieldState(for: .socks, editorDraft: draft).occupancy != nil)
 

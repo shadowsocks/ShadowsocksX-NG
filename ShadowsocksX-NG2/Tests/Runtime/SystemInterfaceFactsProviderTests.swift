@@ -77,9 +77,9 @@ final class SystemInterfaceFactsProviderTests: XCTestCase {
       for: .allIPv4AndIPv6Interfaces, interfaces: interfaces)
 
     XCTAssertEqual(
-      candidates.prefix(2).map(\.address), ["127.0.0.1", "::1"],
-      "双栈回环两项置顶且来自真实主机")
-    let nonLoopback = candidates.dropFirst(2)
+      candidates.prefix(1).map(\.address), ["127.0.0.1"],
+      "本地 IPv4 回环置顶且来自真实主机")
+    let nonLoopback = candidates.dropFirst(1)
     XCTAssertFalse(nonLoopback.isEmpty, "真实主机存在可列出的接口地址候选")
     for candidate in nonLoopback {
       let fact = interfaces.first { $0.bsdName == candidate.bsdName }?

@@ -46,7 +46,7 @@ final class ProxyPortSemanticsTests: XCTestCase {
     XCTAssertEqual(
       AppPresentation.message(
         for: PortSettingError.portOutOfRange(endpoint: .http, port: 70000)),
-      "HTTP 端口 70000 无效，必须是 1000–65535 之间的整数")
+      "HTTP 端口 70000 无效，必须是 1025–65535 之间的整数")
     XCTAssertEqual(
       AppPresentation.message(
         for: PortSettingError.duplicatePort(
@@ -94,13 +94,13 @@ final class ProxyPortSemanticsTests: XCTestCase {
     let port = held.port
     let probe = SystemPortOccupancyProbe()
 
-    guard case .occupied = probe.occupancy(port: port, listenerMode: .localhost) else {
+    guard case .occupied = probe.occupancy(port: port, listenerMode: .disabled) else {
       return XCTFail("已被本测试进程监听的端口必须判为占用")
     }
 
     held.close()
 
-    guard case .free = probe.occupancy(port: port, listenerMode: .localhost) else {
+    guard case .free = probe.occupancy(port: port, listenerMode: .disabled) else {
       return XCTFail("关闭监听后同一端口必须判为空闲")
     }
   }
@@ -156,7 +156,7 @@ private final class ListenerFixture {
   let descriptor: Int32
   let port: Int
 
-  init(listenerMode: ListenerMode = .localhost) throws {
+  init(listenerMode: ListenerMode = .disabled) throws {
     let listenerFD = socket(AF_INET, SOCK_STREAM, 0)
     guard listenerFD >= 0 else { throw POSIXError(.ENOTSOCK) }
     var address = sockaddr_in()

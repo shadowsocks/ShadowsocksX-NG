@@ -273,15 +273,15 @@ extension AppPresentation {
 
   static func proxyMode(_ error: ProxyModeError) -> String {
     switch error {
-    case .invalidSOCKSPort: return "SOCKS 端口无效，必须是 1000–65535 之间的整数"
-    case .invalidHTTPPort: return "HTTP 端口无效，必须是 1000–65535 之间的整数"
+    case .invalidSOCKSPort: return "SOCKS 端口无效，必须是 1025–65535 之间的整数"
+    case .invalidHTTPPort: return "HTTP 端口无效，必须是 1025–65535 之间的整数"
     }
   }
 
   private static func port(_ error: PortSettingError) -> String {
     switch error {
     case .portOutOfRange(let endpoint, let portNumber):
-      return "\(endpoint.displayName) 端口 \(portNumber) 无效，必须是 1000–65535 之间的整数"
+      return "\(endpoint.displayName) 端口 \(portNumber) 无效，必须是 1025–65535 之间的整数"
     case .duplicatePort(let endpoint, let otherEndpoint, let portNumber):
       return
         "\(endpoint.displayName) 端口与 \(otherEndpoint.displayName) 端口冲突（都是 \(portNumber)），请为每个端点配置不同的端口"
@@ -303,7 +303,7 @@ extension AppPresentation {
     case .invalid(let errors): return errors.map(settingsValidation).joined(separator: "；")
     case .ioFailure: return "偏好文件读写失败"
     case .missingCredential: return "偏好中的敏感 URL 无法从钥匙串读取"
-    case .credentialFailure: return "偏好中的敏感 URL 无法写入钥匙串"
+    case .credentialFailure(let detail): return "凭据操作失败：\(detail)"
     case .legacyListenSettings(let error): return "旧版监听设置无法读取：\(listenStore(error))"
     }
   }

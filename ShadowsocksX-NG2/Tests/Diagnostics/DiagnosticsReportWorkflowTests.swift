@@ -45,7 +45,7 @@ final class DiagnosticsReportWorkflowTests: DiagnosticsWorkflowTestCase {
     // 允许类目的事实必须在场：状态、端口、契约摘要、数量、插件、文件行、生成时间。
     XCTAssertTrue(report.contains("- 代理状态：运行中"))
     XCTAssertTrue(report.contains("- 活动目标：已设置"))
-    XCTAssertTrue(report.contains("- 监听方式：仅本机（127.0.0.1）"))
+    XCTAssertTrue(report.contains("- 局域网监听：关闭"))
     XCTAssertTrue(report.contains("SOCKS5 端口 11086"))
     XCTAssertTrue(report.contains("servers=1 protocols=socks mode=tcp_and_udp"))
     XCTAssertTrue(report.contains("服务器：2（配置插件 1；手动 1 / 订阅 1）"))

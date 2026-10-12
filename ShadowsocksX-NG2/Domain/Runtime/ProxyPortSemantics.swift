@@ -8,11 +8,15 @@
 enum ProxyEndpointKind: Hashable, Sendable, CaseIterable {
   case socks
   case http
+  case lanSocks
+  case lanHTTP
 
   var displayName: String {
     switch self {
     case .socks: "SOCKS5"
     case .http: "HTTP"
+    case .lanSocks: "局域网 SOCKS"
+    case .lanHTTP: "局域网 HTTP"
     }
   }
 }
@@ -43,10 +47,12 @@ extension SslocalListenSettings {
     switch endpoint {
     case .socks: socksPort
     case .http: httpPort
+    case .lanSocks: lan.socksPort
+    case .lanHTTP: lan.httpPort
     }
   }
 
-  /// 端口配置校验：范围 1000–65535、两端点配置值互异。错误按固定次序
+  /// 端口配置校验：范围 1025–65535、四端点配置值互异。错误按固定次序
   /// （socks/http 范围检查，再 socks-http 冲突）。
   func portValidationErrors() -> [PortSettingError] {
     var errors: [PortSettingError] = []
@@ -73,6 +79,7 @@ extension SslocalListenSettings {
   }
 
   private static let endpointPairs: [(ProxyEndpointKind, ProxyEndpointKind)] = [
-    (.socks, .http)
+    (.socks, .http), (.socks, .lanSocks), (.socks, .lanHTTP),
+    (.http, .lanSocks), (.http, .lanHTTP), (.lanSocks, .lanHTTP),
   ]
 }

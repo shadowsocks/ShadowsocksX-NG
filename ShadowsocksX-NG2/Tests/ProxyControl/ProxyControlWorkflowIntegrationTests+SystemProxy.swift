@@ -149,6 +149,6 @@ extension ProxyControlWorkflowIntegrationTests {
     listen.httpPort = 8080
     XCTAssertEqual(
       HTTPExportCapability(listen: listen).copyableLine,
-      "export http_proxy=http://[::1]:8080;export https_proxy=http://[::1]:8080;")
+      "export http_proxy=http://127.0.0.1:8080;export https_proxy=http://127.0.0.1:8080;")
   }
 }

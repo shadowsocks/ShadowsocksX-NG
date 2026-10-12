@@ -2,35 +2,79 @@ import Foundation
 
 /// The allowed range for local proxy listener ports.
 enum ProxyPortRange {
-  static let valid = 1000...65_535
+  static let valid = 1025...65_535
 }
 
-/// 本地端点与单一监听方式的派生设置。HTTP 入站恒开启，与 SOCKS 共用同一
-/// 监听方式；默认端口与 Legacy 隔离（11086/11087）。
+/// 本机入口始终开启，端口是独立保存的配置。
+struct LocalListeningSettings: Codable, Equatable, Sendable {
+  var socksPort = 11086
+  var httpPort = 11087
+}
+
+/// 网络共享入口与本机入口共存，凭据只携带 Keychain 引用。
+struct LANListeningSettings: Codable, Equatable, Sendable {
+  var mode: ListenerMode = .disabled
+  var socksPort = 11088
+  var httpPort = 11089
+  var udpRelayEnabled = false
+  var authenticationEnabled = false
+  var username = "user"
+  var passwordReference: String?
+
+  var isEnabled: Bool { mode != .disabled }
+}
+
 struct SslocalListenSettings: Equatable, Sendable {
   static let defaultSocksPort = 11086
   static let defaultHTTPPort = 11087
 
-  var listenerMode: ListenerMode = .localhost
-  var socksPort: Int = Self.defaultSocksPort
-  var httpPort: Int = Self.defaultHTTPPort
+  var local = LocalListeningSettings()
+  var lan = LANListeningSettings()
 
-  var bindAddress: String { listenerMode.bindAddress }
+  init(
+    listenerMode: ListenerMode = .disabled,
+    socksPort: Int = Self.defaultSocksPort, httpPort: Int = Self.defaultHTTPPort
+  ) {
+    local = LocalListeningSettings(socksPort: socksPort, httpPort: httpPort)
+    lan.mode = listenerMode
+  }
+
+  var listenerMode: ListenerMode {
+    get { lan.mode }
+    set { lan.mode = newValue }
+  }
+  var socksPort: Int {
+    get { local.socksPort }
+    set { local.socksPort = newValue }
+  }
+  var httpPort: Int {
+    get { local.httpPort }
+    set { local.httpPort = newValue }
+  }
+  var bindAddress: String { "127.0.0.1" }
   var mode: String { "tcp_and_udp" }
+  var configuredPorts: [Int] { [socksPort, httpPort, lan.socksPort, lan.httpPort] }
 
   var locals: [SslocalLocalDocument] {
-    [
+    var result = [
       SslocalLocalDocument(
-        inboundProtocol: "socks",
-        localAddress: bindAddress,
-        localPort: socksPort,
-        mode: mode),
+        inboundProtocol: "socks", localAddress: bindAddress,
+        localPort: socksPort, mode: mode),
       SslocalLocalDocument(
-        inboundProtocol: "http",
-        localAddress: bindAddress,
-        localPort: httpPort,
-        mode: "tcp_only"),
+        inboundProtocol: "http", localAddress: bindAddress,
+        localPort: httpPort, mode: "tcp_only"),
     ]
+    if lan.isEnabled {
+      result += [
+        SslocalLocalDocument(
+          inboundProtocol: "socks", localAddress: lan.mode.bindAddress,
+          localPort: lan.socksPort, mode: lan.udpRelayEnabled ? "tcp_and_udp" : "tcp_only"),
+        SslocalLocalDocument(
+          inboundProtocol: "http", localAddress: lan.mode.bindAddress,
+          localPort: lan.httpPort, mode: "tcp_only"),
+      ]
+    }
+    return result
   }
 }
 
@@ -40,12 +84,14 @@ struct RuntimeListenFacts: Equatable, Sendable {
   let listenerMode: ListenerMode
   let socksPort: Int
   let httpPort: Int
+  var lan = LANListeningSettings()
 
   init(listen: SslocalListenSettings) {
     self.init(
-      listenerMode: listen.listenerMode,
+      listenerMode: .disabled,
       socksPort: listen.socksPort,
       httpPort: listen.httpPort)
+    lan = listen.lan
   }
 
   init(
@@ -62,9 +108,10 @@ struct RuntimeListenFacts: Equatable, Sendable {
     let socks = document.locals.first { $0.inboundProtocol == "socks" }
     let http = document.locals.first { $0.inboundProtocol == "http" }
     self.init(
-      listenerMode: document.listen.listenerMode,
+      listenerMode: .disabled,
       socksPort: socks?.localPort ?? 0,
       httpPort: http?.localPort ?? SslocalListenSettings.defaultHTTPPort)
+    lan = document.listen.lan
   }
 
   var bindAddress: String { listenerMode.bindAddress }
@@ -76,4 +123,5 @@ struct SslocalListenFingerprint: Equatable, Sendable {
   let locals: [SslocalLocalDocument]
   let ipv6Only: Bool?
   let acl: ProxyACLDocument?
+  var authentication: RuntimeListenerAuthentication?
 }

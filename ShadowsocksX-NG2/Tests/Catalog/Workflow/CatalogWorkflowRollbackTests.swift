@@ -243,8 +243,7 @@ final class CatalogWorkflowRollbackTests: XCTestCase {
     existingSettings.listen.httpPort = 2087
     existingSettings.preferredMode = .global
     let settingsStore = ProxySettingsFileStore(
-      fileURL: settingsURL,
-      legacyListenFileURL: workDir.appendingPathComponent("legacy-listen.json"))
+      fileURL: settingsURL)
     try settingsStore.save(existingSettings)
     let existingTarget = NodeID(rawValue: "existing-target")
     let activationStore = ActivationStateFileStore(fileURL: activationURL)

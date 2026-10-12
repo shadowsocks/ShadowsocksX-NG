@@ -44,7 +44,23 @@ func clearRuntimeReceipt() {
 
 func spawnSslocal(_ document: SslocalRuntimeDocument) -> Process? {
   guard FileManager.default.isExecutableFile(atPath: sslocalURL.path) else { return nil }
+  do {
+    if let auth = document.listen.authentication {
+      guard auth.directory == contractURL.deletingLastPathComponent().standardizedFileURL.path
+      else { return nil }
+      try auth.writeFiles()
+    }
+  } catch { return nil }
   let child = Process()
+  let errorPipe = Pipe()
+  let logRedactor = SslocalLogRedactor()
+  child.standardError = errorPipe
+  child.standardOutput = errorPipe
+  errorPipe.fileHandleForReading.readabilityHandler = { handle in
+    let data = handle.availableData
+    logRedactor.write(data)
+    if data.isEmpty { handle.readabilityHandler = nil }
+  }
   child.executableURL = sslocalURL
   child.arguments = ["-c", contractURL.path]
   var childEnvironment = environment
@@ -59,6 +75,7 @@ func spawnSslocal(_ document: SslocalRuntimeDocument) -> Process? {
   child.environment = childEnvironment
   do {
     try child.run()
+    try? errorPipe.fileHandleForWriting.close()
   } catch {
     return nil
   }

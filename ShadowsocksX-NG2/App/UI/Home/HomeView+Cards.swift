@@ -1,8 +1,8 @@
 import SwiftUI
 
 /// 「复制代理环境变量设置命令」卡：按所选 shell 格式复制 HTTP 与 SOCKS 环境变量。
-/// 非「仅本机」监听方式下先以单选下拉框选择命令地址，两种 shell
-/// 的全部代理端点共用该选择；仅本机方式隐藏下拉框并始终使用回环地址。
+/// 局域网开启时以单选下拉框选择命令地址，两种 shell
+/// 的全部代理端点共用该选择；局域网关闭时隐藏下拉框并使用本地入口。
 struct TerminalProxyEnvironmentCard: View {
   @ObservedObject var control: ProxyControlWorkflow
   let clipboard: any TextClipboard
@@ -55,6 +55,10 @@ struct TerminalProxyEnvironmentCard: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
           }
+          if control.snapshot.terminalProxyEnvironmentCommands.failure != nil {
+            Text("局域网身份验证密码不可读，请重试。")
+              .font(.caption).foregroundStyle(.red)
+          }
           commandButton(for: .zshBash)
           commandButton(for: .fish)
         }
@@ -101,6 +105,7 @@ struct TerminalProxyEnvironmentCard: View {
     .background(
       .quaternary.opacity(0.5), in: RoundedRectangle(cornerRadius: 8, style: .continuous)
     )
+    .disabled(control.snapshot.terminalProxyEnvironmentCommands.failure != nil)
     .help(shell.command(from: control.snapshot.terminalProxyEnvironmentCommands))
   }
 
@@ -109,6 +114,7 @@ struct TerminalProxyEnvironmentCard: View {
     // 提示保持同一选择。
     let commands = control.refreshTerminalCommands()
     do {
+      if let failure = commands.failure { throw failure }
       try clipboard.write(shell.command(from: commands))
       feedbackTask?.cancel()
       copiedShell = shell

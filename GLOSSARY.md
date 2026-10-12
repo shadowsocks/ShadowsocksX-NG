@@ -187,18 +187,27 @@ _避免用词_：绕过列表（Bypass list，混淆用户附加项与产品固�
 _避免用词_：HTTP 代理模式（HTTP proxy mode）。
 
 **SOCKS5 UDP 中继（SOCKS5 UDP relay）**：
-本地 SOCKS5 入口接受 UDP ASSOCIATE 流量并通过代理服务中继的固定能力。它不表示系统全部 UDP 流量都会被代理。
+SOCKS5 入口接受 UDP ASSOCIATE 流量并通过代理服务中继的能力。它不表示系统全部 UDP 流量都会被代理。
 _避免用词_：系统级 UDP 代理、自动 UDP 代理。
 
 **旧版 Privoxy 适配器（Legacy Privoxy adapter）**：
 冻结旧版中，将 HTTP(S) 请求桥接到本地 SOCKS5 的组件，仅属于旧版实现。
 
+**本地监听（Local listening）**：
+仅供本机使用的 SOCKS 与 HTTP 代理入口，始终随后台代理客户端提供服务。
+
+**局域网监听（LAN listening）**：
+供网络设备访问的附加 SOCKS 与 HTTP 代理入口，与本地监听共存并使用不同端口；它可以独立关闭。
+
+**局域网身份验证（LAN authentication）**：
+局域网 SOCKS 与 HTTP 入口共用的用户名和密码验证，不表示 UDP 中继具备同等保护。
+
 **监听模式（Listener mode）**：
-本地 SOCKS 与 HTTP 代理入口共同使用的地址族和可访问范围选项，包括仅本机、全部 IPv4 接口、全部 IPv4 与 IPv6 接口、仅全部 IPv6 接口。
+局域网监听的启用状态及地址族选项，包括关闭、所有 IPv4 接口、所有 IPv4 与 IPv6 接口、所有 IPv6 接口。
 _避免用词_：监听范围（Listen scope）。
 
 **HTTP 代理环境命令（HTTP proxy environment command）**：
-仅设置本机 HTTP/HTTPS 代理环境变量的终端命令，目标为监听模式对应的回环地址。
+仅设置本机 HTTP/HTTPS 代理环境变量的终端命令，目标为本地监听入口。
 
 **终端代理环境命令（Terminal proxy environment commands）**：
 适用于 zsh/bash 和 fish 的命令，通过 HTTP 与 SOCKS 入口设置代理环境变量，并设置本地主机例外。它只影响遵循这些环境变量的子进程。
@@ -259,7 +268,7 @@ _避免用词_：菜单栏形态（Menu bar form，应用形态并非恒定）�
 产品降低意外泄露及向其他用户账户暴露凭据的保护范围。该范围不包含同一用户进程被攻破、root 访问或快照与备份，也不承诺安全擦除。
 
 **凭据引用（Credential reference）**：
-服务器配置、订阅或远程 URL 设置与其持久凭据之间的非秘密关联，与凭据值本身不同。
+服务器配置、订阅、局域网身份验证或远程 URL 设置与其持久凭据之间的非秘密关联，与凭据值本身不同。
 
 **诊断报告（Diagnostic report）**：
 用户请求生成的脱敏文档，包含允许披露的运行状态、端点元数据、配置汇总及安全事件资料。它排除敏感信息、服务器地址、备注和原始日志。

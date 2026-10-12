@@ -35,7 +35,20 @@ extension ProxyRuntimeController {
             document: user, builtIn: builtIn, aclURL: aclURL))
       }.value
       guard preparationIsCurrent(ticket) else { throw RulePreparationError.superseded }
-      return result
+      let lan = ticket.settings.listen.lan
+      guard lan.isEnabled && lan.authenticationEnabled else { return result.authenticatingLAN(nil) }
+      guard let raw = lan.passwordReference,
+        let password = try credentials.secret(for: CredentialReference(rawValue: raw))
+      else {
+        throw ProxySettingsStoreError.credentialFailure(detail: "局域网身份验证密码不可读")
+      }
+      let auth = RuntimeListenerAuthentication(
+        username: lan.username, password: password,
+        directory: runtimeFileStore.fileURL.deletingLastPathComponent().standardizedFileURL.path)
+      guard auth.isValid else {
+        throw ProxySettingsStoreError.credentialFailure(detail: "局域网身份验证凭据无效")
+      }
+      return result.authenticatingLAN(auth)
     } catch {
       guard preparationIsCurrent(ticket) else { throw RulePreparationError.superseded }
       throw error

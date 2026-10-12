@@ -14,8 +14,7 @@ final class ProxySettingsFileStoreTests: XCTestCase {
     directory = FileManager.default.temporaryDirectory
       .appendingPathComponent("ssxng-settings-tests-\(UUID().uuidString)", isDirectory: true)
     store = ProxySettingsFileStore(
-      fileURL: directory.appendingPathComponent("settings.json"),
-      legacyListenFileURL: directory.appendingPathComponent("listen-settings.json"))
+      fileURL: directory.appendingPathComponent("settings.json"))
   }
 
   override func tearDownWithError() throws {
@@ -33,8 +32,7 @@ final class ProxySettingsFileStoreTests: XCTestCase {
     let blockedParent = directory.appendingPathComponent("blocked")
     try Data("not a directory".utf8).write(to: blockedParent)
     return ProxySettingsFileStore(
-      fileURL: blockedParent.appendingPathComponent("settings.json"),
-      legacyListenFileURL: directory.appendingPathComponent("listen-settings.json"))
+      fileURL: blockedParent.appendingPathComponent("settings.json"))
   }
 
   func testRoundTripKeepsPreferences() throws {
@@ -49,7 +47,7 @@ final class ProxySettingsFileStoreTests: XCTestCase {
 
     XCTAssertEqual(try store.load(), settings)
     let raw = try String(contentsOf: store.fileURL, encoding: .utf8)
-    XCTAssertFalse(raw.contains("udpRelayEnabled"))
+    XCTAssertTrue(raw.contains("udpRelayEnabled"))
     XCTAssertFalse(raw.contains("timeoutSeconds"))
     XCTAssertFalse(raw.contains("verboseLogging"))
     XCTAssertFalse(raw.contains("advertisedAddress"))
@@ -104,8 +102,8 @@ final class ProxySettingsFileStoreTests: XCTestCase {
 
     let loaded = try store.load()
     XCTAssertEqual(loaded.preferredMode, .rule)
-    XCTAssertEqual(loaded.listen.socksPort, 2086)
-    XCTAssertEqual(loaded.listen.httpPort, 2087)
+    XCTAssertEqual(loaded.listen.socksPort, 11086)
+    XCTAssertEqual(loaded.listen.httpPort, 11087)
   }
 
   func testInvalidSaveDoesNotTouchExistingSettings() throws {
@@ -131,13 +129,14 @@ final class ProxySettingsFileStoreTests: XCTestCase {
     }
   }
 
-  func testMissingNewFileMigratesLegacyListenSettingsAndUsesNewDefaults() throws {
+  func testMissingNewFileIgnoresOldListenSettingsAndUsesDefaults() throws {
     var legacy = SslocalListenSettings()
     legacy.socksPort = 2086
-    try ListenSettingsFileStore(fileURL: store.legacyListenFileURL).save(legacy)
+    try ListenSettingsFileStore(fileURL: directory.appendingPathComponent("listen-settings.json"))
+      .save(legacy)
 
     let loaded = try store.load()
 
-    XCTAssertEqual(loaded.listen, legacy)
+    XCTAssertEqual(loaded.listen, SslocalListenSettings())
   }
 }

@@ -198,7 +198,10 @@ enum DiagnosticReportBuilder {
     lines.append("- 代理状态：\(snapshot.proxyState.label)")
     lines.append("- 活动目标：\(snapshot.hasActiveTarget ? "已设置" : "未设置")")
     if let listen = snapshot.listen {
-      lines.append("- 监听方式：\(listen.listenerMode.displayName)（\(listen.bindAddress)）")
+      let binding = listen.lan.isEnabled ? "（\(listen.lan.mode.bindAddress)）" : ""
+      lines.append(
+        "- 局域网监听：\(listen.lan.mode.displayName)\(binding)，SOCKS \(listen.lan.socksPort) / HTTP \(listen.lan.httpPort)"
+      )
       lines.append("- 本地监听：\(listenDescription(listen))")
     }
     if let summary = snapshot.runtimeDocumentSummary {

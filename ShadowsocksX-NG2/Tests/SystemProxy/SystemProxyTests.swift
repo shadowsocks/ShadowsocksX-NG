@@ -25,31 +25,30 @@ final class SystemProxyTests: XCTestCase {
       "全局模式的系统例外使用固定本地范围，与 ACL 安全策略一致")
   }
 
-  func testIPv6OnlyModeProjectsSystemProxyToIPv6Loopback() throws {
+  func testIPv6LANModeKeepsSystemProxyOnLocalIPv4Loopback() throws {
     let document = SslocalRuntimeDocument(
       servers: [], listen: SslocalListenSettings(listenerMode: .allIPv6Interfaces))
 
     let configuration = try ProxyMode.rule.systemProxyConfiguration(for: document)
 
-    XCTAssertEqual(configuration.socks.host, "::1")
-    XCTAssertEqual(configuration.http.host, "::1")
-    XCTAssertEqual(configuration.https.host, "::1", "HTTPS 显式赋值，与 HTTP 同端点")
+    XCTAssertEqual(configuration.socks.host, "127.0.0.1")
+    XCTAssertEqual(configuration.http.host, "127.0.0.1")
+    XCTAssertEqual(configuration.https.host, "127.0.0.1", "HTTPS 显式赋值，与 HTTP 同端点")
   }
 
   func testMissingHTTPInboundIsRejectedInsteadOfPointingAtAWildcardPort() throws {
-    // 防御路径：well-formed 文档允许缺 HTTP 入站；此时不得把系统代理指向
-    // 无效端口 0，而应按模式错误拒绝。
-    let json = """
-      {"servers":[],"locals":[{"protocol":"socks","local_address":"127.0.0.1",\
-      "local_port":11086,"mode":"tcp_and_udp"}],\
-      "x_shadowsocksx_ng_listen":{"listener_mode":"localhost",\
-      "bind_address":"127.0.0.1"}}
-      """
-    let document = try XCTUnwrap(SslocalRuntimeDocument.decodeValidated(Data(json.utf8)))
-
-    XCTAssertThrowsError(try ProxyMode.rule.systemProxyConfiguration(for: document)) { error in
-      XCTAssertEqual(error as? ProxyModeError, .invalidHTTPPort(0))
-    }
+    var dictionary = try XCTUnwrap(
+      JSONSerialization.jsonObject(
+        with: SslocalRuntimeDocument(servers: [], listen: SslocalListenSettings()).jsonData()
+      ) as? [String: Any])
+    dictionary["locals"] = [
+      [
+        "protocol": "socks", "local_address": "127.0.0.1",
+        "local_port": 11086, "mode": "tcp_and_udp",
+      ]
+    ]
+    let data = try JSONSerialization.data(withJSONObject: dictionary)
+    XCTAssertNil(SslocalRuntimeDocument.decodeValidated(data), "每组必须同时提供 SOCKS 与 HTTP")
   }
 
   func testModeProjectionCarriesClosedTypedPolicyDefaults() throws {

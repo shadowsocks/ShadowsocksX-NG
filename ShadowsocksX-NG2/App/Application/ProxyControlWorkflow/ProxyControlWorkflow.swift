@@ -13,9 +13,12 @@ struct HTTPExportCapability: Equatable, Sendable {
 
 /// 首页可复制的 shell 环境变量设置命令。不同 shell 的语法由 workflow 一次投影，
 /// 呈现层只选择格式并执行剪贴板副作用。
+enum TerminalCommandFailure: Error, Equatable, Sendable { case credentialUnreadable }
+
 struct TerminalProxyEnvironmentCommands: Equatable, Sendable {
   let zshBash: String
   let fish: String
+  var failure: TerminalCommandFailure?
 }
 
 /// 活动目标安全事实：存在性 + 可展示路径摘要。身份是不透明
@@ -99,6 +102,7 @@ protocol ProxyRuntimeAdapting: AnyObject {
   var httpExportCapability: HTTPExportCapability { get }
   /// 已保存监听事实：命令地址候选过滤与命令生成的数据来源。
   var listenFacts: RuntimeListenFacts { get }
+  func terminalLANPassword() throws -> String
   /// 运行时事实变化通知：目录驱动、设置变更或运行时收敛导致事实变化后
   /// 发值。生产实现合并控制器与观察机的 didChange 事实通道（同一主队列轮
   /// 多次写合并为一次）；fake 同步发值。workflow 以此触发整体重观察。
@@ -276,7 +280,7 @@ final class ProxyControlWorkflow: ObservableObject {
   ) -> (snapshot: ProxyControlSnapshot, selection: TerminalCommandAddressIdentity) {
     let listenFacts = runtime.listenFacts
     let picker = TerminalCommandAddressPolicy.picker(
-      mode: listenFacts.listenerMode,
+      mode: listenFacts.lan.mode,
       interfaces: interfaceFacts.interfaces,
       selection: selection)
     return (
@@ -296,8 +300,14 @@ final class ProxyControlWorkflow: ObservableObject {
         httpExport: runtime.httpExportCapability,
         commandAddressPicker: picker,
         terminalProxyEnvironmentCommands: TerminalProxyEnvironmentCommands(
-          listen: listenFacts, commandAddress: picker.selected)),
+          listen: listenFacts, commandAddress: picker.selected,
+          password: { try runtime.terminalLANPassword() })),
       picker.selected.identity
     )
   }
+}
+
+// 未提供凭据读取能力的 adapter 必须拒绝认证命令，不能复制无密码的替代值。
+extension ProxyRuntimeAdapting {
+  func terminalLANPassword() throws -> String { throw TerminalCommandFailure.credentialUnreadable }
 }

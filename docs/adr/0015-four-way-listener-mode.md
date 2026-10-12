@@ -1,6 +1,6 @@
 # Four-way listener mode
 
-**Status**: accepted
+**Status**: superseded by ADR-0034
 
 Replace the former loopback/host choice with one independently saved listener mode shared by the SOCKS and HTTP inbounds. The dialog uses these labels and bindings:
 

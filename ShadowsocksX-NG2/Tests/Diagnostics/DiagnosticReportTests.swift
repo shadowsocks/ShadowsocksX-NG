@@ -106,7 +106,7 @@ final class DiagnosticReportTests: XCTestCase {
     // 允许类目的事实必须在场：状态、数量、权限、存在性、脱敏元数据。
     XCTAssertTrue(report.contains("激活失败"), "缺少代理状态行：\n\(report)")
     XCTAssertTrue(report.contains("活动目标：已设置"))
-    XCTAssertTrue(report.contains("监听方式：仅本机（127.0.0.1）"))
+    XCTAssertTrue(report.contains("局域网监听：关闭"))
     XCTAssertTrue(report.contains("SOCKS5 端口 11086"))
     XCTAssertTrue(report.contains("HTTP 端口 11087"))
     XCTAssertTrue(report.contains("servers=1 protocols=socks,http mode=tcp_and_udp"), "缺少契约脱敏摘要")
@@ -148,7 +148,7 @@ final class DiagnosticReportTests: XCTestCase {
 
     let report = DiagnosticReportBuilder.markdown(from: snapshot)
 
-    XCTAssertTrue(report.contains("监听方式：所有 IPv4 接口（0.0.0.0）"))
+    XCTAssertTrue(report.contains("局域网监听：所有 IPv4 接口（0.0.0.0）"))
   }
 
   /// 契约摘要走 Redactor：完整订阅 URL 只保留 scheme+host。

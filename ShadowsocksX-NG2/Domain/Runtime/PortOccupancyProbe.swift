@@ -95,22 +95,24 @@ extension RuntimeListenFacts {
     switch endpoint {
     case .socks: socksPort
     case .http: httpPort
+    case .lanSocks: lan.socksPort
+    case .lanHTTP: lan.httpPort
     }
   }
 
   func replacingPort(_ port: Int, for endpoint: ProxyEndpointKind) -> RuntimeListenFacts {
+    var result = self
     switch endpoint {
     case .socks:
-      return RuntimeListenFacts(
-        listenerMode: listenerMode,
-        socksPort: port,
-        httpPort: httpPort)
+      result = RuntimeListenFacts(listenerMode: listenerMode, socksPort: port, httpPort: httpPort)
+      result.lan = lan
     case .http:
-      return RuntimeListenFacts(
-        listenerMode: listenerMode,
-        socksPort: socksPort,
-        httpPort: port)
+      result = RuntimeListenFacts(listenerMode: listenerMode, socksPort: socksPort, httpPort: port)
+      result.lan = lan
+    case .lanSocks: result.lan.socksPort = port
+    case .lanHTTP: result.lan.httpPort = port
     }
+    return result
   }
 }
 
@@ -132,7 +134,14 @@ struct PortOccupancyProbeRequest: Equatable, Sendable {
     self.port = port ?? listen.port(for: endpoint)
   }
 
-  var bindAddress: String { listen.bindAddress }
+  var listenerMode: ListenerMode {
+    switch endpoint {
+    case .socks, .http: listen.listenerMode
+    case .lanSocks, .lanHTTP: listen.lan.mode
+    }
+  }
+
+  var bindAddress: String { listenerMode.bindAddress }
 }
 
 /// 端口占用探测缝：设置编辑期的即时占用校验。激活是否成功
@@ -147,7 +156,7 @@ protocol PortOccupancyProbing: Sendable {
 /// `lsof` 解析监听进程名。探测不设置 SO_REUSEADDR/SO_REUSEPORT，避免假空闲。
 struct SystemPortOccupancyProbe: PortOccupancyProbing {
   func occupancy(for request: PortOccupancyProbeRequest) -> PortOccupancy {
-    occupancy(port: request.port, listenerMode: request.listen.listenerMode)
+    occupancy(port: request.port, listenerMode: request.listenerMode)
   }
 
   /// Compatibility helper for the lower-level probe tests. SettingsWorkflow
@@ -155,7 +164,7 @@ struct SystemPortOccupancyProbe: PortOccupancyProbing {
   func occupancy(port: Int, bindAddress: String) -> PortOccupancy {
     let mode: ListenerMode
     switch bindAddress {
-    case "127.0.0.1": mode = .localhost
+    case "127.0.0.1": mode = .disabled
     case "0.0.0.0": mode = .allIPv4Interfaces
     case "::": mode = .allIPv6Interfaces
     default: return .unknown(detail: "监听地址无法解析")
@@ -165,7 +174,7 @@ struct SystemPortOccupancyProbe: PortOccupancyProbing {
 
   func occupancy(port: Int, listenerMode: ListenerMode) -> PortOccupancy {
     switch listenerMode {
-    case .localhost, .allIPv4Interfaces:
+    case .disabled, .allIPv4Interfaces:
       return ipv4Occupancy(port: port, listenerMode: listenerMode)
     case .allIPv4AndIPv6Interfaces:
       return dualStackOccupancy(port: port, listenerMode: listenerMode)

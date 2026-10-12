@@ -155,7 +155,7 @@ final class FakeOccupancyProbe: PortOccupancyProbing, @unchecked Sendable {
 
   private func occupiedFamilies(for mode: ListenerMode) -> Set<PortOccupancyAddressFamily> {
     switch mode {
-    case .localhost, .allIPv4Interfaces:
+    case .disabled, .allIPv4Interfaces:
       [.ipv4]
     case .allIPv4AndIPv6Interfaces:
       [.ipv4, .ipv6]

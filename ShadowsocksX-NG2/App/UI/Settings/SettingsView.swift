@@ -8,6 +8,7 @@ struct SettingsView: View {
   @ObservedObject var workflow: SettingsWorkflow
   @ObservedObject var loginController: LaunchAtLoginController
   @ObservedObject var silentLaunch: SilentLaunchController
+  @State private var listenerEditingError: String?
   @State private var presentedEditor: SettingsEditorSheet?
 
   var body: some View {
@@ -22,8 +23,8 @@ struct SettingsView: View {
       switch editor {
       case .ports(let session):
         PortSettingsEditorSheet(workflow: workflow, initialDraft: session.initialDraft)
-      case .listener(let session):
-        ListenerModeEditorSheet(workflow: workflow, initialMode: session.initialMode)
+      case .lan(let session):
+        LANListeningEditorSheet(workflow: workflow, initialDraft: session.initialDraft)
       case .proxyExceptions(let session):
         ProxyExceptionsEditorSheet(workflow: workflow, initialValue: session.initialValue)
       }
@@ -80,25 +81,46 @@ struct SettingsView: View {
           .font(.footnote)
           .foregroundStyle(.red)
       }
-      settingRow("监听方式") {
+      portSettingsRow
+      settingRow("局域网监听") {
         Button {
-          presentedEditor = .listener(
-            ListenerModeEditorSession(initialMode: workflow.beginListenerModeEditing()))
+          do {
+            presentedEditor = .lan(
+              LANListeningEditorSession(
+                initialDraft: try workflow.beginLANListeningEditing()))
+            listenerEditingError = nil
+          } catch {
+            listenerEditingError = "局域网身份验证密码不可读，请重试。"
+          }
         } label: {
           HStack(spacing: 8) {
-            Text(workflow.committedListenerMode.displayName)
-            Image(systemName: "chevron.right")
-              .font(.caption.weight(.semibold))
+            VStack(alignment: .trailing, spacing: 3) {
+              let lan = workflow.committedLANListening
+              Text("\(lan.mode.displayName) SOCKS \(lan.socksPort) / HTTP \(lan.httpPort)")
+              Text(lanSummary)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            }
+            Image(systemName: "chevron.right").font(.caption.weight(.semibold))
           }
         }
         .buttonStyle(.bordered)
-        .accessibilityLabel("监听方式")
-        .accessibilityValue(workflow.committedListenerMode.displayName)
+        .accessibilityLabel("局域网监听")
       }
-      portSettingsRow
+      if let listenerEditingError {
+        Text(listenerEditingError).font(.caption).foregroundStyle(.red)
+      }
     } header: {
       sectionHeader("后台代理客户端")
     }
+  }
+
+  private var lanSummary: String {
+    let lan = workflow.committedLANListening
+    let udp = lan.udpRelayEnabled ? String(localized: "UDP 中继启用") : String(localized: "UDP 中继禁用")
+    let auth =
+      lan.authenticationEnabled ? String(localized: "身份验证已启用") : String(localized: "身份验证已禁用")
+    return "\(udp) / \(auth)"
   }
 
   // MARK: - 系统代理
@@ -170,7 +192,7 @@ extension SettingsView {
     let ports = workflow.committedPortDraft
     let socksPort = ports.socksPort.formatted(.number.grouping(.never))
     let httpPort = ports.httpPort.formatted(.number.grouping(.never))
-    return settingRow("端口设置") {
+    return settingRow("本地监听") {
       Button {
         presentedEditor = .ports(
           PortSettingsEditorSession(initialDraft: workflow.beginPortSettingsEditing()))
@@ -183,7 +205,7 @@ extension SettingsView {
         }
       }
       .buttonStyle(.bordered)
-      .accessibilityLabel("端口设置")
+      .accessibilityLabel("本地监听")
       .accessibilityValue("SOCKS \(socksPort)，HTTP 代理 \(httpPort)")
     }
   }
@@ -192,13 +214,13 @@ extension SettingsView {
 
 private enum SettingsEditorSheet: Identifiable {
   case ports(PortSettingsEditorSession)
-  case listener(ListenerModeEditorSession)
+  case lan(LANListeningEditorSession)
   case proxyExceptions(ProxyExceptionsEditorSession)
 
   var id: UUID {
     switch self {
     case .ports(let session): session.id
-    case .listener(let session): session.id
+    case .lan(let session): session.id
     case .proxyExceptions(let session): session.id
     }
   }
@@ -325,16 +347,15 @@ private struct PortSettingsEditorSheet: View {
 
   var body: some View {
     VStack(alignment: .leading, spacing: 16) {
-      Text("端口设置")
+      Text("本地监听")
         .font(.title2)
-      Text("端口范围为 1000–65535，SOCKS5 与 HTTP 代理端口必须不同。")
+      Text("SOCKS 与 HTTP 代理在本地回环地址 127.0.0.1 监听")
+        .font(.caption).foregroundStyle(.secondary)
+      Text("端口范围为 1025–65535，SOCKS 与 HTTP 代理端口必须不同")
         .font(.caption)
         .foregroundStyle(.secondary)
 
-      VStack(alignment: .leading, spacing: 14) {
-        portField(.socks, title: "SOCKS 代理端口")
-        portField(.http, title: "HTTP 代理端口")
-      }
+      ListenerPortFields(workflow: workflow, draft: $draft)
 
       if let failure = workflow.lastFailure {
         Label(failure.presentableMessage, systemImage: "exclamationmark.triangle.fill")
@@ -369,79 +390,4 @@ private struct PortSettingsEditorSheet: View {
     }
   }
 
-  private func portField(_ id: SettingsPortID, title: String) -> some View {
-    let state = workflow.portFieldState(for: id, editorDraft: draft)
-    return VStack(alignment: .leading, spacing: 5) {
-      HStack(spacing: 16) {
-        Text(title)
-        Spacer(minLength: 12)
-        TextField(title, value: portBinding(for: id), format: .number.grouping(.never))
-          .textFieldStyle(.roundedBorder)
-          .multilineTextAlignment(.trailing)
-          .monospacedDigit()
-          .frame(width: 112)
-          .disabled(workflow.isCommitting)
-      }
-
-      ForEach(state.issues, id: \.self) { issue in
-        Text(AppPresentation.message(for: issue))
-          .font(.caption)
-          .foregroundStyle(.red)
-          .multilineTextAlignment(.trailing)
-          .frame(maxWidth: .infinity, alignment: .trailing)
-      }
-
-      if let occupancy = occupancyMessage(for: state) {
-        Text(occupancy)
-          .font(.caption)
-          .foregroundStyle(occupancyColor(for: state))
-          .multilineTextAlignment(.trailing)
-          .frame(maxWidth: .infinity, alignment: .trailing)
-      }
-
-      if state.canSuggestFreePort {
-        Button("建议空闲端口") {
-          Task {
-            let outcome = await workflow.suggestFreePort(for: id, from: draft)
-            if case .suggestedPort(let port, let value) = outcome {
-              draft.setPortValue(value, for: port)
-            }
-          }
-        }
-        .font(.caption)
-        .disabled(workflow.isCommitting)
-      }
-    }
-  }
-
-  private func portBinding(for id: SettingsPortID) -> Binding<Int> {
-    Binding(
-      get: { draft.portValue(for: id) },
-      set: { draft.setPortValue($0, for: id) })
-  }
-
-  private func occupancyMessage(for state: SettingsPortFieldState) -> String? {
-    guard let occupancy = state.occupancy else { return nil }
-    switch occupancy {
-    case .free:
-      return nil
-    case .occupied(let occupier):
-      if state.isRuntimePortException {
-        return "当前代理正在使用此端口"
-      }
-      return "当前端口已占用" + (occupier.map { "（" + $0 + "）" } ?? "")
-    case .unknown(let detail):
-      return "端口状态无法确定：" + detail
-    }
-  }
-
-  private func occupancyColor(for state: SettingsPortFieldState) -> Color {
-    guard let occupancy = state.occupancy else { return .secondary }
-    switch occupancy {
-    case .free, .unknown:
-      return .secondary
-    case .occupied:
-      return state.isRuntimePortException ? .secondary : .orange
-    }
-  }
 }

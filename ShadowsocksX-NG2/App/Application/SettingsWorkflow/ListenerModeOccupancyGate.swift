@@ -51,7 +51,7 @@ enum ListenerModeOccupancyGate {
     guard !isVerifiedOwner else { return true }
 
     let isIPv4Mode =
-      context.listenerMode == .localhost
+      context.listenerMode == .disabled
       || context.listenerMode == .allIPv4Interfaces
     let isDualStackRuntimeBlockingIPv4 =
       isIPv4Mode

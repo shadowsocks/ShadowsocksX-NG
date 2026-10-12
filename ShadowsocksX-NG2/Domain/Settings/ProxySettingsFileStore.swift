@@ -4,14 +4,11 @@ import Foundation
 /// 未发布的 NG2 PAC 偏好不做迁移。
 struct ProxySettingsFileStore: ProxySettingsStoring {
   let fileURL: URL
-  let legacyListenFileURL: URL
 
   init(
-    fileURL: URL = ProxySettingsFileStore.defaultFileURL(),
-    legacyListenFileURL: URL = ListenSettingsFileStore.defaultFileURL()
+    fileURL: URL = ProxySettingsFileStore.defaultFileURL()
   ) {
     self.fileURL = fileURL
-    self.legacyListenFileURL = legacyListenFileURL
   }
 
   static func defaultFileURL() -> URL {
@@ -20,16 +17,7 @@ struct ProxySettingsFileStore: ProxySettingsStoring {
 
   func load() throws -> ProxySettings {
     guard FileManager.default.fileExists(atPath: fileURL.path) else {
-      do {
-        let listen = try ListenSettingsFileStore(fileURL: legacyListenFileURL).load()
-        return try validated(ProxySettings(listen: listen))
-      } catch let error as ListenSettingsStoreError {
-        throw ProxySettingsStoreError.legacyListenSettings(error)
-      } catch let error as ProxySettingsStoreError {
-        throw error
-      } catch {
-        throw ProxySettingsStoreError.ioFailure(detail: String(describing: error))
-      }
+      return ProxySettings()
     }
 
     let data: Data
@@ -77,6 +65,13 @@ struct ProxySettingsFileStore: ProxySettingsStoring {
   }
 
   private func validated(_ settings: ProxySettings) throws -> ProxySettings {
+    let lan = settings.listen.lan
+    if lan.authenticationEnabled
+      && (!RuntimeListenerAuthentication.validUsername(lan.username)
+        || lan.passwordReference == nil)
+    {
+      throw ProxySettingsStoreError.credentialFailure(detail: "局域网身份验证凭据无效")
+    }
     let errors = settings.validationErrors
     guard errors.isEmpty else { throw ProxySettingsStoreError.invalid(errors) }
     return settings
@@ -84,9 +79,8 @@ struct ProxySettingsFileStore: ProxySettingsStoring {
 
   private func settings(from record: ProxySettingsRecord) throws -> ProxySettings {
     var listen = SslocalListenSettings()
-    listen.listenerMode = record.listenerMode
-    listen.socksPort = record.socksPort
-    listen.httpPort = record.httpPort
+    listen.local = record.localListen
+    listen.lan = record.lanListen
 
     return try validated(
       ProxySettings(
@@ -100,9 +94,8 @@ struct ProxySettingsFileStore: ProxySettingsStoring {
 
   private func record(from settings: ProxySettings) -> ProxySettingsRecord {
     var record = ProxySettingsRecord()
-    record.listenerMode = settings.listen.listenerMode
-    record.socksPort = settings.listen.socksPort
-    record.httpPort = settings.listen.httpPort
+    record.localListen = settings.listen.local
+    record.lanListen = settings.listen.lan
     record.proxyExceptions = settings.proxyExceptions
     record.preferredMode = settings.preferredMode
     record.ruleDefaultAction = settings.ruleDefaultAction
@@ -119,9 +112,8 @@ struct ProxySettingsFileStore: ProxySettingsStoring {
 }
 
 private struct ProxySettingsRecord: Codable, Equatable, Sendable {
-  var listenerMode: ListenerMode = .localhost
-  var socksPort: Int = SslocalListenSettings.defaultSocksPort
-  var httpPort: Int = SslocalListenSettings.defaultHTTPPort
+  var localListen = LocalListeningSettings()
+  var lanListen = LANListeningSettings()
   var proxyExceptions: String = ProxySettings.defaultProxyExceptions
   var preferredMode: ProxyModeKind = .rule
   var ruleDefaultAction: RuleDefaultAction = .proxyWhenUnmatched
@@ -132,14 +124,13 @@ private struct ProxySettingsRecord: Codable, Equatable, Sendable {
 
   init(from decoder: Decoder) throws {
     let container = try decoder.container(keyedBy: CodingKeys.self)
-    listenerMode =
-      try container.decodeIfPresent(ListenerMode.self, forKey: .listenerMode) ?? .localhost
-    socksPort =
-      try container.decodeIfPresent(Int.self, forKey: .socksPort)
-      ?? SslocalListenSettings.defaultSocksPort
-    httpPort =
-      try container.decodeIfPresent(Int.self, forKey: .httpPort)
-      ?? SslocalListenSettings.defaultHTTPPort
+    // 未正式发版：忽略旧的单组监听字段，不迁移独立旧监听文件。
+    localListen =
+      try container.decodeIfPresent(LocalListeningSettings.self, forKey: .localListen)
+      ?? LocalListeningSettings()
+    lanListen =
+      try container.decodeIfPresent(LANListeningSettings.self, forKey: .lanListen)
+      ?? LANListeningSettings()
     proxyExceptions =
       try container.decodeIfPresent(String.self, forKey: .proxyExceptions)
       ?? ProxySettings.defaultProxyExceptions
@@ -165,7 +156,7 @@ private struct ProxySettingsRecord: Codable, Equatable, Sendable {
 
 extension ProxySettingsRecord {
   fileprivate enum CodingKeys: String, CodingKey {
-    case listenerMode, socksPort, httpPort
+    case localListen, lanListen
     case proxyExceptions
     case preferredMode
     case ruleDefaultAction

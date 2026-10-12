@@ -49,22 +49,22 @@ final class ListenSettingsFileStoreTests: XCTestCase {
 
     XCTAssertEqual(try store.load(), settings)
     let raw = try String(contentsOf: store.fileURL, encoding: .utf8)
-    XCTAssertFalse(raw.contains("udpRelayEnabled"))
+    XCTAssertTrue(raw.contains("udpRelayEnabled"))
     XCTAssertFalse(raw.contains("advertisedAddress"))
     XCTAssertTrue(raw.contains("all_ipv4_and_ipv6_interfaces"))
     XCTAssertEqual(try permissions(of: directory), 0o700)
     XCTAssertEqual(try permissions(of: store.fileURL), 0o600)
   }
 
-  func testLoadIgnoresRemovedUDPRelayAndPACPreferencesAndPreservesLegacyDefaultPorts() throws {
+  func testLoadIgnoresOldListenerFieldsAndUsesDefaults() throws {
     try writeRaw(
       #"{"listenerMode":"localhost","socksPort":1086,"#
         + #""httpProxyEnabled":true,"httpPort":1087,"pacPort":1089,"udpRelayEnabled":false}"#)
 
     let settings = try store.load()
 
-    XCTAssertEqual(settings.socksPort, 1086)
-    XCTAssertEqual(settings.httpPort, 1087)
+    XCTAssertEqual(settings.socksPort, 11086)
+    XCTAssertEqual(settings.httpPort, 11087)
     XCTAssertEqual(settings.mode, "tcp_and_udp")
   }
 
@@ -119,9 +119,7 @@ final class ListenSettingsFileStoreTests: XCTestCase {
   }
 
   func testLoadRejectsPersistedDuplicatePorts() throws {
-    try writeRaw(
-      #"{"listenerMode":"localhost","socksPort":1086,"#
-        + #""httpProxyEnabled":true,"httpPort":1086,"udpRelayEnabled":false}"#)
+    try writeRaw(#"{"localListen":{"socksPort":1086,"httpPort":1086}}"#)
 
     XCTAssertThrowsError(try store.load()) { error in
       XCTAssertEqual(

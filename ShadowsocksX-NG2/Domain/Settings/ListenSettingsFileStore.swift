@@ -108,44 +108,34 @@ struct ListenSettingsFileStore: ListenSettingsStoring {
 }
 
 /// 持久化记录只由本存储读写；测试以原始 JSON 夹具覆盖解码契约。
-private struct ListenSettingsRecord: Codable, Equatable, Sendable {
-  var listenerMode: ListenerMode = .localhost
-  var socksPort: Int = SslocalListenSettings.defaultSocksPort
-  var httpPort: Int = SslocalListenSettings.defaultHTTPPort
+private struct ListenSettingsRecord: Codable {
+  var localListen = LocalListeningSettings()
+  var lanListen = LANListeningSettings()
 
   init() {}
-
   init(from decoder: Decoder) throws {
     let container = try decoder.container(keyedBy: CodingKeys.self)
-    listenerMode =
-      try container.decodeIfPresent(ListenerMode.self, forKey: .listenerMode) ?? .localhost
-    socksPort =
-      try container.decodeIfPresent(Int.self, forKey: .socksPort)
-      ?? SslocalListenSettings.defaultSocksPort
-    httpPort =
-      try container.decodeIfPresent(Int.self, forKey: .httpPort)
-      ?? SslocalListenSettings.defaultHTTPPort
-  }
-
-  private enum CodingKeys: String, CodingKey {
-    case listenerMode, socksPort, httpPort
+    localListen =
+      try container.decodeIfPresent(LocalListeningSettings.self, forKey: .localListen)
+      ?? LocalListeningSettings()
+    lanListen =
+      try container.decodeIfPresent(LANListeningSettings.self, forKey: .lanListen)
+      ?? LANListeningSettings()
   }
 }
 
 extension ListenSettingsFileStore {
   private static func record(from settings: SslocalListenSettings) -> ListenSettingsRecord {
     var record = ListenSettingsRecord()
-    record.listenerMode = settings.listenerMode
-    record.socksPort = settings.socksPort
-    record.httpPort = settings.httpPort
+    record.localListen = settings.local
+    record.lanListen = settings.lan
     return record
   }
 
   private static func settings(from record: ListenSettingsRecord) -> SslocalListenSettings {
     var settings = SslocalListenSettings()
-    settings.listenerMode = record.listenerMode
-    settings.socksPort = record.socksPort
-    settings.httpPort = record.httpPort
+    settings.local = record.localListen
+    settings.lan = record.lanListen
     return settings
   }
 }

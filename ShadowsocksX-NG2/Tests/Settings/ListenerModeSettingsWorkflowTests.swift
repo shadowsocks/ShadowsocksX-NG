@@ -4,32 +4,42 @@ import XCTest
 
 @MainActor
 extension SettingsWorkflowInterfaceTests {
+  private func saveMode(_ workflow: SettingsWorkflow, _ mode: ListenerMode) async
+    -> SettingsCommandOutcome
+  {
+    do {
+      var draft = try workflow.beginLANListeningEditing()
+      draft.mode = mode
+      return await workflow.saveLANListening(draft)
+    } catch { return .persistenceFailed(.unknown) }
+  }
+
   func testListenerModeAllowsReplacingItsOwnActiveListener() async {
     probe = FakeOccupancyProbe(
-      occupiedPorts: [11086], occupierName: "sslocal", occupierProcessIDs: [42],
+      occupiedPorts: [11088], occupierName: "sslocal", occupierProcessIDs: [42],
       occupiedFamilies: [.ipv4])
     committing.committedSettings.listen.listenerMode = .allIPv4Interfaces
     committing.isProxyRunning = true
     committing.runtimeListenerProcessID = 42
     let workflow = makeWorkflow()
 
-    let outcome = await workflow.saveListenerMode(.allIPv4AndIPv6Interfaces)
+    let outcome = await saveMode(workflow, .allIPv4AndIPv6Interfaces)
 
-    XCTAssertEqual(outcome, .saved(unknownOccupancy: []))
+    XCTAssertEqual(outcome, .persisted)
     XCTAssertEqual(
       committing.committedSettings.listen.listenerMode, .allIPv4AndIPv6Interfaces)
   }
 
   func testListenerModeDoesNotTreatAnotherSslocalAsItsOwnListener() async {
     probe = FakeOccupancyProbe(
-      occupiedPorts: [11086], occupierName: "sslocal", occupierProcessIDs: [43],
+      occupiedPorts: [11088], occupierName: "sslocal", occupierProcessIDs: [43],
       occupiedFamilies: [.ipv4])
     committing.committedSettings.listen.listenerMode = .allIPv4Interfaces
     committing.isProxyRunning = true
     committing.runtimeListenerProcessID = 42
     let workflow = makeWorkflow()
 
-    let outcome = await workflow.saveListenerMode(.allIPv4AndIPv6Interfaces)
+    let outcome = await saveMode(workflow, .allIPv4AndIPv6Interfaces)
 
     XCTAssertEqual(outcome, .rejected(.occupied([.socks])))
     XCTAssertEqual(committing.committedSettings.listen.listenerMode, .allIPv4Interfaces)
@@ -38,38 +48,38 @@ extension SettingsWorkflowInterfaceTests {
 
   func testListenerModeIgnoresUnrelatedIPv6OccupantWhenSavingIPv4Mode() async {
     probe = FakeOccupancyProbe(
-      occupiedPorts: [11086], occupierName: "sslocal", occupierProcessIDs: [42],
+      occupiedPorts: [11088], occupierName: "sslocal", occupierProcessIDs: [42],
       occupierIPv6ProcessIDs: [43], occupiedFamilies: [.ipv4])
     committing.committedSettings.listen.listenerMode = .allIPv4Interfaces
     committing.isProxyRunning = true
     committing.runtimeListenerProcessID = 42
     let workflow = makeWorkflow()
 
-    let outcome = await workflow.saveListenerMode(.localhost)
+    let outcome = await saveMode(workflow, .disabled)
 
-    XCTAssertEqual(outcome, .saved(unknownOccupancy: []))
-    XCTAssertEqual(committing.committedSettings.listen.listenerMode, .localhost)
+    XCTAssertEqual(outcome, .persisted)
+    XCTAssertEqual(committing.committedSettings.listen.listenerMode, .disabled)
   }
 
   func testListenerModeCanReplaceItsOwnDualStackSocketWithIPv4Mode() async {
     probe = FakeOccupancyProbe(
-      occupiedPorts: [11086], occupierName: "sslocal", occupierIPv6ProcessIDs: [42],
+      occupiedPorts: [11088], occupierName: "sslocal", occupierIPv6ProcessIDs: [42],
       occupiedFamilies: [.ipv4])
     committing.committedSettings.listen.listenerMode = .allIPv4AndIPv6Interfaces
     committing.isProxyRunning = true
     committing.runtimeListenerProcessID = 42
     let workflow = makeWorkflow()
 
-    let outcome = await workflow.saveListenerMode(.allIPv4Interfaces)
+    let outcome = await saveMode(workflow, .allIPv4Interfaces)
 
-    XCTAssertEqual(outcome, .saved(unknownOccupancy: []))
+    XCTAssertEqual(outcome, .persisted)
     XCTAssertEqual(
       committing.committedSettings.listen.listenerMode, .allIPv4Interfaces)
   }
 
   func testListenerModeReportsUnknownDualStackFamilyAlongsideOwnListener() async {
     probe = FakeOccupancyProbe(
-      occupiedPorts: [11086], occupierName: "sslocal", occupierProcessIDs: [42],
+      occupiedPorts: [11088], occupierName: "sslocal", occupierProcessIDs: [42],
       occupiedFamilies: [.ipv4],
       unverifiedFamilyDetail: "IPv4 地址族无法判定")
     committing.committedSettings.listen.listenerMode = .allIPv4Interfaces
@@ -77,9 +87,9 @@ extension SettingsWorkflowInterfaceTests {
     committing.runtimeListenerProcessID = 42
     let workflow = makeWorkflow()
 
-    let outcome = await workflow.saveListenerMode(.allIPv4AndIPv6Interfaces)
+    let outcome = await saveMode(workflow, .allIPv4AndIPv6Interfaces)
 
-    XCTAssertEqual(outcome, .saved(unknownOccupancy: [.socks]))
+    XCTAssertEqual(outcome, .persisted)
     XCTAssertEqual(
       committing.committedSettings.listen.listenerMode, .allIPv4AndIPv6Interfaces)
   }
@@ -94,11 +104,13 @@ extension SettingsWorkflowInterfaceTests {
     let original = committing.committedSettings
     let workflow = makeWorkflow()
 
-    let outcome = await workflow.saveListenerMode(.allIPv4AndIPv6Interfaces)
+    let outcome = await saveMode(workflow, .allIPv4AndIPv6Interfaces)
 
     var expected = original
     expected.listen.listenerMode = .allIPv4AndIPv6Interfaces
-    XCTAssertEqual(outcome, .saved(unknownOccupancy: []))
+    expected.listen.lan.passwordReference =
+      committing.committedSettings.listen.lan.passwordReference
+    XCTAssertEqual(outcome, .persisted)
     XCTAssertEqual(committing.updateCalls, [expected])
     XCTAssertEqual(committing.committedSettings, expected)
   }
@@ -108,7 +120,7 @@ extension SettingsWorkflowInterfaceTests {
     committing.updateError = ProxySettingsStoreError.ioFailure(detail: "disk full")
     let workflow = makeWorkflow()
 
-    let outcome = await workflow.saveListenerMode(.allIPv6Interfaces)
+    let outcome = await saveMode(workflow, .allIPv6Interfaces)
 
     XCTAssertEqual(
       outcome,

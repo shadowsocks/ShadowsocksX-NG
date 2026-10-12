@@ -1430,6 +1430,476 @@
           }
         }
       }
+    },
+    "本地监听": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本地监听"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Local Listeners"
+          }
+        }
+      }
+    },
+    "局域网监听": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "局域网监听"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "LAN Listeners"
+          }
+        }
+      }
+    },
+    "本机 SOCKS %lld / HTTP %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本机 SOCKS %lld / HTTP %lld"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Local SOCKS %lld / HTTP %lld"
+          }
+        }
+      }
+    },
+    "%@ SOCKS %lld / HTTP %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ SOCKS %lld / HTTP %lld"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ SOCKS %lld / HTTP %lld"
+          }
+        }
+      }
+    },
+    "SOCKS 与 HTTP 代理在本地回环地址 127.0.0.1 监听": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SOCKS 与 HTTP 代理在本地回环地址 127.0.0.1 监听"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SOCKS and HTTP proxies listen on the loopback address 127.0.0.1"
+          }
+        }
+      }
+    },
+    "端口范围为 1025–65535，SOCKS 与 HTTP 代理端口必须不同": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "端口范围为 1025–65535，SOCKS 与 HTTP 代理端口必须不同"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ports must be between 1025 and 65535. SOCKS and HTTP ports must differ."
+          }
+        }
+      }
+    },
+    "端口范围为 1025–65535，四个代理端口必须不同": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "端口范围为 1025–65535，四个代理端口必须不同"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ports must be between 1025 and 65535. All four proxy ports must differ."
+          }
+        }
+      }
+    },
+    "UDP 中继启用": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "UDP 中继启用"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "UDP relay enabled"
+          }
+        }
+      }
+    },
+    "UDP 中继禁用": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "UDP 中继禁用"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "UDP relay disabled"
+          }
+        }
+      }
+    },
+    "身份验证已启用": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "身份验证已启用"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Authentication enabled"
+          }
+        }
+      }
+    },
+    "身份验证已禁用": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "身份验证已禁用"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Authentication disabled"
+          }
+        }
+      }
+    },
+    "SOCKS UDP 中继": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SOCKS UDP 中继"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SOCKS UDP Relay"
+          }
+        }
+      }
+    },
+    "身份验证": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "身份验证"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Authentication"
+          }
+        }
+      }
+    },
+    "当前实现的身份验证无法可靠保护 UDP 中继。": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "当前实现的身份验证无法可靠保护 UDP 中继。"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Authentication cannot reliably protect the UDP relay in the current implementation."
+          }
+        }
+      }
+    },
+    "SOCKS 与 HTTP 共用一组凭据。用户名和密码为 1–255 个可打印 ASCII 字符，用户名不得包含冒号。": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SOCKS 与 HTTP 共用一组凭据。用户名和密码为 1–255 个可打印 ASCII 字符，用户名不得包含冒号。"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SOCKS and HTTP share credentials. Use 1–255 printable ASCII characters for each field. The username must not contain a colon."
+          }
+        }
+      }
+    },
+    "用户名或密码无效。": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "用户名或密码无效。"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Invalid username or password."
+          }
+        }
+      }
+    },
+    "局域网身份验证密码不可读，请重试。": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "局域网身份验证密码不可读，请重试。"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The LAN authentication password could not be read. Try again."
+          }
+        }
+      }
+    },
+    "端口已占用，未保存局域网监听。": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "端口已占用，未保存局域网监听。"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A port is in use. LAN listener settings were not saved."
+          }
+        }
+      }
+    },
+    "配置发生变化或校验未完成，请重试。": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "配置发生变化或校验未完成，请重试。"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The configuration changed or validation is incomplete. Try again."
+          }
+        }
+      }
+    },
+    "局域网监听保存失败。": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "局域网监听保存失败。"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "LAN listener settings could not be saved."
+          }
+        }
+      }
+    },
+    "所有 IPv6 接口": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "所有 IPv6 接口"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All IPv6 Interfaces"
+          }
+        }
+      }
+    },
+    "所有 IPv4 接口": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "所有 IPv4 接口"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All IPv4 Interfaces"
+          }
+        }
+      }
+    },
+    "所有 IPv4 与 IPv6 接口": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "所有 IPv4 与 IPv6 接口"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All IPv4 and IPv6 Interfaces"
+          }
+        }
+      }
+    },
+    "SOCKS 代理端口": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SOCKS 代理端口"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SOCKS Proxy Port"
+          }
+        }
+      }
+    },
+    "HTTP 代理端口": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "HTTP 代理端口"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "HTTP Proxy Port"
+          }
+        }
+      }
+    },
+    "用户名": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "用户名"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Username"
+          }
+        }
+      }
+    },
+    "密码": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "密码"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Password"
+          }
+        }
+      }
+    },
+    "关闭": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Off"
+          }
+        }
+      }
     }
   },
   "version": "1.0"
