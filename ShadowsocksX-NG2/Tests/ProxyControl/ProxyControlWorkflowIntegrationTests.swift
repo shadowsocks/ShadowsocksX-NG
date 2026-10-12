@@ -2,7 +2,7 @@ import XCTest
 
 @testable import ShadowsocksX_NG2
 
-/// 代理控制命令矩阵（issue #47/#60）：经生产 runtime adapter 包装的真实控制器
+/// 代理控制命令矩阵：经生产 runtime adapter 包装的真实控制器
 /// 验证 agent 开关、系统代理开关与模式切换的失败分类与恢复语义原样进入
 /// snapshot。全部使用 fixture 替身，不启动真实 launch agent、不写真实
 /// SystemConfiguration（这些替身测试不构成真实系统写入验证）。
@@ -281,7 +281,7 @@ final class ProxyControlWorkflowIntegrationTests: XCTestCase {
     XCTAssertEqual(systemProxy.clearCount, 0)
   }
 
-  // MARK: - 集成级 model test（deletion 验证，story 38/39）
+  // MARK: - 集成级 model test（deletion 验证）
 
   /// 状态菜单的呈现面只凭 ProxyControlWorkflow 的 snapshot 与 CatalogWorkflow
   /// 的目录事实即可完整推导；本文件不要求启动 SwiftUI，也不依赖控制器字段。

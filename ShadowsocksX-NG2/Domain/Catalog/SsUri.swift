@@ -3,8 +3,7 @@ import Foundation
 /// SIP002 `ss://` URI 模型（https://shadowsocks.org/doc/sip002.html）。
 /// 插件字段持 SIP003 `SS_PLUGIN_OPTIONS` 形态的原样字符串（如
 /// `mode=websocket;host=example.com`）：URI 编解码只做 RFC 3986 百分号编码层，
-/// 反斜杠转义按原样透传（插件自解），往返保持 `plugin=name;opts` 逐字节同构
-/// （spec #21 D10/D12）。
+/// 反斜杠转义按原样透传（插件自解），往返保持 `plugin=name;opts` 逐字节同构。
 struct SsUri: Equatable, Sendable {
   var method: String
   var password: String
@@ -49,9 +48,9 @@ enum SsUriError: Error, Equatable {
 extension SsUri {
   /// 解码单个 URI 行。同时接受：
   /// - SIP002 形态：`ss://userinfo@host:port/?plugin=…#tag`（userinfo 为
-  ///   base64url(`method:password`) 或百分号编码明文——AEAD-2022 规定明文）。
+  /// base64url(`method:password`) 或百分号编码明文——AEAD-2022 规定明文）。
   /// - Legacy 兼容形态：`ss://base64(method:password@host:port)#tag`（无 `@`，
-  ///   密码明文，非 RFC 3986）。
+  /// 密码明文，非 RFC 3986）。
   static func decode(_ rawInput: String) throws -> SsUri {
     let input = rawInput.trimmingCharacters(in: .whitespacesAndNewlines)
     let schemePrefix = "ss://"

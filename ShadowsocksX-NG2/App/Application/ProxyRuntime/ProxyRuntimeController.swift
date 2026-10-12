@@ -4,7 +4,7 @@ import Foundation
 /// persist independent intentions. System proxy writes use the privileged helper;
 /// current configuration is observed read-only and differs from write outcomes.
 /// Health/exit loss suspends system proxy settings, real recovery reapplies, and
-/// passive network events only inspect (ADR-0022 / issue #73)——该观察/修复策略机
+/// passive network events only inspect (ADR-0022)——该观察/修复策略机
 /// 独立在 `SystemProxyObserver`：控制器注入意图/出口/期望配置三个事实闭包并
 /// 转发命令，健康循环保留在本体（循环体含运行时健康呈现）。GUI exit ends these
 /// observations without stopping the LaunchAgent or adding helper responsibilities.
@@ -18,7 +18,7 @@ final class ProxyRuntimeController {
     case running
     /// 代理在本机运行，但主机地址态的入站被 macOS 防火墙拒绝。
     case firewallBlocked(FirewallBlockedFacts)
-    /// 启动失败：携带点名端点与端口的事实（D8；端口语义细节 #30 接线）。
+    /// 启动失败：携带点名端点与端口的事实。
     case launchFailed(LaunchFailureFacts)
     /// 需要用户在系统设置-登录项中允许后台项。
     case requiresApproval
@@ -31,14 +31,14 @@ final class ProxyRuntimeController {
 
   var state: AgentRunState = .off { didSet { factChanges.markChanged() } }
   var settings: ProxySettings { didSet { factChanges.markChanged() } }
-  /// 当前活动目标（菜单栏状态摘要与级联只读呈现用，issue #31）。machine 是
+  /// 当前活动目标（菜单栏状态摘要与级联只读呈现用）。machine 是
   /// 非通道值的普通结构体，代理关闭路径的激活动作不会触碰 state，菜单的
   /// 「目标」行依赖此属性独立触发事实通道保持实时。
   var activeTargetID: NodeID? { didSet { factChanges.markChanged() } }
   /// 最近一次激活预检在分组中跳过的服务器；仅记录 app 已知的本地阻塞原因。
   var skippedServers: [SkippedServer] = [] { didSet { factChanges.markChanged() } }
   /// 最近一次激活拒绝或目标清除的点名原因。独立于运行状态呈现：agent 可
-  /// 能仍在监听，激活失败不代表运行时停止（issue #60）。
+  /// 能仍在监听，激活失败不代表运行时停止。
   var lastActivationFailure: ActivationFailure? { didSet { factChanges.markChanged() } }
   var machine: ActivationStateMachine
   /// 运行时事实变化通道（didChange 语义）：全部事实属性的 didSet 汇集于此，
@@ -53,7 +53,7 @@ final class ProxyRuntimeController {
   let plugins: PluginExecutableResolving
   let refreshPluginSecurityFacts: @MainActor () -> Void
   let settingsStore: ProxySettingsStoring
-  /// 自定义规则持久化（issue #66）：规则模式 ACL 合并的用户入口。
+  /// 自定义规则持久化：规则模式 ACL 合并的用户入口。
   var isUpdatingRules = false
   var ruleApplicationTask: Task<Void, Never>?
   var ruleApplicationGeneration = 0
@@ -62,7 +62,7 @@ final class ProxyRuntimeController {
   let ruleDocuments: RuleDocumentSession
   let ruleSnapshots: BuiltinRuleSnapshots
   var runtimePreparationGeneration = 0
-  /// 监听设置不可读时的点名原因（D8「任何路径不静默改端口」）；非 nil 时
+  /// 监听设置不可读时的点名原因（「任何路径不静默改端口」）；非 nil 时
   /// 设置只是占位出厂默认，禁止部署（见 `deploy`）。
   var listenSettingsUnreadable: Bool
   /// 新版偏好不可读时同样禁止部署，不以出厂端口静默替代用户配置。
@@ -115,7 +115,7 @@ final class ProxyRuntimeController {
 
   var proxyMode: ProxyMode { didSet { factChanges.markChanged() } }
 
-  /// 规则模式子选项（issue #63）：从设置快照投影。
+  /// 规则模式子选项：从设置快照投影。
   var ruleDefaultAction: RuleDefaultAction { settings.ruleDefaultAction }
 
   init(

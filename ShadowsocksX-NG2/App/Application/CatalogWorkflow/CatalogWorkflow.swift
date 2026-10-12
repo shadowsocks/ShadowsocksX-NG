@@ -1,7 +1,7 @@
 import Combine
 import Foundation
 
-/// 目录工作流 module（issue #41，#49 深化为 application module）：主窗口与
+/// 目录工作流 module（深化为 application module）：主窗口与
 /// 配置 UI 的唯一 UI-facing seam。隐藏配置目录、凭据存储、订阅快照、Legacy
 /// 导入细节、持久化协调与运行时收敛，向 UI 提供不含秘密值的树/详情/订阅
 /// projection、opaque 节点身份查询、typed command、typed error 与 structured
@@ -11,10 +11,10 @@ import Foundation
 /// 内部沿用既有深 module：`ConfigurationCatalog` 的结构约束、
 /// `ActivationStateMachine` 经 `CatalogCommitCoordinator` 的激活语义与目录
 /// 持久化/runtime sync 协调，以及既有凭据、订阅获取与 Legacy 导入缝。
-/// 「目录已提交」与「运行时已收敛」是分离的观察面（story 38/39）：提交在
+/// 「目录已提交」与「运行时已收敛」是分离的观察面：提交在
 /// 持久化成功即完成，`runtimeSync` 单独呈现收敛阶段，失败不回滚目录。
-/// 实现 adapter 全部经组合根注入的 `CatalogWorkflowDependencies` 装配
-/// （issue #49），本类不自行创建生产默认实现。
+/// 实现 adapter 全部经组合根注入的 `CatalogWorkflowDependencies` 装配；
+/// 本类不自行创建生产默认实现。
 @MainActor
 final class CatalogWorkflow: ObservableObject {
   /// 目录树 projection（侧栏、级联、移动目的地、删除确认共用）。
@@ -28,7 +28,7 @@ final class CatalogWorkflow: ObservableObject {
   /// outcome；持久化目录只保存安全的 typed failure facts。
   @Published private(set) var subscriptionRefreshFailures:
     [NodeID: SubscriptionRefreshFailureResult] = [:]
-  /// 最近一次提交的运行时收敛阶段（与目录提交成功分离，story 38）。存储与
+  /// 最近一次提交的运行时收敛阶段（与目录提交成功分离）。存储与
   /// 发布单点在提交协调器，此处只透传读面；需要实时更新的表面订阅
   /// `runtimeSyncChanges`（`.onReceive` 消费），不经本类 objectWillChange——
   /// App 侧目前无视图消费者，避免每次提交徒劳失效全部目录观察者。
@@ -42,7 +42,7 @@ final class CatalogWorkflow: ObservableObject {
   @Published private(set) var legacyImportState = LegacyImportAvailability(
     snapshotFound: false, completed: false)
 
-  /// 组合根与测试装配的全部实现 adapter（issue #49）：coordinator、凭据、
+  /// 组合根与测试装配的全部实现 adapter：coordinator、凭据、
   /// 插件、订阅获取、Legacy 导入服务、导入后回调与激活缝只经此束持有，
   /// 不再作为 workflow 属性暴露。仅供组合根与测试构造；视图不得访问——
   /// 独立 target 拆分前由 architecture deletion check 守护残余可见性。
@@ -50,7 +50,7 @@ final class CatalogWorkflow: ObservableObject {
   /// 启动时发现的 Legacy 快照（导入编排用；秘密值不进 projection）。
   var discoveredLegacySnapshot: LegacySnapshot?
 
-  /// 组合根注入依赖束；workflow 不自行创建任何生产 adapter（issue #49）。
+  /// 组合根注入依赖束；workflow 不自行创建任何生产 adapter。
   init(dependencies: CatalogWorkflowDependencies) {
     self.dependencies = dependencies
     let coordinator = dependencies.coordinator
@@ -156,7 +156,7 @@ final class CatalogWorkflow: ObservableObject {
     return try requiredServerSecret(reference)
   }
 
-  /// 服务器编辑面（显式命令，story 11）：解析密码与目录中的具名插件参数明文。
+  /// 服务器编辑面（显式命令）：解析密码与目录中的具名插件参数明文。
   /// 节点不存在或不是服务器叶子为 `nil`。
   func serverEditForm(for id: NodeID) throws -> ServerEditForm? {
     guard let entry = dependencies.coordinator.committedCatalog.entry(for: id),
@@ -185,7 +185,7 @@ final class CatalogWorkflow: ObservableObject {
     }
   }
 
-  /// 插件区状态（#38）：集内引用给可执行文件存在性事实与参数明文；集外引用
+  /// 插件区状态：集内引用给可执行文件存在性事实与参数明文；集外引用
   /// 以显式 unknown 呈现（原样保留，激活语义由状态机点名拒绝）。
   private func pluginPresentation(for fields: ServerFields) -> PluginSectionState {
     let snapshot = dependencies.plugins.catalogSnapshot()
@@ -272,7 +272,7 @@ final class CatalogWorkflow: ObservableObject {
     }
   }
 
-  /// 新建空手动分组（story 5）；返回新分组身份。
+  /// 新建空手动分组；返回新分组身份。
   @discardableResult
   func createGroup(named name: String, into parent: NodeID?) async throws -> NodeID {
     let trimmed = name.trimmingCharacters(in: .whitespaces)
@@ -282,7 +282,7 @@ final class CatalogWorkflow: ObservableObject {
     }
   }
 
-  /// 重命名手动分组：identity、父级与子项顺序不变（story 6）。
+  /// 重命名手动分组：identity、父级与子项顺序不变。
   func renameGroup(_ id: NodeID, to name: String) async throws {
     let trimmed = name.trimmingCharacters(in: .whitespaces)
     guard !trimmed.isEmpty else { throw ServerFormError.emptyName }
@@ -291,7 +291,7 @@ final class CatalogWorkflow: ObservableObject {
     }
   }
 
-  /// 拖拽/移动菜单落点（story 14/15）：跨来源、共享父级、成环由领域拒绝，
+  /// 拖拽/移动菜单落点：跨来源、共享父级、成环由领域拒绝，
   /// typed error 原样上抛。
   func move(_ id: NodeID, to parent: NodeID?) async throws {
     try commit { catalog in
@@ -299,8 +299,8 @@ final class CatalogWorkflow: ObservableObject {
     }
   }
 
-  /// 删除条目（手动分组递归删整棵子树，story 16/17）：尽力清理被删节点的
-  /// Keychain 秘密；返回被删身份集合供 UI 清除失效选择（story 18）。
+  /// 删除条目（手动分组递归删整棵子树）：尽力清理被删节点的
+  /// Keychain 秘密；返回被删身份集合供 UI 清除失效选择。
   func remove(_ id: NodeID) async throws -> RemovalOutcome {
     let removed: [CatalogEntry] = try commit { catalog in
       try catalog.remove(id, now: Date())
@@ -311,9 +311,9 @@ final class CatalogWorkflow: ObservableObject {
     return RemovalOutcome(removedNodeIDs: Set(removed.map(\.id)))
   }
 
-  /// 服务器编辑提交（story 12/13）：配置与凭据作为一个逻辑变更；凭据写入经
+  /// 服务器编辑提交：配置与凭据作为一个逻辑变更；凭据写入经
   /// journal 记录原值，提交失败时全部恢复旧秘密，恢复结果经
-  /// `CommitError.credentialRollback` 报出。插件选择按 #38 语义
+  /// `CommitError.credentialRollback` 报出。插件选择遵循目录工作流规则
   /// 落盘（「无」整体清除、具名选择写程序名与参数、集外引用原样保留）。
   func updateServer(_ id: NodeID, draft: ServerEditDraft) async throws {
     let draft = try prepareServerDraft(draft)
@@ -375,7 +375,7 @@ final class CatalogWorkflow: ObservableObject {
   }
 
   /// 副本变更 → 协调器落盘 → 重新发布 projection；任一步失败则已发布状态
-  /// 不动。运行时收敛由协调器异步调度（issue #40），不阻塞也不回滚本提交。
+  /// 不动。运行时收敛由协调器异步调度，不阻塞也不回滚本提交。
   private func commitDocument<T>(
     _ mutate: (inout ConfigurationCatalog, inout [SubscriptionRecord]) throws -> T
   ) throws -> T {

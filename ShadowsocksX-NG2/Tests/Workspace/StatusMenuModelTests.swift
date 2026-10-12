@@ -2,7 +2,7 @@ import XCTest
 
 @testable import ShadowsocksX_NG2
 
-/// 状态菜单呈现逻辑（spec #21 D11，issue #31/#47/#60）：头部状态摘要从代理
+/// 状态菜单呈现逻辑：头部状态摘要从代理
 /// 控制工作流的整体 snapshot 派生，agent 与系统代理两个状态面分开呈现。不
 /// 持有 AppKit 类型；HTTP 导出行与目标路径摘要分别在代理控制与目录 module
 /// 测试覆盖。
@@ -124,7 +124,7 @@ final class StatusMenuModelTests: XCTestCase {
     }
   }
 
-  /// 激活拒绝/目标清除的点名原因独立于运行状态呈现（issue #60）：agent 仍
+  /// 激活拒绝/目标清除的点名原因独立于运行状态呈现：agent 仍
   /// 在监听时也必须可读。
   func testSummaryCarriesActivationFailureAlongsideRunningState() {
     let summary = StatusMenuModel.summary(
@@ -139,7 +139,7 @@ final class StatusMenuModelTests: XCTestCase {
           NodeID(rawValue: "manual:gone"))))
   }
 
-  /// 系统代理状态面（issue #60）：意图与实际应用分开，失败携带点名原因。
+  /// 系统代理状态面：意图与实际应用分开，失败携带点名原因。
   func testSummaryProjectsSystemProxyApplicationIndependently() {
     let idle = StatusMenuModel.summary(
       from: makeSnapshot(

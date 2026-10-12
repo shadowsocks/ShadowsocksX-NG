@@ -135,8 +135,8 @@ struct PortOccupancyProbeRequest: Equatable, Sendable {
   var bindAddress: String { listen.bindAddress }
 }
 
-/// 端口占用探测缝（issue #30）：设置编辑期的即时占用校验。激活是否成功
-/// 仍以 runtime 实际绑定为准（#29 健康门禁），本探测不构成权威判定。
+/// 端口占用探测缝：设置编辑期的即时占用校验。激活是否成功
+/// 仍以 runtime 实际绑定为准（健康门禁），本探测不构成权威判定。
 protocol PortOccupancyProbing: Sendable {
   func occupancy(for request: PortOccupancyProbeRequest) -> PortOccupancy
 }

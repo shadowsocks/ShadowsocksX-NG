@@ -137,7 +137,7 @@ final class ProxyRuntimeModeCommandTests: ProxyRuntimeControllerTests {
     XCTAssertEqual(systemProxy.clearCount, 0, "切换失败期间保持系统代理应用")
   }
 
-  /// Agent 开关持久化失败（issue #60）：保留现状并点名，不静默偏离持久化
+  /// Agent 开关持久化失败：保留现状并点名，不静默偏离持久化
   /// 事实（否则重启后意图被覆盖）。
   func testAgentTogglePersistenceFailureKeepsStateAndNamesReason() async throws {
     let settingsStore = InMemoryProxySettingsStore()

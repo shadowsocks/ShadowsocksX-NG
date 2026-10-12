@@ -2,7 +2,7 @@ import XCTest
 
 @testable import ShadowsocksX_NG2
 
-/// 端点健康探测（spec #21 D2/D8）：真实 socket 上验证「监听即连通」「未监听
+/// 端点健康探测：真实 socket 上验证「监听即连通」「未监听
 /// 即拒绝」，失败原因可供「启动失败」点名端点与端口。
 final class EndpointHealthProbeTests: XCTestCase {
   /// 绑定回环临时端口；调用方负责 close 返回的描述符。

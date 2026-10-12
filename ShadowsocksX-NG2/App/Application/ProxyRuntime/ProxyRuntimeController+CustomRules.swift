@@ -132,7 +132,7 @@ extension ProxyRuntimeController {
     }
   }
 
-  /// 保存前校验（issue #66 AC2）：固定本地冲突与重复整批拒绝并返回可解释原因。
+  /// 保存前校验：固定本地冲突与重复整批拒绝并返回可解释原因。
   /// 同行动覆盖和相反行动遮蔽不阻止保存；编译时按当前骨架解释完整集合。
   func validateCustomRulesForPersistence(_ rules: [CustomRule]) -> (
     acceptedRules: [CustomRule], rejected: [RejectedCustomRule]
@@ -146,7 +146,7 @@ extension ProxyRuntimeController {
     return (accepted, hardRejected)
   }
 
-  /// 自定义规则安全摘要（issue #66 AC5）：数量 + 内容版本，不含原始域名。
+  /// 自定义规则安全摘要：数量 + 内容版本，不含原始域名。
   func readCustomRuleSummary() -> CustomRuleSummary? {
     try? customRuleStore.summary()
   }

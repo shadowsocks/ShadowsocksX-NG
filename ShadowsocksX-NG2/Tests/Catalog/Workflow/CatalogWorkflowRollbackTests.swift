@@ -2,7 +2,7 @@ import XCTest
 
 @testable import ShadowsocksX_NG2
 
-/// 目录工作流 module 的失败语义与阶段分离（issue #41，story 13/33/34/38/39）：
+/// 目录工作流 module 的失败语义与阶段分离：
 /// 目录持久化失败时旧配置与旧凭据都保持有效；目录提交完成与运行时收敛是分离
 /// 的观察面且收敛失败不回滚目录；Legacy 导入不驱动运行时收敛、不自动重复。
 @MainActor
@@ -81,7 +81,7 @@ final class CatalogWorkflowRollbackTests: XCTestCase {
     return false
   }
 
-  // MARK: - story 13：持久化失败 → 旧配置与旧凭据都保持有效
+  // MARK: - 持久化失败 → 旧配置与旧凭据都保持有效
 
   func testUpdateServerRollsBackCredentialWhenPersistenceFails() async throws {
     let id = try await seedServer(password: "旧密码")
@@ -171,7 +171,7 @@ final class CatalogWorkflowRollbackTests: XCTestCase {
     }
   }
 
-  // MARK: - story 13：表单新建持久化失败 → 新写凭据回滚为不存在
+  // MARK: - 表单新建持久化失败 → 新写凭据回滚为不存在
 
   func testCreateServerRollsBackFreshCredentialWhenPersistenceFails() async throws {
     let workflow = makeWorkflow()
@@ -200,7 +200,7 @@ final class CatalogWorkflowRollbackTests: XCTestCase {
     XCTAssertTrue(credentials.storageSnapshot.isEmpty, "新写秘密已删除，不留孤儿")
   }
 
-  // MARK: - story 38：提交完成与运行时收敛是分离的观察面
+  // MARK: - 提交完成与运行时收敛是分离的观察面
 
   func testCommitCompletesWhileRuntimeConvergenceIsStillSyncing() async throws {
     let workflow = makeWorkflow()
@@ -219,7 +219,7 @@ final class CatalogWorkflowRollbackTests: XCTestCase {
     }
   }
 
-  // MARK: - story 39：运行时收敛失败不回滚已提交目录
+  // MARK: - 运行时收敛失败不回滚已提交目录
 
   func testRuntimeConvergenceFailureDoesNotRollbackCatalog() async throws {
     let workflow = makeWorkflow()
@@ -235,7 +235,7 @@ final class CatalogWorkflowRollbackTests: XCTestCase {
       .finished(generation: 1, outcome: .failed(failure: .launch(.missingRuntimeDocument))))
   }
 
-  // MARK: - story 33/34/35：Legacy 导入不驱动运行时，不自动重复
+  // MARK: - Legacy 导入不驱动运行时，不自动重复
 
   func testLegacyImportCommitsGroupWithoutRuntimeSyncOrRepeat() async throws {
     var existingSettings = ProxySettings()

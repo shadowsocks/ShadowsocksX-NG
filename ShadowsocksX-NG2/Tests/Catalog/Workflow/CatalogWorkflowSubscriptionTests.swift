@@ -3,10 +3,10 @@ import XCTest
 
 @testable import ShadowsocksX_NG2
 
-/// 订阅端到端语义（issue #35/#41）经目录工作流 module interface 观察：创建
+/// 订阅端到端语义经目录工作流 module interface 观察：创建
 /// 门禁、刷新失败保留快照、身份连续性、URL 编辑保身份、删除递归清除、卡片
 /// projection 与提交接线。获取走 FakeSubscriptionFetcher（传输侧契约在
-/// SubscriptionFetcherTests）；提交后的运行时收敛以确定性 fake 计数（issue #40）。
+/// SubscriptionFetcherTests）；提交后的运行时收敛以确定性 fake 计数。
 @MainActor
 final class CatalogWorkflowSubscriptionTests: XCTestCase {
   private var workDir: URL!
@@ -34,7 +34,7 @@ final class CatalogWorkflowSubscriptionTests: XCTestCase {
   }
 
   func makeWorkflow(fetcher override: SubscriptionFetching? = nil) -> CatalogWorkflow {
-    // 计数即提交计数：提交后的运行时收敛由协调器异步调度（issue #40）。
+    // 计数即提交计数：提交后的运行时收敛由协调器异步调度。
     runtime.hasActiveTarget = true
     let coordinator = CatalogCommitCoordinator(
       fileStore: CatalogFileStore(fileURL: fileURL), runtime: runtime)

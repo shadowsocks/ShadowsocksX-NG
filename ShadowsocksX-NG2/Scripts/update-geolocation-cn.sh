@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Explicit maintainer update for the built-in geolocation-cn rule snapshot
-# (issue #63). Normal builds never run this script — they only read the local
+# Normal builds never run this script — they only read the local
 # pinned snapshot. On any failure the previous valid snapshot is kept.
 set -euo pipefail
 

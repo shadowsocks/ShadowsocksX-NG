@@ -1,8 +1,8 @@
 import Foundation
 
-/// agent.log 尾部读取（issue #34，够诊断即可）：只取文件末尾有限字节并按行
-/// 对齐，供主窗口日志查看器呈现。内容只进查看器，永不进入诊断导出（D5 的
-/// 导出类目不含日志正文：wrapper/sslocal 的原始输出不经本产品脱敏管线）。
+/// agent.log 尾部读取（够诊断即可）：只取文件末尾有限字节并按行
+/// 对齐，供主窗口日志查看器呈现。内容只进查看器，永不进入诊断导出；导出类目
+/// 不含日志正文，wrapper/sslocal 的原始输出也不经本产品脱敏管线。
 enum AgentLogTail {
   /// 文件缺失或不可读返回 nil；内容按 UTF-8 宽容解码，起始半行丢弃。
   static func readLastLines(of url: URL, maxBytes: Int = 64 * 1024) -> String? {

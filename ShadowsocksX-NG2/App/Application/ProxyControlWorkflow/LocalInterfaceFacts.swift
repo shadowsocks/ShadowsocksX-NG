@@ -1,7 +1,7 @@
 import Combine
 import Foundation
 
-// MARK: - 原始接口事实（issue #72）
+// MARK: - 原始接口事实
 
 /// IPv6 地址的内核标志（经 `SIOCGIFAFLAG_IN6` 逐地址查询，netinet6/in6_var.h
 /// 的 `IN6_IFF_*` 子集）。仅 IPv6 单播地址携带；IPv4 或查询失败为 nil。
@@ -36,7 +36,7 @@ struct LocalInterfaceAddress: Equatable, Sendable {
   let v6Flags: LocalInterfaceV6Flags?
 }
 
-/// 单个本机接口的原始事实（issue #72）：系统适配器逐接口提供，类型白名单、
+/// 单个本机接口的原始事实：系统适配器逐接口提供，类型白名单、
 /// 地址族过滤、名称回退与排序均不在适配器内发生。
 struct LocalInterfaceFacts: Equatable, Sendable {
   /// BSD 接口名（lo0/en0/…）：地址关联与地址身份的锚点。
@@ -52,7 +52,7 @@ struct LocalInterfaceFacts: Equatable, Sendable {
   let addresses: [LocalInterfaceAddress]
 }
 
-/// 本机接口事实来源缝（issue #72）：唯一的工作流层可注入事实来源，统一
+/// 本机接口事实来源缝：唯一的工作流层可注入事实来源，统一
 /// 提供接口地址、类型、名称及变化通知；系统 API 查询细节封装于生产适配器，
 /// 不为每个底层 API 另设 mock 协议。测试注入可编程替身。
 @MainActor

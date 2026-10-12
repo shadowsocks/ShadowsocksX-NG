@@ -1,4 +1,4 @@
-/// 激活失败的点名原因（spec #21 D3 无静默回退族）。激活被拒与活动目标清除
+/// 激活失败的点名原因：激活被拒与活动目标清除
 /// 停止共用同一套原因：前者状态完全不动，后者清除目标并发出停止意图。
 enum ActivationFailure: Error, Equatable, Sendable {
   /// Enable was requested without a selected target.
@@ -21,7 +21,7 @@ enum LeafInvalidationReason: Error, Equatable, Sendable {
   case missingEncryptionMethod
   /// 加密方式非空但不在当前 sslocal 能力目录中。
   case unsupportedEncryptionMethod(String)
-  /// 引用本版本未提供的插件程序（真实受管集由 #38 从供应链清单接通）。
+  /// 引用本版本未提供的插件程序；受管插件集合来自供应链清单。
   case pluginNotProvided(program: String)
   /// 凭据引用在 Keychain 无对应条目。
   case credentialUnresolved(CredentialReference)

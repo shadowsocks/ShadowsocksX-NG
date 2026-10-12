@@ -1,11 +1,11 @@
 import Foundation
 
-/// 运行时文件存取（spec #21 D5，issue #27；ACL 布局见 ADR-0011）：
+/// 运行时文件存取（ACL 布局见 ADR-0011）：
 /// `sslocal-active.json` 是 GUI 写、wrapper 读的跨进程交接契约。ACL 侧为
 /// 每个变体一个 `acl-<summary>.ini` 实文件，外加稳定的 `acl-active.ini` 链接；
 /// 契约只携带链接路径与身份摘要。写入复用 `AtomicFileWriter` 的物理安全基线
 /// （目录 0700 含自愈、临时文件创建即 0600、写全校验后原子替换）；显式停止
-/// 后的清理只做普通 unlink，不承诺安全擦除（D5）。
+/// 后的清理只做普通 unlink，不承诺安全擦除。
 struct RuntimeFileStore {
   enum PersistenceError: Error, Equatable {
     /// 写入时的文件系统错误。
@@ -163,9 +163,9 @@ struct RuntimeFileStore {
     return try? JSONDecoder().decode(RuntimeDeploymentReceipt.self, from: data)
   }
 
-  /// 显式停止清理（D2 停止协议末端）：运行时契约、wrapper pid、ACL 链接与
+  /// 显式停止时的末端清理：运行时契约、wrapper pid、ACL 链接与
   /// 变体、digest 清单及原子写残留。异常崩溃路径不调用本方法（文件保留供
-  /// KeepAlive 重放，D5）。文件缺失时调用无害。
+  /// KeepAlive 重放）。文件缺失时调用无害。
   func deleteRuntimeFiles() {
     let fileManager = FileManager.default
     try? fileManager.removeItem(at: fileURL)

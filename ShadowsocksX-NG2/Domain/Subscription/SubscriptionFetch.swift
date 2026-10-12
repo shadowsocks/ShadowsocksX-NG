@@ -1,17 +1,17 @@
 import Foundation
 
-/// 订阅获取缝（spec #21 D4）：HTTPS 强制、TLS/证书校验不放松、Content-Type
+/// 订阅获取缝：HTTPS 强制、TLS/证书校验不放松、Content-Type
 /// 与状态码按 SIP-008 契约检查。测试注入夹具，生产走 URLSession 实现。
 protocol SubscriptionFetching: Sendable {
   func fetch(_ url: URL) async throws -> Data
 }
 
-/// 获取失败点名原因。任何细节都不携带订阅 URL（D5：完整 URL 与 token 永不
+/// 获取失败点名原因。任何细节都不携带订阅 URL（完整 URL 与 token 永不
 /// 进入错误文案、日志与诊断）。
 enum SubscriptionFetchError: Error, Equatable, Sendable {
   /// URL 无法构造或没有主机。
   case invalidURL
-  /// 非 HTTPS 地址（宽松模式永不提供，issue #35 Out of Scope）。
+  /// 非 HTTPS 地址；宽松模式不受支持。
   case unsupportedScheme
   /// 重定向目标不是 HTTPS（降级一律拒绝）。
   case insecureRedirect
@@ -77,7 +77,7 @@ struct HTTPSSubscriptionFetcher: SubscriptionFetching {
   }
 
   /// 传输错误脱敏描述：URLError 只取错误码符号名；其余只取类型名。两者都
-  /// 不携带 URL 或主机（D5）。
+  /// 不携带 URL 或主机。
   static func redactedTransportDetail(_ error: Error) -> String {
     if let urlError = error as? URLError {
       return "URLError.\(String(describing: urlError.code))"

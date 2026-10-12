@@ -1,6 +1,6 @@
 import Foundation
 
-/// 自定义规则持久化（issue #66）：独立 JSON 文档，原子写盘。
+/// 自定义规则持久化：独立 JSON 文档，原子写盘。
 /// Saving intent is independent of subsequent ACL application and runtime recovery.
 struct CustomRuleStore {
   let fileURL: URL
@@ -52,7 +52,7 @@ struct CustomRuleStore {
     }
   }
 
-  /// 安全摘要：数量 + 内容版本（issue #66 AC5）。
+  /// 安全摘要：数量 + 内容版本。
   func summary() throws -> CustomRuleSummary {
     CustomRuleSummary.summarizing(try loadDocument())
   }

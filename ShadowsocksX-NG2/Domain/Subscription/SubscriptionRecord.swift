@@ -1,8 +1,8 @@
 import Foundation
 
-/// 订阅源记录（spec #21 D4，issue #9/#35）：持久不透明的订阅 UUID + 固定分组
+/// 订阅源记录：持久不透明的订阅 UUID + 固定分组
 /// 身份 + 订阅 URL 凭据引用 + 最近刷新状态。URL 是敏感信息，权威副本在凭据
-/// 存储（D5），目录文档只持引用；编辑 URL 保留订阅与固定分组身份。
+/// 存储，目录文档只持引用；编辑 URL 保留订阅与固定分组身份。
 struct SubscriptionRecord: Codable, Equatable, Sendable, Identifiable {
   /// 订阅源身份；删除后新建即新身份（GLOSSARY.md「Subscription」）。
   let id: NodeID
@@ -17,7 +17,7 @@ struct SubscriptionRecord: Codable, Equatable, Sendable, Identifiable {
 }
 
 /// 最近一次刷新结果。失败只保存白名单事实，不保存订阅 URL、秘密、凭据引用
-/// 或任意错误 description（D5 脱敏）。
+/// 或任意错误 description（均需脱敏）。
 enum SubscriptionRefreshStatus: Codable, Equatable, Sendable {
   case never
   // swiftlint:disable:next identifier_name

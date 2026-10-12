@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Explicit maintainer update for the built-in GFWList AutoProxy rule snapshot
-# (issue #65). Normal builds never run this script — they only read the local
+# Normal builds never run this script — they only read the local
 # pinned snapshot. On any failure the previous valid snapshot is kept.
 set -euo pipefail
 

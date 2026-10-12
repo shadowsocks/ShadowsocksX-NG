@@ -4,7 +4,7 @@ import XCTest
 @testable import ShadowsocksX_NG2
 
 final class AgentLifecycleChangeProtocolTests: AgentLifecycleTests {
-  // MARK: 变更协议（D5）
+  // MARK: 变更协议
 
   func testSIGUSR1WithServerOnlyChangeIsForwardedToSslocal() throws {
     try writeContract(ProxyRuntimeFixture.makeDocument(serverAddress: "203.0.113.7"))
@@ -135,7 +135,7 @@ final class AgentLifecycleStaleListenerTests: AgentLifecycleTests {
 }
 
 final class AgentLifecycleListenDeadlineTests: AgentLifecycleTests {
-  // MARK: 监听建立判定（issue #38，D10）
+  // MARK: 监听建立判定
 
   func testListenNotEstablishedWithinDeadlineIsLoggedAndSupervisionContinues() throws {
     // stub sslocal 不监听任何端点：超时后应记 error 日志点名端点，且监管继续。

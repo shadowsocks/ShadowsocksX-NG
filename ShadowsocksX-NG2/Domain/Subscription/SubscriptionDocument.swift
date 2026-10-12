@@ -12,7 +12,7 @@ struct RemoteServerRecord: Equatable, Sendable {
   var pluginOptions: String?
 }
 
-/// 解析完成的订阅快照（spec #21 D4，issue #4/#35）：SIP-008 `version: 1` 扁平
+/// 解析完成的订阅快照：SIP-008 `version: 1` 扁平
 /// `servers` + 可选私有扩展 `x_shadowsocksx_ng`。身份已按订阅作用域限定
 /// （服务器引用复用 `servers[].id`；无稳定 ID 的记录用地址端口指纹，
 /// 相同端点延续身份）；结构、顺序、名称全部远端权威。扩展缺失/未知/
@@ -31,7 +31,7 @@ struct SubscriptionSnapshot: Equatable, Sendable {
 
   struct Group: Equatable, Sendable {
     /// 分组身份（按订阅作用域限定）。根分组的 `id` 不参与挂载——订阅固定
-    /// 分组身份客户端所有（issue #9），应用时由 `groupID` 入参决定。
+    /// 分组身份客户端所有，应用时由 `groupID` 入参决定。
     let id: NodeID
     let name: String
     var children: [Child]
@@ -42,7 +42,7 @@ struct SubscriptionSnapshot: Equatable, Sendable {
   var information = SubscriptionInformation()
 }
 
-/// 快照解析失败（整份拒绝，不做部分提交；spec #21 D4 刷新失败族）。
+/// 快照解析失败（整份拒绝，不做部分提交； 刷新失败族）。
 enum SubscriptionParseError: Error, Equatable, Sendable {
   /// 正文不是合法 JSON 或顶层结构与 SIP-008 不符。
   case decodingFailure
@@ -167,7 +167,7 @@ enum SubscriptionDocumentParser {
 
   /// 扩展校验：schema_version 支持、分组 ID 唯一且与服务器 ID 不冲突、根存在、
   /// 子引用可解析、单父且无环。任一不满足即返回 `nil` 回退扁平（不抛错——
-  /// 私有字段损坏不能丢掉标准服务器，spec #21 D4 / research issue #4）。
+  /// 私有字段损坏不能丢掉标准服务器；解析失败时回退到扁平列表。
   private static func resolveExtension(
     _ dto: ExtensionDTO?, records: [String: RemoteServerRecord]
   ) -> ExtensionTree? {
@@ -192,7 +192,7 @@ enum SubscriptionDocumentParser {
 
   /// 单个分组 DTO → 带唯一 ID 的分组；ID 缺失、与已有分组或服务器 ID 冲突、
   /// 子引用类型未知即拒绝（分组 ID 与服务器 ID 在整个扩展文档内保持唯一，
-  /// research issue #4）。
+  /// 子引用类型未知时拒绝该扩展。
   private static func extensionGroup(
     from groupDTO: GroupDTO, existing: [String: ExtensionGroup],
     records: [String: RemoteServerRecord]
@@ -246,7 +246,7 @@ enum SubscriptionDocumentParser {
       tree.groups[tree.rootGroupID]!, id: tree.rootGroupID, tree: tree,
       leavesByKey: leavesByKey, subscriptionID: subscriptionID)
     // 未被树引用的服务器仍在标准列表中：按 `servers` 数组顺序追加在根分组，
-    // 不丢弃（research issue #4「未分组」集合；身份不变，被引用即自然归位）。
+    // 不丢弃未被树引用的服务器；身份不变，被引用后即可自然归位。
     let referenced = collectReferencedServerKeys(tree)
     for keyed in leaves where !referenced.contains(keyed.key) {
       root.children.append(.server(keyed.leaf))

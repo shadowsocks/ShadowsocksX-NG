@@ -1,10 +1,10 @@
-/// 本地代理端点的端口语义（spec #21 D8，issue #30）：端口是显式用户配置，
+/// 本地代理端点的端口语义：端口是显式用户配置，
 /// 出厂默认与 Legacy 隔离（SOCKS5 11086 / HTTP 11087）；系统任何路径
 /// 都不静默改端口——建议端口只产出候选，必须经用户确认保存后才生效；激活
 /// 是否成功以 runtime 实际绑定为准（健康门禁），本层的占用校验只是设置编辑
 /// 期尽力而为的即时提示。
 
-/// 本地代理端点；显示名与 D8 及诊断报告的措辞一致。PAC 端点已随 issue #67 移除。
+/// 本地代理端点；显示名与诊断报告的措辞一致。PAC 端点已移除。
 enum ProxyEndpointKind: Hashable, Sendable, CaseIterable {
   case socks
   case http
@@ -17,14 +17,14 @@ enum ProxyEndpointKind: Hashable, Sendable, CaseIterable {
   }
 }
 
-/// 端口配置校验错误：点名端点与端口（D8 错误信息要求）。
+/// 端口配置校验错误：点名端点与端口（错误信息要求）。
 enum PortSettingError: Error, Hashable, Sendable {
   case portOutOfRange(endpoint: ProxyEndpointKind, port: Int)
   /// 两个端点的配置端口相同；`endpoint` 在枚举序（socks → http）中在前。
   case duplicatePort(endpoint: ProxyEndpointKind, otherEndpoint: ProxyEndpointKind, port: Int)
 }
 
-/// 建议空闲端口算法（D8）：32768–65535 高位段升序扫描，跳过排除集合与不
+/// 建议空闲端口算法：32768–65535 高位段升序扫描，跳过排除集合与不
 /// 空闲端口。空闲判定由调用方注入，保证主缝可测。
 enum PortSuggestion {
   static let range = 32768...65535

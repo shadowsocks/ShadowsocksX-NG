@@ -2,7 +2,7 @@ import XCTest
 
 @testable import ShadowsocksX_NG2
 
-/// 插件区编辑语义（issue #38/#41，D10）经目录工作流 module interface 观察：
+/// 插件区编辑语义经目录工作流 module interface 观察：
 /// 选择器三态呈现与落盘、「无」整体清除、参数写删钥匙串、集外引用原样保留，
 /// 以及经编辑面的 ss:// 分享往返。走内存凭据存储与注入 bundleURL 的受管插件
 /// 提供。
@@ -193,7 +193,7 @@ final class CatalogWorkflowPluginTests: XCTestCase {
       })
   }
 
-  // MARK: - 分享往返（与 #32 编解码一致）
+  // MARK: - 分享往返（与 ss:// URI 编解码一致）
 
   func testSharedSsUriRoundTripsThroughEditorEdit() async throws {
     try writePluginBinary()

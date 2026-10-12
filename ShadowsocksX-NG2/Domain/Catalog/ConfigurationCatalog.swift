@@ -260,7 +260,7 @@ extension ConfigurationCatalog {
   }
 }
 
-// MARK: - 订阅子树（spec #21 D4，issue #35：快照原子提交与递归清除）
+// MARK: - 订阅子树（快照原子提交与递归清除）
 
 extension ConfigurationCatalog {
   /// 订阅固定分组子树的全量条目（含固定分组自身）；不存在或不是分组即抛错。

@@ -3,9 +3,9 @@ import XCTest
 
 @testable import ShadowsocksX_NG2
 
-/// 薄 I/O 缝 ②（spec #21 Testing Decisions）：以 stub sslocal 二进制驱动真实
+/// 薄 I/O 缝 ②（spec Testing Decisions）：以 stub sslocal 二进制驱动真实
 /// wrapper 可执行文件，验证启停协议次序、SIGTERM 链、崩溃恢复、文件清理与
-/// SIGUSR1 变更协议（D2/D5）。stub 经环境变量编排行为，全部等待有界。
+/// SIGUSR1 变更协议。stub 经环境变量编排行为，全部等待有界。
 class AgentLifecycleTests: XCTestCase {
   var workDir: URL!
   var contractURL: URL!
@@ -155,7 +155,7 @@ private enum LifecycleWaitError: Error {
 }
 
 final class AgentLifecycleCoreTests: AgentLifecycleTests {
-  // MARK: 启动协议与 SIGTERM 链（D2）
+  // MARK: 启动协议与 SIGTERM 链
 
   func testStartProtocolSpawnsSslocalWithAbsoluteConfigPathThenStopsOnSIGTERM() throws {
     try writeContract(ProxyRuntimeFixture.makeDocument())
@@ -196,7 +196,7 @@ final class AgentLifecycleCoreTests: AgentLifecycleTests {
     XCTAssertEqual(try waitForExit(wrapper), 0)
   }
 
-  // MARK: 契约缺失 / 无效 → 停止并清理（D5）
+  // MARK: 契约缺失 / 无效 → 停止并清理
 
   func testMissingContractExitsCleanlyWithoutSpawning() throws {
     let wrapper = try launchWrapper(behavior: "run")
@@ -222,7 +222,7 @@ final class AgentLifecycleCoreTests: AgentLifecycleTests {
 
   func testStructurallyInvalidContractIsAlsoCleaned() throws {
     // 可解码但本地端口无效：wrapper 校验拒绝，不给 sslocal 反复失败的机会。
-    // （issue #60 起空 `servers` 是合法契约——无活动目标的监听部署。）
+    // 空 `servers` 是合法契约——无活动目标时也可部署本地监听。
     try SslocalRuntimeDocument(
       servers: [], listen: SslocalListenSettings(socksPort: 0)
     ).jsonData().write(to: contractURL)
@@ -234,7 +234,7 @@ final class AgentLifecycleCoreTests: AgentLifecycleTests {
     XCTAssertFalse(FileManager.default.fileExists(atPath: contractURL.path))
   }
 
-  /// 空服务器契约是合法部署（issue #60）：wrapper 接受并照常拉起 sslocal，
+  /// 空服务器契约是合法部署：wrapper 接受并照常拉起 sslocal，
   /// 由本地入站提供无目标的本地监听。
   func testEmptyServerContractIsValidAndRunsSslocal() throws {
     try SslocalRuntimeDocument(

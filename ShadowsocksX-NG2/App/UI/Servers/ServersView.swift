@@ -25,7 +25,7 @@ struct ServersView: View {
   /// 非 private：ServersView+Share.swift 扩展经它呈现分享失败。
   @StateObject var errors = ErrorAlertPresenter()
 
-  // 纯窗口状态（issue #41）：selection/sheet/alert 不进目录 module。
+  // 纯窗口状态：selection/sheet/alert 不进目录 module。
   @State private var renameTarget: NodeID?
   @State private var newGroupParent: NodeID?
   @State private var isPresentingNewGroup = false
@@ -238,7 +238,7 @@ struct ServersView: View {
       (text as NSString).size(withAttributes: [.font: NSFont.systemFont(ofSize: 13)]).width) + 24
   }
 
-  /// 删除结果 → selection invalidation（story 18）：仅清除失效选择，不自动
+  /// 删除结果 → selection invalidation：仅清除失效选择，不自动
   /// 改选相邻节点。
   private func clearSelectionIfInvalidated(_ removed: Set<NodeID>) {
     if let selection, removed.contains(selection) {

@@ -1,7 +1,7 @@
 import Foundation
 import SystemConfiguration
 
-// MARK: - 命令地址投影（issue #72）
+// MARK: - 命令地址投影
 
 /// 首页命令地址候选（GLOSSARY.md「Terminal command address」）。身份 = BSD
 /// 接口身份 + 规范化 IP；显示名与类型注记仅用于呈现，不参与身份，由呈现层
@@ -36,7 +36,7 @@ struct TerminalCommandAddressIdentity: Equatable, Hashable, Sendable {
   let address: String
 }
 
-/// 首页命令地址选择器投影（issue #72）：可见性、候选与生效选择一次观察
+/// 首页命令地址选择器投影：可见性、候选与生效选择一次观察
 /// 产出，所有字段来自同一时间点。
 struct TerminalCommandAddressPicker: Equatable, Sendable {
   /// 仅本机监听方式隐藏。
@@ -49,7 +49,7 @@ struct TerminalCommandAddressPicker: Equatable, Sendable {
 
 // MARK: - 派生策略
 
-/// 首页命令地址策略（issue #72）：接口原始事实 + 已保存监听方式 → 用户可见
+/// 首页命令地址策略：接口原始事实 + 已保存监听方式 → 用户可见
 /// 候选与生效选择。纯派生：类型白名单、地址族过滤、链路本地/通配排除、名称
 /// 回退、排序合并与失效回退全部在此。测试以原始事实替身驱动本策略，不直接
 /// 注入已过滤候选。

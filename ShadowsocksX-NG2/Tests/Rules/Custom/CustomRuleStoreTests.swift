@@ -3,7 +3,7 @@ import XCTest
 
 @testable import ShadowsocksX_NG2
 
-/// 自定义规则持久化（issue #66 AC1/AC5）：往返、缺失文件、损坏与诊断摘要。
+/// 自定义规则持久化：往返、缺失文件、损坏与诊断摘要。
 final class CustomRuleStoreTests: XCTestCase {
   private var directory: URL!
   private var store: CustomRuleStore!

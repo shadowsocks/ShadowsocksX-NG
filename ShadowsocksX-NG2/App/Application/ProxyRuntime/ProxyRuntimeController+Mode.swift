@@ -10,7 +10,7 @@ extension ProxyRuntimeController {
     await transitionMode(mode, ruleDefaultAction: settings.ruleDefaultAction)
   }
 
-  /// 规则模式子选项（issue #63）：切换「未匹配时代理/直连」并重部署 ACL。
+  /// 规则模式子选项：切换「未匹配时代理/直连」并重部署 ACL。
   /// 失败保留旧模式、旧子选项与旧系统代理应用状态。
   func setRuleDefaultAction(_ action: RuleDefaultAction) async {
     guard action != settings.ruleDefaultAction else { return }

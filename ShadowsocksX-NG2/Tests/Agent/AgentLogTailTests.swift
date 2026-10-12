@@ -2,7 +2,7 @@ import XCTest
 
 @testable import ShadowsocksX_NG2
 
-/// agent.log 尾部读取（issue #34）：有限窗口、行对齐、缺失文件返回 nil。
+/// agent.log 尾部读取：有限窗口、行对齐、缺失文件返回 nil。
 final class AgentLogTailTests: XCTestCase {
   private var directory: URL!
 

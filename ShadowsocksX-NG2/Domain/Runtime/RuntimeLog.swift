@@ -1,20 +1,20 @@
 import Foundation
 
-/// 运行时日志基线（spec #21 D5）：事件是封闭枚举，脱敏由构造保证——永不
+/// 运行时日志基线：事件是封闭枚举，脱敏由构造保证——永不
 /// 携带密码、插件参数、Keychain 值、完整订阅 URL、URL token 或运行时 JSON
 /// 内容；服务器地址与备注默认不进普通日志（端点探测失败点名的 host:port
-/// 是本机监听端点，属 D8 要求呈现的事实字段，不受此限）。日志查看与诊断
-/// 导出由 #34 在本事件流上接出。
+/// 是本机监听端点，属于需要呈现的事实字段，不受此限）。日志查看与诊断
+/// 日志查看与诊断导出均以本事件流为数据源。
 enum RuntimeLogEvent: Equatable, CustomStringConvertible, Sendable {
   /// 契约文件已原子写入（只携带数量元数据，非内容）。
   case contractWritten(serverCount: Int)
   /// 契约内容与磁盘一致，跳过写入（幂等）。
   case contractUnchanged
-  /// 系统代理期望值与系统当前应用值语义等价，跳过写入（零授权，issue #70）。
+  /// 系统代理期望值与系统当前应用值语义等价，跳过写入（零授权）。
   case systemProxyUnchanged
-  /// 特权系统代理 helper 的 SMAppService 注册失败（issue #71；不含内容）。
+  /// 特权系统代理 helper 的 SMAppService 注册失败（不含内容）。
   case systemProxyHelperRegisterFailed(detail: String)
-  /// 系统代理写入/清除请求失败（issue #71；detail 为 XPC 或 helper 错误文本）。
+  /// 系统代理写入/清除请求失败（detail 为 XPC 或 helper 错误文本）。
   case systemProxyWriteFailed(detail: String)
   /// 运行时文件已清理。
   case runtimeFilesDeleted
@@ -29,7 +29,7 @@ enum RuntimeLogEvent: Equatable, CustomStringConvertible, Sendable {
   case sslocalSpawnFailed
   case sslocalExitedUnexpectedly(status: Int32)
   case sslocalStopRequested
-  /// sslocal 拉起后限时内未完成本地监听绑定（D10「3 秒未建立监听 → error
+  /// sslocal 拉起后限时内未完成本地监听绑定（「3 秒未建立监听 → error
   /// 日志」；监管继续，GUI 健康门负责呈现，端点为本机监听端点不受脱敏限制）。
   case listenNotEstablished(detail: String)
   case contractMissing
@@ -37,14 +37,14 @@ enum RuntimeLogEvent: Equatable, CustomStringConvertible, Sendable {
   case reloadForwarded
   case reloadDeferred
   case reloadRestarted
-  /// 本机代理端点启动后未就绪（点名端点与端口，D8）。
+  /// 本机代理端点启动后未就绪（点名端点与端口）。
   case endpointProbeFailed(host: String, port: Int, detail: String)
   /// 激活失败或活动目标清除（原因枚举已点名且不含秘密）。
   case activationFailed(reason: String)
   /// 用户显式触发的脱敏诊断导出已完成（不携带导出路径）。
   case diagnosticsExported
-  /// 监听设置持久化读取失败，已回落出厂默认（D8：不静默改端口——事件进
-  /// 诊断日志供 #34 查看器呈现，完整呈现面在 #33）。
+  /// 监听设置持久化读取失败，已回落出厂默认（不静默改端口——事件进
+  /// 诊断日志由查看器呈现；完整日志查看器属于独立的诊断界面。
   case listenSettingsUnreadable(detail: String)
 
   var description: String {
@@ -103,15 +103,15 @@ enum RuntimeLogEvent: Equatable, CustomStringConvertible, Sendable {
   }
 }
 
-/// 事件接收缝（issue #34）：GUI 进程把事件接入 RuntimeEventStore（内存环形
+/// 事件接收缝：GUI 进程把事件接入 RuntimeEventStore（内存环形
 /// 缓冲），供主窗口日志查看器实时呈现与诊断导出取用；wrapper 进程不注册，
 /// 仅走 stderr → agent.log 收敛。接收方拿到的是封闭枚举原值，渲染发生在
-/// 呈现边缘（诊断报告的白名单清洗只可能作用于原值，issue #43）。
+/// 呈现边缘（诊断报告的白名单清洗只可能作用于原值）。
 protocol RuntimeEventSink: Sendable {
   func append(event: RuntimeLogEvent, timestamp: Date)
 }
 
-/// 敏感信息脱敏工具（D5「敏感信息」定义的读取面）。
+/// 敏感信息脱敏工具（「敏感信息」定义的读取面）。
 enum Redactor {
   /// 非空远程 URL 只保留 scheme+host：路径、查询与片段全部略去，完整订阅
   /// URL 与 URL token 永不入日志。解析失败一律归并为占位符。

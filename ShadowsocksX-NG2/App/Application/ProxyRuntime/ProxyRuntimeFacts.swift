@@ -2,7 +2,7 @@ import Foundation
 
 /// Stable runtime status categories exposed to app presentation surfaces.
 /// 系统代理结果不在此列：它有独立的 `SystemProxyApplicationFacts`
-/// （issue #60 拆分两个状态面）。
+/// 系统代理结果使用独立的状态面。
 enum ProxyRuntimeStatus: Equatable, Sendable {
   case off
   case starting
@@ -31,7 +31,7 @@ struct ProxyRuntimeFacts: Equatable, Sendable {
   }
 }
 
-/// 系统代理实际作用的固定类别（issue #60）：意图持久化为开关事实，这里
+/// 系统代理实际作用的固定类别：意图持久化为开关事实，这里
 /// 呈现 NG2 对系统设置的真实作用，与 agent 运行状态互不代替。
 enum SystemProxyApplicationFacts: Equatable, Sendable {
   /// 意图关闭：系统代理清理完成。

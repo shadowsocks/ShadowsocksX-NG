@@ -91,7 +91,7 @@ struct ProxyACLDocument: Codable, Equatable, Sendable {
       at: fileURL, header: "[bypass_all]", summary: "direct")
   }
 
-  /// 全局模式（issue #62）：公网目标默认走 Shadowsocks 代理，本地网络目标固定
+  /// 全局模式：公网目标默认走 Shadowsocks 代理，本地网络目标固定
   /// 直连。ACL 只含固定本地安全绕过，不混入中国列表、GFWList 或自定义规则；
   /// SOCKS、HTTP 入站与局域网共享客户端共用此策略。IPv6 系统例外不构成已验证
   /// 的绕过保证，本 ACL 才是路由兜底。
@@ -100,12 +100,12 @@ struct ProxyACLDocument: Codable, Equatable, Sendable {
       at: fileURL, header: "[proxy_all]", summary: "global")
   }
 
-  /// 规则模式（issue #63/#64/#65）：默认动作决定 ACL 骨架，调用方按默认动作
+  /// 规则模式：默认动作决定 ACL 骨架，调用方按默认动作
   /// 传入对应来源的候选（两种默认动作不把全部内置来源无条件并集）。
   ///
   /// - 「未匹配时代理」：`proxy_all` + 中国域名/CIDR 直连候选进 `bypass_list`。
   /// - 「未匹配时直连」：`bypass_all` + GFWList 可生效代理规则进 `proxy_list`；
-  ///   未匹配目标与无可用规则命中的 IP 字面目标直连。
+  /// 未匹配目标与无可用规则命中的 IP 字面目标直连。
   ///
   /// 固定本地绕过优先；CIDR 判定可能触发本地 DNS 查询。
   static func rule(

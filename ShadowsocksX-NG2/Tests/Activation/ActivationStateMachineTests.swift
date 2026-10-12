@@ -2,7 +2,7 @@ import XCTest
 
 @testable import ShadowsocksX_NG2
 
-/// 激活主缝测试（票 #26 验收项）：单服务器激活、组展开顺序与无效候选过滤、
+/// 激活主缝测试：单服务器激活、组展开顺序与无效候选过滤、
 /// 原子失败点名原因、组目标身份保持。重展开与清除停止见 ActivationReexpansionTests。
 final class ActivationStateMachineTests: XCTestCase {
   private var machine = ActivationStateMachine()

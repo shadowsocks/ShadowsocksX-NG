@@ -2,7 +2,7 @@ import Combine
 import Foundation
 import SystemConfiguration
 
-/// 生产本机接口事实来源（issue #72）：getifaddrs 提供当前启用接口、回环
+/// 生产本机接口事实来源：getifaddrs 提供当前启用接口、回环
 /// 标记与单播地址（族与 IPv6 链路本地判定），SCNetworkInterfaceCopyAll 以
 /// BSD 名关联系统接口类型与本地化名称，SCDynamicStore 监视接口状态变化。
 /// 所有系统 API 细节封装于此；类型白名单与过滤排序在工作流层策略。

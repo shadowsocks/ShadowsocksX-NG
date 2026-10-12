@@ -8,7 +8,7 @@ enum NodeSource: String, Codable, Equatable, Sendable {
 
 /// 节点持久身份：不透明字符串。手动节点每次新建生成全新 UUID，身份不随
 /// 显示名、位置或父节点变化，也不复用于其他逻辑节点；订阅节点使用供应商
-/// 稳定 ID（作用域限本订阅，由订阅数据保证唯一），本票仅供夹具使用。
+/// 稳定 ID（作用域限本订阅，由订阅数据保证唯一），此处仅供夹具使用。
 struct NodeID: Hashable, Codable, Sendable {
   let rawValue: String
 
@@ -28,7 +28,7 @@ struct NodeID: Hashable, Codable, Sendable {
 }
 
 /// 凭据引用：指向 Keychain 权威副本的非秘密关联（GLOSSARY.md「Credential
-/// reference」）。配置树只存引用，永不存秘密明文；秘密值按 D5 由
+/// reference」）。配置树只存引用，永不存秘密明文；秘密值按 由
 /// CredentialStoring 写读。
 struct CredentialReference: Hashable, Codable, Sendable {
   let rawValue: String

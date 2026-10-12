@@ -4,7 +4,7 @@ import XCTest
 @testable import ShadowsocksX_NG2
 
 final class RealSslocalCustomRuleSmokeTests: RealSslocalSmokeTests {
-  /// 自定义规则真实 sslocal 路由（issue #66 AC4）：「未匹配时代理」下自定义
+  /// 自定义规则真实 sslocal 路由：「未匹配时代理」下自定义
   /// 域名直连不触 SS 出口，未匹配目标走代理；SOCKS 与 HTTP 入站共用 ACL。
   func testCustomRulesRouteOnSOCKSAndHTTPInProxyDefaultMode() throws {
     let echoServer = try LoopbackEchoServer()
@@ -117,7 +117,7 @@ final class RealSslocalCustomRuleSmokeTests: RealSslocalSmokeTests {
       "HTTP 入站未匹配目标应走代理")
   }
 
-  /// 自定义规则真实 sslocal 路由（issue #66 AC4）：「未匹配时直连」下自定义
+  /// 自定义规则真实 sslocal 路由：「未匹配时直连」下自定义
   /// 域名代理命中 SS 出口，未匹配目标直连。
   func testCustomRulesRouteOnSOCKSAndHTTPInDirectDefaultMode() throws {
     let echoServer = try LoopbackEchoServer()

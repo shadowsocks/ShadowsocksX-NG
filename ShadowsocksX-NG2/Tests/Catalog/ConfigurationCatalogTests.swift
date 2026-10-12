@@ -2,7 +2,7 @@ import XCTest
 
 @testable import ShadowsocksX_NG2
 
-/// 主缝测试：配置目录树操作。覆盖票 #25 验收项——增删改/移动/重排保持身份与
+/// 主缝测试：配置目录树操作。覆盖增删改、移动和重排，保持身份与
 /// 子序；空组持久保留。非法操作的拒绝用例见 ConfigurationCatalogRejectionTests。
 final class ConfigurationCatalogTests: XCTestCase {
   func testAddServersAtRootGeneratesFreshIdentityAndPreservesOrder() throws {

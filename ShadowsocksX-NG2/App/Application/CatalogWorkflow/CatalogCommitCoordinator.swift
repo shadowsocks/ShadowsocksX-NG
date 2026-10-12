@@ -1,7 +1,7 @@
 import Combine
 import Foundation
 
-/// 已提交目录的内存快照（issue #40）：协调器与运行时缝之间的传值。运行时
+/// 已提交目录的内存快照：协调器与运行时缝之间的传值。运行时
 /// 收敛以此为唯一目标，不回读磁盘；磁盘仍是重启与跨进程恢复的权威来源。
 struct CommittedCatalogSnapshot: Equatable, Sendable {
   let catalog: ConfigurationCatalog
@@ -49,7 +49,7 @@ struct CatalogCommitBootstrap {
   }
 }
 
-/// 目录提交后一次运行时收敛的结构化结果（issue #40）。协调器不生成本地化
+/// 目录提交后一次运行时收敛的结构化结果。协调器不生成本地化
 /// 文案：失败细节原样携带平台运行时给出的点名事实，由上层 presentation 决定
 /// 如何呈现。
 enum RuntimeSyncOutcome: Equatable, Sendable {
@@ -63,7 +63,7 @@ enum RuntimeSyncOutcome: Equatable, Sendable {
   case clearedAndStopped(ActivationFailure)
 }
 
-/// 运行时收敛的可观察阶段（issue #40）：目录已提交 → 运行时同步中 → 结束。
+/// 运行时收敛的可观察阶段：目录已提交 → 运行时同步中 → 结束。
 /// generation 为提交代次；被更新提交取代的旧代次不写最终状态。
 enum RuntimeSyncStatus: Equatable {
   /// 无进行中或已完成的同步（无活动目标时提交保持此状态）。
@@ -74,7 +74,7 @@ enum RuntimeSyncStatus: Equatable {
   case finished(generation: Int, outcome: RuntimeSyncOutcome)
 }
 
-/// 运行时同步缝（issue #40）：目录提交协调器与代理运行时之间的窄接口。
+/// 运行时同步缝：目录提交协调器与代理运行时之间的窄接口。
 /// 生产实现适配现有代理运行时控制器；测试注入确定性 fake。
 @MainActor
 protocol CatalogRuntimeSyncing: AnyObject {
@@ -85,7 +85,7 @@ protocol CatalogRuntimeSyncing: AnyObject {
   func converge(to snapshot: CommittedCatalogSnapshot) async -> RuntimeSyncOutcome
 }
 
-/// 目录提交—运行时同步协调器（issue #40）：普通配置变更的唯一提交入口。
+/// 目录提交—运行时同步协调器：普通配置变更的唯一提交入口。
 /// 管线为「副本变更 → 校验并原子持久化 → 发布已提交状态 → 异步运行时收敛」；
 /// 目录提交在持久化成功后立即完成，不因运行时失败回滚目录，也不被健康检查
 /// 或启动耗时阻塞。每次提交递增代次：旧代次自然结束，但不得覆盖最新代次的
@@ -209,7 +209,7 @@ final class CatalogCommitCoordinator {
   }
 }
 
-/// 生产运行时适配器（issue #40）：协调器与现有代理运行时控制器之间的唯一
+/// 生产运行时适配器：协调器与现有代理运行时控制器之间的唯一
 /// 生产接线，由应用组合根建立。
 @MainActor
 final class ProxyRuntimeSyncAdapter: CatalogRuntimeSyncing {

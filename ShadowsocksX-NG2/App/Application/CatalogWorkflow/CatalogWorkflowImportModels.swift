@@ -74,7 +74,7 @@ enum ImportLineFailureReason: Equatable, Error {
   case credential(CredentialStoreError)
 }
 
-/// Legacy 快照发现与完成标记（story 31/34）：跳过不写标记，显式再导入仍
+/// Legacy 快照发现与完成标记：跳过不写标记，显式再导入仍
 /// 创建新的独立手动分组。首启主动弹窗已移除，发现状态仅供导入面板的
 /// Legacy 入口显隐。
 struct LegacyImportAvailability: Equatable {

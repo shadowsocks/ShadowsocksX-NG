@@ -25,7 +25,7 @@ final class ProxyACLTests: XCTestCase {
     XCTAssertFalse(acl.content.contains("100.64.0.0/10"))
   }
 
-  /// 全局模式（issue #62）：只含固定本地绕过的最小 ACL；不混入中国列表、
+  /// 全局模式：只含固定本地绕过的最小 ACL；不混入中国列表、
   /// GFWList 或自定义规则。公网目标默认代理，本地目标固定直连。
   func testGlobalACLUsesProxyAllAndOnlyFixedLocalSafetyRules() {
     let acl = ProxyACLDocument.global(
@@ -115,7 +115,7 @@ final class ProxyACLTests: XCTestCase {
     XCTAssertNotEqual(base, otherSummary)
   }
 
-  // MARK: - 规则模式（issue #63）
+  // MARK: - 规则模式
 
   /// 规则＋未匹配时代理：proxy_all + 固定本地绕过 + 中国域名直连候选。
   func testRuleProxyDefaultACLUsesProxyAllAndChinaDirectCandidates() throws {
@@ -145,7 +145,7 @@ final class ProxyACLTests: XCTestCase {
     XCTAssertFalse(acl.content.contains("100.64.0.0/10"), "不加入 CGNAT")
   }
 
-  /// 规则＋未匹配时直连（issue #65）：bypass_all + 固定本地 + GFWList 可生效
+  /// 规则＋未匹配时直连：bypass_all + 固定本地 + GFWList 可生效
   /// 代理规则。两种默认动作不把全部内置来源无条件并集，因此不混入中国直连项。
   func testRuleDirectDefaultACLUsesBypassAllAndGFWListProxyCandidates() throws {
     let rules = [
@@ -200,7 +200,7 @@ final class ProxyACLTests: XCTestCase {
       "GFWList 代理候选只含域名规则；IP 字面目标未命中即直连")
   }
 
-  /// 规则＋未匹配时代理（issue #64）：proxy_all 同时含中国域名与 IPv4 CIDR
+  /// 规则＋未匹配时代理：proxy_all 同时含中国域名与 IPv4 CIDR
   /// 直连候选，固定本地绕过仍优先。
   func testRuleProxyDefaultACLIncludesChinaIPv4CIDRCandidates() throws {
     let rules = [

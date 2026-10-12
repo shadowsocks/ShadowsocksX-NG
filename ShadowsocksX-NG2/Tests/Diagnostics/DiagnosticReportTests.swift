@@ -2,8 +2,8 @@ import XCTest
 
 @testable import ShadowsocksX_NG2
 
-/// 诊断导出脱敏验收（spec #21 D5，issue #34）：投毒夹具把敏感值埋进目录、
-/// 契约与状态字段，验证导出报告只含 D5 允许的元数据类目，且导出动作自身
+/// 诊断导出脱敏验收：投毒夹具把敏感值埋进目录、
+/// 契约与状态字段，验证导出报告只含 允许的元数据类目，且导出动作自身
 /// 不带出任何敏感值。
 final class DiagnosticReportTests: XCTestCase {
   private let password = "SECRET-PASSWORD"
@@ -119,7 +119,7 @@ final class DiagnosticReportTests: XCTestCase {
     XCTAssertTrue(report.contains("diagnostics report exported (redacted)"))
   }
 
-  /// 受管插件清单（issue #38）：名称与版本入导出；插件参数仍是敏感值不入。
+  /// 受管插件清单：名称与版本入导出；插件参数仍是敏感值不入。
   func testManagedPluginSectionListsNameAndVersionWithoutOptions() throws {
     var snapshot = poisonedSnapshot(catalog: try poisonedCatalog())
     snapshot.managedPlugins = [
@@ -160,7 +160,7 @@ final class DiagnosticReportTests: XCTestCase {
     XCTAssertEqual(summary, "https://example.com/…")
   }
 
-  /// 家目录前缀改写是报告渲染的兜底防线（issue #43 后自由 detail 已被上游
+  /// 家目录前缀改写是报告渲染的兜底防线（后自由 detail 已被上游
   /// 白名单清洗，此防御保留给任何仍携带路径的文本）。
   func testHomePathRedactionRewritesPrefix() {
     let text = RuntimeLogEvent.runtimePersistFailed(
@@ -175,7 +175,7 @@ final class DiagnosticReportTests: XCTestCase {
       DiagnosticReportBuilder.redactingHomePaths(text, home: nil), text)
   }
 
-  /// 原始错误文本不属 D5 白名单类目：serviceFailed 只呈现固定状态文案。
+  /// 原始错误文本不属于白名单类目：serviceFailed 只呈现固定状态文案。
   func testServiceFailedExportsLabelOnly() {
     var snapshot = DiagnosticSnapshot()
     snapshot.proxyState = .serviceFailed
@@ -217,7 +217,7 @@ final class DiagnosticReportTests: XCTestCase {
         serversWithPlugin: 0, manualServers: 1, subscriptionServers: 0))
   }
 
-  /// 自定义规则诊断摘要（issue #66 AC5）：只含数量与内容版本，无原始域名。
+  /// 自定义规则诊断摘要：只含数量与内容版本，无原始域名。
   func testCustomRuleSummaryExportsCountAndVersionWithoutRawDomains() throws {
     var snapshot = DiagnosticSnapshot()
     snapshot.customRuleSummary = CustomRuleSummary(

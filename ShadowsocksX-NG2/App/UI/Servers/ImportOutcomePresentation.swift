@@ -1,7 +1,7 @@
 import Foundation
 
-/// 统一导入的逐来源结果 → 呈现行（issue #41，story 20/42；本地化在呈现边缘
-/// 完成）。失败明细不回显原始行内容（ss:// 行内嵌 base64 密码，story 23），
+/// 统一导入的逐来源结果 → 呈现行（本地化在呈现边缘
+/// 完成）。失败明细不回显原始行内容（ss:// 行内嵌 base64 密码），
 /// 文本来源以行号定位；原始文本就在剪贴板/文件里，行号足以定位。
 enum ImportOutcomePresentation {
   static func row(for outcome: ImportSourceOutcome, targetName: String) -> ImportResultRow {
@@ -28,7 +28,7 @@ enum ImportOutcomePresentation {
     }
   }
 
-  /// Legacy 导入报告 → 结果行（与 Legacy 专属表单时代的报告同口径，story 31）。
+  /// Legacy 导入报告 → 结果行（与 Legacy 专属表单时代的报告同口径）。
   static func row(for report: LegacyImportReport) -> ImportResultRow {
     var details = [
       "统计：导入 \(report.importedServerCount) 台，跳过 "

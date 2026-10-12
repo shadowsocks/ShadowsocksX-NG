@@ -3,7 +3,7 @@ import XCTest
 
 @testable import ShadowsocksX_NG2
 
-/// 规则领域模型（issue #63）：动作与匹配条件独立于
+/// 规则领域模型：动作与匹配条件独立于
 /// PAC、ACL 文本和系统代理设置。
 final class ProxyRuleTests: XCTestCase {
   // MARK: - 动作与匹配

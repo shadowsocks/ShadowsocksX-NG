@@ -1,6 +1,6 @@
 import Foundation
 
-/// 配置树磁盘持久化（spec #21 D5）：落盘 `~/Library/Application Support/
+/// 配置树磁盘持久化：落盘 `~/Library/Application Support/
 /// ShadowsocksX-NG2/catalog.json`，目录权限 0700、文件 0600；写临时文件
 /// （创建即 0600）后原子替换。文件只含结构化目录、凭据引用与订阅元数据
 /// （URL 仍是凭据引用），永不落秘密明文。
@@ -44,7 +44,7 @@ struct CatalogFileStore {
     return try decode(data)
   }
 
-  /// 整体重写并原子替换；失败时保留原文件。目录按 D5 基线强制 0700（含自愈）。
+  /// 整体重写并原子替换；失败时保留原文件。目录权限强制为 0700（含自愈）。
   func save(_ document: CatalogDocument) throws {
     try validateFavorites(document.favoriteIDs, in: document.catalog)
     let payload = CatalogFilePayload(

@@ -2,7 +2,7 @@ import XCTest
 
 @testable import ShadowsocksX_NG2
 
-/// 监听设置持久化（spec #21 D8，issue #30）：用户改过的端口必须跨启动保留
+/// 监听设置持久化：用户改过的端口必须跨启动保留
 /// 且任何读取路径不得静默改写——文件缺失回落出厂默认，损坏或端口无效一律
 /// 点名报错交由上层呈现，绝不静默修正。
 final class ListenSettingsFileStoreTests: XCTestCase {

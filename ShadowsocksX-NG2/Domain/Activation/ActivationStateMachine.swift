@@ -1,4 +1,4 @@
-/// 状态机对运行时的效应，由 #27 的运行时接线消费。
+/// 状态机产出的效应由运行时接线消费。
 enum ActivationEffect: Equatable, Sendable {
   /// 原子更新运行时（首次激活、重激活或子树编辑重展开成功）。
   case deployed(RuntimeConfiguration)
@@ -18,16 +18,16 @@ extension ProxySettings {
   }
 }
 
-/// 激活状态机（spec #21 D3 激活族）：持久化活动目标（服务器或分组的节点身份）。
+/// 激活状态机持久化活动目标（服务器或分组的节点身份）。
 /// 激活是单缝原子操作——成功替换目标并产出派生文档，失败点名原因且状态不动；
 /// 目录提交后立即重展开，目标失效即清除并发出停止意图。运行时文件写入与
-/// 进程启停由 #27 消费本层产出。
+/// 运行时接线消费本层产出，以控制进程启停。
 struct ActivationStateMachine: Equatable, Sendable {
   /// 当前活动目标；`nil` 即无目标（代理不应运行）。
   private(set) var activeTargetID: NodeID?
 
   /// 从持久化恢复（`ActivationStateFileStore`）；恢复后的有效性由下一次
-  /// `catalogDidCommit` 重校验同步（D5「GUI 下次启动重新校验同步」）。
+  /// `catalogDidCommit` 重校验同步（「GUI 下次启动重新校验同步」）。
   init(activeTargetID: NodeID? = nil) {
     self.activeTargetID = activeTargetID
   }
@@ -55,7 +55,7 @@ struct ActivationStateMachine: Equatable, Sendable {
   /// 目录已提交变更后的立即重展开。返回 `nil` 表示无事可做（无活动目标）；
   /// 有效非空 → `.deployed`（原子更新）；目标被删除/变空/无有效叶子 →
   /// 清除目标并返回 `.clearedAndStopped`（点名原因）。任何目录提交（含与活动
-  /// 目标无关的编辑）都整体重校验重展开：产出对相同输入幂等，由 #27 决定是否
+  /// 目标无关的编辑）都整体重校验重展开：产出对相同输入幂等；运行时接线决定是否
   /// 跳过相同内容的运行时写入。
   mutating func catalogDidCommit(
     _ catalog: ConfigurationCatalog,
@@ -186,7 +186,7 @@ struct ActivationStateMachine: Equatable, Sendable {
     }
   }
 
-  /// 校验单个有效候选叶子并解析为上游条目；凭据在派生时从凭据存储解析（D5）。
+  /// 校验单个有效候选叶子并解析为上游条目；凭据在派生时从凭据存储解析。
   private func derivedServer(
     _ leafID: NodeID,
     in catalog: ConfigurationCatalog,
@@ -234,7 +234,7 @@ struct ActivationStateMachine: Equatable, Sendable {
         pluginOpts: pluginOpts, pluginArgs: pluginArgs, pluginMode: pluginMode))
   }
 
-  /// 凭据解析：无条目与读取失败分别点名（D5「凭据不可解析 → 停止并清理」）。
+  /// 凭据解析：无条目与读取失败分别点名（「凭据不可解析 → 停止并清理」）。
   private func resolveCredential(
     _ reference: CredentialReference,
     of leafID: NodeID,

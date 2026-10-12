@@ -1,10 +1,10 @@
 import SwiftUI
 
-/// 订阅分区（spec #21 D11，issue #35/#41，地图 #52 票 #56）：每订阅一张卡片
+/// 订阅分区：每个订阅以一张卡片呈现
 /// （图标 + 名称 + 「HTTPS 订阅地址已隐藏」+ 状态徽标 + 更新/重试 + 「…」菜单 +
 /// 三列元数据 + 脱敏说明行），失败卡警告色描边。「添加订阅」与「更新全部」
 /// 均由本页自挂工具栏（呈现于窗口工具栏右端，与服务器分区同法）。卡片数据
-/// 来自订阅 projection（非敏感）；结构化刷新状态在呈现层本地化（story 42）。
+/// 来自订阅 projection（非敏感）；结构化刷新状态在呈现层本地化。
 struct SubscriptionsView: View {
   @ObservedObject var workflow: CatalogWorkflow
   /// 共享错误弹窗呈现（UI 持有；typed error → 本地化文案的呈现边缘）。
@@ -102,7 +102,7 @@ struct SubscriptionsView: View {
   }
 }
 
-/// 刷新状态 → 呈现文案（story 42：本地化在 UI 呈现层，不在 module 内）。
+/// 刷新状态 → 呈现文案（本地化在 UI 呈现层，不在 module 内）。
 extension SubscriptionRefreshStatus {
   var badgeText: String {
     switch self {
@@ -124,7 +124,7 @@ extension SubscriptionRefreshStatus {
     return false
   }
 
-  /// 脱敏说明行（票 #56）：失败卡说明保留快照语义。
+  /// 脱敏说明行：失败卡说明保留快照语义。
   var footerNote: String {
     isFailed
       ? "保留最后一次成功快照 · 不会清空现有节点"
@@ -132,7 +132,7 @@ extension SubscriptionRefreshStatus {
   }
 }
 
-/// 单张订阅卡片（票 #56）：头部、三列元数据与脱敏说明；失败态警告色描边。
+/// 单张订阅卡片：头部、三列元数据与脱敏说明；失败态警告色描边。
 private struct SubscriptionCard: View {
   @Environment(\.locale) private var locale
   @Environment(\.timeZone) private var timeZone
@@ -255,7 +255,7 @@ private struct SubscriptionCard: View {
     }
   }
 
-  /// 三列元数据（票 #56）：固定分组 | 服务器 | 上次成功刷新。
+  /// 三列元数据：固定分组 | 服务器 | 上次成功刷新。
   private var meta: some View {
     HStack(alignment: .top, spacing: 24) {
       metaColumn("固定分组") {
@@ -385,7 +385,7 @@ struct AddSubscriptionSheet: View {
 }
 
 /// 「编辑订阅 URL」表单（保留订阅与固定分组身份）；保存后立即刷新。
-/// URL 明文经显式命令读取（story 11）。
+/// URL 明文经显式命令读取。
 private struct EditSubscriptionURLSheet: View {
   let workflow: CatalogWorkflow
   let errors: ErrorAlertPresenter

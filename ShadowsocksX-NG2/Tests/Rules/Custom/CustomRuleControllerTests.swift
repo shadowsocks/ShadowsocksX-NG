@@ -238,7 +238,7 @@ final class CustomRuleControllerTests: ProxyRuntimeControllerTests {
     XCTAssertFalse(try activeACLContent(runtimeStore).contains("internal.example"))
   }
 
-  /// 诊断摘要只含数量与内容版本（issue #66 AC5）。
+  /// 诊断摘要只含数量与内容版本。
   func testCustomRuleSummaryExposesCountAndVersionOnly() async throws {
     let (store, _) = try makeCustomRuleStore()
     try store.save([

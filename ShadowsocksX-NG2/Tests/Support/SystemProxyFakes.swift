@@ -1,6 +1,6 @@
 @testable import ShadowsocksX_NG2
 
-/// 系统代理相关替身（issue #60/#71）：从 ProxyRuntimeFixture 主文件分出，
+/// 系统代理相关替身：从 ProxyRuntimeFixture 主文件分出，
 /// 保持 `ProxyRuntimeFixture.` 限定名不变。
 extension ProxyRuntimeFixture {
   @MainActor
@@ -21,7 +21,7 @@ extension ProxyRuntimeFixture {
     var applyError: Error?
     var clearError: Error?
     var onClear: (@MainActor () -> Void)?
-    /// 注入返回值：模拟系统值已与期望等价的免授权跳过路径（issue #70）。
+    /// 注入返回值：模拟系统值已与期望等价的免授权跳过路径。
     var applyOutcome: SystemProxyWriteOutcome = .written
     /// 可选共享事件日志（次序断言用）。
     weak var eventLog: ProxyRuntimeEventLog?
@@ -73,7 +73,7 @@ extension ProxyRuntimeFixture {
     }
   }
 
-  /// 特权 helper 注册/审批状态可编程替身（issue #71）。
+  /// 特权 helper 注册/审批状态可编程替身。
   @MainActor
   final class FakeSystemProxyHelperService: SystemProxyHelperServicing {
     private(set) var currentStatus: SystemProxyHelperStatus
@@ -82,7 +82,7 @@ extension ProxyRuntimeFixture {
     private(set) var registerError: Error?
     private(set) var unregisterError: Error?
     private(set) var openApprovalPathCount = 0
-    /// register() 成功后迁移到的状态（模拟 BTM 批准立即达成）。
+    /// register 成功后迁移到的状态（模拟 BTM 批准立即达成）。
     var statusAfterRegister: SystemProxyHelperStatus = .approved
 
     init(initialStatus: SystemProxyHelperStatus = .approved) {

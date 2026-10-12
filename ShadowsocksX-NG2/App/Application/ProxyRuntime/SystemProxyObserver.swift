@@ -1,6 +1,6 @@
 import Foundation
 
-/// 系统代理观察/修复策略机（ADR-0022 / issue #73）：收敛、挂起、意图保持、
+/// 系统代理观察/修复策略机（ADR-0022）：收敛、挂起、意图保持、
 /// 修复、清理重试、helper 门禁与 cleanup-until-quiet 观察循环的唯一属主。
 /// 意图开关、出口可用性与期望配置由组合方以闭包注入，模块不反向依赖控制器；
 /// 呈现事实经自身事实通道（didChange 语义，每主队列轮合并）由运行时
@@ -350,7 +350,7 @@ extension SystemProxyObserver {
 
   /// agent 停机的观察收尾（stopAgent）：停网络监视与健康循环，观察模式归
   /// 零。呈现按代理意图分流——意图仍在则保持待应用（等 agent 恢复后收敛，
-  /// issue #71），意图已关则空闲。
+  /// 意图已关则呈现空闲状态。
   func agentDidStop() {
     systemProxyNetworkChangeMonitor.stop()
     systemProxyHealthTask?.cancel()
@@ -418,10 +418,10 @@ extension SystemProxyObserver {
   }
 }
 
-// MARK: - helper 门禁（issue #71）
+// MARK: - helper 门禁
 
 extension SystemProxyObserver {
-  /// helper 可用性门禁（issue #71）：已批准即通过——仅当 LaunchDaemon 清单
+  /// helper 可用性门禁：已批准即通过——仅当 LaunchDaemon 清单
   /// 与上次注册时的指纹漂移（app 更新改过清单）才注销重注刷新 launchd 的
   /// job 定义；未注册则尝试注册（注册本身不弹授权框，成功即记指纹）；待批准
   /// 或注册失败时置位批准路径并保持待应用。
@@ -503,7 +503,7 @@ extension SystemProxyObserver {
     }
   }
 
-  /// 无条件清除全部系统代理配置（issue #71）：typed 失败原样呈现，不重试。
+  /// 无条件清除全部系统代理配置：typed 失败原样呈现，不重试。
   private func clearSystemProxyOutcome() async -> SystemProxyApplicationFacts {
     do {
       try await systemProxy.clear()

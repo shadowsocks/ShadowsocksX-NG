@@ -2,7 +2,7 @@ import Testing
 
 @testable import ShadowsocksX_NG2
 
-/// 服务器表单的手动输入上限与端口十进制草稿（issue #81）：全部经表单草稿
+/// 服务器表单的手动输入上限与端口十进制草稿：全部经表单草稿
 /// 模块的公开面观察（装载、校验、提交草稿、变更检测），不触碰内部实现。
 @MainActor
 struct ServerFormFieldLimitsTests {

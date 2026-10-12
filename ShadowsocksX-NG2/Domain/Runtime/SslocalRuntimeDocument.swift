@@ -77,7 +77,7 @@ struct SslocalLocalDocument: Codable, Equatable, Sendable {
   }
 }
 
-/// wrapper 自有的监听身份扩展（issue #67 取代已删除的 PAC 扩展）。字段收在
+/// wrapper 自有的监听身份扩展（取代已删除的 PAC 扩展）。字段收在
 /// `x_shadowsocksx_ng_listen` 下，上游 sslocal 会忽略该扩展；wrapper 与 GUI
 /// 仍从同一原子文件读取同一份事实。
 struct RuntimeListenDocument: Codable, Equatable, Sendable {
@@ -90,7 +90,7 @@ struct RuntimeListenDocument: Codable, Equatable, Sendable {
   }
 }
 
-/// sslocal 运行时文档（spec #21 D5/D7）：激活派生出的完整 JSON 契约文档。
+/// sslocal 运行时文档：激活派生出的完整 JSON 契约文档。
 /// 密码与插件参数已在此解析为明文——只供运行时落盘，永不入日志。
 struct SslocalRuntimeDocument: Codable, Equatable, Sendable {
   let servers: [SslocalServerDocument]
@@ -177,7 +177,7 @@ struct SslocalRuntimeDocument: Codable, Equatable, Sendable {
 
 /// 上游 `servers[]` 条目。id 携带叶子身份，供上游稳定标识；显示名是目录
 /// 元数据，不进契约（GLOSSARY.md「Runtime configuration file」）。
-/// 插件字段在无插件时整体省略（D10）。
+/// 插件字段在无插件时整体省略。
 struct SslocalServerDocument: Codable, Equatable, Sendable {
   let id: String
   let server: String
@@ -201,7 +201,7 @@ struct SslocalServerDocument: Codable, Equatable, Sendable {
 
 extension SslocalLocalDocument {
   /// 探测用主机名：通配绑定地址按回环探测（wrapper 监听判定与 GUI 健康门
-  /// 共用口径，issue #38）。
+  /// 共用口径）。
   var probeHost: String {
     switch localAddress {
     case "0.0.0.0": "127.0.0.1"
@@ -237,8 +237,8 @@ extension SslocalRuntimeDocument {
     locals.first { $0.inboundProtocol == "http" }?.localPort ?? 0
   }
 
-  /// wrapper 读取侧防御校验：端口、协议与共享范围必须一致；无效文件按 D5
-  /// 停止并清理，不能交给 KeepAlive 无限重放。空 `servers` 合法（issue #60）：
+  /// wrapper 读取侧防御校验：端口、协议与共享范围必须一致；无效文件会停止并
+  /// 清理，不能交给 KeepAlive 无限重放。空 `servers` 合法：
   /// 无活动目标时 agent 以空服务器列表提供本地监听；上游 sslocal v1.25.0
   /// 接受空 servers 并照常绑定本地入站。
   var isWellFormed: Bool {

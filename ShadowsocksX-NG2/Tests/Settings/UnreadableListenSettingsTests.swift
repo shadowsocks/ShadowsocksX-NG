@@ -2,8 +2,8 @@ import XCTest
 
 @testable import ShadowsocksX_NG2
 
-/// 监听设置不可读时的控制器行为（spec #21 D8「任何路径不静默改端口」，
-/// issue #30）：占位出厂端口不得部署——停止运行时并点名呈现启动失败。
+/// 监听设置不可读时的控制器行为（「任何路径不静默改端口」）：
+/// 占位出厂端口不得部署——停止运行时并点名呈现启动失败。
 @MainActor
 final class UnreadableListenSettingsTests: XCTestCase {
   private var runtime: ProxyRuntimeFixture.TemporaryRuntime!

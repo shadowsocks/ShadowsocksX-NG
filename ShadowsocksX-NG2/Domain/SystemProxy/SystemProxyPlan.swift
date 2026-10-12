@@ -1,6 +1,6 @@
 import Foundation
 
-/// 系统代理写入失败（issue #71）：helper 内 SC 操作失败与 GUI 侧 XPC 失败共用
+/// 系统代理写入失败：helper 内 SC 操作失败与 GUI 侧 XPC 失败共用
 /// 同一族，可直接作为 XPC 应答 payload 编解码（Codable）。
 enum SystemProxyError: Error, Equatable, Sendable, Codable {
   case preferencesUnavailable
@@ -47,7 +47,7 @@ enum SystemProxyWriteOutcome: Equatable, Sendable, Codable {
 /// Pure configuration planning. Apply rewrites every differing service in the active
 /// location, preserving unmodeled Proxies keys. Cleanup is unconditional: the complete
 /// Proxies dictionary goes for every service in every scanned location, regardless of
-/// which application or account wrote it (issue #71).
+/// which application or account wrote it.
 enum SystemProxyPlanner {
   struct ApplyPlan: Equatable, Sendable {
     let writes: [SystemProxyPlannedWrite]
@@ -83,7 +83,7 @@ enum SystemProxyPlanner {
   }
 
   /// 无条件清理计划：凡持有 Proxies 实体的服务都整字典移除，不校验来源，
-  /// 也不保存或查询端点签名、所有权标记或历史快照（issue #71）。
+  /// 也不保存或查询端点签名、所有权标记或历史快照。
   static func makeClearPlan(services: [SystemProxyServiceState]) -> ClearPlan {
     let writes =
       services

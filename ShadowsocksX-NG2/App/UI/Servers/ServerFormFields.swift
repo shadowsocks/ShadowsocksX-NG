@@ -12,7 +12,7 @@ enum ServerFormField: Hashable {
   static let focusOrder: [ServerFormField] = [.name, .address, .port, .password, .pluginOptions]
 }
 
-/// 字段级校验错误（issue #81）：只携带字段、原因与上限，不回显字段内容；
+/// 字段级校验错误：只携带字段、原因与上限，不回显字段内容；
 /// 文案归呈现层（`ServerFormFieldsGrid`）。
 enum ServerFormFieldError: Equatable {
   /// 名称必填（原有规则并入统一校验入口）。
@@ -34,7 +34,7 @@ enum ServerFormFieldError: Equatable {
 /// 与插件区 facts 由 caller 注入。
 @MainActor
 final class ServerFormFields: ObservableObject {
-  /// 手动表单的产品输入上限（issue #81）：不宣称是 DNS、Shadowsocks 或
+  /// 手动表单的产品输入上限：不宣称是 DNS、Shadowsocks 或
   /// SIP003 协议的最大长度；导入、订阅刷新与既有保存数据不执行这些上限。
   static let nameCharacterLimit = 128
   static let addressCharacterLimit = 255
@@ -43,8 +43,8 @@ final class ServerFormFields: ObservableObject {
   static let pluginOptionsUTF8Limit = 65_536
 
   @Published var address = "" { didSet { clearError(.address) } }
-  /// 端口十进制编辑草稿：提交前经 `validateForSubmit()` 验证，不用数值绑定
-  /// 以免转换失败时悄悄提交旧绑定值（issue #81）。
+  /// 端口十进制编辑草稿：提交前经 `validateForSubmit` 验证，不用数值绑定
+  /// 以免转换失败时悄悄提交旧绑定值。
   @Published var portText = "" { didSet { clearError(.port) } }
   @Published var encryptionMethod = ""
   @Published var password = "" { didSet { clearError(.password) } }
@@ -54,7 +54,7 @@ final class ServerFormFields: ObservableObject {
     }
   }
   @Published var pluginChoice: PluginSelection = .none
-  /// 插件参数会话草稿（issue #81）：行/模式/原文收在模块内，提交串取
+  /// 插件参数会话草稿：行/模式/原文收在模块内，提交串取
   /// `composedString`；编辑参数即清除参数字段错误，变更通知转发给本类
   /// 观察者（视图只观察 ServerFormFields）。
   let pluginOptions = PluginOptionsDraft()
@@ -91,7 +91,7 @@ final class ServerFormFields: ObservableObject {
     remark.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
   }
 
-  /// 提交前的全量校验（issue #81）：名称必填与五字段输入上限；与装载基线
+  /// 提交前的全量校验：名称必填与五字段输入上限；与装载基线
   /// 逐字相同的超限字段放行（未修改的历史超长值不阻塞其他变更保存）。
   /// 错误逐字段发布，重新编辑对应字段即清除；首次装载不显示。
   @discardableResult
@@ -150,7 +150,7 @@ final class ServerFormFields: ObservableObject {
     return choices
   }
 
-  /// 从编辑面状态装载（凭据明文只在编辑命令中出现，story 10/11）；重置密码
+  /// 从编辑面状态装载（凭据明文只在编辑命令中出现）；重置密码
   /// 明文显示。
   func load(from state: ServerEditForm) {
     address = state.address
@@ -165,10 +165,10 @@ final class ServerFormFields: ObservableObject {
     savedDraft = draft
   }
 
-  /// 提交载荷：配置与凭据字段作为一个逻辑变更（story 12）。端口取自十进制
+  /// 提交载荷：配置与凭据字段作为一个逻辑变更。端口取自十进制
   /// 草稿、插件参数取自会话草稿拼装串；任一不能作为提交值（无效端口或
-  /// 未完成参数行）时为 nil——本 getter 仅在 `validateForSubmit()` 通过后
-  /// 消费，无效输入不得悄悄回落到旧值（issue #81）。
+  /// 未完成参数行）时为 nil——本 getter 仅在 `validateForSubmit` 通过后
+  /// 消费，无效输入不得悄悄回落到旧值。
   var draft: ServerEditDraft? {
     guard let port = submittablePort, let options = pluginOptions.composedString else { return nil }
     return ServerEditDraft(
@@ -411,7 +411,7 @@ struct ServerFormFieldsGrid: View {
     }
   }
 
-  /// 字段行内错误：只呈现字段、原因与上限，不回显字段内容（issue #81）。
+  /// 字段行内错误：只呈现字段、原因与上限，不回显字段内容。
   @ViewBuilder
   private func fieldErrorLabel(_ field: ServerFormField) -> some View {
     if let error = fields.fieldErrors[field] {

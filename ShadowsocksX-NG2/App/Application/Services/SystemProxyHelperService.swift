@@ -3,7 +3,7 @@ import Foundation
 import ServiceManagement
 import SystemConfiguration
 
-/// 系统代理写入缝（issue #71）：异步 typed apply 与无条件 clear 的边界，
+/// 系统代理写入缝：异步 typed apply 与无条件 clear 的边界，
 /// 形状为 XPC 就绪。GUI 域决策（意图、门禁、值、清理时机）全部在调用方；
 /// 本缝只执行。生产实现经特权 helper，测试注入 fake。
 @MainActor
@@ -15,7 +15,7 @@ protocol SystemProxyControlling {
   func repair(_ configuration: SystemProxyConfiguration) async throws
 }
 
-/// helper 注册/审批状态缝（issue #71）：注册走 SMAppService.daemon；审批缺失
+/// helper 注册/审批状态缝：注册走 SMAppService.daemon；审批缺失
 /// 时 GUI 据此呈现登录项批准路径，不提供直接授权回退。unregister 供注册清单
 /// 漂移后的定义刷新使用。单测以 fake 替换（真实注册会改动系统登录项状态）。
 @MainActor
@@ -63,7 +63,7 @@ struct SMAppServiceSystemProxyHelper: SystemProxyHelperServicing {
   }
 }
 
-/// 注册清单漂移指纹（issue #71 后续）：launchd 对 SMAppService 提交的 job
+/// 注册清单漂移指纹：launchd 对 SMAppService 提交的 job
 /// 沿用注册时的定义快照，app 更新改动 LaunchDaemon 清单不会自动生效（旧定义
 /// spawn 失败时 launchd 以 EX_CONFIG 节流循环）。以清单内容 SHA-256 检测漂移，
 /// 漂移才注销重注；审批与 bundle 签名绑定，重注不重新弹授权。
@@ -81,7 +81,7 @@ enum SystemProxyHelperRegistrationStamp {
   }
 }
 
-/// 经特权 helper 的系统代理写入器（issue #71）：每个请求一条按需连接，
+/// 经特权 helper 的系统代理写入器：每个请求一条按需连接，
 /// MachService 连接触发 launchd 激活已注册的 LaunchDaemon。应答在
 /// helper 不可达、连接失效、报错或超时时以 typed 错误呈现。
 @MainActor

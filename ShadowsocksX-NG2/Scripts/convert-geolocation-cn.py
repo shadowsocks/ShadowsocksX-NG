@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Convert Loyalsoldier/domain-list-custom geosite.dat geolocation-cn into an
-NG2 rule snapshot (issue #63).
+NG2 rule snapshot.
 
 Parses the geosite protobuf typed entries (Plain/Regex/Domain/Full), applies
 `.cn` suffix absorption, and writes a normalized RuleSnapshot JSON plus loss

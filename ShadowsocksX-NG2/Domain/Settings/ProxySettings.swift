@@ -1,6 +1,6 @@
 import Foundation
 
-/// #33 的用户偏好快照。监听端点仍是运行时契约的输入，但不会把偏好文件
+/// 用户偏好快照。监听端点仍是运行时契约的输入，但不会把偏好文件
 /// 当作运行时文件使用；代理启动前由控制器从快照重新派生完整契约。
 struct ProxySettings: Equatable, Sendable {
   static let defaultProxyExceptions = ""
@@ -9,14 +9,14 @@ struct ProxySettings: Equatable, Sendable {
   /// User-added system-proxy exceptions; these entries do not become ACL rules.
   var proxyExceptions: String
   /// The persisted current mode: the mode selector's choice survives GUI
-  /// restarts. First run defaults to rule mode (issue #67).
+  /// restarts. First run defaults to rule mode.
   var preferredMode: ProxyModeKind
-  /// 规则模式子选项（issue #63）：未匹配默认动作，出厂「未匹配时代理」。
+  /// 规则模式子选项：未匹配默认动作，出厂「未匹配时代理」。
   var ruleDefaultAction: RuleDefaultAction
-  /// 代理 agent 意图（issue #60，ADR-0011）：默认关闭——全新用户没有服务器
+  /// 代理 agent 意图（ADR-0011）：默认关闭——全新用户没有服务器
   /// 配置，默认启动没有意义；用户显式打开的选择持久化，且偏好重置不改变它。
   var agentEnabled: Bool
-  /// 系统代理意图（issue #60）：默认关闭；与 agent 意图相互独立，开关关闭
+  /// 系统代理意图：默认关闭；与 agent 意图相互独立，开关关闭
   /// 关闭时清理匹配 NG2 端点的系统代理配置，不影响本地监听。
   var systemProxyEnabled: Bool
 
@@ -56,7 +56,7 @@ struct ProxySettings: Equatable, Sendable {
   }
 }
 
-/// 设置快照的点名校验错误；端口错误保留 D8 的端点与数值信息。
+/// 设置快照的点名校验错误；端口错误保留 的端点与数值信息。
 enum ProxySettingsValidationError: Error, Hashable, Sendable {
   case portOutOfRange(endpoint: ProxyEndpointKind, port: Int)
   case duplicatePort(endpoint: ProxyEndpointKind, otherEndpoint: ProxyEndpointKind, port: Int)

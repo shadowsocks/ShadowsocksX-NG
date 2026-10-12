@@ -2,7 +2,7 @@ import XCTest
 
 @testable import ShadowsocksX_NG2
 
-/// SIP-008 v1 + 私有扩展解析（issue #35 验收：解码/schema/重复 ID/环/记录校验
+/// SIP-008 v1 + 私有扩展解析（验收：解码/schema/重复 ID/环/记录校验
 /// 失败逐项覆盖；扩展缺失/未知/无效回退标准列表）。
 final class SubscriptionDocumentParserTests: XCTestCase {
   private let subscriptionID = NodeID(rawValue: "sub-test")

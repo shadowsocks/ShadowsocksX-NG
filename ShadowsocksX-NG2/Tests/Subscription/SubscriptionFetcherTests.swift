@@ -2,7 +2,7 @@ import XCTest
 
 @testable import ShadowsocksX_NG2
 
-/// 订阅获取缝（issue #35 验收「HTTP 缝夹具」的传输侧）：HTTPS 门禁先于任何
+/// 订阅获取缝（验收「HTTP 缝夹具」的传输侧）：HTTPS 门禁先于任何
 /// 网络行为、状态码与 Content-Type 契约、传输失败点名、错误文案脱敏。
 final class SubscriptionFetcherTests: XCTestCase {
   private let fetcher = HTTPSSubscriptionFetcher()
@@ -149,7 +149,7 @@ final class FakeSubscriptionFetcher: SubscriptionFetching, @unchecked Sendable {
     self.behavior = behavior
   }
 
-  /// 中途切换预设结果（工作流不再暴露可替换的获取器属性，issue #49）。
+  /// 中途切换预设结果（工作流不再暴露可替换的获取器属性）。
   func setBehavior(_ behavior: Behavior) {
     lock.lock()
     defer { lock.unlock() }

@@ -1,7 +1,6 @@
 import SwiftUI
 
-/// 首页卡片容器（地图 #52，票 #54）：标题 + 副题 + 头部尾随内容 + 正文；
-/// 圆角描边卡片底，各分区票的分区卡片可复用。
+/// 首页卡片容器：标题、副题、头部尾随内容与正文；圆角描边卡片供各分区复用。
 struct HomeCard<Trailing: View, Content: View>: View {
   let title: String
   let subtitle: String?
@@ -38,7 +37,7 @@ struct HomeCard<Trailing: View, Content: View>: View {
   }
 }
 
-/// 快速操作行按钮（票 #54）。
+/// 快速操作行按钮。
 struct QuickActionButton: View {
   let icon: String
   let title: String

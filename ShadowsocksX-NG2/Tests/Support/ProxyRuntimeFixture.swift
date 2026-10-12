@@ -3,7 +3,7 @@ import XCTest
 
 @testable import ShadowsocksX_NG2
 
-/// 代理运行时测试共享夹具（票 #27）：临时运行时目录、契约文档构造、LaunchAgent
+/// 代理运行时测试共享夹具：临时运行时目录、契约文档构造、LaunchAgent
 /// 与探测替身。
 /// 跨替身共享的有序事件记录：断言「先清理系统代理、再停止监听」等次序。
 final class ProxyRuntimeEventLog: @unchecked Sendable {
@@ -137,7 +137,7 @@ enum ProxyRuntimeFixture {
     private(set) var registerCount = 0
     private(set) var unregisterCount = 0
     var registerError: Error?
-    /// register() 成功后自动迁移到的状态（模拟 launchd 拉起）。
+    /// register 成功后自动迁移到的状态（模拟 launchd 拉起）。
     var statusAfterRegister: LaunchAgentStatus = .registered
     /// 测试用的运行回执。生产 wrapper 对 ACL 实例需等 sslocal 绑定监听后才写。
     var onRegister: (() -> Void)?

@@ -18,7 +18,7 @@ enum DiagnosticReportExportResult: Equatable {
 }
 
 /// 诊断导出动作只编排阶段，不拥有 AppKit 文件效果，也不登记完成事件。调用方
-/// 必须只在 `.saved` 后调用 `DiagnosticsWorkflow.noteExportCompleted()`。
+/// 必须只在 `.saved` 后调用 `DiagnosticsWorkflow.noteExportCompleted`。
 enum DiagnosticReportExportOutcome: Equatable {
   case preparationFailed(DiagnosticReportFailure)
   case cancelled

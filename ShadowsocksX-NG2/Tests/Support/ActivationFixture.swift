@@ -2,7 +2,7 @@ import XCTest
 
 @testable import ShadowsocksX_NG2
 
-/// 激活缝测试共享夹具（票 #26）：受管插件/凭据存储替身、无插件叶子、
+/// 激活缝测试共享夹具：受管插件/凭据存储替身、无插件叶子、
 /// 激活与重展开的便捷调用、原子失败断言。
 enum ActivationFixture {
   /// 受管插件测试集：只提供表内程序，值即写入文档的 bundle 内路径。

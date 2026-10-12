@@ -3,7 +3,7 @@ import XCTest
 
 @testable import ShadowsocksX_NG2
 
-/// #33 偏好持久化缝：设置文件只保存公开偏好；重置不触碰配置目录与活动目标
+/// 偏好持久化缝：设置文件只保存公开偏好；重置不触碰配置目录与活动目标
 /// 使用的其他文件。
 final class ProxySettingsFileStoreTests: XCTestCase {
   private var directory: URL!

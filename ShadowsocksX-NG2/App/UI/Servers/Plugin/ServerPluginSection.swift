@@ -6,7 +6,7 @@ struct ServerPluginSection: View {
   @ObservedObject var options: PluginOptionsDraft
   let plugin: PluginSectionState?
   let isEditable: Bool
-  /// 参数字段的行内校验错误（issue #81：字节超限或未完成行）。
+  /// 参数字段的行内校验错误（字节超限或未完成行）。
   let optionsError: ServerFormFieldError?
   let optionsFocus: FocusState<ServerFormField?>.Binding
 
@@ -147,7 +147,7 @@ struct PluginOptionsModePicker: View {
   }
 }
 
-/// 插件参数编辑区（issue #81）：Table 布局的无边框输入行——行首「值/开关」
+/// 插件参数编辑区：Table 布局的无边框输入行——行首「值/开关」
 /// 分段选择器决定行的值形态，底部空行即快速添加入口，长值经「编辑值…」
 /// 独立编辑；切换查看模式不触发表单变更检测。
 private struct PluginOptionsEditor: View {
@@ -324,7 +324,7 @@ private struct PluginOptionsEditor: View {
   }
 }
 
-/// 订阅节点的参数只读呈现（issue #81）：Table 控件的表格展现与原始文本
+/// 订阅节点的参数只读呈现：Table 控件的表格展现与原始文本
 /// 只读，可切换查看模式，无任何编辑入口。
 struct PluginOptionsReadOnlyEditor: View {
   @ObservedObject var draft: PluginOptionsDraft
@@ -382,7 +382,7 @@ struct PluginOptionsReadOnlyEditor: View {
   }
 }
 
-/// 长值独立编辑（issue #81）：等宽多行、初始约四行最多约八行后内部纵向
+/// 长值独立编辑：等宽多行、初始约四行最多约八行后内部纵向
 /// 滚动；只有「确认」写回父表单草稿，取消保留之前的值。
 private struct PluginOptionValueEditorSheet: View {
   let initialText: String

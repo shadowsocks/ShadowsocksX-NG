@@ -1,7 +1,7 @@
 import Foundation
 
 /// Pure projection of one SystemConfiguration Proxies dictionary. The key mapping is a
-/// mechanical translation of the closed typed configuration (issue #71): every field the
+/// mechanical translation of the closed typed configuration : every field the
 /// GUI supplies is written, disabled protocols lose their endpoint keys, PAC/auto-
 /// discovery/simple-hostname exclusion follow their explicit flags, and the complete
 /// exceptions list is always written. Keys outside the typed field set are preserved.
@@ -48,7 +48,7 @@ enum SystemProxyPropertyList {
 
     dictionary[pacEnabled] = configuration.pacEnabled ? 1 : 0
     if !configuration.pacEnabled {
-      // 关闭的 PAC 不留残余：URL 与 JavaScript 值一并移除（issue #71 AC27）。
+      // 关闭的 PAC 不留残余：URL 与 JavaScript 值一并移除。
       dictionary.removeValue(forKey: pacJavaScript)
       dictionary.removeValue(forKey: pacURL)
     }

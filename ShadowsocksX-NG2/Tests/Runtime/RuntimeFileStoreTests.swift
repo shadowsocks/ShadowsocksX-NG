@@ -2,7 +2,7 @@ import XCTest
 
 @testable import ShadowsocksX_NG2
 
-/// 运行时文件存取（spec #21 D5，issue #27）：0700/0600 权限基线、原子替换、
+/// 运行时文件存取：0700/0600 权限基线、原子替换、
 /// 读取侧判定与显式停止清理。
 final class RuntimeFileStoreTests: XCTestCase {
   private var runtime: ProxyRuntimeFixture.TemporaryRuntime!
@@ -24,7 +24,7 @@ final class RuntimeFileStoreTests: XCTestCase {
     return try XCTUnwrap(attributes[.posixPermissions] as? Int)
   }
 
-  // MARK: 权限基线（D5）
+  // MARK: 权限基线
 
   func testWriteCreatesDirectoryWith0700AndFileWith0600() throws {
     try store.write(ProxyRuntimeFixture.makeDocument())

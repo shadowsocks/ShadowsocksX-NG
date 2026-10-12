@@ -1,6 +1,6 @@
 import Foundation
 
-/// 组合根专用依赖束（issue #49）：目录工作流全部实现 adapter 的唯一装配缝。
+/// 组合根专用依赖束：目录工作流全部实现 adapter 的唯一装配缝。
 /// 生产 adapter 由组合根（MainApp）装配，测试注入 hermetic fake；
 /// CatalogWorkflow 不自行创建钥匙串存储、网络获取器或提交协调器。
 /// 本类型不是 UI-facing facade：视图不得引用——独立 target 拆分前，
@@ -10,7 +10,7 @@ struct CatalogWorkflowDependencies {
   /// 提交管线与运行时收敛的唯一入口；与代理运行时路径共享同一
   /// committed catalog source（组合根创建并注入）。
   let coordinator: CatalogCommitCoordinator
-  /// 凭据存储（story 11）：只在 module 内出现，UI 不持有。
+  /// 凭据存储：只在 module 内出现，UI 不持有。
   let credentials: CredentialStoring
   /// 受管插件提供缝（编辑面集内事实与可执行文件存在性）。
   let plugins: PluginExecutableResolving

@@ -3,9 +3,9 @@ import CoreImage
 import Foundation
 import Vision
 
-/// 二维码编解码（issue #32：分享生成二维码、识别二维码图片导入）。生成走
+/// 二维码编解码（分享生成二维码、识别二维码图片导入）。生成走
 /// CoreImage `CIQRCodeGenerator`（纠错级 M），识别走 Vision 条码检测，返回
-/// 全部文本负载。屏幕扫码明确不做（spec #21 D11），此处只处理静态图片。
+/// 全部文本负载。屏幕扫码明确不做，此处只处理静态图片。
 enum QrCodeCodec {
   enum QrCodeError: Error, Equatable {
     /// 系统二维码滤镜产出为空（理论不可达，防御位）。

@@ -131,14 +131,14 @@ struct SettingsView: View {
 
   // MARK: - 呈现组件
 
-  /// 分组卡标题行（票 #57）。
+  /// 分组卡标题行。
   private func sectionHeader(_ title: String) -> some View {
     Text(title)
       .font(.headline)
       .padding(.vertical, 2)
   }
 
-  /// 主文案 + 可选次说明（票 #57 原型行式；后台代理客户端区不配次说明）。
+  /// 主文案 + 可选次说明（原型行式；后台代理客户端区不配次说明）。
   private func settingCopy(_ title: String, note: String? = nil) -> some View {
     VStack(alignment: .leading, spacing: 2) {
       Text(title)
@@ -151,7 +151,7 @@ struct SettingsView: View {
     }
   }
 
-  /// 行式布局：左侧文案，右侧控件（票 #57）。
+  /// 行式布局：左侧文案，右侧控件。
   private func settingRow<Control: View>(
     _ title: String, note: String? = nil, @ViewBuilder control: () -> Control
   ) -> some View {

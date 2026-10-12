@@ -2,7 +2,7 @@ import Foundation
 
 // MARK: - 事实输入
 
-/// 单个文件的存在性/权限/大小/时间事实（D5 允许的元数据类目；只读元数据，
+/// 单个文件的存在性/权限/大小/时间事实（导出允许的元数据类目；只读元数据，
 /// 永不读文件内容）。
 struct DiagnosticFileFacts: Equatable, Sendable {
   let label: String
@@ -14,7 +14,7 @@ struct DiagnosticFileFacts: Equatable, Sendable {
   let modifiedAt: Date?
 }
 
-/// 文件事实收集（issue #34）：只取存在性/权限/大小/修改时间。
+/// 文件事实收集：只取存在性/权限/大小/修改时间。
 enum DiagnosticFileCollector {
   static func collect(
     label: String, url: URL, fileManager: FileManager = .default
@@ -39,8 +39,8 @@ enum DiagnosticFileCollector {
   }
 }
 
-/// 代理状态的安全呈现（issue #34）：控制器状态收敛为固定文案，不透传任意
-/// 错误 detail（导出只含 D5 白名单类目，原始错误文本一律丢弃）；激活失败
+/// 代理状态的安全呈现：控制器状态收敛为固定文案，不透传任意
+/// 错误 detail（导出只含白名单类目，原始错误文本一律丢弃）；激活失败
 /// 原因来自领域的点名文案（短节点片段 + 固定文本，无秘密）。
 enum DiagnosticProxyState: Equatable, Sendable {
   case off
@@ -79,7 +79,7 @@ enum DiagnosticProxyState: Equatable, Sendable {
 
 // MARK: - 快照与构建器
 
-/// 目录聚合诊断事实（issue #43，story 32/36）：数量元数据与已知无效数。原始
+/// 目录聚合诊断事实：数量元数据与已知无效数。原始
 /// 目录、目录条目、服务器地址、备注与凭据引用不进入本类型——构造它的唯一
 /// 生产入口是目录 workflow 的 domain-neutral 事实缝，报告 builder 只接受
 /// 已经裁剪的聚合事实。
@@ -89,10 +89,9 @@ struct DiagnosticCatalogFacts: Equatable, Sendable {
   var knownInvalidServerCount: Int?
 }
 
-/// 诊断快照（issue #34）：导出报告的全部输入。字段要么是数量/布尔/时间等
+/// 诊断快照：导出报告的全部输入。字段要么是数量/布尔/时间等
 /// 元数据，要么是已脱敏文本（由夹具测试验证），构建器不再接触任何秘密来源
-/// ——不读 Keychain、不读契约与目录的文件内容；目录事实只以聚合计数进入
-/// （issue #43）。
+/// ——不读 Keychain、不读契约与目录的文件内容；目录事实只以聚合计数进入快照。
 struct DiagnosticSnapshot: Sendable {
   var generatedAt = Date()
   var appVersion: String?
@@ -102,22 +101,22 @@ struct DiagnosticSnapshot: Sendable {
   var listen: SslocalListenSettings?
   /// `Redactor.documentSummary` 产出的契约脱敏摘要（数量与模式）。
   var runtimeDocumentSummary: String?
-  /// 自定义规则安全摘要（issue #66 AC5）：数量 + 内容版本，无原始域名。
+  /// 自定义规则安全摘要：数量 + 内容版本，无原始域名。
   var customRuleSummary: CustomRuleSummary?
   /// 目录聚合事实；nil = 目录事实源不可用（报告中明确标注，不静默丢失）。
   var catalogFacts: DiagnosticCatalogFacts?
   var fileFacts: [DiagnosticFileFacts] = []
   /// 渲染好的运行事件行（旧→新，调用方负责封顶；行文本必须来自白名单
-  /// 清洗投影，issue #43）。
+  /// 清洗投影。
   var eventLines: [String] = []
-  /// bundle 内受管插件清单（issue #38；名称/版本/存在性，不含参数与路径）。
+  /// bundle 内受管插件清单（名称/版本/存在性，不含参数与路径）。
   var managedPlugins: [DiagnosticPluginFacts] = []
   /// 长路径脱敏基准：文本中出现的该前缀一律改写为「~」。
   var homePathForRedaction: String?
 }
 
-/// 受管插件事实（issue #38）：程序名、固定版本与二进制是否在位。存在性属
-/// D5 允许类目；插件参数与文件路径不进导出。
+/// 受管插件事实：程序名、固定版本与二进制是否在位。存在性属
+/// 允许的导出类目；插件参数与文件路径不进导出。
 struct DiagnosticPluginFacts: Equatable, Sendable {
   let program: String
   let version: String
@@ -125,7 +124,7 @@ struct DiagnosticPluginFacts: Equatable, Sendable {
   var source: PluginCatalogSnapshot.Source = .managed
 }
 
-/// 诊断报告构建器（spec #21 D5，issue #34）：只输出状态、存在性、权限、
+/// 诊断报告构建器：只输出状态、存在性、权限、
 /// 大小/时间、数量与脱敏元数据。测试夹具以投毒数据验证导出不含任何敏感
 /// 类目（密码、插件参数、Keychain 值、完整订阅 URL、URL token、运行时
 /// JSON 内容、服务器地址与备注）。
@@ -250,7 +249,7 @@ enum DiagnosticReportBuilder {
     return lines
   }
 
-  /// 目录行只呈现聚合事实（issue #43）：目录条目本身永不进入快照与渲染。
+  /// 目录行只呈现聚合事实：目录条目本身永不进入快照与渲染。
   private static func catalogCountLines(_ facts: DiagnosticCatalogFacts) -> [String] {
     let counts = facts.counts
     let invalid = facts.knownInvalidServerCount.map { "已知无效 \($0)；" } ?? ""
@@ -262,7 +261,7 @@ enum DiagnosticReportBuilder {
     ]
   }
 
-  /// 本地端点只以端口事实呈现（端口语义 #28/#30）。
+  /// 本地端点只以端口事实呈现。
   private static func listenDescription(_ listen: SslocalListenSettings) -> String {
     var parts = ["SOCKS5 端口 \(listen.socksPort)"]
     parts.append("HTTP 端口 \(listen.httpPort)")

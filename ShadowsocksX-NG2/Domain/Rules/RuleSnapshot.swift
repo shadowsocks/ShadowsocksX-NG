@@ -2,7 +2,7 @@ import Foundation
 
 // MARK: - 快照元数据
 
-/// 规则快照的来源元数据（issue #63）：上游版本、输入摘要、抓取时间、
+/// 规则快照的来源元数据：上游版本、输入摘要、抓取时间、
 /// 转换器版本、许可证与归属。更新失败保留上一份有效快照。
 struct RuleSnapshotMetadata: Codable, Equatable, Sendable {
   /// 转换器版本；快照格式或转换语义变化时递增。

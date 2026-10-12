@@ -6,9 +6,9 @@ extension ProxyRuntimeController {
   // MARK: - 用户意图
 
   /// 激活一个服务器或分组目标（目录 UI 工单复用入口）：持久化目标；agent
-  /// 意图开启时立即把新档推到运行时。激活原子失败时目标与运行时完全不动
-  /// （D3），点名原因进 `lastActivationFailure` 并随 `.rejectedActivation`
-  /// 自含返回；意外错误 throws 并进入 `serviceFailed`。
+  /// 意图开启时立即把新档推到运行时。激活原子失败时目标与运行时完全不动；
+  /// 点名原因进 `lastActivationFailure` 并随 `.rejectedActivation` 自含返回；
+  /// 意外错误 throws 并进入 `serviceFailed`。
   @discardableResult
   func activate(_ target: NodeID) async throws -> ActivationCommandOutcome {
     refreshPluginSecurityFacts()
@@ -39,7 +39,7 @@ extension ProxyRuntimeController {
     }
   }
 
-  /// Agent 开关（issue #60/#71）：先持久化意图（显式关闭在 GUI 重启后仍生效），
+  /// Agent 开关：先持久化意图（显式关闭在 GUI 重启后仍生效），
   /// 再收敛运行时。持久化失败保留现状并点名，不静默偏离持久化事实。意图已
   /// 开启时的开启命令仅在未达健康态时重收敛——它是启动失败/重置后的显式
   /// 重试入口；健康运行中不做无谓的注销重拉。关闭时级联：系统代理意图仍
@@ -78,9 +78,9 @@ extension ProxyRuntimeController {
     }
   }
 
-  /// 关闭 agent 时的系统代理级联（issue #71）：意图仍开启则一并持久化为
-  /// 关闭并请求清理（返回清理结果）；级联持久化失败时迁移未被记录，不清理
-  /// （story 13），意图与系统设置原样，返回 nil。
+  /// 关闭 agent 时的系统代理级联：意图仍开启则一并持久化为
+  /// 关闭并请求清理（返回清理结果）；级联持久化失败时迁移未被记录，不清理，
+  /// 意图与系统设置原样，返回 nil。
   private func cascadeSystemProxyOffForAgentOff() async -> SystemProxyControlState? {
     guard settings.systemProxyEnabled else { return nil }
     var cascade = settings
@@ -96,7 +96,7 @@ extension ProxyRuntimeController {
     return await systemProxyObserver.clearAndStopSystemProxyObservation()
   }
 
-  /// 系统代理开关（issue #71）：先持久化意图。开启时经 helper 注册门禁收敛
+  /// 系统代理开关：先持久化意图。开启时经 helper 注册门禁收敛
   /// 应用；关闭即一次 on→off 意图迁移——请求一次无条件清理（临时观察网络
   /// 变化直至安静，失败也不后台重试），不影响 agent 注册与本地监听。
   func setSystemProxyEnabled(_ enabled: Bool) async {
@@ -135,7 +135,7 @@ extension ProxyRuntimeController {
     await convergeToReexpanded(catalogSnapshotReader.catalogSnapshot)
   }
 
-  /// Agent 意图关闭的收敛（issue #71）：只停止本地监听，不做系统代理清理。
+  /// Agent 意图关闭的收敛：只停止本地监听，不做系统代理清理。
   /// 系统代理状态按意图事实收尾——级联后意图已关闭为空闲；残留的「意图开
   /// 启 + agent 关闭」组合保持待应用（不静默清理，也无需网络观察）。
   func stopAgent() async {
@@ -147,7 +147,7 @@ extension ProxyRuntimeController {
     lastActivationFailure = nil
   }
 
-  /// 无活动目标时 agent 仍提供本地监听（issue #60）：空服务器列表文档，
+  /// 无活动目标时 agent 仍提供本地监听：空服务器列表文档，
   /// SOCKS/HTTP 端点照常绑定；系统代理门禁会因缺少可用出口保持待应用。
   func deployListeningWithoutTarget() async {
     let document = SslocalRuntimeDocument(
@@ -165,7 +165,7 @@ extension ProxyRuntimeController {
     return result
   }
 
-  /// 活动目标失效（issue #60）：清除并持久化 nil，点名原因独立呈现；agent
+  /// 活动目标失效：清除并持久化 nil，点名原因独立呈现；agent
   /// 继续以空服务器列表监听；系统代理清理后保留意图，条件恢复后自动
   /// 收敛），不悄悄选择其他服务器。
   func handleCleared(_ failure: ActivationFailure) async {

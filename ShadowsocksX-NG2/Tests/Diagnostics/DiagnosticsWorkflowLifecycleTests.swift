@@ -2,12 +2,12 @@ import XCTest
 
 @testable import ShadowsocksX_NG2
 
-/// 诊断工作流的读取生命周期与导出登记测试（issue #43）：安全摘要共用
+/// 诊断工作流的读取生命周期与导出登记测试：安全摘要共用
 /// projection、只读收集、读取代际与取消语义、导出完成只在显式确认后登记、
-/// 目录事实缝只输出聚合事实（story 10/23/25/26/27/32/44）。
+/// 目录事实缝只输出聚合事实。
 @MainActor
 final class DiagnosticsWorkflowLifecycleTests: DiagnosticsWorkflowTestCase {
-  // MARK: - 安全摘要（story 1/2/25）
+  // MARK: - 安全摘要
 
   func testSummaryTracksRuntimeFactsWhileReading() async throws {
     let workflow = makeWorkflow()
@@ -23,7 +23,7 @@ final class DiagnosticsWorkflowLifecycleTests: DiagnosticsWorkflowTestCase {
     await task.value
   }
 
-  // MARK: - 导出完成登记（story 26/27/44）
+  // MARK: - 导出完成登记
 
   func testExportCompletionRecordedOnlyAfterExplicitConfirmation() throws {
     let workflow = makeWorkflow(catalog: { DiagnosticCatalogFacts() })
@@ -40,7 +40,7 @@ final class DiagnosticsWorkflowLifecycleTests: DiagnosticsWorkflowTestCase {
     XCTAssertEqual(events.snapshot.last?.event, .diagnosticsExported)
   }
 
-  // MARK: - 只读与读取生命周期（story 10/23）
+  // MARK: - 只读与读取生命周期
 
   func testCollectionIsReadOnly() async throws {
     let fileURL = workDir.appendingPathComponent("catalog.json")
@@ -75,7 +75,7 @@ final class DiagnosticsWorkflowLifecycleTests: DiagnosticsWorkflowTestCase {
     // 凭据与系统代理设置不在 workflow 的依赖面内：module 结构上不可触达。
   }
 
-  /// 读取代际（story 24）：新一代读取进入后，旧循环必须退场，不得再发布
+  /// 读取代际：新一代读取进入后，旧循环必须退场，不得再发布
   /// 旧代结果覆盖最新 projection。
   func testNewerReadGenerationSupersedesOlderLoop() async throws {
     var counter = 0
@@ -129,7 +129,7 @@ final class DiagnosticsWorkflowLifecycleTests: DiagnosticsWorkflowTestCase {
     XCTAssertEqual(workflow.logView, frozen, "取消读取后不得再发布新 projection")
   }
 
-  // MARK: - 目录事实缝（story 32）
+  // MARK: - 目录事实缝
 
   func testCatalogWorkflowProvidesAggregateDiagnosticFactsOnly() async throws {
     let fileURL = workDir.appendingPathComponent("catalog.json")

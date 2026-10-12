@@ -2,7 +2,7 @@ import XCTest
 
 @testable import ShadowsocksX_NG2
 
-/// 订阅快照的目录应用语义（issue #35）：固定分组身份保留；远端删除不留
+/// 订阅快照的目录应用语义：固定分组身份保留；远端删除不留
 /// 墓碑；结构、字段与顺序远端权威，不存在本地启用覆盖层。
 final class SubscriptionSnapshotApplicationTests: XCTestCase {
   private let groupID = NodeID(rawValue: "sub1:fixed-group")
@@ -133,7 +133,7 @@ final class SubscriptionSnapshotApplicationTests: XCTestCase {
       try catalog.removeSubscriptionSubtree(of: NodeID(rawValue: "ghost")))
   }
 
-  // MARK: 订阅子树变更后重展开（接线语义：issue #35 验收 4）
+  // MARK: 订阅子树变更后重展开（接线语义： 验收 4）
 
   func testActiveTargetInsideRefreshedSubtreeStillExpandsAfterSnapshot() throws {
     var catalog = try makeCatalog()

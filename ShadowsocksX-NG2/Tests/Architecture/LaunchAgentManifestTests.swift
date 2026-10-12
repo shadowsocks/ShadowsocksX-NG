@@ -12,7 +12,7 @@ import Testing
 struct LaunchAgentManifestTests {
   @Test func bundledManifestMatchesCodeBuiltKeys() throws {
     // 打包 plist 经 copyFiles 部署在 Contents/Library/LaunchAgents/（SMAppService
-    // 的固定读取位置，spec #21 D2）；按部署路径直读，路径缺失即用例失败。
+    // 的固定读取位置）；按部署路径直读，路径缺失即用例失败。
     let bundledURL = AppArtifact.bundleURL
       .appendingPathComponent("Contents/Library/LaunchAgents")
       .appendingPathComponent("com.qiuyuzhou.ShadowsocksX-NG2.agent.plist")

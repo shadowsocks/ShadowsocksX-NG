@@ -2,12 +2,12 @@ import XCTest
 
 @testable import ShadowsocksX_NG2
 
-/// 诊断报告准备的安全验收（issue #43）：投毒夹具验证导出只含白名单清洗后的
+/// 诊断报告准备的安全验收：投毒夹具验证导出只含白名单清洗后的
 /// 事件与聚合事实；raw 日志视图与报告严格分离；safe projection 无法构造时
 /// 返回 typed failure 且不产生报告（ADR-0006）。
 @MainActor
 final class DiagnosticsReportWorkflowTests: DiagnosticsWorkflowTestCase {
-  // MARK: - 报告安全验收（story 3–8/13/16）
+  // MARK: - 报告安全验收
 
   func testReportContainsSafeFactsAndExcludesPoisonedSources() throws {
     appendPoisonedEvents()
@@ -58,7 +58,7 @@ final class DiagnosticsReportWorkflowTests: DiagnosticsWorkflowTestCase {
     XCTAssertTrue(report.contains("生成时间：\(expectedTime)"), "报告应携带生成时间")
   }
 
-  // MARK: - 事件白名单（story 15/45）
+  // MARK: - 事件白名单
 
   func testEventAllowlistKeepsCountsAndPortsButDropsFreeDetail() throws {
     appendPoisonedEvents()
@@ -79,7 +79,7 @@ final class DiagnosticsReportWorkflowTests: DiagnosticsWorkflowTestCase {
     assertNoSecrets(report)
   }
 
-  // MARK: - raw 日志视图与报告的分离（story 18–20，ADR-0006）
+  // MARK: - raw 日志视图与报告的分离（ADR-0006）
 
   func testRawLogViewServesExplicitViewButReportExcludesIt() async throws {
     appendPoisonedEvents()
@@ -100,7 +100,7 @@ final class DiagnosticsReportWorkflowTests: DiagnosticsWorkflowTestCase {
     assertNoSecrets(report)
   }
 
-  // MARK: - best-effort 缺失标注（story 11/12/41）
+  // MARK: - best-effort 缺失标注
 
   func testUnavailableFactSourcesAreMarkedAndOthersRemain() throws {
     facts.proxyState = .running
@@ -123,7 +123,7 @@ final class DiagnosticsReportWorkflowTests: DiagnosticsWorkflowTestCase {
     XCTAssertTrue(report.contains("- 代理状态：运行中"), "其余可用事实保留")
   }
 
-  // MARK: - 报告 builder 只接受已裁剪事实（story 36/42）
+  // MARK: - 报告 builder 只接受已裁剪事实
 
   func testRenderingReceivesTrimmedFactsOnly() throws {
     appendPoisonedEvents()

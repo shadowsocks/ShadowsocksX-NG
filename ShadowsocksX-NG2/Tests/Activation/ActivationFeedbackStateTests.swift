@@ -70,7 +70,7 @@ final class ActivationFeedbackStateTests: XCTestCase {
     let id = NodeID(rawValue: "a")
     var observedPending: NodeID?
     var observedFeedbackCleared = false
-    var ignoredOutcome: ActivationCommandOutcome?? = nil
+    var ignoredOutcome: ActivationCommandOutcome??
     activator.whileInFlight = {
       observedPending = model.pendingTargetID
       observedFeedbackCleared = model.feedback == nil

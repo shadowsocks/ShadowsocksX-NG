@@ -6,7 +6,7 @@ import XCTest
 // MARK: - 确定性替身（snapshot 与命令 contract；不触真实运行时）
 // 供本文件与 ProxyCommandAddressWorkflowTests 共用（测试 target 内部）。
 
-/// 可编程 runtime 替身（issue #47/#60，story 31）：事实可编程、命令全记录；
+/// 可编程 runtime 替身：事实可编程、命令全记录；
 /// changes 为手动 subject，同步发值保证观察测试确定性。
 @MainActor
 final class FakeProxyRuntime: ProxyRuntimeAdapting {
@@ -71,7 +71,7 @@ final class FakeProxyRuntime: ProxyRuntimeAdapting {
   }
 }
 
-/// 可编程目标事实替身（story 32）：路径摘要可编程、查询全记录。
+/// 可编程目标事实替身：路径摘要可编程、查询全记录。
 @MainActor
 final class FakeTargetFacts: ProxyTargetFactsReading {
   var pathByTarget: [NodeID: String] = [:]
@@ -84,7 +84,7 @@ final class FakeTargetFacts: ProxyTargetFactsReading {
   }
 }
 
-/// 代理控制工作流的 snapshot 与命令 contract（issue #47/#60）：整体一致性、
+/// 代理控制工作流的 snapshot 与命令 contract：整体一致性、
 /// typed commands、窄目录事实缝、运行时变化重观察与命令边界。
 @MainActor
 final class ProxyControlWorkflowTests: XCTestCase {
@@ -199,7 +199,7 @@ final class ProxyControlWorkflowTests: XCTestCase {
     XCTAssertNil(after.activeTarget)
   }
 
-  /// 系统代理命令与 agent 命令互不触碰对方事实（issue #60）。
+  /// 系统代理命令与 agent 命令互不触碰对方事实。
   func testSystemProxyCommandsForwardIndependentlyFromAgentCommands() async {
     runtime.agentIntentEnabled = true
     runtime.runtimeFacts = ProxyRuntimeFacts(status: .running, isOn: true)
@@ -301,7 +301,7 @@ final class ProxyControlWorkflowTests: XCTestCase {
     XCTAssertNil(target?.pathSummary, "目标不在当前目录树中时摘要为 nil")
   }
 
-  // MARK: - 命令边界（story 37）
+  // MARK: - 命令边界
 
   func testCommandsTouchOnlyRuntimeAndTargetFactsAdapters() async {
     await workflow.setAgentEnabled(true)

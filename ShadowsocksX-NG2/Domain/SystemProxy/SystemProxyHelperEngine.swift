@@ -1,6 +1,6 @@
 import Foundation
 
-/// 特权 helper 的请求引擎（issue #71）：解码 closed typed 请求 → 注入的特权
+/// 特权 helper 的请求引擎：解码 closed typed 请求 → 注入的特权
 /// 写入器 → 编码应答。引擎本身不含任何产品策略，只在 payload 无效时拒绝。
 /// 所有连接共享一条串行队列：请求逐个执行，最后接受的请求决定设备级配置
 /// （last-writer-wins）。

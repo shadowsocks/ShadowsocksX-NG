@@ -2,11 +2,11 @@ import XCTest
 
 @testable import ShadowsocksX_NG2
 
-/// 目录工作流 module 的 UI-facing interface 测试（issue #41）：三入口导入、
+/// 目录工作流 module 的 UI-facing interface 测试：三入口导入、
 /// 手动服务器/分组创建、重命名、移动、删除、来源所有权、树 projection 与
 /// 分享往返。全部观察 projection、command outcome 与 typed error，不锁定
 /// SwiftUI 视图层级或内部存储；凭据生命周期经注入的内存存储观察。提交后的
-/// 运行时收敛以确定性 fake 计数（issue #40）。
+/// 运行时收敛以确定性 fake 计数。
 @MainActor
 final class CatalogWorkflowTests: XCTestCase {
   private var workDir: URL!
@@ -33,7 +33,7 @@ final class CatalogWorkflowTests: XCTestCase {
   }
 
   private func makeWorkflow() -> CatalogWorkflow {
-    // 计数即提交计数：提交后的运行时收敛由协调器异步调度（issue #40）。
+    // 计数即提交计数：提交后的运行时收敛由协调器异步调度。
     runtime.hasActiveTarget = true
     let coordinator = CatalogCommitCoordinator(
       fileStore: CatalogFileStore(fileURL: fileURL), runtime: runtime)
@@ -148,7 +148,7 @@ final class CatalogWorkflowTests: XCTestCase {
     XCTAssertTrue(workflow.tree.containsNode(groupID))
   }
 
-  // MARK: - 活动目标路径摘要（代理控制窄缝取用，issue #47）
+  // MARK: - 活动目标路径摘要（代理控制窄缝取用）
 
   func testPathSummaryResolvesRootToLeafNames() async throws {
     let groupID = try await workflow.createGroup(named: "组A", into: nil)
@@ -186,7 +186,7 @@ final class CatalogWorkflowTests: XCTestCase {
     XCTAssertEqual(form.remark, "改过的")
     XCTAssertEqual(form.password, "新密码", "同一引用始终对应最新秘密")
     XCTAssertEqual(form.encryptionMethod, "chacha20-ietf-poly1305")
-    // 连续提交合并为最新代次的收敛（issue #40）：旧代次在启动前被取代，
+    // 连续提交合并为最新代次的收敛：旧代次在启动前被取代，
     // 最终结果必为最新提交快照。
     await waitUntilRuntimeSettles(workflow.runtimeSync != .syncing(generation: 2))
     XCTAssertEqual(
@@ -299,7 +299,7 @@ final class CatalogWorkflowTests: XCTestCase {
   }
 }
 
-/// 组合根 fakes 装配覆盖（issue #49 story 11）：工作流可以完全经依赖束以
+/// 组合根 fakes 装配覆盖：工作流可以完全经依赖束以
 /// hermetic fake 组装——init 的发现状态、目录命令、激活命令与 Legacy 导入
 /// 全部命中注入替身，不触碰生产 Keychain、app 数据、LaunchAgent、代理进程
 /// 或 SystemConfiguration。

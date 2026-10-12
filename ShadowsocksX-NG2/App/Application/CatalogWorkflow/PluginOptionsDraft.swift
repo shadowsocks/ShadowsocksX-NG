@@ -1,7 +1,7 @@
 import Combine
 import Foundation
 
-/// 插件参数会话草稿（issue #81，见 GLOSSARY.md「Plugin parameter draft」）：
+/// 插件参数会话草稿（见 GLOSSARY.md「Plugin parameter draft」）：
 /// 带稳定行身份的有序参数行 + 原始文本双模式。解析与拼装遵循受管
 /// v2ray-plugin v1.3.2 的 SIP003 转义语义（未转义 `;` 分隔项目、第一个
 /// 未转义 `=` 分隔参数名与值、反斜杠转义后续字符）；原始参数字符串仍是

@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""Convert gaoyifan/china-operator-ip china.txt into an NG2 rule snapshot
-(issue #64).
+"""Convert gaoyifan/china-operator-ip china.txt into an NG2 rule snapshot.
 
 Parses one IPv4 CIDR per line, normalizes (masks host bits), deduplicates, and
 writes a normalized RuleSnapshot JSON plus loss report. Failure leaves any

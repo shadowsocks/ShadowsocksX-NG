@@ -4,13 +4,13 @@ import Foundation
 // MARK: - 动作
 
 /// 规则动作：目标经 Shadowsocks 代理，或直连。独立于 PAC、ACL 文本与
-/// 系统代理设置（issue #63）。
+/// 系统代理设置。
 enum RuleAction: String, Codable, CaseIterable, Equatable, Hashable, Sendable {
   case proxy
   case direct
 }
 
-/// 规则模式的未匹配默认动作（issue #63）：未命中规则时走代理或直连。
+/// 规则模式的未匹配默认动作：未命中规则时走代理或直连。
 /// 出厂默认「未匹配时代理」。
 enum RuleDefaultAction: String, Codable, CaseIterable, Equatable, Hashable, Sendable {
   case proxyWhenUnmatched = "proxy-when-unmatched"
@@ -35,7 +35,7 @@ enum RuleDefaultAction: String, Codable, CaseIterable, Equatable, Hashable, Send
 // MARK: - 匹配条件
 
 /// 规则匹配条件。完整域名、域名后缀与 IPv4/IPv6 CIDR 是可运行的统一类型；
-/// 不把 URL 路径、协议、关键字或正则纳入（spec #59）。
+/// 不把 URL 路径、协议、关键字或正则纳入。
 enum RuleMatch: Equatable, Hashable, Codable, Sendable {
   private enum CodingKeys: String, CodingKey {
     case kind, value
@@ -265,7 +265,7 @@ struct RuleIdentity: Codable, Equatable, Hashable, Sendable {
 
 // MARK: - 来源身份
 
-/// 内置规则来源身份（issue #63）。
+/// 内置规则来源身份。
 enum RuleSourceKind: String, Codable, CaseIterable, Equatable, Hashable, Sendable {
   case geolocationCN = "geolocation-cn"
   case chinaIPv4 = "china-ipv4"

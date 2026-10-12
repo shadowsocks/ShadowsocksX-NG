@@ -3,7 +3,7 @@ import XCTest
 
 @testable import ShadowsocksX_NG2
 
-/// SIP002 ss:// 编解码（issue #32 验收：编解码往返、插件同构、特殊字符）。
+/// SIP002 ss:// 编解码往返，覆盖插件同构与特殊字符。
 /// base64 期望值用系统 `base64` 独立计算，不依赖被测代码。
 final class SsUriTests: XCTestCase {
   // MARK: - 解码：SIP002 形态
@@ -29,7 +29,7 @@ final class SsUriTests: XCTestCase {
   }
 
   func testDecodeSIP002PluginQuery() throws {
-    // 官方示例形态：query 值整体百分号编码（; : = → %3B %3A %3D）。
+    // 官方示例形态：query 值整体百分号编码（: = → %3B %3A %3D）。
     let uri =
       "ss://cmM0LW1kNTpwYXNzd29yZA==@192.168.100.1:8888/"
       + "?plugin=obfs-local%3Bobfs%3Dhttp%3Bobfs-host%3Dexample.com#Example1"
@@ -175,7 +175,7 @@ final class SsUriTests: XCTestCase {
     XCTAssertTrue(uri.encode().hasSuffix("@[2001:db8::1]:8388"))
   }
 
-  // MARK: - 往返同构（issue #32 验收核心）
+  // MARK: - 往返同构
 
   func testRoundTripCorpusPreservesAllFields() throws {
     let corpus: [SsUri] = [

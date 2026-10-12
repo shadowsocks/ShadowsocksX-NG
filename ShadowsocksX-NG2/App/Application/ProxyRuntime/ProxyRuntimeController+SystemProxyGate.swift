@@ -73,7 +73,7 @@ extension ProxyRuntimeController {
     }.value
   }
 
-  /// 显式停止协议次序（D2）：注销（SIGTERM wrapper → wrapper 停 sslocal 并
+  /// 显式停止协议次序：注销（SIGTERM wrapper → wrapper 停 sslocal 并
   /// 等待）完成后才允许后续删文件动作。最多等 5 秒，超时也继续（launchd 会
   /// 兜底结束进程）。
   func waitForWrapperExit() async {
@@ -118,7 +118,7 @@ extension ProxyRuntimeController {
     String(describing: error)
   }
 
-  // MARK: - 系统代理出口事实（issue #60/#71）
+  // MARK: - 系统代理出口事实
 
   /// 出口可用 = agent 入站健康（回环入口可用，含防火墙仅阻主机态的情形）
   /// 且模式有出口；直连不依赖活动服务器目标。观察机以闭包读取同一事实源。

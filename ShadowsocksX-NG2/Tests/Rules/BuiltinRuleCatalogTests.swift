@@ -4,7 +4,7 @@ import XCTest
 
 @testable import ShadowsocksX_NG2
 
-/// 内置规则目录（issue #63）：bundle 快照加载与中国直连候选投影。
+/// 内置规则目录：bundle 快照加载与中国直连候选投影。
 final class BuiltinRuleCatalogTests: XCTestCase {
   func testConcurrentConsumersShareOneSourceLoad() async throws {
     let started = expectation(description: "source read")
@@ -91,7 +91,7 @@ final class BuiltinRuleCatalogTests: XCTestCase {
     XCTAssertTrue(independentCN.isEmpty, "快照不保留被吸收的规则")
   }
 
-  /// china-ipv4 快照（issue #64）：从 bundle 或源码树加载，直连候选为 IPv4 CIDR。
+  /// china-ipv4 快照：从 bundle 或源码树加载，直连候选为 IPv4 CIDR。
   func testChinaIPv4SnapshotLoadsFromBundleOrSourceTree() throws {
     let snapshot: RuleSnapshot
     do {
@@ -121,7 +121,7 @@ final class BuiltinRuleCatalogTests: XCTestCase {
       }, "china-ipv4 快照应只含 IPv4 CIDR 直连候选")
   }
 
-  /// gfwlist 快照（issue #65）：从 bundle 或源码树加载，代理候选为域名后缀。
+  /// gfwlist 快照：从 bundle 或源码树加载，代理候选为域名后缀。
   func testGFWListSnapshotLoadsFromBundleOrSourceTree() throws {
     let snapshot: RuleSnapshot
     do {
@@ -152,7 +152,7 @@ final class BuiltinRuleCatalogTests: XCTestCase {
     XCTAssertNil(snapshot.lossReport.skipped["shadowedException"])
   }
 
-  /// 合并投影（issue #64）：域名 + CIDR 直连候选一起进入 ACL 编译输入。
+  /// 合并投影：域名 + CIDR 直连候选一起进入 ACL 编译输入。
   func testChinaDirectRulesMergeDomainAndCIDRSnapshots() throws {
     let geolocation = try loadSourceTreeSnapshot(path: "Vendor/rules/geolocation-cn/snapshot.json")
     let chinaIPv4 = try loadSourceTreeSnapshot(path: "Vendor/rules/china-ipv4/snapshot.json")

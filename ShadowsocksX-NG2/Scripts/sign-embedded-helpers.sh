@@ -1,6 +1,6 @@
 #!/bin/sh
 # Re-sign every embedded helper binary with the Developer ID identity before
-# Xcode signs the app itself (spec #21 D6/D10).
+# Xcode signs the app itself.
 #
 # Upstream ships these binaries ad-hoc signed; they must carry a signature with
 # Hardened Runtime and a stable code-signing identifier so the outer app seal,

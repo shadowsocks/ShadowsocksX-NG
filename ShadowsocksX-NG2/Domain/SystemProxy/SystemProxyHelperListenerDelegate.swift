@@ -1,7 +1,7 @@
 import Foundation
 import Security
 
-/// XPC 监听代理（issue #71）：只接受代码签名 identifier 等于 2.0 bundle
+/// XPC 监听代理：只接受代码签名 identifier 等于 2.0 bundle
 /// identifier 的客户端（开源构建换签名团队、其他账号的 2.0 实例均可），
 /// 不校验 Team ID 或 UID。校验基于连接对端 pid 的 SecCode 查询。
 final class SystemProxyHelperListenerDelegate: NSObject, NSXPCListenerDelegate {

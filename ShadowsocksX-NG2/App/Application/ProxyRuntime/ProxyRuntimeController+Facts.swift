@@ -5,10 +5,10 @@ import Foundation
 extension ProxyRuntimeController {
   var isActiveTargetPresent: Bool { machine.activeTargetID != nil }
 
-  /// Agent 开关意图（持久化事实；开关 UI 的绑定来源，issue #60）。
+  /// Agent 开关意图（持久化事实；开关 UI 的绑定来源）。
   var agentIntentEnabled: Bool { settings.agentEnabled }
 
-  /// 系统代理开关意图（持久化事实；开关 UI 的绑定来源，issue #60）。
+  /// 系统代理开关意图（持久化事实；开关 UI 的绑定来源）。
   var systemProxyIntentEnabled: Bool { settings.systemProxyEnabled }
 
   /// 系统代理观察机的呈现事实门面：存储与发布在 `SystemProxyObserver`，
@@ -45,8 +45,8 @@ extension ProxyRuntimeController {
     ]
   }
 
-  /// 诊断只读面（issue #34）：当前监听设置；监听地址在导出中只以回环/非回环
-  /// 两态呈现（D7）。
+  /// 诊断只读面：当前监听设置；监听地址在导出中只以回环/非回环
+  /// 两态呈现。
   var listenSettings: SslocalListenSettings { settings.listen }
 
   /// 当前已部署 runtime 的完整监听身份。已停止或启动失败时没有有效的
@@ -75,7 +75,7 @@ extension ProxyRuntimeController {
     return receipt.processID
   }
 
-  /// 运行时契约的脱敏摘要（数量与协议元数据，D5）；契约缺失或无效返回 nil。
+  /// 运行时契约的脱敏摘要（数量与协议元数据）；契约缺失或无效返回 nil。
   /// 诊断导出不读契约内容，只携带此摘要。
   func runtimeDocumentSummary() -> String? {
     runtimeFileStore.loadDocument().map { Redactor.documentSummary($0) }

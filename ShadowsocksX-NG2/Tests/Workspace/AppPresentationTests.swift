@@ -55,7 +55,7 @@ final class AppPresentationTests: XCTestCase {
   }
 
   func testRuntimeAndSettingsFactsUseCentralPresentation() {
-    // 系统代理应用状态（issue #60）：独立状态面同样走中央呈现。
+    // 系统代理应用状态：独立状态面同样走中央呈现。
     let systemProxyApplications: [SystemProxyApplicationFacts] = [
       .idle,
       .pending,

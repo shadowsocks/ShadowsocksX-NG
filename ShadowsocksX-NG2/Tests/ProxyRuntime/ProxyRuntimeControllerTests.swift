@@ -3,7 +3,7 @@ import XCTest
 
 @testable import ShadowsocksX_NG2
 
-/// 代理运行时控制器（issue #27/#60）：以替身注入 LaunchAgent 与端点探测，验证
+/// 代理运行时控制器：以替身注入 LaunchAgent 与端点探测，验证
 /// agent 开关与系统代理开关的独立语义、目录重展开消费与 GUI 重同步重合（不
 /// 触真实 SMAppService/launchd/SystemConfiguration）。
 @MainActor

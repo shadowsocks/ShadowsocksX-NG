@@ -19,7 +19,7 @@ final class SkeletonTests: XCTestCase {
   }
 }
 
-/// 架构 deletion check（issue #49）：UI 源文件不得引用目录工作流的实现
+/// 架构 deletion check：UI 源文件不得引用目录工作流的实现
 /// 协作者或原始目录/凭据存储类型。
 ///
 /// 扫描范围由目录正面圈定：只扫 `App/UI/`（视图层）。分层因此是目录声明而非

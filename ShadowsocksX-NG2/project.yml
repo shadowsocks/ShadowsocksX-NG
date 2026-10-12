@@ -10,7 +10,7 @@ settings:
     SWIFT_VERSION: "6.0"
     # 关闭「Use Compiler to Extract Swift Strings」：构建期不再把 SwiftUI
     # 字面量自动抽取进 xcstrings——本仓库目录按需手工增删 key（中英对照），
-    # 自动抽取会在 IDE 构建时膨胀文件（2026-10-04 #81 验收时实测）。
+    # 自动抽取会在 IDE 构建时膨胀文件（2026-10-04 实测）。
     LOCALIZED_STRING_SWIFTUI_SUPPORT: NO
     CODE_SIGN_STYLE: Manual
     ENABLE_HARDENED_RUNTIME: YES
@@ -44,7 +44,7 @@ targets:
           # 文档不属于 target 源码：App/ 下任何非源码文件都会被 XcodeGen 收进
           # Resources 阶段并封进签名后的 app bundle（实测），因此显式排除。
           - "**/*.md"
-      # 领域核心（spec #21 D3/D5）。目录即主题，根下不留平铺文件，子目录按
+      # 领域核心。目录即主题，根下不留平铺文件，子目录按
       # GLOSSARY.md 的章节口径命名：Catalog（配置目录树与身份）/
       # Subscription（订阅）/ Rules（代理规则，自定义规则在 Rules/Custom）/
       # Runtime（代理运行服务：运行时文档、路径、日志、端点与探针）/
@@ -56,13 +56,12 @@ targets:
       - path: Domain
       # LaunchAgent 注册清单：SMAppService.agent(plistName:) 从 bundle 内
       # Contents/Library/LaunchAgents/ 读取；ProgramArguments 用 bundle 相对路径
-      # （spec #21 D2，issue #27）。
       - path: LaunchAgent/com.qiuyuzhou.ShadowsocksX-NG2.agent.plist
         buildPhase:
           copyFiles:
             destination: wrapper
             subpath: Contents/Library/LaunchAgents
-      # 特权系统代理 helper 的 LaunchDaemon 注册清单（issue #71）：
+      # 特权系统代理 helper 的 LaunchDaemon 注册清单：
       # SMAppService.daemon(plistName:) 从 bundle 内
       # Contents/Library/LaunchDaemons/ 读取；可执行路径用 BundleProgram 键
       # （bundle 相对；ProgramArguments 的相对路径按 PATH 解析会 spawn 失败）；
@@ -106,7 +105,7 @@ targets:
           copyFiles:
             destination: resources
             subpath: ThirdParty/Cloak
-      # 内置规则快照（issue #63/#64）：普通构建只读本地已固定快照，离线且不重新
+      # 内置规则快照：普通构建只读本地已固定快照，离线且不重新
       # 抓取或转换；缺失、损坏或版本不匹配时 verify-rule-snapshots.sh 使构建失败。
       # folder reference 保留 rules/<source>/snapshot.json 结构，避免多个
       # snapshot.json 在 bundle 根目录撞名。
@@ -164,13 +163,13 @@ targets:
         - name: ShadowsocksX-NG2Tests
           parallelizable: true
     dependencies:
-      # 代理运行时 wrapper（BundleProgram，spec #21 D2）：以独立可执行文件装入
+      # 代理运行时 wrapper（BundleProgram）：以独立可执行文件装入
       # Contents/MacOS，由 LaunchAgent plist 以 bundle 相对路径引用。
       - target: ShadowsocksX-NG2Agent
         copy:
           destination: wrapper
           subpath: Contents/MacOS
-      # 特权系统代理 helper（issue #71）：独立可执行文件装入 Contents/MacOS，
+      # 特权系统代理 helper：独立可执行文件装入 Contents/MacOS，
       # 由 LaunchDaemon plist 以 bundle 相对路径引用，SMAppService.daemon 注册。
       - target: ShadowsocksX-NG2SystemProxyHelper
         copy:
@@ -207,7 +206,7 @@ targets:
     sources:
       - path: Agent
       # wrapper 与 GUI 共享的跨进程契约：路径常量、运行时文档（含读取侧校验）
-      # 与日志事件基线（spec #21 D5）；监听建立判定复用端点探测（issue #38）。
+      # 与日志事件基线；监听建立判定复用端点探测。
       # 注意：以下 9 条是显式文件路径，Domain/ 内移动文件必须同步此处，否则
       # xcodegen 以 "missing source directory" 使生成失败（实测，不会静默）。
       - path: Domain/Runtime/RuntimePaths.swift
@@ -230,7 +229,7 @@ targets:
     sources:
       - path: SystemProxyHelper
       # helper 与 GUI 共享的 typed 契约与纯逻辑：closed typed 配置、property
-      # list 映射、计划器、XPC 协议与请求引擎（issue #71）。helper 不含产品
+      # list 映射、计划器、XPC 协议与请求引擎。helper 不含产品
       # 策略：不在这些文件之外做任何域判断。以下 6 条同为显式路径，移动需同步。
       - path: Domain/SystemProxy/SystemProxyConfiguration.swift
       - path: Domain/SystemProxy/SystemProxyPlan.swift

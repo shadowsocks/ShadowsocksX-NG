@@ -18,7 +18,7 @@ protocol ListenSettingsStoring {
 
 /// 应用启动的监听设置恢复结果。`unreadableError` 非 nil 表示用户配置存在但
 /// 不可读（损坏、无效或 I/O 失败），此时 `settings` 只是占位出厂默认——
-/// 消费方不得静默以占位端口运行（D8「任何路径不静默改端口」），必须点名
+/// 消费方不得静默以占位端口运行（「任何路径不静默改端口」），必须点名
 /// 呈现并停止代理，等待用户修复。
 struct RestoredListenSettings: Equatable {
   let settings: SslocalListenSettings
@@ -90,7 +90,7 @@ struct ListenSettingsFileStore: ListenSettingsStoring {
 
   /// 应用启动的恢复入口：文件缺失是出厂状态；用户配置不可读时记录事件并
   /// 携带点名错误返回占位出厂默认（消费方据此停止代理并呈现，不静默运行
-  /// 在占位端口上；设置编辑呈现面在 #33）。
+  /// 在占位端口上。
   static func restored() -> RestoredListenSettings {
     do {
       return RestoredListenSettings(settings: try Self().load(), unreadableError: nil)

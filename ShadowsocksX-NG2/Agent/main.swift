@@ -1,15 +1,15 @@
 import Foundation
 
-// 代理运行时 wrapper（spec #21 D2/D5/D7，issue #27/#28/#67）：LaunchAgent
+// 代理运行时 wrapper：LaunchAgent
 // 常驻进程，读取跨进程契约 `sslocal-active.json`，以绝对配置路径启动官方
-// sslocal、监管其生命周期。PAC HTTP endpoint 已随 issue #67 移除。
+// sslocal、监管其生命周期。PAC HTTP endpoint 已移除。
 //
 // 协议要点：
 // - 显式停止（GUI 注销 → launchd SIGTERM 本进程）：SIGTERM 转发 sslocal 并
 //   等待其退出，随后本进程以 0 退出；KeepAlive={SuccessfulExit:false} 不会
 //   重启干净退出。
 // - 崩溃恢复：sslocal 意外退出 → 本进程非零退出 → KeepAlive 重启并重放最后
-//   有效快照（异常路径不触碰契约文件，D5）。
+// 有效快照（异常路径不触碰契约文件）。
 // - 变更协议：SIGUSR1 到达后重读契约；仅 `servers` 变化 → 转发 SIGUSR1 给
 //   sslocal（上游热重载服务器列表）；监听地址/端口/协议/mode 结构性变化 →
 //   优雅重启。
@@ -57,7 +57,7 @@ private func supervise() -> Int32 {
     guard let gated = spawnGatedChild(document) else { return 0 }
     let child = gated.child
 
-    // 监听建立判定（issue #38，D10「3 秒未建立监听 → error 日志」）。
+    // 监听建立判定（「3 秒未建立监听 → error 日志」）。
     let listenersEstablished = awaitListenEstablishment(
       document: document, child: child, flags: flags)
     guard child.isRunning else {

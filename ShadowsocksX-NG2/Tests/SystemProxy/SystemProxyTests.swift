@@ -4,7 +4,7 @@ import XCTest
 
 /// System proxy mode mapping and declarative planning are pure/testable seams;
 /// no test in this file writes the host's real SystemConfiguration state.
-/// issue #71：closed typed 配置、显式 HTTPS/PAC/自动发现/简单主机名/例外列表、
+/// Closed typed 配置覆盖 HTTPS/PAC/自动发现/简单主机名与例外列表，
 /// 无条件清理计划与 helper XPC 契约（含序列化 last-writer）都在此验证。
 final class SystemProxyTests: XCTestCase {
   func testSupportedModesProjectTheSameLocalEndpoints() throws {
@@ -118,7 +118,7 @@ final class SystemProxyTests: XCTestCase {
     XCTAssertEqual(withFlagOff[SystemProxyPropertyList.excludeSimpleHostnames] as? Int, 0)
   }
 
-  /// 空例外列表也是显式值：写入空数组而非保留旧列表（issue #71 AC29）。
+  /// 空例外列表也是显式值：写入空数组而非保留旧列表。
   func testEmptyExceptionListIsWrittenExplicitly() {
     var withoutExceptions = configuration
     withoutExceptions.exceptions = []
@@ -127,7 +127,7 @@ final class SystemProxyTests: XCTestCase {
     XCTAssertEqual(applied[SystemProxyPropertyList.exceptionsList] as? [String], [])
   }
 
-  /// 未建模键保留（issue #71 AC30）：typed 字段集之外的 Proxies 键不被擦除。
+  /// 未建模键保留：typed 字段集之外的 Proxies 键不被擦除。
   func testUnmodeledKeysArePreservedOnApply() {
     let original: [String: Any] = [
       "ThirdPartyKey": "third-party value",
@@ -137,7 +137,7 @@ final class SystemProxyTests: XCTestCase {
     XCTAssertEqual(applied["ThirdPartyKey"] as? String, "third-party value")
   }
 
-  /// PAC 显式关闭时移除 URL 与 JavaScript 残值（issue #71 AC27）。
+  /// PAC 显式关闭时移除 URL 与 JavaScript 残值。
   func testDisabledPACRemovesURLAndJavaScriptValues() {
     let original: [String: Any] = [
       SystemProxyPropertyList.pacEnabled: 1,
@@ -201,7 +201,7 @@ final class SystemProxyTests: XCTestCase {
   }
 
   /// 清理计划无条件：凡持有 Proxies 实体的服务（跨位置、不校验端点或来源）
-  /// 都整字典移除（issue #71 AC6）。
+  /// 都整字典移除。
   func testCleanupPlannerClearsWholeDictionaryEverywhereUnconditionally() throws {
     let ng2Values = try serialized(SystemProxyPropertyList.applying(configuration, to: [:]))
     let foreignValues = try serialized([
@@ -225,7 +225,7 @@ final class SystemProxyTests: XCTestCase {
       "没有 Proxies 实体的服务无需写入")
   }
 
-  // MARK: - 注册清单漂移指纹（issue #71 后续）
+  // MARK: - 注册清单漂移指纹
 
   /// launchd 沿用注册提交时的 job 定义快照，清单变更须注销重注才生效；
   /// 指纹检测决定是否重注。

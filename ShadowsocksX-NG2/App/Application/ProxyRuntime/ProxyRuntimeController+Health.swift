@@ -21,7 +21,7 @@ private struct LaunchHealthTimeout {
 }
 
 extension ProxyRuntimeController {
-  /// 启动健康呈现（D2/D7/D8）：确认本地入站；直连模式额外要求
+  /// 启动健康呈现：确认本地入站；直连模式额外要求
   /// 回执持续指向当前健康子进程，防止旧监听通过共享端口冒充新实例。
   @discardableResult
   func presentLaunchHealth(

@@ -2,7 +2,7 @@ import XCTest
 
 @testable import ShadowsocksX_NG2
 
-/// GUI 事件环形缓冲与 RuntimeLog 接收缝（issue #34）：顺序保持、容量封顶、
+/// GUI 事件环形缓冲与 RuntimeLog 接收缝：顺序保持、容量封顶、
 /// emit 路由与恢复。
 final class RuntimeEventStoreTests: XCTestCase {
   override func tearDown() {

@@ -1,7 +1,7 @@
 import Foundation
 
-/// #33 偏好存储。非敏感字段写入受保护的 JSON。GFWList URL 与 PAC 用户规则
-/// 已随 issue #67 移除；未发布的 NG2 PAC 偏好不做迁移。
+/// 偏好存储。非敏感字段写入受保护的 JSON。GFWList URL 与 PAC 用户规则已移除；
+/// 未发布的 NG2 PAC 偏好不做迁移。
 struct ProxySettingsFileStore: ProxySettingsStoring {
   let fileURL: URL
   let legacyListenFileURL: URL
@@ -143,8 +143,8 @@ private struct ProxySettingsRecord: Codable, Equatable, Sendable {
     proxyExceptions =
       try container.decodeIfPresent(String.self, forKey: .proxyExceptions)
       ?? ProxySettings.defaultProxyExceptions
-    // 旧 NG2 偏好里的 "pac" 等已删除值容错回落到规则模式（issue #67：
-    // 未发布的 PAC 偏好不做迁移，但解码失败会把全部保留字段连坐丢掉）。
+    // 旧 NG2 偏好里的 "pac" 等已删除值容错回落到规则模式。未发布的 PAC 偏好
+    // 不做迁移，但解码失败会把全部保留字段连坐丢掉。
     if let rawMode = try container.decodeIfPresent(String.self, forKey: .preferredMode),
       let mode = ProxyModeKind(rawValue: rawMode)
     {
@@ -152,7 +152,7 @@ private struct ProxySettingsRecord: Codable, Equatable, Sendable {
     } else {
       preferredMode = .rule
     }
-    // 规则模式子选项（issue #63）：出厂「未匹配时代理」。
+    // 规则模式子选项：出厂「未匹配时代理」。
     ruleDefaultAction =
       try container.decodeIfPresent(RuleDefaultAction.self, forKey: .ruleDefaultAction)
       ?? .proxyWhenUnmatched

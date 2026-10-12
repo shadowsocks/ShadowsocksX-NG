@@ -1,7 +1,7 @@
 import Foundation
 import ServiceManagement
 
-/// LaunchAgent 管理缝（spec #21 D2）：控制器经此协议启停 agent，单元测试以
+/// LaunchAgent 管理缝：控制器经此协议启停 agent，单元测试以
 /// fake 替换（真实注册会改动用户登录项，不进单测）。
 protocol LaunchAgentControlling {
   var status: LaunchAgentStatus { get }

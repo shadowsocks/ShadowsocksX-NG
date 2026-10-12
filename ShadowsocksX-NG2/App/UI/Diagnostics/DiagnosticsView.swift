@@ -1,11 +1,11 @@
 import SwiftUI
 
-/// 独立窗口诊断区（spec #21 D11，issue #34/#43，地图 #52 票 #58）：按原型重排
+/// 独立窗口诊断区：状态摘要卡、日志卡与脱敏说明行。
 /// 为状态摘要卡（代理状态、活动目标）+ 日志卡（GUI 事件流实时呈现 + wrapper
 /// 收敛日志尾部，来源切换 segmented、可复制）+ 底部脱敏说明行。导出诊断由
 /// 本页自挂工具栏（呈现于窗口工具栏右端），沿用 DiagnosticReportExportAction
 /// 既有入口，成功 alert 与错误弹窗均在本视图挂载。事实采样、轮询代际与报告
-/// 准备全部经 DiagnosticsWorkflow（issue #43 的唯一 UI-facing seam）；本视图
+/// 准备全部经 DiagnosticsWorkflow 这一 UI-facing seam；本视图
 /// 只负责生命周期触发、呈现与复制动作。
 struct DiagnosticsView: View {
   @ObservedObject var diagnostics: DiagnosticsWorkflow
@@ -73,7 +73,7 @@ struct DiagnosticsView: View {
     }
   }
 
-  /// 诊断导出（票 #58）：沿用 DiagnosticReportExportAction 既有入口；文件写
+  /// 诊断导出：沿用 DiagnosticReportExportAction 既有入口；文件写
   /// 入成功后才登记导出完成事件。
   private func exportDiagnostics() {
     switch DiagnosticReportExportAction(
@@ -161,7 +161,7 @@ struct DiagnosticsView: View {
     )
   }
 
-  /// 当前日志来源的文本与空态提示（呈现与复制共用同一来源，story 21）。
+  /// 当前日志来源的文本与空态提示（呈现与复制共用同一来源）。
   private var activeLog: (text: String, emptyMessage: String) {
     switch windowState.source {
     case .guiEvents:

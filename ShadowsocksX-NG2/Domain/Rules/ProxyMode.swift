@@ -1,6 +1,6 @@
 import Foundation
 
-/// Persisted identity of a proxy mode. PAC is gone (issue #67): the product
+/// Persisted identity of a proxy mode. PAC is gone: the product
 /// exposes rule / global / direct only.
 enum ProxyModeKind: String, Codable, CaseIterable, Equatable, Hashable, Sendable {
   case rule
@@ -9,8 +9,8 @@ enum ProxyModeKind: String, Codable, CaseIterable, Equatable, Hashable, Sendable
 }
 
 /// The mutually exclusive ways in which 2.0 exposes the local proxy to macOS.
-/// Hashable 供菜单栏模式选择的勾选态 Picker 使用（issue #31）。
-/// 规则模式（issue #63）另持久化 `RuleDefaultAction` 子选项。
+/// Hashable 供菜单栏模式选择的勾选态 Picker 使用。
+/// 规则模式另持久化 `RuleDefaultAction` 子选项。
 enum ProxyMode: Codable, Equatable, Hashable, Sendable {
   case rule
   case global
@@ -74,8 +74,8 @@ enum ProxyMode: Codable, Equatable, Hashable, Sendable {
 
   /// Derives the only system-proxy state that this mode is allowed to own.
   /// All three modes are projected as the local SOCKS and HTTP inbounds
-  /// (issue #59/#67)：SOCKS 之外，系统 HTTP/HTTPS 代理指向恒开启的 HTTP 入站。
-  /// 投影即 closed typed 配置（issue #71）：HTTPS 显式赋值、PAC/自动发现显式
+  /// SOCKS 之外，系统 HTTP/HTTPS 代理指向恒开启的 HTTP 入站。
+  /// 投影即 closed typed 配置：HTTPS 显式赋值、PAC/自动发现显式
   /// 关闭、简单主机名排除显式开启、例外列表全量给出。
   func systemProxyConfiguration(
     for document: SslocalRuntimeDocument,

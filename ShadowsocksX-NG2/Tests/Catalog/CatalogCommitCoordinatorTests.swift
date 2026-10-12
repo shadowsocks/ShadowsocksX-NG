@@ -2,7 +2,7 @@ import XCTest
 
 @testable import ShadowsocksX_NG2
 
-/// 确定性运行时同步替身（issue #40 测试缝）：记录 converge 快照与次序，
+/// 确定性运行时同步替身（测试缝）：记录 converge 快照与次序，
 /// 可编程每次结果；门闩让同步在收敛中挂起，用于验证提交代次语义。
 @MainActor
 final class FakeCatalogRuntime: CatalogRuntimeSyncing {
@@ -45,7 +45,7 @@ final class FakeCatalogRuntime: CatalogRuntimeSyncing {
 }
 
 /// 让出 MainActor 直到条件成立（被测同步任务在同一线程上排队执行）。供
-/// 协调器与视图模型测试共享：提交后的运行时收敛不再内联等待（issue #40）。
+/// 协调器与视图模型测试共享：提交后的运行时收敛不再内联等待。
 @MainActor
 func waitUntilRuntimeSettles(
   _ condition: @autoclosure () -> Bool,
@@ -60,7 +60,7 @@ func waitUntilRuntimeSettles(
   XCTAssertTrue(condition(), "等待条件超时", file: file, line: line)
 }
 
-/// 目录提交—运行时同步协调器（issue #40）：只断言外部行为——持久化与发布、
+/// 目录提交—运行时同步协调器：只断言外部行为——持久化与发布、
 /// 运行时是否被调用及使用的快照、阶段与失败结果、并发提交的最终赢家、无效
 /// 活动目标的停止语义。全部走临时目录文件存储，不触碰真实运行时。
 @MainActor

@@ -3,9 +3,9 @@ import Security
 
 // MARK: - 目录树 projection（非敏感）
 
-/// 目录树节点快照（目录工作流 module 的 UI-facing projection，issue #41）：
+/// 目录树节点快照（目录工作流 module 的 UI-facing projection）：
 /// 名称、来源、形态、渲染原子与子树计数；不含凭据引用、密码、插件参数等
-/// 秘密值。身份为不透明 `NodeID`，重命名、移动或刷新后保持稳定（story 3）。
+/// 秘密值。身份为不透明 `NodeID`，重命名、移动或刷新后保持稳定。
 /// 门禁/关系型事实（删除档位、移动资格、激活资格）走 module 查询方法，
 /// 不在节点上堆政策字段。
 struct CatalogTreeNode: Identifiable, Equatable {
@@ -78,7 +78,7 @@ struct CatalogTreeRow: Identifiable {
 }
 
 /// 目录树快照：侧栏、活动目标级联、移动目的地与删除确认共用的同一份
-/// 非敏感 projection；UI 不再持有原始目录副本（issue #41）。
+/// 非敏感 projection；UI 不再持有原始目录副本。
 struct CatalogTreeSnapshot: Equatable {
   let roots: [CatalogTreeNode]
 
@@ -96,7 +96,7 @@ struct CatalogTreeSnapshot: Equatable {
   func containsNode(_ id: NodeID) -> Bool { node(withID: id) != nil }
 
   /// 活动目标的显示名路径（根 → 节点，" / " 连接）；目标不在树中为 nil。
-  /// 代理控制窄缝经此取安全路径摘要（issue #47），树结构不出目录 module。
+  /// 代理控制窄缝经此取安全路径摘要，树结构不出目录 module。
   func pathSummary(for id: NodeID) -> String? {
     pathComponents(for: id)?.joined(separator: " / ")
   }
@@ -233,7 +233,7 @@ enum ActivationCommandOutcome: Equatable, Sendable {
   case rejectedActivation(ActivationFailure)
 }
 
-/// 激活缝（issue #41）：目录命令面经此发出激活意图。生产 adapter 为
+/// 激活缝：目录命令面经此发出激活意图。生产 adapter 为
 /// `ProxyRuntimeController`；测试注入假 adapter 观察目标传递。
 @MainActor
 protocol Activating: AnyObject {
@@ -242,8 +242,8 @@ protocol Activating: AnyObject {
 
 // MARK: - 服务器详情与编辑
 
-/// 服务器编辑面状态：用户打开编辑器时经显式命令解析，凭据明文只在此出现
-/// （story 10/11）；不属于普通 projection。
+/// 服务器编辑面状态：用户打开编辑器时经显式命令解析，凭据明文只在此出现，
+/// 不属于普通 projection。
 struct ServerEditForm: Equatable {
   let address: String
   let port: Int
@@ -255,7 +255,7 @@ struct ServerEditForm: Equatable {
 }
 
 /// 服务器编辑的提交载荷（typed command）：配置与凭据字段作为一个逻辑变更
-/// 提交（story 12）；任一持久化步骤失败时旧配置与旧凭据继续生效（story 13）。
+/// 提交；任一持久化步骤失败时旧配置与旧凭据继续生效。
 struct ServerEditDraft: Equatable {
   var address: String
   var port: Int
@@ -268,7 +268,7 @@ struct ServerEditDraft: Equatable {
 
 /// 提交失败的结构化抛错：配置与凭据是一个逻辑变更，表单校验通过后提交
 /// 管线的任一步失败都已触碰（或可能触碰）凭据，凭据半边的恢复结果随错
-/// 报出（story 13）。不含用户可见文案（文案归 presentation edge，从
+/// 报出。不含用户可见文案（文案归 presentation edge，从
 /// `underlying` 生成）；表单校验在建 journal 之前失败，保持裸 `ServerFormError`。
 struct CommitError: Error {
   let underlying: any Error
@@ -310,8 +310,8 @@ struct PluginSectionState: Equatable {
 
 // MARK: - 订阅 projection
 
-/// 订阅卡片 projection（非敏感）：完整 URL 不出现，只含 host（story 23）；
-/// 状态为结构化值，本地化文案与日期格式由 UI 呈现层派生（story 42）。
+/// 订阅卡片 projection（非敏感）：完整 URL 不出现，只含 host；
+/// 状态为结构化值，本地化文案与日期格式由 UI 呈现层派生。
 struct SubscriptionSummary: Identifiable, Equatable {
   let id: NodeID
   let groupID: NodeID
@@ -371,7 +371,7 @@ extension SubscriptionRefreshFailure {
 }
 
 /// 删除结果：被删节点身份集合。UI 据此清除失效选择（selection invalidation，
-/// story 18）；不自动改选相邻节点，活动目标语义不受影响。
+/// 不自动改选相邻节点，活动目标语义不受影响。
 struct RemovalOutcome: Equatable, Sendable {
   let removedNodeIDs: Set<NodeID>
 }

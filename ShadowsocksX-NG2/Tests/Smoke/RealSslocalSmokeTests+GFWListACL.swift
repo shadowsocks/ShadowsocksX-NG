@@ -4,7 +4,7 @@ import XCTest
 @testable import ShadowsocksX_NG2
 
 final class RealSslocalGFWListSmokeTests: RealSslocalSmokeTests {
-  /// 规则＋未匹配时直连（issue #65）：bypass_all + GFWList 代理候选。命中
+  /// 规则＋未匹配时直连：bypass_all + GFWList 代理候选。命中
   /// GFWList 域名走代理；未匹配域名与 IP 字面目标直连；SOCKS 与 HTTP 共用 ACL。
   func testRuleDirectDefaultACLRoutesGFWListProxyAndUnmatchedDirect() throws {
     let echoServer = try LoopbackEchoServer()
@@ -47,7 +47,7 @@ final class RealSslocalGFWListSmokeTests: RealSslocalSmokeTests {
     stopWrapperAndAssertCleanExit(wrapper, description: "gfwlist rule wrapper exits")
   }
 
-  /// 原版 sslocal ACL 域名/IP 优先级（issue #65 AC5）：域名 proxy_list 先于
+  /// 原版 sslocal ACL 域名/IP 优先级：域名 proxy_list 先于
   /// bypass_list，IP bypass_list 先于 proxy_list；两个入站共用同一 ACL。
   func testRealSslocalDomainAndIPACLPriorityOnSOCKSAndHTTP() throws {
     let echoServer = try LoopbackEchoServer()

@@ -80,8 +80,8 @@ enum ManagedPluginCatalog {
   }
 }
 
-/// 生产实现：受管集内且 bundle 内可执行文件在位才返回绝对路径。D10——GUI
-/// 仅在生成配置时检查可执行文件存在，运行时不逐次哈希复验（bundle 签名 +
+/// 生产实现：受管集内且 bundle 内可执行文件在位才返回绝对路径。GUI 仅在生成
+/// 配置时检查可执行文件是否存在，运行时不逐次哈希复验（bundle 签名 +
 /// 公证即信任边界）；受管集外引用一律视为「本版本未提供」，路径只从静态表
 /// 派生，不拼接任何用户输入。
 struct BundleManagedPluginProvider: PluginExecutableResolving {

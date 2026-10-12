@@ -2,7 +2,7 @@ import XCTest
 
 @testable import ShadowsocksX_NG2
 
-/// #33 设置主缝：偏好校验与绕过列表解析只通过公开领域入口断言，不依赖
+/// 设置主缝：偏好校验与绕过列表解析只通过公开领域入口断言，不依赖
 /// SwiftUI 视图实现。
 final class ProxySettingsTests: XCTestCase {
   func testFactoryDefaultsAvoidLegacyPortsAndValidate() {

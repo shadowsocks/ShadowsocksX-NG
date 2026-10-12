@@ -1,7 +1,7 @@
 import Foundation
 import SystemConfiguration
 
-/// root 进程内的 SystemConfiguration 写入器（issue #71）：GUI 域决策的机械
+/// root 进程内的 SystemConfiguration 写入器：GUI 域决策的机械
 /// 执行者。apply 覆盖活动网络位置的每个服务，只改 typed 字段并保留未建模
 /// 键，值已等价时跳过提交；clear 无条件移除全部位置全部服务的完整 Proxies
 /// 字典。root 身份直接创建 SCPreferences，不走授权对话框。

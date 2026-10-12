@@ -2,7 +2,7 @@ import XCTest
 
 @testable import ShadowsocksX_NG2
 
-/// 侧栏底部状态卡的呈现政策（issue #60，架构评审候选④）：行结构、语义色调
+/// 侧栏底部状态卡的呈现政策：行结构、语义色调
 /// 与活动目标回退文案从代理控制工作流的整体 snapshot 派生；文本与状态菜单
 /// 共用 StatusMenuModel 的同一映射。
 final class StatusCardModelTests: XCTestCase {

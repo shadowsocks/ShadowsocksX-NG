@@ -3,7 +3,7 @@ import XCTest
 
 @testable import ShadowsocksX_NG2
 
-/// `CredentialWriteJournal` 自身 seam 的语义（story 13/29）：首触快照、幂等
+/// `CredentialWriteJournal` 自身 seam 的语义：首触快照、幂等
 /// 删除、尽力回滚的三种结果。回滚经 typed outcome 断言，不戳存储内部状态。
 final class CredentialWriteJournalTests: XCTestCase {
   private let passwordRef = CredentialReference(rawValue: "ref-pw")
@@ -40,7 +40,7 @@ final class CredentialWriteJournalTests: XCTestCase {
     XCTAssertNil(try store.secret(for: passwordRef), "原本不存在的引用回滚后归于不存在")
   }
 
-  // MARK: - story 29：delete 的回滚 = 复活旧秘密
+  // MARK: - delete 的回滚 = 复活旧秘密
 
   func testRollbackRevivesSecretDeletedByJournal() throws {
     let store = InMemoryCredentialStore()

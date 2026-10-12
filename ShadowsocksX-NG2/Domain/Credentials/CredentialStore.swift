@@ -1,7 +1,7 @@
 import Foundation
 import Security
 
-/// 凭据存储缝（spec #21 D5）：密码、插件参数、非空远程 URL 等秘密值的权威持久
+/// 凭据存储缝：密码、插件参数、非空远程 URL 等秘密值的权威持久
 /// 副本在 Keychain，配置树只持凭据引用。实现须保证写入/读出一致。
 protocol CredentialStoring {
   /// 写入即覆盖既有值（同一引用始终对应最新秘密）。

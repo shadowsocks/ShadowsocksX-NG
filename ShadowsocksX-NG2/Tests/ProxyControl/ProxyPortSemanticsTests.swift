@@ -3,7 +3,7 @@ import XCTest
 
 @testable import ShadowsocksX_NG2
 
-/// 端口语义（spec #21 D8，issue #30）主缝测试：出厂默认、占用校验、建议端口
+/// 端口语义主缝测试：出厂默认、占用校验、建议端口
 /// 算法与点名错误。bind 探测覆盖真实回环 socket；lsof 输出解析为纯函数夹具。
 final class ProxyPortSemanticsTests: XCTestCase {
   // MARK: 出厂默认（与 Legacy 隔离，任何路径不静默改端口）
@@ -54,7 +54,7 @@ final class ProxyPortSemanticsTests: XCTestCase {
       "SOCKS5 端口与 HTTP 端口冲突（都是 1086），请为每个端点配置不同的端口")
   }
 
-  // MARK: 建议端口算法（D8：32768–65535 高位段，空闲且与另两端点配置值互异）
+  // MARK: 建议端口算法（32768–65535 高位段，空闲且与另两端点配置值互异）
 
   func testSuggestionScansHighRangeAscendingSkippingExcludedAndOccupied() {
     var probed: [Int] = []

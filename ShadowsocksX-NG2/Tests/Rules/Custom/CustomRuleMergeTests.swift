@@ -3,7 +3,7 @@ import XCTest
 
 @testable import ShadowsocksX_NG2
 
-/// 自定义规则合并进 ACL（issue #66 AC3）：两种规则子模式按各自内置来源与
+/// 自定义规则合并进 ACL：两种规则子模式按各自内置来源与
 /// 自定义规则合并；全局和直连模式不加载自定义规则。
 final class CustomRuleMergeTests: XCTestCase {
 
@@ -139,7 +139,7 @@ final class CustomRuleMergeTests: XCTestCase {
     XCTAssertEqual(directDefault.accepted.count, 1)
   }
 
-  /// 全局模式 ACL 不加载自定义规则（issue #66 AC3）。
+  /// 全局模式 ACL 不加载自定义规则。
   func testGlobalACLDoesNotLoadCustomRules() throws {
     let customRules = [
       custom(.direct, try RuleMatch(domainSuffix: "internal.example")),

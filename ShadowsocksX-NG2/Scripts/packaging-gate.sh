@@ -1,5 +1,5 @@
 #!/bin/sh
-# Packaging gate for ShadowsocksX-NG2 (spec #21 D1/D6/D10, issue #24).
+# Packaging gate for ShadowsocksX-NG2.
 #
 # Standalone assertion over a built app bundle; exits nonzero on any failure:
 #   1. Nested code signatures pass strict verification (incl. every helper).

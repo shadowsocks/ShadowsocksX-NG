@@ -2,7 +2,7 @@ import XCTest
 
 @testable import ShadowsocksX_NG2
 
-/// 文件事实收集（issue #34）：只读存在性/权限/大小/时间，永不读内容。
+/// 文件事实收集：只读存在性/权限/大小/时间，永不读内容。
 final class DiagnosticFileCollectorTests: XCTestCase {
   private var directory: URL!
 

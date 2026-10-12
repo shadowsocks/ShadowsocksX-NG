@@ -1,6 +1,6 @@
 import Foundation
 
-/// GUI 与特权系统代理 helper 的共享 XPC 契约（issue #71）。类型同时编入 GUI、
+/// GUI 与特权系统代理 helper 的共享 XPC 契约。类型同时编入 GUI、
 /// helper 与测试 target；payload 以 JSON 编码保持 closed typed 语义。
 @objc protocol SystemProxyHelperControlling {
   /// 应用 closed typed 配置到活动网络位置的每个服务。
@@ -11,7 +11,7 @@ import Foundation
 
 /// helper 的固定身份：MachService 名、LaunchDaemon plist 名与客户端校验基准。
 /// 客户端只按 2.0 的 bundle identifier（代码签名 identifier）接受，不限
-/// Team ID 或账号（issue #71）。
+/// Team ID 或账号。
 enum SystemProxyHelperIdentity {
   static let machServiceName = "com.qiuyuzhou.ShadowsocksX-NG2.systemproxy"
   static let plistName = "com.qiuyuzhou.ShadowsocksX-NG2.systemproxy.plist"

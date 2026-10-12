@@ -2,7 +2,7 @@ import XCTest
 
 @testable import ShadowsocksX_NG2
 
-/// 目录政策 seam 的 interface 测试（issue #41）：删除确认档位、
+/// 目录政策 seam 的 interface 测试：删除确认档位、
 /// 拖放/移动资格、激活资格与激活命令经假 adapter 的目标传递。只观察结构化
 /// fact 与 typed command outcome，不锁定 SwiftUI。
 @MainActor

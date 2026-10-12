@@ -2,7 +2,7 @@ import XCTest
 
 @testable import ShadowsocksX_NG2
 
-/// helper XPC 契约测试（issue #71）：typed payload 往返、引擎应答编码与
+/// helper XPC 契约测试：typed payload 往返、引擎应答编码与
 /// 串行 last-writer 语义，全部用确定性替身，不触真实 XPC 与 SystemConfiguration。
 final class SystemProxyHelperContractTests: XCTestCase {
   private let configuration = SystemProxyConfiguration(
@@ -80,7 +80,7 @@ final class SystemProxyHelperContractTests: XCTestCase {
     }
   }
 
-  /// 串行 last-writer（issue #71 AC34）：注入的假写入器在共享串行队列上按
+  /// 串行 last-writer：注入的假写入器在共享串行队列上按
   /// 接受顺序执行，最后接受的请求决定最终结果。
   func testEngineProcessesRequestsSeriallyWithLastWriterWins() async throws {
     let recorder = LockedArray<String>()

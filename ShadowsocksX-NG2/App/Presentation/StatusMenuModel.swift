@@ -1,6 +1,6 @@
 import Foundation
 
-/// 状态菜单的呈现模型（spec #21 D11，issue #31/#47/#60）：从代理控制工作流
+/// 状态菜单的呈现模型：从代理控制工作流
 /// 的整体 snapshot 派生菜单数据。agent 与系统代理是两个独立状态面；不持有
 /// AppKit 类型，纯逻辑可测；视觉与交互细节（勾选标记、禁用态）在
 /// ProxyStatusMenu 呈现，不建自动测试。
@@ -30,7 +30,7 @@ enum StatusMenuModel {
   }
 
   /// 运行状态 → 摘要映射（与主窗口诊断区口径一致）：输入是代理控制工作流
-  /// 的整体 snapshot（issue #47/#60），菜单不再拆装控制器或运行时字段。
+  /// 的整体 snapshot，菜单不再拆装控制器或运行时字段。
   static func summary(from snapshot: ProxyControlSnapshot) -> Summary {
     let agentDetail =
       snapshot.runtime.failure.map { AppPresentation.message(for: $0) }
@@ -52,7 +52,7 @@ enum StatusMenuModel {
       targetPath: snapshot.activeTarget?.pathSummary)
   }
 
-  /// 模式标签（issue #67 AC2）：规则模式带上子选项。
+  /// 模式标签：规则模式带上子选项。
   private static func modeLabel(for snapshot: ProxyControlSnapshot) -> String {
     let mode = snapshot.proxyMode
     if mode == .rule {

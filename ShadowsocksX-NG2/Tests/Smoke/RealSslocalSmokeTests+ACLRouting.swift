@@ -47,7 +47,7 @@ final class RealSslocalACLRoutingSmokeTests: RealSslocalSmokeTests {
       RuntimeFileStore(fileURL: contractURL).readRuntimeReceipt(), "停止后应清除运行回执")
   }
 
-  /// 全局模式 ACL 路由（issue #62）：proxy_all + 固定本地绕过。本地目标经
+  /// 全局模式 ACL 路由：proxy_all + 固定本地绕过。本地目标经
   /// SOCKS/HTTP 直连（不触 SS 出口），公网目标默认走代理（SS 出口被连接）。
   /// 两个入站共用同一 ACL；IPv6 系统例外的局限由 ACL 路由兜底（见 ADR）。
   func testGlobalACLRoutesLocalDirectAndPublicThroughProxyOnSOCKSAndHTTP() throws {
@@ -96,7 +96,7 @@ final class RealSslocalACLRoutingSmokeTests: RealSslocalSmokeTests {
       "停止后应清除运行回执")
   }
 
-  /// 规则模式 ACL 路由（issue #63）：「未匹配时代理」→ proxy_all + 中国域名
+  /// 规则模式 ACL 路由：「未匹配时代理」→ proxy_all + 中国域名
   /// 直连候选。`.cn` 目标经本地 DNS 解析到 echo；非中国公网目标默认走代理。
   /// 专用规则探针去除回环绕过，固定本地绕过由全局模式用例覆盖。
   func testRuleProxyDefaultACLRoutesChinaDirectAndRestThroughProxy() throws {
@@ -137,7 +137,7 @@ final class RealSslocalACLRoutingSmokeTests: RealSslocalSmokeTests {
     stopWrapperAndAssertCleanExit(wrapper, description: "rule wrapper exits")
   }
 
-  /// 规则模式 ACL 路由（issue #64）：中国 IPv4 CIDR 直连候选。命中 CIDR 的
+  /// 规则模式 ACL 路由：中国 IPv4 CIDR 直连候选。命中 CIDR 的
   /// 目标不触达 SS 出口；未命中 CIDR 的公网目标默认走代理；SOCKS 与 HTTP
   /// 入站共用同一 ACL。CIDR 判定可能触发本地 DNS 查询（文档已声明）。
   func testRuleProxyDefaultACLRoutesChinaCIDRHitDirectAndMissThroughProxy() throws {
@@ -173,7 +173,7 @@ final class RealSslocalACLRoutingSmokeTests: RealSslocalSmokeTests {
     stopWrapperAndAssertCleanExit(wrapper, description: "cidr rule wrapper exits")
   }
 
-  /// issue #64 冒烟夹具：`.cn` 域名 + 测试用 `127.0.0.1/32` CIDR 直连候选
+  /// 冒烟夹具：`.cn` 域名 + 测试用 `127.0.0.1/32` CIDR 直连候选
   /// （仅验证命中/未命中路由，不代表真实中国 IP 归属）。
   private func chinaCIDRSmokeRules() throws -> [ProxyRule] {
     return [
@@ -299,7 +299,7 @@ extension RealSslocalSmokeTests {
       "SOCKS 与 HTTP 对公网目标遵循同一 ACL 路由")
   }
 
-  /// 主机名固定绕过与 IPv6 回环（AC2/AC5）：本地 DNS 将主机名解析到 echo，
+  /// 主机名固定绕过与 IPv6 回环：本地 DNS 将主机名解析到 echo，
   /// 成功回显证明直连完成；IPv6 回环无监听时验证失败应答且不触达 SS。
   func assertHostnameAndIPv6Bypass(
     listen: SslocalListenSettings, echoPort: Int, fakeSS: ConnectionCountingServer

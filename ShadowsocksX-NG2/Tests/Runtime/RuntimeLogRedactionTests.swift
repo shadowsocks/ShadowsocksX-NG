@@ -2,7 +2,7 @@ import XCTest
 
 @testable import ShadowsocksX_NG2
 
-/// 日志脱敏基线（spec #21 D5）：封闭事件枚举由构造保证不携带敏感值；脱敏
+/// 日志脱敏基线：封闭事件枚举由构造保证不携带敏感值；脱敏
 /// 工具按敏感信息定义收敛 URL 与运行时文档摘要。
 final class RuntimeLogRedactionTests: XCTestCase {
   /// 投毒夹具：敏感值埋进文档各字段，任何一条日志事件都不得带出。

@@ -1,6 +1,6 @@
 import Foundation
 
-/// 目录政策查询与激活命令（issue #41）：删除确认档位、拖放资格
+/// 目录政策查询与激活命令：删除确认档位、拖放资格
 /// 与激活资格/命令的唯一 UI-facing 出口。视图不得重推 ownership、删除确认或
 /// ADR-0001 激活预检；领域拒绝仍是不变量防线。
 extension CatalogWorkflow {

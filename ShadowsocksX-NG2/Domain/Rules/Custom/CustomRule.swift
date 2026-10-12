@@ -2,8 +2,8 @@ import Foundation
 
 // MARK: - 自定义规则
 
-/// 自定义规则（issue #66）：动作 + 匹配条件 + 来源元数据 + 稳定身份。
-/// 为后续管理 UI 提供持久入口；本票不实现完整编辑、排序和删除界面。
+/// 自定义规则：动作 + 匹配条件 + 来源元数据 + 稳定身份。
+/// 为管理 UI 提供持久入口；此类型不实现完整编辑、排序和删除界面。
 /// 有效的完整域名、后缀及 CIDR 规则参与两种规则子模式的 ACL 合并。
 struct CustomRule: Codable, Equatable, Hashable, Sendable, Identifiable {
   let id: UUID
@@ -41,7 +41,7 @@ struct CustomRule: Codable, Equatable, Hashable, Sendable, Identifiable {
 
 // MARK: - 持久化集合
 
-/// 自定义规则持久化文档（issue #66）：schema 版本 + 规则数组。
+/// 自定义规则持久化文档：schema 版本 + 规则数组。
 struct CustomRuleDocument: Codable, Equatable, Sendable {
   static let currentSchemaVersion = 2
   let schemaVersion: Int
@@ -93,7 +93,7 @@ enum CustomRuleStoreError: Error, Equatable, Sendable {
 
 // MARK: - 诊断摘要
 
-/// 自定义规则的安全诊断摘要（issue #66 AC5）：只含数量与内容版本，
+/// 自定义规则的安全诊断摘要：只含数量与内容版本，
 /// 不导出原始自定义域名或来源内容。
 struct CustomRuleSummary: Equatable, Sendable {
   /// 规则条数。

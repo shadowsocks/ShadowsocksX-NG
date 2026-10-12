@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Explicit maintainer update for the built-in china-operator-ip IPv4 CIDR rule
-# snapshot (issue #64). Normal builds never run this script — they only read the
+# snapshot. Normal builds never run this script — they only read the
 # local pinned snapshot. On any failure the previous valid snapshot is kept.
 set -euo pipefail
 

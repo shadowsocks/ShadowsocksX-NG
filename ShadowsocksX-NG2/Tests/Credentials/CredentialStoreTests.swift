@@ -2,7 +2,7 @@ import XCTest
 
 @testable import ShadowsocksX_NG2
 
-/// 凭据存储缝：Keychain 写入/读出一致（票 #25 验收项）。
+/// 凭据存储缝：Keychain 写入/读出一致。
 final class KeychainCredentialStoreTests: XCTestCase {
   private var store: KeychainCredentialStore!
 

@@ -18,7 +18,7 @@ func waitUntil(
   XCTAssertTrue(condition(), file: file, line: line)
 }
 
-/// 设置工作流测试的写入缝替身（issue #44）：记录提交调用，可注入失败；
+/// 设置工作流测试的写入缝替身：记录提交调用，可注入失败；
 /// 不触碰真实偏好文件、钥匙串或运行时。
 @MainActor
 final class FakeSettingsCommitter: SettingsCommitting {

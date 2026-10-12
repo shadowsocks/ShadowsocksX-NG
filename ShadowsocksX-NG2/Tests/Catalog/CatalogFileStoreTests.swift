@@ -2,8 +2,7 @@ import XCTest
 
 @testable import ShadowsocksX_NG2
 
-/// 持久化缝：往返无损、文件缺失/损坏行为明确、权限基线、不含明文秘密
-/// （票 #25 验收项）。
+/// 持久化缝：往返无损、文件缺失/损坏行为明确、权限基线、不含明文秘密。
 final class CatalogFileStoreTests: XCTestCase {
   private var workDir: URL!
   var store: CatalogFileStore!
@@ -118,7 +117,7 @@ final class CatalogFileStoreTests: XCTestCase {
     return catalog
   }
 
-  // MARK: 订阅记录文档（v2，issue #35）
+  // MARK: 订阅记录文档（v2）
 
   func testSubscriptionRecordRoundTripsWithStatus() throws {
     let catalog = try CatalogFixtures.makeSubscriptionFixture(prefix: "sub2").catalog

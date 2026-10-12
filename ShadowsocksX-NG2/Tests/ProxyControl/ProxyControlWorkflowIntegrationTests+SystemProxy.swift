@@ -17,7 +17,7 @@ extension ProxyControlWorkflowIntegrationTests {
     XCTAssertEqual(systemProxy.clearCount, 0)
   }
 
-  // MARK: - 系统代理开关（issue #60）
+  // MARK: - 系统代理开关
 
   func testSystemProxyIntentAppliesThroughSnapshot() async throws {
     let server = try makeSeededCatalog()
@@ -97,7 +97,7 @@ extension ProxyControlWorkflowIntegrationTests {
     XCTAssertNil(snapshot.activeTarget)
   }
 
-  /// 待应用意图在目标激活后自动收敛（issue #60）。目录命令后的 snapshot 更新
+  /// 待应用意图在目标激活后自动收敛。目录命令后的 snapshot 更新
   /// 经主队列 hop 到达，有界等待收敛。
   func testPendingSystemProxyIntentConvergesAfterTargetActivation() async throws {
     let server = try makeSeededCatalog()

@@ -70,7 +70,7 @@ struct RuntimeListenFacts: Equatable, Sendable {
   var bindAddress: String { listenerMode.bindAddress }
 }
 
-/// 监听指纹（spec #21 D5/D7）：服务器列表变化可热重载；任一本地入站、
+/// 监听指纹：服务器列表变化可热重载；任一本地入站、
 /// ACL 内容/路径/摘要变化都必须由 wrapper 完整重启 sslocal。
 struct SslocalListenFingerprint: Equatable, Sendable {
   let locals: [SslocalLocalDocument]

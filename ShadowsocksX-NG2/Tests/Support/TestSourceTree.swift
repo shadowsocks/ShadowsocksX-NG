@@ -6,7 +6,7 @@ import Foundation
 /// 这里定位：从该文件所在目录沿父目录上溯，返回含 `project.yml` 的目录，即
 /// `ShadowsocksX-NG2/`。
 ///
-/// 刻意不写死 `deletingLastPathComponent()` 的层数：那等于把「测试文件在
+/// 刻意不写死 `deletingLastPathComponent` 的层数：那等于把「测试文件在
 /// `Tests/` 根层」编进代码，文件移进子目录后会静默指错；而测试文件处于不同
 /// 深度时（`Tests/Agent/` 与 `Tests/Rules/Custom/`）也无法共用一个层数。
 enum TestSourceTree {

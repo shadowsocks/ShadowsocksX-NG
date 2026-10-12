@@ -1,7 +1,7 @@
 import Combine
 import Foundation
 
-/// 生产运行时 adapter（issue #47）：现有 `ProxyRuntimeController` 与其系统代理
+/// 生产运行时 adapter：现有 `ProxyRuntimeController` 与其系统代理
 /// 观察机（`SystemProxyObserver`，ADR-0022 策略机）的唯一包装，由应用组合根
 /// 接线。只把既有能力与观察投影到 workflow 缝上，不复制状态机、generation、
 /// 健康门禁与系统代理生命周期语义。
@@ -88,7 +88,7 @@ final class ControllerProxyRuntimeAdapter: ProxyRuntimeAdapting {
 }
 
 /// HTTP 导出能力的唯一派生点：监听设置 → 可复制的 http/https 双导出行。
-/// 此导出行始终指向回环地址（与首页完整命令的命令地址选择无关，issue #72）。
+/// 此导出行始终指向回环地址（与首页完整命令的命令地址选择无关）。
 extension HTTPExportCapability {
   init(listen: SslocalListenSettings) {
     let urlHost = listen.proxyLoopbackURLHost
@@ -97,7 +97,7 @@ extension HTTPExportCapability {
   }
 }
 
-/// 终端代理环境变量命令的唯一派生点（issue #72）：已保存监听事实 + 生效
+/// 终端代理环境变量命令的唯一派生点：已保存监听事实 + 生效
 /// 命令地址 → 两种 shell 的可复制命令。HTTP/HTTPS 用已保存 HTTP 端口，
 /// SOCKS 用已保存 SOCKS 端口；变量集合、小写变量名、单引号转义、socks5
 /// 协议与 no_proxy 内容保持不变；IPv6 URL 使用方括号。
@@ -135,7 +135,7 @@ extension SslocalListenSettings {
   }
 }
 
-/// 目录侧唯一的目标事实出口（窄缝，story 28）：存在性 + 显示名路径摘要；
+/// 目录侧唯一的目标事实出口（窄缝）：存在性 + 显示名路径摘要；
 /// 完整目录树、订阅对象与凭据不出此接口。
 extension CatalogWorkflow: ProxyTargetFactsReading {
   func activeTargetFacts(for targetID: NodeID?) -> ProxyActiveTargetFacts? {

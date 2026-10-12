@@ -1,7 +1,7 @@
 import Foundation
 
-/// 服务器叶子字段（spec #21 D3）。密码与插件参数只持凭据引用，秘密值在
-/// Keychain；插件程序引用原样保留，本票不做受管集合校验（激活语义 #26）。
+/// 服务器叶子字段。密码与插件参数只持凭据引用，秘密值在
+/// Keychain；插件程序引用原样保留，是否可用由激活校验判定。
 struct ServerFields: Codable, Equatable, Sendable {
   var address: String
   var port: Int

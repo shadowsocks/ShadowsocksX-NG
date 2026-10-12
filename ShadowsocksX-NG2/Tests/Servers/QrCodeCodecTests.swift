@@ -2,7 +2,7 @@ import XCTest
 
 @testable import ShadowsocksX_NG2
 
-/// 二维码分享/识别互逆（issue #32 验收：分享与添加互逆）。
+/// 二维码分享/识别互逆（验收：分享与添加互逆）。
 final class QrCodeCodecTests: XCTestCase {
   func testGenerateThenDetectRoundTrip() throws {
     let payload = "ss://YWVzLTI1Ni1nY206cGFzc3dvcmQxMjM@203.0.113.7:8388#香港 01"

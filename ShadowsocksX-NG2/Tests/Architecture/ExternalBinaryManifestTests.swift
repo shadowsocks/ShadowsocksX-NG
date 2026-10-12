@@ -80,7 +80,7 @@ final class ExternalBinaryManifestTests: XCTestCase {
       "357476695ec06498cdc38f3a9efd5b99e4d601db4807661117bf3bae917286ae")
     XCTAssertEqual(manifest.archiveMember, "v2ray-plugin_darwin_arm64")
     XCTAssertEqual(manifest.bundleSubpath, "Helpers/Plugins")
-    // SIP003 插件的签名 identifier 形如 <bundle-id>.plugin.<name>（D10）。
+    // SIP003 插件的签名 identifier 形如 <bundle-id>.plugin.<name>。
     XCTAssertEqual(manifest.signIdentifier, Self.bundleID + ".plugin.v2ray-plugin")
   }
   func testCloakClientManifestPinned() throws {

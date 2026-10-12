@@ -1,7 +1,7 @@
 import Foundation
 
 /// App Support 目录全部文件的路径清单：GUI 配置与跨进程运行时契约共用同一
-/// 目录。运行时契约子集（spec #21 D5，issue #27）是 GUI 写、wrapper 读的固定
+/// 目录。运行时契约子集是 GUI 写、wrapper 读的固定
 /// 位置；GUI 配置文件 wrapper 不经手。目录 0700、文件 0600，由写入方与
 /// wrapper 共同维护。
 enum RuntimePaths {
@@ -35,14 +35,14 @@ enum RuntimePaths {
     runtimeDirectory().appendingPathComponent("agent-runtime-status.json")
   }
 
-  /// wrapper 与 sslocal 的收敛日志（stderr 重定向目标）；滚动与诊断导出由 #33
-  /// 完善。不属于「运行时文件」，显式停止时不删除。
+  /// wrapper 与 sslocal 的收敛日志（stderr 重定向目标）。不支持滚动或诊断导出；
+  /// 不属于「运行时文件」，显式停止时不删除。
   static func agentLogURL() -> URL {
     runtimeDirectory().appendingPathComponent("agent.log")
   }
 
   // 旧版端点签名/所有权文件（system-proxy-endpoint-signature.json、
-  // system-proxy-ownership.json）按 issue #71 就地遗留：不读取、不迁移、
+  // system-proxy-ownership.json）就地遗留：不读取、不迁移、
   // 不删除。
 
   // MARK: - GUI 配置文件（GUI 私有读写，wrapper 不经手）
@@ -52,7 +52,7 @@ enum RuntimePaths {
     runtimeDirectory().appendingPathComponent("catalog.json")
   }
 
-  /// 代理偏好（ProxySettingsFileStore，#33）。
+  /// 代理偏好（ProxySettingsFileStore）。
   static func settingsFileURL() -> URL {
     runtimeDirectory().appendingPathComponent("settings.json")
   }
@@ -63,12 +63,12 @@ enum RuntimePaths {
     runtimeDirectory().appendingPathComponent("listen-settings.json")
   }
 
-  /// 自定义规则文档（CustomRuleStore，issue #66）。
+  /// 自定义规则文档（CustomRuleStore）。
   static func customRulesFileURL() -> URL {
     runtimeDirectory().appendingPathComponent("custom-rules.json")
   }
 
-  /// 活动目标（ActivationStateFileStore，spec #21 D3/D5）。
+  /// 活动目标（ActivationStateFileStore）。
   static func activationStateFileURL() -> URL {
     runtimeDirectory().appendingPathComponent("activation.json")
   }

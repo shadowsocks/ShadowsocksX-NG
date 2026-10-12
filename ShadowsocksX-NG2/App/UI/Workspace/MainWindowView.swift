@@ -174,7 +174,7 @@ extension WorkspaceDestination {
 
 // MARK: - 首页 destination 包装壳
 
-/// 首页 destination 的包装视图：承载共享错误弹窗挂载（票 #53/#54），行为
+/// 首页 destination 的包装视图：承载共享错误弹窗挂载，行为
 /// 委托给 HomeView。旧版导入的主动弹窗已移除（docs/design/unified-server-
 /// import.md），发现状态仅供统一导入面板的 Legacy 入口显隐。
 private struct WorkspaceHomeView: View {

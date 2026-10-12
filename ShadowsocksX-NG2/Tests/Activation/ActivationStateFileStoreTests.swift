@@ -2,7 +2,7 @@ import XCTest
 
 @testable import ShadowsocksX_NG2
 
-/// 活动目标持久化缝（票 #26）：往返无损、缺失/损坏按安全侧恢复、权限基线。
+/// 活动目标持久化缝：往返无损、缺失/损坏按安全侧恢复、权限基线。
 final class ActivationStateFileStoreTests: XCTestCase {
   private var workDir: URL!
   private var store: ActivationStateFileStore!
@@ -87,7 +87,7 @@ final class ActivationStateFileStoreTests: XCTestCase {
     _ = try ActivationFixture.activate(&machine, leaf, in: catalog, credentials: credentials)
     try store.save(activeTargetID: machine.activeTargetID)
 
-    // 下次启动：从文件恢复目标，载入目录后立即重校验（D5「重新校验同步」）。
+    // 下次启动：从文件恢复目标，载入目录后立即重校验（「重新校验同步」）。
     var restored = ActivationStateMachine(activeTargetID: try store.loadActiveTargetID())
     let configuration = try ActivationFixture.requireDeployed(
       ActivationFixture.commit(&restored, catalog, credentials: credentials))

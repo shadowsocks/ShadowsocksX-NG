@@ -76,7 +76,7 @@ func redirectStandardStreams(to logURL: URL) {
   if fileManager.fileExists(atPath: logURL.path) {
     let attributes = try? fileManager.attributesOfItem(atPath: logURL.path)
     if let size = attributes?[.size] as? UInt64, size > 1_048_576 {
-      // 启动时超限即截断；滚动与诊断导出由 #33 完善。
+      // 启动时超限即截断；当前不滚动或导出诊断日志。
       try? fileManager.removeItem(at: logURL)
     }
   }

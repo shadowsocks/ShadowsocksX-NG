@@ -1,6 +1,6 @@
 import Foundation
 
-/// GUI 侧运行事件环形缓冲（spec #21 D5，issue #34）：收集 `RuntimeLog.emit`
+/// GUI 侧运行事件环形缓冲：收集 `RuntimeLog.emit`
 /// 的事件供主窗口日志查看器实时呈现与诊断导出取用。事件文本来自封闭枚举的
 /// 渲染，构造上不含敏感值；容量封顶只留最近事件（够诊断即可，不做复杂轮转）。
 /// wrapper 进程不使用本存储（其 stderr 已收敛进 agent.log）。
@@ -20,8 +20,7 @@ final class RuntimeEventStore: RuntimeEventSink, @unchecked Sendable {
       renderedLine(eventText: text)
     }
 
-    /// 指定事件文本的行格式（报告侧经白名单清洗后复用同一时间戳与间隔，
-    /// issue #43）。
+    /// 指定事件文本的行格式；报告侧先经白名单清洗，再复用相同时间戳与间隔。
     func renderedLine(eventText: String) -> String {
       "\(Self.timestampFormatter.string(from: timestamp))  \(eventText)"
     }

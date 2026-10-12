@@ -2,7 +2,7 @@ import XCTest
 
 @testable import ShadowsocksX_NG2
 
-/// 首页命令地址选择器 contract（issue #72）。候选派生：四种监听方式的地址族
+/// 首页命令地址选择器 contract。候选派生：四种监听方式的地址族
 /// 过滤与默认值、严格接口类型过滤、名称回退、排序合并与网络变化刷新。选择
 /// 生命周期与命令生成见 `ProxyCommandAddressLifecycleTests`。复用
 /// ProxyControlWorkflowTests 的可编程替身。
@@ -175,7 +175,7 @@ final class ProxyCommandAddressWorkflowTests: XCTestCase {
   }
 }
 
-/// 选择生命周期与命令生成（issue #72）：两种 shell 共用选中地址（端口取已
+/// 选择生命周期与命令生成：两种 shell 共用选中地址（端口取已
 /// 保存值、IPv6 方括号、no_proxy 不变）、会话保留与新会话重置、失效回退
 /// （地址消失/监听方式切换/复制前刷新/枚举失败）与命令边界。
 @MainActor

@@ -1,17 +1,17 @@
 import Foundation
 
-/// 订阅生命周期（spec #21 D4，issue #35/#41）：粘贴 HTTPS URL 创建、单个/全部
+/// 订阅生命周期：粘贴 HTTPS URL 创建、单个/全部
 /// 立即更新、编辑 URL（保留身份）、删除（递归清除）。刷新 = 完整获取、解析、
 /// 校验后同文档原子提交快照与刷新状态；任何失败保留最后成功快照、活动目标与
-/// 运行状态，仅标记来源失败（story 27/28）。每次提交都经目录提交协调器异步
-/// 触发运行时收敛（issue #40；订阅子树变更 → 活动目标原子跟随或清除停止）。
+/// 运行状态，仅标记来源失败。每次提交都经目录提交协调器异步
+/// 触发运行时收敛（订阅子树变更 → 活动目标原子跟随或清除停止）。
 extension CatalogWorkflow {
   /// 当前会话中最近一次失败的完整结果；不会把凭据引用暴露到 durable catalog。
   func subscriptionRefreshFailure(for id: NodeID) -> SubscriptionRefreshFailureResult? {
     subscriptionRefreshFailures[id]
   }
 
-  /// 创建订阅（story 24）：校验 HTTPS URL → 落订阅记录与空固定分组 → 立即
+  /// 创建订阅：校验 HTTPS URL → 落订阅记录与空固定分组 → 立即
   /// 首次刷新。首次刷新失败留空分组加错误态（状态在刷新内标记，创建本身总是
   /// 成功）。返回订阅 summary（状态在首次刷新中落定）。
   @discardableResult
@@ -41,7 +41,7 @@ extension CatalogWorkflow {
         host: url.host ?? "", status: .never, serverCount: 0)
   }
 
-  /// 立即更新单个订阅（story 26/27）。不抛错：失败标记到订阅状态（无静默，
+  /// 立即更新单个订阅。不抛错：失败标记到订阅状态（无静默，
   /// 有结构化状态可呈现）。同一订阅不重入：进行中的刷新期间重复触发直接跳过。
   func refreshSubscription(_ id: NodeID) async {
     guard !refreshingSubscriptionIDs.contains(id),
@@ -70,7 +70,7 @@ extension CatalogWorkflow {
     }
   }
 
-  /// 编辑订阅 URL（story 25）：同一凭据引用覆盖写，订阅/固定分组/远端身份
+  /// 编辑订阅 URL：同一凭据引用覆盖写，订阅/固定分组/远端身份
   /// 命名空间全部保留；最后成功快照保留到新 URL 刷新成功，随后立即刷新。
   func editSubscriptionURL(_ id: NodeID, urlString: String) async throws {
     guard let record = subscriptionRecord(withID: id) else {
@@ -83,7 +83,7 @@ extension CatalogWorkflow {
     await refreshSubscription(record.id)
   }
 
-  /// 删除订阅（story 30）：递归清除订阅源、固定分组与远端成员并清理凭据；
+  /// 删除订阅：递归清除订阅源、固定分组与远端成员并清理凭据；
   /// 活动目标的清除与代理停止由 postCommit 的既有激活语义处理（无静默回退）。
   /// 返回被删身份集合供 UI 清除失效选择。
   func removeSubscription(_ id: NodeID) async throws -> RemovalOutcome {
@@ -101,7 +101,7 @@ extension CatalogWorkflow {
     return RemovalOutcome(removedNodeIDs: Set(removedEntries.map(\.id)))
   }
 
-  /// 编辑面预填用：读取订阅 URL 明文（story 11——仅用户显式编辑动作触发）。
+  /// 编辑面预填用：读取订阅 URL 明文（仅用户显式编辑动作触发）。
   func subscriptionURL(for id: NodeID) throws -> String {
     guard let record = subscriptionRecord(withID: id) else {
       throw SubscriptionFormError.notFound
@@ -141,7 +141,7 @@ extension CatalogWorkflow {
       try commitSubscriptionDocument { catalog, subscriptions in
         let now = Date()
         // 凭据引用按节点身份复用：延续节点覆盖写秘密，不新增孤儿引用；
-        // journal 保证快照提交失败时恢复旧秘密（story 29）。
+        // journal 保证快照提交失败时恢复旧秘密。
         var reusedRefs: [NodeID: ServerCredentialRefs] = [:]
         for entry in (try? catalog.subscriptionSubtree(of: summary.groupID)) ?? [] {
           if case .server(let fields) = entry.kind {
@@ -169,7 +169,7 @@ extension CatalogWorkflow {
         }
       }
     } catch {
-      // story 29：尽力恢复旧秘密；完整 outcome 只随 transient error 留在
+      // 尽力恢复旧秘密；完整 outcome 只随 transient error 留在
       // 内存，durable status 只会保存粗粒度 rollback 状态。
       let rollback = credentialJournal.rollback()
       if error is CancellationError { throw error }

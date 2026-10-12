@@ -35,7 +35,7 @@ extension CatalogWorkflowTests {
           address: "0.0.0.0", port: 1, encryptionMethod: "x", password: "p",
           remark: "", plugin: .none, pluginOptions: nil))
     }
-    // 手动节点移进订阅子树同样被拒（跨来源，story 15）。
+    // 手动节点移进订阅子树同样被拒（跨来源）。
     await expectThrowsAsync { try await workflow.move(manualGroupID, to: fixture.groupID) }
     // 分组移动进自身子树被拒（成环）。
     let nestedID = try await workflow.createGroup(named: "嵌套", into: manualGroupID)

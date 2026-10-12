@@ -38,7 +38,7 @@ final class ProxyModeAvailabilityTests: XCTestCase {
     XCTAssertEqual(configuration.http, .init(host: "::1", port: listen.httpPort))
   }
 
-  /// 全局模式（issue #62）：系统 SOCKS/HTTP 投影 + 固定本地例外，与直连共用
+  /// 全局模式：系统 SOCKS/HTTP 投影 + 固定本地例外，与直连共用
   /// 同一安全范围；公网路由由 ACL 决定，不由系统例外决定。
   func testGlobalModeUsesLocalSOCKSAndIncludesFixedBypasses() throws {
     let document = SslocalRuntimeDocument(servers: [], listen: SslocalListenSettings())

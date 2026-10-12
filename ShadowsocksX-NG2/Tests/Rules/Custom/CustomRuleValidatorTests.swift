@@ -3,7 +3,7 @@ import XCTest
 
 @testable import ShadowsocksX_NG2
 
-/// 自定义规则校验（issue #66 AC2）：固定本地冲突、ACL 优先级说明与重复拒绝，
+/// 自定义规则校验：固定本地冲突、ACL 优先级说明与重复拒绝，
 /// 并返回可解释原因。
 final class CustomRuleValidatorTests: XCTestCase {
 

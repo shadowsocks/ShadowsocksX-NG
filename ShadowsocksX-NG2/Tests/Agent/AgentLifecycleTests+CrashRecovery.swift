@@ -4,7 +4,7 @@ import XCTest
 @testable import ShadowsocksX_NG2
 
 extension AgentLifecycleChangeProtocolTests {
-  // MARK: 崩溃恢复（D2）
+  // MARK: 崩溃恢复
 
   func testSslocalCrashExitsNonZeroForKeepAliveReplay() throws {
     try writeContract(ProxyRuntimeFixture.makeDocument())

@@ -2,7 +2,7 @@ import XCTest
 
 @testable import ShadowsocksX_NG2
 
-/// 诊断工作流测试共享夹具（issue #43）：runtime 事实替身、投毒事件集、聚合
+/// 诊断工作流测试共享夹具：runtime 事实替身、投毒事件集、聚合
 /// 目录事实与 workflow 构造（事实源全部注入，时钟固定，轮询 10ms）。
 @MainActor
 class DiagnosticsWorkflowTestCase: XCTestCase {
@@ -133,7 +133,7 @@ class DiagnosticsWorkflowTestCase: XCTestCase {
       event: .agentRegisterFailed(detail: "SECRET-AGENT-DETAIL"), timestamp: stamp)
     events.append(
       event: .listenSettingsUnreadable(detail: "SECRET-UNREADABLE-DETAIL"), timestamp: stamp)
-    // 激活原因是领域点名文案（显式白名单决策，story 14）：可在场，但只允许
+    // 激活原因是领域点名文案（显式白名单决策）：可在场，但只允许
     // 这类固定文本。
     events.append(
       event: .activationFailed(reason: "激活目标 leaf-9 的插件 simple-obfs 未随 app 提供"),

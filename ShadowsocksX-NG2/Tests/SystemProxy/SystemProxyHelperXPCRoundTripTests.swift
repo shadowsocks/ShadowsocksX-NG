@@ -4,7 +4,7 @@ import XCTest
 
 @testable import ShadowsocksX_NG2
 
-/// 真实 XPC 装配层的契约 round-trip（issue #71）：匿名监听器挂真实 listener
+/// 真实 XPC 装配层的契约 round-trip：匿名监听器挂真实 listener
 /// delegate（注入假特权写入器，不触真实系统设置）+ listenerEndpoint 连接，覆盖
 /// fakes 与纯逻辑单测覆盖不到的层：NSXPCInterface 方法签名、客户端签名
 /// identifier 校验、Data payload 传输与 XPC 内部队列应答路径。去宿主化

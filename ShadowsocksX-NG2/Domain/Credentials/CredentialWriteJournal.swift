@@ -13,8 +13,7 @@ enum CredentialRollbackOutcome: Equatable, Sendable {
 }
 
 /// 凭据写入日志：目录文件只有在全部凭据写入成功后才替换；如果任何凭据或
-/// 目录写入失败，则恢复改动前的每个引用值，避免旧秘密被覆盖或丢失
-/// （story 13/29）。
+/// 目录写入失败，则恢复改动前的每个引用值，避免旧秘密被覆盖或丢失。
 ///
 /// 回滚是 best-effort：单个引用恢复失败不中断其余引用，残局经
 /// `CredentialRollbackOutcome` 报出。写入期 `delete` 同样尽力而为——删除

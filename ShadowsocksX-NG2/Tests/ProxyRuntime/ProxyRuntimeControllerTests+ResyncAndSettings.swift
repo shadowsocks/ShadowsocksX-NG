@@ -8,7 +8,7 @@ final class ProxyRuntimeResyncAndSettingsTests: ProxyRuntimeControllerTests {
     BuiltinRuleSnapshots(loader: ProxyRuntimeFixture.controlFlowRuleSnapshot)
   }
 
-  // MARK: GUI 重启重同步（D5）
+  // MARK: GUI 重启重同步
 
   func testResyncWithRegisteredAgentAndMatchingContractSkipsRewrite() async throws {
     let seeded = try makeSeededCatalog()

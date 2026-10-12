@@ -1,10 +1,10 @@
 import Darwin
 import Foundation
 
-/// 本地端点健康探测（spec #21 D2/D8）：进程存在不等于代理可用——激活后以
+/// 本地端点健康探测：进程存在不等于代理可用——激活后以
 /// TCP 连接确认 sslocal 实际完成监听绑定。探测只做客户端 connect，不建立
 /// 带复用选项的监听 socket（Legacy 的 reuse-port 残留假成功在此构造上不可
-/// 复现）；失败详情供「启动失败」点名端点与端口（D8）。
+/// 复现）；失败详情供「启动失败」点名端点与端口。
 enum EndpointHealthProbe {
   enum Outcome: Equatable {
     case reachable

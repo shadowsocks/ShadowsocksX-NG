@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""Convert the official Base64 GFWList AutoProxy list into an NG2 rule snapshot
-(issue #65).
+"""Convert the official Base64 GFWList AutoProxy list into an NG2 rule snapshot.
 
 Domain anchors become suffix matches. URL prefixes with an empty or root path and a
 literal domain host become exact matches, discarding the scheme and port.

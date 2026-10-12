@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build-time offline verification of pinned rule snapshots (issue #63/#64).
+# Build-time offline verification of pinned rule snapshots.
 # Ordinary builds never fetch or convert; they only verify the local snapshots
 # are present, intact, and match their manifests. Missing, corrupt, or
 # version-mismatched snapshots fail the build.
@@ -84,11 +84,11 @@ print(f"{name} snapshot ok: {len(rules)} rules, upstream {meta.get('source', {})
 PY
 }
 
-# geolocation-cn: domain rules (issue #63).
+# geolocation-cn: domain rules.
 verify_one "geolocation-cn" 100 200000
-# china-ipv4: China mainland IPv4 CIDR (issue #64).
+# china-ipv4: China mainland IPv4 CIDR.
 verify_one "china-ipv4" 100 50000
-# gfwlist: GFWList AutoProxy proxy candidates (issue #65).
+# gfwlist: GFWList AutoProxy proxy candidates.
 verify_one "gfwlist" 100 50000
 
 echo "verify-rule-snapshots: ok"

@@ -3,7 +3,7 @@ import XCTest
 @testable import ShadowsocksX_NG2
 
 /// 非法操作拒绝：跨来源、身份复用（共享父）、成环、越界与不存在的容器/节点，
-/// 全部带明确原因，且失败不产生任何变更（票 #25 验收项）。
+/// 全部带明确原因，且失败不产生任何变更。
 final class ConfigurationCatalogRejectionTests: XCTestCase {
   func testCrossSourceMoveIsRejected() throws {
     let fixture = try CatalogFixtures.makeSubscriptionFixture()

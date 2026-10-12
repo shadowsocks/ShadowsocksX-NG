@@ -2,7 +2,7 @@ import XCTest
 
 @testable import ShadowsocksX_NG2
 
-/// 纯决策层（spec #21 D2/D5，issue #27）：代理开关、GUI 重同步与目录重展开
+/// 纯决策层：代理开关、GUI 重同步与目录重展开
 /// 共用的计划表。断言的是动作序列——执行次序即协议次序。
 final class ProxyRuntimePlanTests: XCTestCase {
   private let document = ProxyRuntimeFixture.makeDocument()

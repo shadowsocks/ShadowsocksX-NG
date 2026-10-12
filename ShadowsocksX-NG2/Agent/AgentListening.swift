@@ -2,14 +2,14 @@ import Foundation
 
 // MARK: - 监听建立判定
 
-/// 监听判定时限（D10）：sslocal 拉起后 3 秒内应完成本地监听绑定。
+/// 监听判定时限：sslocal 拉起后 3 秒内应完成本地监听绑定。
 let listenEstablishmentDeadline: TimeInterval = 3
 /// 单次探测超时与轮询间隔；正常启动百毫秒级完成，超时路径总耗时不超时限太多。
 let listenProbeTimeout: TimeInterval = 0.25
 let listenProbeInterval: TimeInterval = 0.1
 
 /// sslocal 拉起后阻塞监管线程至多 3 秒轮询契约内的本地端点（运行期失败以
-/// sslocal 信号为准，issue #38）：全部端点就绪即返回；信号（停止/重载/子进程
+/// sslocal 信号为准）：全部端点就绪即返回；信号（停止/重载/子进程
 /// 退出）到达即让位交还监管循环；超时且子进程仍在 → 记 error 日志但继续监管
 /// （GUI 健康门负责呈现，wrapper 不做启停决策）。
 func awaitListenEstablishment(

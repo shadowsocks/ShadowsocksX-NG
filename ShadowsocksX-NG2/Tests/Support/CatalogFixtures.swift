@@ -33,7 +33,7 @@ struct SubscriptionFixture {
   let serverIDs: [NodeID]
 }
 
-/// 目录树测试夹具。订阅子树在本票仅以夹具形态存在（刷新语义 #35）。
+/// 目录树测试夹具。订阅子树在这里仅用于测试刷新语义。
 enum CatalogFixtures {
   /// 订阅节点身份采用「订阅前缀:供应商稳定 ID」作用域限定形式。
   static func makeSubscriptionFixture(prefix: String = "sub1") throws -> SubscriptionFixture {
@@ -104,7 +104,7 @@ func expectThrowsAsync(
   }
 }
 
-// MARK: - 目录工作流测试夹具（issue #49）
+// MARK: - 目录工作流测试夹具
 
 /// 中性激活替身：不关心激活语义的测试场景，激活命令原子拒绝（原因任意）。
 final class RejectingActivator: Activating {
@@ -140,7 +140,7 @@ final class InMemoryLegacyImportMarker: LegacyImportMarkerStoring {
   }
 }
 
-/// 目录工作流测试组装缝（issue #49）：经依赖束显式装配全部 hermetic fake，
+/// 目录工作流测试组装缝：经依赖束显式装配全部 hermetic fake，
 /// 不触碰生产 Keychain、UserDefaults、网络或激活边界。各测试按需覆盖任一
 /// adapter；未指定 Legacy 服务时用「空快照 + 内存标记」的组合（工作流 init
 /// 的发现状态读取仍被观察，但只触替身）。

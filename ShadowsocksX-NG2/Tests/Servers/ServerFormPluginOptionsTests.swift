@@ -3,7 +3,7 @@ import Testing
 
 @testable import ShadowsocksX_NG2
 
-/// 插件参数无损编辑会话（issue #81）：全部经表单草稿模块公开面观察
+/// 插件参数无损编辑会话：全部经表单草稿模块公开面观察
 /// （装载、行编辑、模式切换、拼装串、校验与变更检测），不为内部扫描器
 /// 单独建立测试边界。
 @MainActor

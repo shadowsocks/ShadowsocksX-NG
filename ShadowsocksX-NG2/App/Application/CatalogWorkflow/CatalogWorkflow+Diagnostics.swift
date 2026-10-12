@@ -1,6 +1,6 @@
 import Foundation
 
-/// 诊断事实缝（issue #43，story 32）：目录只向诊断提供 domain-neutral 的
+/// 诊断事实缝：目录只向诊断提供 domain-neutral 的
 /// 聚合事实（数量与已知无效数）。诊断报告模型（DiagnosticSnapshot）不经
 /// 本类型，原始目录与凭据不出 module。
 extension CatalogWorkflow {

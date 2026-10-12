@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// 「复制代理环境变量设置命令」卡：按所选 shell 格式复制 HTTP 与 SOCKS 环境变量。
-/// 非「仅本机」监听方式下先以单选下拉框选择命令地址（issue #72），两种 shell
+/// 非「仅本机」监听方式下先以单选下拉框选择命令地址，两种 shell
 /// 的全部代理端点共用该选择；仅本机方式隐藏下拉框并始终使用回环地址。
 struct TerminalProxyEnvironmentCard: View {
   @ObservedObject var control: ProxyControlWorkflow
@@ -105,7 +105,7 @@ struct TerminalProxyEnvironmentCard: View {
   }
 
   private func copy(_ shell: TerminalCommandShell) {
-    // 复制前刷新（issue #72）：失效选择回退后的命令即剪贴板内容，与按钮
+    // 复制前刷新：失效选择回退后的命令即剪贴板内容，与按钮
     // 提示保持同一选择。
     let commands = control.refreshTerminalCommands()
     do {

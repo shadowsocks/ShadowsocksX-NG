@@ -21,7 +21,7 @@ extension CatalogWorkflow {
       encryptionMethod: fields.encryptionMethod, pluginProgram: fields.pluginProgram)
   }
 
-  /// 服务器 → ss://（SIP002，story 22）：凭据从存储解析；无凭据即点名失败
+  /// 服务器 → ss://（SIP002）：凭据从存储解析；无凭据即点名失败
   /// （不分享空档）。仅在用户明确请求分享时调用。
   func shareURI(for id: NodeID) throws -> String {
     guard let entry = dependencies.coordinator.committedCatalog.entry(for: id),
@@ -48,7 +48,7 @@ extension CatalogWorkflow {
   // MARK: - URI → 服务器叶子字段
 
   /// URI → 服务器叶子字段：密码与插件参数经 journal 写入凭据存储、目录只持
-  /// 引用。回滚由调用方持有 journal 统一处理（统一导入管线，story 20/21）。
+  /// 引用。回滚由调用方持有 journal 统一处理（统一导入管线）。
   static func serverFields(
     from uri: SsUri, journal: inout CredentialWriteJournal
   ) throws -> ServerFields {
@@ -83,7 +83,7 @@ extension CatalogWorkflow {
     }
   }
 
-  /// 插件选择落盘（issue #38，D10/GLOSSARY.md 不变量）：「无」整体清除引用与
+  /// 插件选择落盘（GLOSSARY.md 不变量）：「无」整体清除引用与
   /// 参数秘密；受管程序写引用、参数按空/非空经 journal 写删钥匙串；集外引用
   /// 原样保留（不因打开或保存表单而漂移，激活语义由状态机点名拒绝）。
   /// 受管集校验已由 `updateServer` 的表单校验完成。
