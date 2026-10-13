@@ -49,6 +49,7 @@ struct LANListeningEditorSheet: View {
           }
           .disabled(draft.mode == .disabled)
         }
+        .padding(4)
       }
       .frame(maxHeight: 620)
       if let saveError {
