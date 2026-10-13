@@ -66,14 +66,8 @@ struct ConnectivityBatchButton: View {
         Label(ConnectivityCopy.text("测试全部"), systemImage: "waveform.path.ecg")
       }
       .disabled(targets.isEmpty)
-      if let batchID, let batch = module.batch(batchID) {
-        if batch.completed < batch.targets.count { ProgressView().controlSize(.mini) }
-        Text("\(batch.completed)/\(batch.targets.count)")
-          .monospacedDigit()
-        if !batch.cooling.isEmpty {
-          Text(ConnectivityCopy.text("已跳过冷却中的服务器") + " (\(batch.cooling.count))")
-            .foregroundStyle(.secondary)
-        }
+      if let batchID, let batch = module.batch(batchID), batch.completed < batch.targets.count {
+        ProgressView().controlSize(.mini)
       }
     }
   }
