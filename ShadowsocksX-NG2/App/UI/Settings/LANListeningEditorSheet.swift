@@ -21,7 +21,7 @@ struct LANListeningEditorSheet: View {
     VStack(alignment: .leading, spacing: 18) {
       Text("局域网监听").font(.title2)
       ScrollView {
-        VStack(alignment: .leading, spacing: 18) {
+        Form {
           Picker("监听方式", selection: $draft.mode) {
             ForEach(ListenerMode.allCases, id: \.self) { mode in
               VStack(alignment: .leading, spacing: 2) {
@@ -34,21 +34,24 @@ struct LANListeningEditorSheet: View {
           }
           .pickerStyle(.radioGroup)
 
-          VStack(alignment: .leading, spacing: 18) {
-            Divider()
-            Text("端口范围为 1025–65535，四个代理端口必须不同")
-              .font(.caption).foregroundStyle(.secondary)
+          Divider()
+
+          Section {
             ListenerPortFields(workflow: workflow, draft: $draft.ports)
-            Divider()
-            VStack(alignment: .leading, spacing: 6) {
-              Toggle("SOCKS UDP 中继", isOn: $draft.udpRelayEnabled)
-              Text("当前实现的身份验证无法可靠保护 UDP 中继。")
-                .font(.caption).foregroundStyle(.secondary)
-            }
-            Divider()
-            authenticationFields
+          } footer: {
+            Text("端口范围为 1025–65535")
+              .font(.caption).foregroundStyle(.secondary)
           }
-          .disabled(draft.mode == .disabled)
+
+          Divider()
+
+          Toggle("SOCKS UDP 中继", isOn: $draft.udpRelayEnabled)
+          Text("当前的身份验证实现无法可靠保护 UDP 中继。")
+            .font(.caption).foregroundStyle(.secondary)
+
+          Divider()
+
+          authenticationFields
         }
         .padding(4)
       }
@@ -69,57 +72,50 @@ struct LANListeningEditorSheet: View {
     }
     .disabled(workflow.isCommitting)
     .padding(24)
-    .frame(width: 520)
+    .frame(width: 500)
     .interactiveDismissDisabled(workflow.isCommitting)
     .task(id: draft.ports) { workflow.refreshPortEditorOccupancy(for: draft.ports) }
   }
 
   private var authenticationFields: some View {
-    VStack(alignment: .leading, spacing: 12) {
+    Group {
       Toggle("身份验证", isOn: $draft.authenticationEnabled)
-      VStack(spacing: 12) {
-        HStack {
-          Text("用户名")
-          Spacer()
-          TextField("用户名", text: $draft.username)
-            .frame(width: 230)
-            .autocorrectionDisabled()
+      Section {
+        TextField("用户名", text: $draft.username)
+          .autocorrectionDisabled()
+
+        let showBtn = Button {
+          showPassword.toggle()
+        } label: {
+          Image(systemName: showPassword ? "eye.slash" : "eye")
         }
-        HStack {
-          Text("密码")
-          Spacer()
-          HStack(spacing: 8) {
-            Group {
-              if showPassword {
-                TextField("密码", text: $draft.password)
-                  .background(PasswordAutofillOptOut())
-              } else {
-                SecureField("密码", text: $draft.password)
-                  .background(PasswordAutofillOptOut())
-              }
-            }
-            .textContentType(nil)
-            .autocorrectionDisabled()
-            Button {
-              showPassword.toggle()
-            } label: {
-              Image(systemName: showPassword ? "eye.slash" : "eye")
-            }
-            .buttonStyle(.borderless)
-            .help(showPassword ? "隐藏密码" : "显示密码")
-            .accessibilityLabel(showPassword ? "隐藏密码" : "显示密码")
+        .buttonStyle(.borderless)
+        .help(showPassword ? "隐藏密码" : "显示密码")
+        .accessibilityLabel(showPassword ? "隐藏密码" : "显示密码")
+
+        if showPassword {
+          TextField(text: $draft.password) {
+            showBtn
+            Text("密码")
           }
-          .frame(width: 230)
+          .background(PasswordAutofillOptOut())
+        } else {
+          SecureField(text: $draft.password) {
+            showBtn
+            Text("密码")
+          }
+          .background(PasswordAutofillOptOut())
+        }
+
+        Text("SOCKS 与 HTTP 共用一组凭据。用户名和密码为 1–255 个可打印 ASCII 字符，用户名不得包含冒号。")
+          .font(.caption).foregroundStyle(.secondary)
+        if !draft.hasValidCredentials {
+          Text("用户名或密码无效。")
+            .font(.caption).foregroundStyle(.red)
         }
       }
-      .textFieldStyle(.roundedBorder)
       .disabled(!draft.authenticationEnabled)
-      Text("SOCKS 与 HTTP 共用一组凭据。用户名和密码为 1–255 个可打印 ASCII 字符，用户名不得包含冒号。")
-        .font(.caption).foregroundStyle(.secondary)
-      if !draft.hasValidCredentials {
-        Text("用户名或密码无效。")
-          .font(.caption).foregroundStyle(.red)
-      }
+
     }
   }
 

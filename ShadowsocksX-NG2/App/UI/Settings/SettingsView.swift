@@ -22,7 +22,7 @@ struct SettingsView: View {
     .sheet(item: $presentedEditor) { editor in
       switch editor {
       case .ports(let session):
-        PortSettingsEditorSheet(workflow: workflow, initialDraft: session.initialDraft)
+        LocalhostListeningEditorSheet(workflow: workflow, initialDraft: session.initialDraft)
       case .lan(let session):
         LANListeningEditorSheet(workflow: workflow, initialDraft: session.initialDraft)
       case .proxyExceptions(let session):
@@ -333,61 +333,4 @@ private struct ProxyExceptionsEditorSheet: View {
     .frame(width: 560, height: 640)
     .interactiveDismissDisabled(workflow.isCommitting)
   }
-}
-
-private struct PortSettingsEditorSheet: View {
-  @ObservedObject var workflow: SettingsWorkflow
-  @Environment(\.dismiss) private var dismiss
-  @State private var draft: SettingsPortDraft
-
-  init(workflow: SettingsWorkflow, initialDraft: SettingsPortDraft) {
-    self.workflow = workflow
-    _draft = State(initialValue: initialDraft)
-  }
-
-  var body: some View {
-    VStack(alignment: .leading, spacing: 16) {
-      Text("本地监听")
-        .font(.title2)
-      Text("SOCKS 与 HTTP 代理在本地回环地址 127.0.0.1 监听")
-        .font(.caption).foregroundStyle(.secondary)
-      Text("端口范围为 1025–65535，SOCKS 与 HTTP 代理端口必须不同")
-        .font(.caption)
-        .foregroundStyle(.secondary)
-
-      ListenerPortFields(workflow: workflow, draft: $draft)
-
-      if let failure = workflow.lastFailure {
-        Label(failure.presentableMessage, systemImage: "exclamationmark.triangle.fill")
-          .font(.footnote)
-          .foregroundStyle(.red)
-      }
-
-      HStack {
-        Spacer()
-        Button("取消", role: .cancel) {
-          dismiss()
-        }
-        .keyboardShortcut(.cancelAction)
-        .disabled(workflow.isCommitting)
-
-        Button(workflow.isCommitting ? "保存中…" : "保存") {
-          Task {
-            if case .persisted = await workflow.savePortSettings(draft) {
-              dismiss()
-            }
-          }
-        }
-        .keyboardShortcut(.defaultAction)
-        .disabled(!workflow.canSavePortSettings(draft))
-      }
-    }
-    .padding(24)
-    .frame(width: 460)
-    .interactiveDismissDisabled(workflow.isCommitting)
-    .task(id: draft) {
-      workflow.refreshPortEditorOccupancy(for: draft)
-    }
-  }
-
 }

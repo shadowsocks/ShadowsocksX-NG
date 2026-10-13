@@ -5,40 +5,33 @@ struct ListenerPortFields: View {
   @Binding var draft: SettingsPortDraft
 
   var body: some View {
-    VStack(alignment: .leading, spacing: 14) {
-      portField(.socks, title: "SOCKS 代理端口")
-      portField(.http, title: "HTTP 代理端口")
+    Group {
+      portField2(.socks, title: "SOCKS 代理端口")
+      portField2(.http, title: "HTTP 代理端口")
     }
   }
 
-  private func portField(_ id: SettingsPortID, title: String) -> some View {
+  private func portField2(_ id: SettingsPortID, title: String) -> some View {
     let state = workflow.portFieldState(for: id, editorDraft: draft)
-    return VStack(alignment: .leading, spacing: 5) {
-      HStack(spacing: 16) {
-        Text(title)
-        Spacer(minLength: 12)
-        TextField(title, value: portBinding(for: id), format: .number.grouping(.never))
-          .textFieldStyle(.roundedBorder)
-          .multilineTextAlignment(.trailing)
-          .monospacedDigit()
-          .frame(width: 112)
-          .disabled(workflow.isCommitting)
-      }
-
+    return Group {
+      TextField(title, value: portBinding(for: id), format: .number.grouping(.never))
+        .textFieldStyle(.roundedBorder)
+        .monospacedDigit()
+        .disabled(workflow.isCommitting)
       ForEach(state.issues, id: \.self) { issue in
         Text(AppPresentation.message(for: issue))
           .font(.caption)
           .foregroundStyle(.red)
-          .multilineTextAlignment(.trailing)
-          .frame(maxWidth: .infinity, alignment: .trailing)
+          .multilineTextAlignment(.leading)
+          .frame(maxWidth: .infinity, alignment: .leading)
       }
 
       if let occupancy = occupancyMessage(for: state) {
         Text(occupancy)
           .font(.caption)
           .foregroundStyle(occupancyColor(for: state))
-          .multilineTextAlignment(.trailing)
-          .frame(maxWidth: .infinity, alignment: .trailing)
+          .multilineTextAlignment(.leading)
+          .frame(maxWidth: .infinity, alignment: .leading)
       }
 
       if state.canSuggestFreePort {
@@ -53,6 +46,7 @@ struct ListenerPortFields: View {
         .font(.caption)
         .disabled(workflow.isCommitting)
       }
+
     }
   }
 
