@@ -137,7 +137,7 @@ struct PortOccupancyProbeRequest: Equatable, Sendable {
   var listenerMode: ListenerMode {
     switch endpoint {
     case .socks, .http: listen.listenerMode
-    case .lanSocks, .lanHTTP: listen.lan.mode
+    case .lanSocks, .lanHTTP: listen.lan.effectiveMode
     }
   }
 

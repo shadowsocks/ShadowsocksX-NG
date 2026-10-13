@@ -203,7 +203,7 @@ _避免用词_：系统级 UDP 代理、自动 UDP 代理。
 局域网 SOCKS 与 HTTP 入口共用的用户名和密码验证，不表示 UDP 中继具备同等保护。
 
 **监听模式（Listener mode）**：
-局域网监听的启用状态及地址族选项，包括关闭、所有 IPv4 接口、所有 IPv4 与 IPv6 接口、所有 IPv6 接口。
+局域网监听启用时采用的地址族选项，包括所有 IPv4 接口、所有 IPv4 与 IPv6 接口、所有 IPv6 接口；与是否启用局域网监听独立。
 _避免用词_：监听范围（Listen scope）。
 
 **HTTP 代理环境命令（HTTP proxy environment command）**：

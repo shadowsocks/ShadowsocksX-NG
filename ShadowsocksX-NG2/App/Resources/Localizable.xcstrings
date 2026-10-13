@@ -1448,6 +1448,23 @@
         }
       }
     },
+    "启用局域网监听": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "启用局域网监听"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enable LAN Listeners"
+          }
+        }
+      }
+    },
     "局域网监听": {
       "extractionState": "manual",
       "localizations": {

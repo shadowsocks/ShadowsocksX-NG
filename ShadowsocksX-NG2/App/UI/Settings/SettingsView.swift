@@ -96,10 +96,14 @@ struct SettingsView: View {
           HStack(spacing: 8) {
             VStack(alignment: .trailing, spacing: 3) {
               let lan = workflow.committedLANListening
-              Text("\(lan.mode.displayName) SOCKS \(lan.socksPort) / HTTP \(lan.httpPort)")
-              Text(lanSummary)
-                .font(.caption)
-                .foregroundStyle(.secondary)
+              if lan.isEnabled {
+                Text("\(lan.mode.displayName) SOCKS \(lan.socksPort) / HTTP \(lan.httpPort)")
+                Text(lanSummary)
+                  .font(.caption)
+                  .foregroundStyle(.secondary)
+              } else {
+                Text("关闭")
+              }
             }
             Image(systemName: "chevron.right").font(.caption.weight(.semibold))
           }

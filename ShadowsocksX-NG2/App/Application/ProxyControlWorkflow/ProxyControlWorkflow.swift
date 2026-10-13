@@ -280,7 +280,7 @@ final class ProxyControlWorkflow: ObservableObject {
   ) -> (snapshot: ProxyControlSnapshot, selection: TerminalCommandAddressIdentity) {
     let listenFacts = runtime.listenFacts
     let picker = TerminalCommandAddressPolicy.picker(
-      mode: listenFacts.lan.mode,
+      mode: listenFacts.lan.effectiveMode,
       interfaces: interfaceFacts.interfaces,
       selection: selection)
     return (

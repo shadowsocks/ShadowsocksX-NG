@@ -13,7 +13,8 @@ struct LocalListeningSettings: Codable, Equatable, Sendable {
 
 /// 网络共享入口与本机入口共存，凭据只携带 Keychain 引用。
 struct LANListeningSettings: Codable, Equatable, Sendable {
-  var mode: ListenerMode = .disabled
+  var isEnabled = false
+  var mode: LANListenerMode = .allIPv4Interfaces
   var socksPort = 11088
   var httpPort = 11089
   var udpRelayEnabled = false
@@ -21,7 +22,26 @@ struct LANListeningSettings: Codable, Equatable, Sendable {
   var username = "user"
   var passwordReference: String?
 
-  var isEnabled: Bool { mode != .disabled }
+  var effectiveMode: ListenerMode { isEnabled ? mode.bindingMode : .disabled }
+}
+
+/// 局域网地址族配置；关闭时仍保留所选方式。
+enum LANListenerMode: String, Codable, CaseIterable, Equatable, Sendable {
+  case allIPv4Interfaces = "all_ipv4_interfaces"
+  case allIPv4AndIPv6Interfaces = "all_ipv4_and_ipv6_interfaces"
+  case allIPv6Interfaces = "all_ipv6_interfaces"
+
+  var bindingMode: ListenerMode {
+    switch self {
+    case .allIPv4Interfaces: .allIPv4Interfaces
+    case .allIPv4AndIPv6Interfaces: .allIPv4AndIPv6Interfaces
+    case .allIPv6Interfaces: .allIPv6Interfaces
+    }
+  }
+
+  var bindAddress: String { bindingMode.bindAddress }
+  var bindingHint: String { bindingMode.bindingHint }
+  var displayName: String { bindingMode.displayName }
 }
 
 struct SslocalListenSettings: Equatable, Sendable {
@@ -36,12 +56,15 @@ struct SslocalListenSettings: Equatable, Sendable {
     socksPort: Int = Self.defaultSocksPort, httpPort: Int = Self.defaultHTTPPort
   ) {
     local = LocalListeningSettings(socksPort: socksPort, httpPort: httpPort)
-    lan.mode = listenerMode
+    self.listenerMode = listenerMode
   }
 
   var listenerMode: ListenerMode {
-    get { lan.mode }
-    set { lan.mode = newValue }
+    get { lan.effectiveMode }
+    set {
+      lan.isEnabled = newValue != .disabled
+      if let mode = LANListenerMode(rawValue: newValue.rawValue) { lan.mode = mode }
+    }
   }
   var socksPort: Int {
     get { local.socksPort }

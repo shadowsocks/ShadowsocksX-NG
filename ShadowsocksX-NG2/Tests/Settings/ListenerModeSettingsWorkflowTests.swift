@@ -4,12 +4,13 @@ import XCTest
 
 @MainActor
 extension SettingsWorkflowInterfaceTests {
-  private func saveMode(_ workflow: SettingsWorkflow, _ mode: ListenerMode) async
+  private func saveMode(_ workflow: SettingsWorkflow, _ mode: LANListenerMode?) async
     -> SettingsCommandOutcome
   {
     do {
       var draft = try workflow.beginLANListeningEditing()
-      draft.mode = mode
+      draft.isEnabled = mode != nil
+      if let mode { draft.mode = mode }
       return await workflow.saveLANListening(draft)
     } catch { return .persistenceFailed(.unknown) }
   }
@@ -55,7 +56,7 @@ extension SettingsWorkflowInterfaceTests {
     committing.runtimeListenerProcessID = 42
     let workflow = makeWorkflow()
 
-    let outcome = await saveMode(workflow, .disabled)
+    let outcome = await saveMode(workflow, nil)
 
     XCTAssertEqual(outcome, .persisted)
     XCTAssertEqual(committing.committedSettings.listen.listenerMode, .disabled)

@@ -199,8 +199,9 @@ enum DiagnosticReportBuilder {
     lines.append("- 活动目标：\(snapshot.hasActiveTarget ? "已设置" : "未设置")")
     if let listen = snapshot.listen {
       let binding = listen.lan.isEnabled ? "（\(listen.lan.mode.bindAddress)）" : ""
+      let lanMode = listen.lan.isEnabled ? listen.lan.mode.displayName : String(localized: "关闭")
       lines.append(
-        "- 局域网监听：\(listen.lan.mode.displayName)\(binding)，SOCKS \(listen.lan.socksPort) / HTTP \(listen.lan.httpPort)"
+        "- 局域网监听：\(lanMode)\(binding)，SOCKS \(listen.lan.socksPort) / HTTP \(listen.lan.httpPort)"
       )
       lines.append("- 本地监听：\(listenDescription(listen))")
     }

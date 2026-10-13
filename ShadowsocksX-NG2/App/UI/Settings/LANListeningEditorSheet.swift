@@ -22,36 +22,39 @@ struct LANListeningEditorSheet: View {
       Text("局域网监听").font(.title2)
       ScrollView {
         Form {
-          Picker("监听方式", selection: $draft.mode) {
-            ForEach(ListenerMode.allCases, id: \.self) { mode in
-              VStack(alignment: .leading, spacing: 2) {
-                Text(mode.displayName)
-                if mode != .disabled {
+          Toggle("启用局域网监听", isOn: $draft.isEnabled)
+
+          Group {
+            Picker("监听方式", selection: $draft.mode) {
+              ForEach(LANListenerMode.allCases, id: \.self) { mode in
+                VStack(alignment: .leading, spacing: 2) {
+                  Text(mode.displayName)
                   Text(mode.bindingHint).font(.caption).foregroundStyle(.secondary)
-                }
-              }.tag(mode)
+                }.tag(mode)
+              }
             }
-          }
-          .pickerStyle(.radioGroup)
+            .pickerStyle(.radioGroup)
 
-          Divider()
+            Divider()
 
-          Section {
-            ListenerPortFields(workflow: workflow, draft: $draft.ports)
-          } footer: {
-            Text("端口范围为 1025–65535")
+            Section {
+              ListenerPortFields(workflow: workflow, draft: $draft.ports)
+            } footer: {
+              Text("端口范围为 1025–65535")
+                .font(.caption).foregroundStyle(.secondary)
+            }
+
+            Divider()
+
+            Toggle("SOCKS UDP 中继", isOn: $draft.udpRelayEnabled)
+            Text("当前的身份验证实现无法可靠保护 UDP 中继。")
               .font(.caption).foregroundStyle(.secondary)
+
+            Divider()
+
+            authenticationFields
           }
-
-          Divider()
-
-          Toggle("SOCKS UDP 中继", isOn: $draft.udpRelayEnabled)
-          Text("当前的身份验证实现无法可靠保护 UDP 中继。")
-            .font(.caption).foregroundStyle(.secondary)
-
-          Divider()
-
-          authenticationFields
+          .disabled(!draft.isEnabled)
         }
         .padding(4)
       }

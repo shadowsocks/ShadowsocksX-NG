@@ -1,8 +1,37 @@
+import Testing
 import XCTest
 
 @testable import ShadowsocksX_NG2
 
-/// 首页命令地址选择器 contract。候选派生：四种监听方式的地址族
+@MainActor
+struct LANCommandEnablementTests {
+  @Test func disablingLANRetainsIPv6ModeAndFallsBackFromSelectedNetworkAddress() {
+    let runtime = FakeProxyRuntime()
+    let interfaces = FakeLocalInterfaceFacts()
+    let workflow = ProxyControlWorkflow(
+      runtime: runtime, targetFacts: FakeTargetFacts(), interfaceFacts: interfaces)
+    runtime.listenFacts.lan.isEnabled = true
+    runtime.listenFacts.lan.mode = .allIPv6Interfaces
+    interfaces.interfaces = [
+      FakeLocalInterfaceFacts.wifi(addresses: [.ipv6("2001:db8::1")])
+    ]
+    runtime.emitChange()
+    let address = workflow.snapshot.commandAddressPicker.candidates[1]
+    _ = workflow.selectCommandAddress(address)
+    #expect(workflow.snapshot.commandAddressPicker.selected.address == "2001:db8::1")
+    runtime.listenFacts.lan.isEnabled = false
+    runtime.emitChange()
+    #expect(runtime.listenFacts.lan.mode == .allIPv6Interfaces)
+    let picker = workflow.snapshot.commandAddressPicker
+    #expect(!picker.isVisible)
+    #expect(picker.candidates.map(\.address) == ["127.0.0.1"])
+    #expect(picker.selected.address == "127.0.0.1")
+    #expect(
+      workflow.snapshot.terminalProxyEnvironmentCommands.zshBash.contains("http://127.0.0.1:11087"))
+  }
+}
+
+/// 首页命令地址选择器 contract。候选派生：启用状态与三种监听方式的地址族
 /// 过滤与默认值、严格接口类型过滤、名称回退、排序合并与网络变化刷新。选择
 /// 生命周期与命令生成见 `ProxyCommandAddressLifecycleTests`。复用
 /// ProxyControlWorkflowTests 的可编程替身。
@@ -24,7 +53,10 @@ final class ProxyCommandAddressWorkflowTests: XCTestCase {
   private func setListenerMode(_ mode: ListenerMode) {
     runtime.listenFacts = RuntimeListenFacts(
       listenerMode: .disabled, socksPort: 11086, httpPort: 11087)
-    runtime.listenFacts.lan.mode = mode
+    runtime.listenFacts.lan.isEnabled = mode != .disabled
+    if let lanMode = LANListenerMode(rawValue: mode.rawValue) {
+      runtime.listenFacts.lan.mode = lanMode
+    }
     runtime.emitChange()
   }
 
@@ -196,13 +228,17 @@ final class ProxyCommandAddressLifecycleTests: XCTestCase {
   private func setListenerMode(_ mode: ListenerMode) {
     runtime.listenFacts = RuntimeListenFacts(
       listenerMode: .disabled, socksPort: 11086, httpPort: 11087)
-    runtime.listenFacts.lan.mode = mode
+    runtime.listenFacts.lan.isEnabled = mode != .disabled
+    if let lanMode = LANListenerMode(rawValue: mode.rawValue) {
+      runtime.listenFacts.lan.mode = lanMode
+    }
     runtime.emitChange()
   }
 
   func testSelectionDrivesBothShellsAndSavedPorts() {
     runtime.listenFacts = RuntimeListenFacts(
       listenerMode: .disabled, socksPort: 11086, httpPort: 11087)
+    runtime.listenFacts.lan.isEnabled = true
     runtime.listenFacts.lan.mode = .allIPv4Interfaces
     runtime.listenFacts.lan.socksPort = 12086
     runtime.listenFacts.lan.httpPort = 12087
@@ -352,6 +388,7 @@ final class ProxyCommandAddressLifecycleTests: XCTestCase {
   func testCopyPreparationRefreshesFallsBackAndMatchesProjection() {
     runtime.listenFacts = RuntimeListenFacts(
       listenerMode: .disabled, socksPort: 11086, httpPort: 11087)
+    runtime.listenFacts.lan.isEnabled = true
     runtime.listenFacts.lan.mode = .allIPv4Interfaces
     runtime.emitChange()
     interfaceFacts.interfaces = [

@@ -18,7 +18,7 @@ extension SettingsWorkflow {
     return LANListeningDraft(
       ports: SettingsPortDraft(
         socksPort: lan.socksPort, httpPort: lan.httpPort,
-        group: .lan, listenerMode: lan.mode),
+        group: .lan, listenerMode: lan.mode, isEnabled: lan.isEnabled),
       udpRelayEnabled: lan.udpRelayEnabled, authenticationEnabled: lan.authenticationEnabled,
       username: lan.username, password: password)
   }
@@ -58,7 +58,7 @@ extension SettingsWorkflow {
   private func probeLAN(_ draft: LANListeningDraft, base: ProxySettings) async
     -> SettingsCommandRejection?
   {
-    guard draft.mode != .disabled else { return nil }
+    guard draft.isEnabled else { return nil }
     let facts = probeFacts(for: draft.ports)
     let runtime = committing.runtimeListenFacts
     let processID = committing.runtimeListenerProcessID

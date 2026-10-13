@@ -11,15 +11,18 @@ final class ProxyRuntimeFirewallTests: ProxyRuntimeControllerTests {
   func testLocalhostModeNeverQueriesApplicationFirewall() async throws {
     let seeded = try makeSeededCatalog()
     let firewall = ProxyRuntimeFixture.FakeFirewallChecker(.blocked)
+    var listen = SslocalListenSettings()
+    listen.lan.mode = .allIPv6Interfaces
     let controller = makeController(
-      probe: ProxyRuntimeFixture.FakeProbe.reachable(), firewallChecker: firewall)
+      probe: ProxyRuntimeFixture.FakeProbe.reachable(), listen: listen, firewallChecker: firewall)
 
     try await controller.activate(seeded.server)
     await controller.setAgentEnabled(true)
 
     XCTAssertEqual(controller.state, .running)
     XCTAssertTrue(firewall.checkedURLs.isEmpty, "回环态与应用防火墙零交互")
-    XCTAssertEqual(controller.effectiveRuntimeListenFacts?.lan.mode, .disabled)
+    XCTAssertEqual(controller.effectiveRuntimeListenFacts?.lan.isEnabled, false)
+    XCTAssertEqual(controller.effectiveRuntimeListenFacts?.lan.mode, .allIPv6Interfaces)
   }
 
   func testAllIPv4InterfacesBlockedByFirewallPresentsTargetedRepair() async throws {

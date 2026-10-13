@@ -91,7 +91,7 @@ final class SettingsWorkflow: ObservableObject {
     portEditorOccupancyByPort = [:]
     portEditorProbeResults = [:]
     let facts = probeFacts(for: editorDraft)
-    if editorDraft.group == .lan && editorDraft.listenerMode == .disabled {
+    if editorDraft.group == .lan && !editorDraft.isEnabled {
       portEditorOccupancyByPort = [.socks: .free, .http: .free]
       return
     }
@@ -214,6 +214,7 @@ final class SettingsWorkflow: ObservableObject {
       listen.lan.socksPort = editorDraft.socksPort
       listen.lan.httpPort = editorDraft.httpPort
       listen.lan.mode = editorDraft.listenerMode
+      listen.lan.isEnabled = editorDraft.isEnabled
     }
     return listen
   }

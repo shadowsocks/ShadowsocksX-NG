@@ -1,6 +1,8 @@
 import Foundation
 
-/// Address-family policy for the optional LAN SOCKS and HTTP inbounds.
+/// Effective binding policy used by runtime documents and port probes.
+/// `disabled` represents the local loopback binding; LAN settings use
+/// `LANListenerMode` and an independent enable switch.
 enum ListenerMode: String, Codable, CaseIterable, Equatable, Sendable {
   case disabled
   case allIPv4Interfaces = "all_ipv4_interfaces"
@@ -241,8 +243,8 @@ extension SslocalRuntimeDocument {
       aclRuntime.map({ $0.isWellFormed && $0.path == aclFilePath }) ?? true
     else { return false }
 
-    guard listen.bindAddress == "127.0.0.1", listen.listenerMode == listen.lan.mode,
-      ipv6Only == listen.lan.mode.ipv6Only
+    guard listen.bindAddress == "127.0.0.1", listen.listenerMode == listen.lan.effectiveMode,
+      ipv6Only == listen.lan.effectiveMode.ipv6Only
     else { return false }
     let local = locals.filter { $0.localAddress == "127.0.0.1" }
     let network = locals.filter { $0.localAddress != "127.0.0.1" }

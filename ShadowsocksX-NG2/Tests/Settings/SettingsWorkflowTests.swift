@@ -33,6 +33,7 @@ final class SettingsWorkflowTests: XCTestCase {
     let pair = makePair()
 
     var draft = try pair.workflow.beginLANListeningEditing()
+    draft.isEnabled = true
     draft.mode = .allIPv4AndIPv6Interfaces
     let outcome = await pair.workflow.saveLANListening(draft)
 

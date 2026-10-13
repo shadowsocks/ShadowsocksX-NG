@@ -4,6 +4,29 @@ import Testing
 @testable import ShadowsocksX_NG2
 
 struct SeparateListenerTests {
+  @Test func disabledIPv6ConfigurationRoundTripsWithoutAffectingEffectiveRuntime() throws {
+    let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+    defer { try? FileManager.default.removeItem(at: directory) }
+    let store = ListenSettingsFileStore(fileURL: directory.appendingPathComponent("listen.json"))
+    var listen = SslocalListenSettings()
+    listen.lan.mode = .allIPv6Interfaces
+    listen.lan.authenticationEnabled = true
+    listen.lan.passwordReference = "saved-reference"
+    try store.save(listen)
+    let restored = try store.load()
+    #expect(!restored.lan.isEnabled)
+    #expect(restored.lan.mode == .allIPv6Interfaces)
+    #expect(restored.lan.passwordReference == "saved-reference")
+    let document = SslocalRuntimeDocument(servers: [], listen: restored)
+    #expect(document.locals.count == 2)
+    #expect(document.ipv6Only == nil)
+    #expect(document.isWellFormed)
+    #expect(SslocalRuntimeDocument.decodeValidated(try document.jsonData()) != nil)
+    #expect(
+      PortOccupancyProbeRequest(endpoint: .socks, listen: RuntimeListenFacts(listen: restored))
+        .bindAddress == "127.0.0.1")
+  }
+
   @Test func enablingLANPreservesLocalListeners() {
     var listen = SslocalListenSettings()
     listen.listenerMode = .allIPv4Interfaces

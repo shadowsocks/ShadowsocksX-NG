@@ -16,7 +16,8 @@ struct SettingsPortDraft: Equatable, Sendable {
   var socksPort: Int
   var httpPort: Int
   var group: SettingsListeningGroup = .local
-  var listenerMode: ListenerMode = .disabled
+  var listenerMode: LANListenerMode = .allIPv4Interfaces
+  var isEnabled = false
 
   func portValue(for id: SettingsPortID) -> Int {
     switch id {
@@ -130,7 +131,12 @@ struct LANListeningDraft: Equatable, Sendable {
       && RuntimeListenerAuthentication.validPassword(password)
   }
 
-  var mode: ListenerMode {
+  var isEnabled: Bool {
+    get { ports.isEnabled }
+    set { ports.isEnabled = newValue }
+  }
+
+  var mode: LANListenerMode {
     get { ports.listenerMode }
     set { ports.listenerMode = newValue }
   }
