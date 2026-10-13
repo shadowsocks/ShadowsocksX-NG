@@ -70,10 +70,7 @@ final class SettingsWorkflowInterfaceTests: XCTestCase {
     let workflow = makeWorkflow()
     let draft = workflow.beginPortSettingsEditing()
     workflow.refreshPortEditorOccupancy(for: draft)
-    let expected = RuntimeListenFacts(
-      listenerMode: .disabled,
-      socksPort: draft.socksPort,
-      httpPort: draft.httpPort)
+    let expected = RuntimeListenFacts(listen: committing.committedSettings.listen)
 
     await waitUntil(probe.requests.contains { $0.listen == expected })
 

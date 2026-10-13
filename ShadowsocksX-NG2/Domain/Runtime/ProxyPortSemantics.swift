@@ -13,10 +13,10 @@ enum ProxyEndpointKind: Hashable, Sendable, CaseIterable {
 
   var displayName: String {
     switch self {
-    case .socks: "SOCKS5"
-    case .http: "HTTP"
-    case .lanSocks: "局域网 SOCKS"
-    case .lanHTTP: "局域网 HTTP"
+    case .socks: "本地 SOCKS5 代理"
+    case .http: "本地 HTTP 代理"
+    case .lanSocks: "局域网 SOCKS 代理"
+    case .lanHTTP: "局域网 HTTP 代理"
     }
   }
 }

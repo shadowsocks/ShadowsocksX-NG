@@ -44,7 +44,7 @@ extension SettingsWorkflow {
     proposed.listen = listenSettings(for: draft.ports)
     let errors = proposed.validationErrors
     guard errors.isEmpty else {
-      return .rejected(.validation(SettingsPortAdapter.fieldIssues(from: errors)))
+      return .rejected(.validation(SettingsPortAdapter.fieldIssues(from: errors, group: .lan)))
     }
     if let rejection = await probeLAN(draft, base: base) { return .rejected(rejection) }
     proposed.listen.lan.udpRelayEnabled = draft.udpRelayEnabled
@@ -60,7 +60,7 @@ extension SettingsWorkflow {
   {
     guard draft.mode != .disabled else { return nil }
     let facts = probeFacts(for: draft.ports)
-    let runtime = committing.runtimeListenFacts.map { focusedFacts($0, group: .lan) }
+    let runtime = committing.runtimeListenFacts
     let processID = committing.runtimeListenerProcessID
     let probe = occupancyProbe
     let results = await Task.detached(priority: .utility) {
@@ -70,18 +70,18 @@ extension SettingsWorkflow {
             id,
             probe.occupancy(
               for: PortOccupancyProbeRequest(
-                endpoint: SettingsPortAdapter.endpoint(for: id), listen: facts))
+                endpoint: SettingsPortAdapter.endpoint(for: id, group: .lan), listen: facts))
           )
         })
     }.value
     guard base == committing.committedSettings,
       processID == committing.runtimeListenerProcessID,
-      runtime == committing.runtimeListenFacts.map({ focusedFacts($0, group: .lan) })
+      runtime == committing.runtimeListenFacts
     else { return .superseded }
     let blocked = ListenerModeOccupancyGate.blockedPortIDs(
       results: results,
       context: ListenerModeOccupancyContext(
-        listenerMode: draft.mode, proposedListen: facts,
+        group: .lan, proposedListen: facts,
         runtimeListen: runtime, runtimeProcessID: processID))
     return blocked.isEmpty ? nil : .occupied(blocked)
   }
@@ -125,21 +125,8 @@ extension SettingsWorkflow {
     }
   }
 
-  func focusedFacts(_ facts: RuntimeListenFacts, group: SettingsListeningGroup)
-    -> RuntimeListenFacts
-  {
-    if group == .local {
-      return RuntimeListenFacts(
-        listenerMode: .disabled, socksPort: facts.socksPort,
-        httpPort: facts.httpPort)
-    }
-    return RuntimeListenFacts(
-      listenerMode: facts.lan.mode, socksPort: facts.lan.socksPort,
-      httpPort: facts.lan.httpPort)
-  }
-
   func probeFacts(for draft: SettingsPortDraft) -> RuntimeListenFacts {
-    focusedFacts(RuntimeListenFacts(listen: listenSettings(for: draft)), group: draft.group)
+    RuntimeListenFacts(listen: listenSettings(for: draft))
   }
 
 }

@@ -148,7 +148,7 @@ final class FakeOccupancyProbe: PortOccupancyProbing, @unchecked Sendable {
           occupier: occupierName, ipv4ProcessIDs: occupierIPv4ProcessIDs,
           ipv6ProcessIDs: occupierIPv6ProcessIDs,
           occupiedFamilies: explicitOccupiedFamilies
-            ?? occupiedFamilies(for: request.listen.listenerMode),
+            ?? occupiedFamilies(for: request.listenerMode),
           verifiedFamilies: Set(PortOccupancyAddressFamily.allCases),
           unverifiedFamilyDetail: unverifiedFamilyDetail)) : .free
   }

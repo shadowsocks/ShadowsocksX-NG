@@ -59,8 +59,7 @@ final class SettingsWorkflow: ObservableObject {
     return committedPortDraft
   }
 
-  /// Field state for the port editor. Listener mode always comes from the
-  /// committed snapshot, independent of other editor state.
+  /// Field state uses the editor group and its proposed listening mode.
   func portFieldState(
     for id: SettingsPortID, editorDraft: SettingsPortDraft
   ) -> SettingsPortFieldState {
@@ -101,7 +100,7 @@ final class SettingsWorkflow: ObservableObject {
       let result = await Task.detached(priority: .utility) {
         Dictionary(
           uniqueKeysWithValues: SettingsPortID.allCases.map { id in
-            let endpoint = SettingsPortAdapter.endpoint(for: id)
+            let endpoint = SettingsPortAdapter.endpoint(for: id, group: editorDraft.group)
             let request = PortOccupancyProbeRequest(endpoint: endpoint, listen: facts)
             return (id, probe.occupancy(for: request))
           })
@@ -117,7 +116,7 @@ final class SettingsWorkflow: ObservableObject {
   /// Invalid ports and known external occupancy block the save. Unknown
   /// occupancy remains advisory, and probing must finish for this exact draft.
   func canSavePortSettings(_ editorDraft: SettingsPortDraft) -> Bool {
-    portIssues(for: editorDraft).isEmpty
+    listenSettings(for: editorDraft).portValidationErrors().isEmpty
       && hasCurrentPortEditorOccupancy(for: editorDraft)
       && blockingPortIDs(for: editorDraft).isEmpty
       && !isCommitting
@@ -132,7 +131,7 @@ final class SettingsWorkflow: ObservableObject {
     guard !isCommitting else { return .rejected(.inProgress) }
     let listen = listenSettings(for: editorDraft)
     let facts = probeFacts(for: editorDraft)
-    let endpoint = SettingsPortAdapter.endpoint(for: id)
+    let endpoint = SettingsPortAdapter.endpoint(for: id, group: editorDraft.group)
     let generation = portEditorOccupancyGeneration
     let probe = occupancyProbe
     let candidate = await Task.detached(priority: .utility) {
@@ -159,9 +158,11 @@ final class SettingsWorkflow: ObservableObject {
   func savePortSettings(_ editorDraft: SettingsPortDraft) async -> SettingsCommandOutcome {
     guard !isCommitting else { return .rejected(.inProgress) }
     guard editorDraft.group == .local else { return .rejected(.superseded) }
-    let issues = portIssues(for: editorDraft)
-    guard issues.isEmpty else {
-      return .rejected(.validation(issues))
+    let errors = listenSettings(for: editorDraft).portValidationErrors()
+      .map(ProxySettingsValidationError.init)
+    guard errors.isEmpty else {
+      return .rejected(
+        .validation(SettingsPortAdapter.fieldIssues(from: errors, group: editorDraft.group)))
     }
     guard hasCurrentPortEditorOccupancy(for: editorDraft) else {
       return .rejected(.inProgress)
@@ -220,14 +221,14 @@ final class SettingsWorkflow: ObservableObject {
   private func portIssues(for editorDraft: SettingsPortDraft) -> [SettingsFieldIssue] {
     let errors = listenSettings(for: editorDraft).portValidationErrors()
       .map(ProxySettingsValidationError.init)
-    return SettingsPortAdapter.fieldIssues(from: errors)
+    return SettingsPortAdapter.fieldIssues(from: errors, group: editorDraft.group)
   }
 
   private func occupancyContext(for draft: SettingsPortDraft) -> ListenerModeOccupancyContext {
     ListenerModeOccupancyContext(
-      listenerMode: draft.listenerMode,
+      group: draft.group,
       proposedListen: probeFacts(for: draft),
-      runtimeListen: committing.runtimeListenFacts.map { focusedFacts($0, group: draft.group) },
+      runtimeListen: committing.runtimeListenFacts,
       runtimeProcessID: committing.runtimeListenerProcessID)
   }
 

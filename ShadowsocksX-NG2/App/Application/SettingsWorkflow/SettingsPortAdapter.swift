@@ -22,35 +22,38 @@ extension ProxyRuntimeController: SettingsCommitting {
 /// Settings field adapters keep port IDs, endpoints, and validation facts aligned.
 enum SettingsPortAdapter {
   /// UI 形状端口标识 → 端点类型（module 内部复用 Domain 端口语义）。
-  static func endpoint(for id: SettingsPortID) -> ProxyEndpointKind {
-    switch id {
-    case .socks: .socks
-    case .http: .http
+  static func endpoint(for id: SettingsPortID, group: SettingsListeningGroup) -> ProxyEndpointKind {
+    switch (group, id) {
+    case (.local, .socks): .socks
+    case (.local, .http): .http
+    case (.lan, .socks): .lanSocks
+    case (.lan, .http): .lanHTTP
     }
   }
 
-  /// Domain 点名校验错误 → 按字段归位的问题；点名文案沿用既有错误属性。
-  /// 端口互异涉及两个端点，两侧端口各归位一条，用户只改有错的那个输入。
-  static func fieldIssues(from errors: [ProxySettingsValidationError]) -> [SettingsFieldIssue] {
+  /// 全局端口校验保留四个端点的身份，错误只归位到当前编辑组涉及的字段。
+  static func fieldIssues(
+    from errors: [ProxySettingsValidationError], group: SettingsListeningGroup
+  ) -> [SettingsFieldIssue] {
     errors.flatMap { error -> [SettingsFieldIssue] in
+      let endpoints: [ProxyEndpointKind]
       switch error {
       case .portOutOfRange(let endpoint, _):
-        return [.port(portID(for: endpoint), error: error)]
+        endpoints = [endpoint]
       case .duplicatePort(let endpoint, let otherEndpoint, _):
-        return [
-          .port(portID(for: endpoint), error: error),
-          .port(portID(for: otherEndpoint), error: error),
-        ]
+        endpoints = [endpoint, otherEndpoint]
+      }
+      return endpoints.compactMap { endpoint in
+        guard
+          let id = SettingsPortID.allCases.first(where: {
+            Self.endpoint(for: $0, group: group) == endpoint
+          })
+        else { return nil }
+        return .port(id, error: error)
       }
     }
   }
 
-  private static func portID(for endpoint: ProxyEndpointKind) -> SettingsPortID {
-    switch endpoint {
-    case .socks, .lanSocks: .socks
-    case .http, .lanHTTP: .http
-    }
-  }
 }
 
 extension SettingsPortOccupancy {

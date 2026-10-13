@@ -1,7 +1,7 @@
 import Foundation
 
 struct ListenerModeOccupancyContext {
-  let listenerMode: ListenerMode
+  let group: SettingsListeningGroup
   let proposedListen: RuntimeListenFacts
   let runtimeListen: RuntimeListenFacts?
   let runtimeProcessID: Int32?
@@ -37,7 +37,7 @@ enum ListenerModeOccupancyGate {
     for id: SettingsPortID,
     context: ListenerModeOccupancyContext
   ) -> Bool {
-    let endpoint = SettingsPortAdapter.endpoint(for: id)
+    let endpoint = SettingsPortAdapter.endpoint(for: id, group: context.group)
     guard
       context.runtimeListen?.port(for: endpoint) == context.proposedListen.port(for: endpoint),
       let processID = context.runtimeProcessID,
@@ -50,13 +50,19 @@ enum ListenerModeOccupancyGate {
       && facts.occupiedFamilies.isSubset(of: facts.verifiedFamilies)
     guard !isVerifiedOwner else { return true }
 
+    let proposedMode = PortOccupancyProbeRequest(
+      endpoint: endpoint, listen: context.proposedListen
+    ).listenerMode
+    let runtimeMode = context.runtimeListen.map {
+      PortOccupancyProbeRequest(endpoint: endpoint, listen: $0).listenerMode
+    }
     let isIPv4Mode =
-      context.listenerMode == .disabled
-      || context.listenerMode == .allIPv4Interfaces
+      proposedMode == .disabled
+      || proposedMode == .allIPv4Interfaces
     let isDualStackRuntimeBlockingIPv4 =
       isIPv4Mode
       && facts.occupiedFamilies == [.ipv4]
-      && context.runtimeListen?.listenerMode == .allIPv4AndIPv6Interfaces
+      && runtimeMode == .allIPv4AndIPv6Interfaces
       && facts.processIDs(for: .ipv4).isEmpty
       && facts.processIDs(for: .ipv6).contains(processID)
       && Set(PortOccupancyAddressFamily.allCases).isSubset(of: facts.verifiedFamilies)

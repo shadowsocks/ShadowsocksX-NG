@@ -46,12 +46,12 @@ final class ProxyPortSemanticsTests: XCTestCase {
     XCTAssertEqual(
       AppPresentation.message(
         for: PortSettingError.portOutOfRange(endpoint: .http, port: 70000)),
-      "HTTP 端口 70000 无效，必须是 1025–65535 之间的整数")
+      "本地 HTTP 代理 端口 70000 无效，必须是 1025–65535 之间的整数")
     XCTAssertEqual(
       AppPresentation.message(
         for: PortSettingError.duplicatePort(
           endpoint: .socks, otherEndpoint: .http, port: 1086)),
-      "SOCKS5 端口与 HTTP 端口冲突（都是 1086），请为每个端点配置不同的端口")
+      "本地 SOCKS5 代理 端口与 本地 HTTP 代理 端口冲突（都是 1086），请为每个端点配置不同的端口")
   }
 
   // MARK: 建议端口算法（32768–65535 高位段，空闲且与另两端点配置值互异）
