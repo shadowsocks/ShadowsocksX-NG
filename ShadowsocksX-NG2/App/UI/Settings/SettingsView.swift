@@ -15,6 +15,7 @@ struct SettingsView: View {
     Form {
       generalSection
       endpointSection
+      ConnectivityURLSettings(workflow: workflow)
       systemProxySection
       PluginManagementSection(model: plugins)
     }

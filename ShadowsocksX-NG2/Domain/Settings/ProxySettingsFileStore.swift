@@ -85,6 +85,7 @@ struct ProxySettingsFileStore: ProxySettingsStoring {
     return try validated(
       ProxySettings(
         listen: listen,
+        connectivityURLReference: record.connectivityURLReference,
         proxyExceptions: record.proxyExceptions,
         preferredMode: record.preferredMode,
         ruleDefaultAction: record.ruleDefaultAction,
@@ -94,6 +95,7 @@ struct ProxySettingsFileStore: ProxySettingsStoring {
 
   private func record(from settings: ProxySettings) -> ProxySettingsRecord {
     var record = ProxySettingsRecord()
+    record.connectivityURLReference = settings.connectivityURLReference
     record.localListen = settings.listen.local
     record.lanListen = settings.listen.lan
     record.proxyExceptions = settings.proxyExceptions
@@ -112,6 +114,7 @@ struct ProxySettingsFileStore: ProxySettingsStoring {
 }
 
 private struct ProxySettingsRecord: Codable, Equatable, Sendable {
+  var connectivityURLReference: CredentialReference?
   var localListen = LocalListeningSettings()
   var lanListen = LANListeningSettings()
   var proxyExceptions: String = ProxySettings.defaultProxyExceptions
@@ -124,6 +127,8 @@ private struct ProxySettingsRecord: Codable, Equatable, Sendable {
 
   init(from decoder: Decoder) throws {
     let container = try decoder.container(keyedBy: CodingKeys.self)
+    connectivityURLReference = try container.decodeIfPresent(
+      CredentialReference.self, forKey: .connectivityURLReference)
     // 未正式发版：忽略旧的单组监听字段，不迁移独立旧监听文件。
     localListen =
       try container.decodeIfPresent(LocalListeningSettings.self, forKey: .localListen)
@@ -156,6 +161,7 @@ private struct ProxySettingsRecord: Codable, Equatable, Sendable {
 
 extension ProxySettingsRecord {
   fileprivate enum CodingKeys: String, CodingKey {
+    case connectivityURLReference
     case localListen, lanListen
     case proxyExceptions
     case preferredMode

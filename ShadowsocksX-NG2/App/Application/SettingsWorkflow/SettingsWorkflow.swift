@@ -20,6 +20,8 @@ final class SettingsWorkflow: ObservableObject {
   /// Typed persistence failure for the editor to present.
   @Published private(set) var lastFailure: SettingsWorkflowFailure?
 
+  var connectivityURLDidChange: ((URL) -> Void)?
+
   let committing: SettingsCommitting
   let credentials: CredentialStoring
   let occupancyProbe: PortOccupancyProbing

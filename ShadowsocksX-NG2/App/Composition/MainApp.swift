@@ -5,6 +5,8 @@ import SwiftUI
 struct ShadowsocksXNG2App: App {
   /// 进程期强持有（组合根装配一次）。body 不读它：事实发布经各 workflow 的
   /// didChange 通道，不借 @StateObject 订阅控制器变化。
+  @NSApplicationDelegateAdaptor(ConnectivityApplicationDelegate.self) private var appDelegate
+  private let connectivityLifecycle: ConnectivityLifecycle
   private let proxyController: ProxyRuntimeController
   @StateObject private var catalogWorkflow: CatalogWorkflow
   @StateObject private var proxyControl: ProxyControlWorkflow
@@ -28,6 +30,7 @@ struct ShadowsocksXNG2App: App {
 
   init() {
     let composition = AppComposition.make()
+    connectivityLifecycle = composition.connectivityLifecycle
     proxyController = composition.controller
     _catalogWorkflow = StateObject(wrappedValue: composition.catalogWorkflow)
     _proxyControl = StateObject(wrappedValue: composition.proxyControl)
@@ -46,6 +49,7 @@ struct ShadowsocksXNG2App: App {
     // GUI 事件接入内存环形缓冲：独立诊断窗口日志查看器与
     // 诊断导出的来源；wrapper 侧不注册，仍走 stderr → agent.log 收敛。
     RuntimeLog.setSink(RuntimeEventStore.shared)
+    appDelegate.lifecycle = connectivityLifecycle
   }
 
   var body: some Scene {
@@ -141,6 +145,7 @@ private struct StatusMenuLabel: View {
 /// StateObject 状态与 onAppear 副作用在窗口首次打开时才发生。
 @MainActor
 private struct AppComposition {
+  let connectivityLifecycle: ConnectivityLifecycle
   let controller: ProxyRuntimeController
   let catalogWorkflow: CatalogWorkflow
   let proxyControl: ProxyControlWorkflow
@@ -192,6 +197,22 @@ private struct AppComposition {
     // 写入侧经窄缝 SettingsCommitting，运行时控制器薄扩展即生产实现。
     let settingsWorkflow = SettingsWorkflow(
       committing: controller, credentials: controller.credentials)
+    let testRuntime = ConnectivityRuntime(
+      executable: Bundle.main.bundleURL.appendingPathComponent("Contents/Helpers/sslocal"))
+    let connectivity = ServerConnectivity(
+      configuration: { [weak catalogWorkflow] id in
+        guard let catalogWorkflow else { throw ServerFormLoadError.notFound }
+        return try catalogWorkflow.connectivityConfiguration(for: id)
+      },
+      revision: { [weak catalogWorkflow] in
+        catalogWorkflow?.connectivityRevision(for: $0) ?? "missing"
+      },
+      measure: testRuntime.measure)
+    catalogWorkflow.connectivity = connectivity
+    connectivity.setURL(
+      (try? settingsWorkflow.beginConnectivityURLEditing()).flatMap(ServerConnectivity.validURL))
+    settingsWorkflow.connectivityURLDidChange = { [weak connectivity] in connectivity?.setURL($0) }
+    let connectivityLifecycle = ConnectivityLifecycle(module: connectivity)
     // 诊断工作流 module：诊断区唯一 seam，组合根接线一次；进程期
     // 实例供独立诊断窗口使用。
     let diagnosticsWorkflow = DiagnosticsWorkflow(
@@ -226,6 +247,7 @@ private struct AppComposition {
       configurationGroupFileExporter: dependencies.configurationGroupFileExporter,
       qrImageSaver: dependencies.qrImageSaver)
     return AppComposition(
+      connectivityLifecycle: connectivityLifecycle,
       controller: controller,
       catalogWorkflow: catalogWorkflow,
       proxyControl: proxyControl,

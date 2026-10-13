@@ -1,9 +1,10 @@
 import SwiftUI
 
 /// 只接受展示值与外部动作；不查询节点类型、工作流或凭据。
-struct NodeDetailView<Actions: View>: View {
+struct NodeDetailView<Actions: View, Supplement: View>: View {
   let detail: NodeDetailPresentation
   @ViewBuilder let actions: Actions
+  @ViewBuilder let supplement: Supplement
 
   var body: some View {
     ScrollView {
@@ -40,6 +41,7 @@ struct NodeDetailView<Actions: View>: View {
             }
           }
         }
+        supplement
       }
       .frame(maxWidth: .infinity, alignment: .leading)
       .padding(.horizontal, 16)

@@ -53,6 +53,9 @@ struct ServerNodeContextMenu: View {
 
   @ViewBuilder
   var body: some View {
+    if let module = workflow.connectivity {
+      ConnectivityTestButton(module: module, node: node)
+    }
     Button("激活") {
       Task { @MainActor in
         do {

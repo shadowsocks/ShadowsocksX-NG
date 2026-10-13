@@ -154,6 +154,12 @@ struct ServersView: View {
         .padding(.leading, CGFloat(depths[node.id] ?? 0) * 14)
       }
       .width(min: 160, ideal: 240)
+      TableColumn(ConnectivityCopy.text("响应延迟")) { node in
+        if let module = workflow.connectivity {
+          ConnectivityCell(module: module, node: node, workflow: workflow)
+        }
+      }
+      .width(min: 90, ideal: 110)
       TableColumn("收藏") { node in
         Image(systemName: workflow.isFavorite(node.id) ? "star.fill" : "star")
           .accessibilityLabel(Text("收藏"))
@@ -302,6 +308,12 @@ extension ServersView {
 
   @ToolbarContentBuilder
   private var toolbarContent: some ToolbarContent {
+    if let module = workflow.connectivity {
+      ToolbarItem(placement: .primaryAction) {
+        ConnectivityBatchButton(
+          module: module, targets: workflow.connectivityTargets(source: section.source))
+      }
+    }
     if section != .favorites {
       ToolbarItem(placement: .primaryAction) {
         Menu {

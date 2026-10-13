@@ -46,6 +46,8 @@ final class CatalogWorkflow: ObservableObject {
   /// 插件、订阅获取、Legacy 导入服务、导入后回调与激活缝只经此束持有，
   /// 不再作为 workflow 属性暴露。仅供组合根与测试构造；视图不得访问——
   /// 独立 target 拆分前由 architecture deletion check 守护残余可见性。
+  var connectivity: ServerConnectivity?
+
   let dependencies: CatalogWorkflowDependencies
   /// 启动时发现的 Legacy 快照（导入编排用；秘密值不进 projection）。
   var discoveredLegacySnapshot: LegacySnapshot?
@@ -393,6 +395,7 @@ final class CatalogWorkflow: ObservableObject {
 
   /// 提交成功后的 projection 重建（树 + 订阅卡片）。
   func republishCommittedState() {
+    connectivity?.configurationsChanged()
     let coordinator = dependencies.coordinator
     favoriteIDs = coordinator.committedFavoriteIDs
     tree = .build(

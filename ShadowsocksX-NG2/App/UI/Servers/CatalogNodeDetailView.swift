@@ -45,6 +45,10 @@ struct CatalogNodeDetailView: View {
             parameters.reload(load: workflow.serverDetailPluginOptions)
           }
         }
+      } supplement: {
+        if let module = workflow.connectivity {
+          ConnectivityDetailView(module: module, node: node, workflow: workflow)
+        }
       }
       .onAppear {
         if !node.isGroup {
