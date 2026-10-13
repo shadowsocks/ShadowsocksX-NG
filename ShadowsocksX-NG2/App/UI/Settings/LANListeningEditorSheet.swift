@@ -10,6 +10,7 @@ struct LANListeningEditorSheet: View {
   @Environment(\.dismiss) private var dismiss
   @State private var draft: LANListeningDraft
   @State private var saveError: String?
+  @State private var showPassword = false
 
   init(workflow: SettingsWorkflow, initialDraft: LANListeningDraft) {
     self.workflow = workflow
@@ -80,12 +81,35 @@ struct LANListeningEditorSheet: View {
         HStack {
           Text("用户名")
           Spacer()
-          TextField("用户名", text: $draft.username).frame(width: 230)
+          TextField("用户名", text: $draft.username)
+            .frame(width: 230)
+            .autocorrectionDisabled()
         }
         HStack {
           Text("密码")
           Spacer()
-          SecureField("密码", text: $draft.password).frame(width: 230)
+          HStack(spacing: 8) {
+            Group {
+              if showPassword {
+                TextField("密码", text: $draft.password)
+                  .background(PasswordAutofillOptOut())
+              } else {
+                SecureField("密码", text: $draft.password)
+                  .background(PasswordAutofillOptOut())
+              }
+            }
+            .textContentType(nil)
+            .autocorrectionDisabled()
+            Button {
+              showPassword.toggle()
+            } label: {
+              Image(systemName: showPassword ? "eye.slash" : "eye")
+            }
+            .buttonStyle(.borderless)
+            .help(showPassword ? "隐藏密码" : "显示密码")
+            .accessibilityLabel(showPassword ? "隐藏密码" : "显示密码")
+          }
+          .frame(width: 230)
         }
       }
       .textFieldStyle(.roundedBorder)
