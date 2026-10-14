@@ -14,6 +14,9 @@ struct NodeDetailPresentationTests {
       isActiveTarget: true)
     #expect(detail.title == "测试节点")
     #expect(detail.subtitle.contains(String(localized: "活动目标")))
+    #expect(!detail.subtitle.contains("激活时将跳过"))
+    #expect(detail.activationMessages.count == 1)
+    #expect(detail.activationMessages[0].contains("1"))
     #expect(detail.properties.count == 1)
     #expect(detail.properties[0].items.map(\.value) == ["detail-id", "2", "1", "—", "—"])
   }
@@ -68,7 +71,8 @@ struct NodeDetailPresentationTests {
     let detail = NodeDetailPresentation(
       node: node(isGroup: false, invalidReasons: [.pluginNotProvided(program: "v2ray-plugin")]),
       server: server, eligibility: nil, isActiveTarget: false)
-    #expect(detail.subtitle.contains("插件文件不可执行，请检查文件类型和执行权限。"))
+    #expect(!detail.subtitle.contains("插件文件不可执行"))
+    #expect(detail.activationMessages == ["插件文件不可执行，请检查文件类型和执行权限。"])
   }
 
   private func node(isGroup: Bool, invalidReasons: [LeafInvalidationReason] = []) -> CatalogTreeNode

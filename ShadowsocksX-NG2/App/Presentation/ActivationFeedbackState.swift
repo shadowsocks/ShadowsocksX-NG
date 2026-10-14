@@ -15,8 +15,21 @@ final class ActivationFeedbackState: ObservableObject {
     case rejected(ActivationFailure)
     /// 意外错误的呈现文案（AppPresentation 边缘生成）。
     case failed(message: String)
+
+    var isSuccess: Bool {
+      if case .activated = self { return true }
+      return false
+    }
   }
 
+  struct Completion: Equatable {
+    let id = UUID()
+    let targetID: NodeID
+    let feedback: Feedback
+    let completedAt: Date
+  }
+
+  @Published private(set) var completion: Completion?
   @Published private(set) var pendingTargetID: NodeID?
   @Published private(set) var feedback: Feedback?
   @Published private(set) var feedbackTargetID: NodeID?
@@ -33,7 +46,11 @@ final class ActivationFeedbackState: ObservableObject {
     pendingTargetID = id
     feedbackTargetID = id
     feedback = nil
-    defer { pendingTargetID = nil }
+    completion = nil
+    defer {
+      completion = feedback.map { Completion(targetID: id, feedback: $0, completedAt: Date()) }
+      pendingTargetID = nil
+    }
     do {
       let outcome = try await workflow.activate(id)
       switch outcome {

@@ -16,7 +16,8 @@ struct CatalogNodeDetailView: View {
 
   var body: some View {
     if let node {
-      NodeDetailView(detail: presentation(for: node)) {
+      let detail = presentation(for: node)
+      NodeDetailView(detail: detail) {
         Button(
           activation.pendingTargetID == nodeID
             ? String(localized: "激活中…", table: "ServerDetails")
@@ -26,7 +27,7 @@ struct CatalogNodeDetailView: View {
             do {
               _ = try await activation.activate(nodeID, via: workflow)
             } catch {
-              errors.present(error)
+              // 激活状态记录失败，详情在 feedback 区域显示结果。
             }
           }
         }
@@ -62,6 +63,9 @@ struct CatalogNodeDetailView: View {
           }
         }
       } feedback: {
+        ActivationDetailFeedbackView(
+          messages: detail.activationMessages,
+          completion: activation.completion?.targetID == nodeID ? activation.completion : nil)
         if let subscription = subscriptionSummary(for: node) {
           SubscriptionRefreshFeedbackView(
             isRefreshing: workflow.refreshingSubscriptionIDs.contains(subscription.id),
@@ -97,17 +101,6 @@ struct CatalogNodeDetailView: View {
       } else {
         detail.appendPluginParameters(parameters.options.rawText)
       }
-    }
-    if activation.feedbackTargetID == nodeID, let feedback = activation.feedback {
-      let message: String?
-      switch feedback {
-      case .rejected(let failure): message = AppPresentation.message(for: failure)
-      case .failed(let value): message = value
-      case .activated(let skipped) where skipped > 0:
-        message = String(localized: "已跳过 \(skipped) 个存在已知阻塞问题的服务器。", table: "ServerDetails")
-      case .activated: message = nil
-      }
-      if let message { detail.subtitle += " · " + message }
     }
     return detail
   }

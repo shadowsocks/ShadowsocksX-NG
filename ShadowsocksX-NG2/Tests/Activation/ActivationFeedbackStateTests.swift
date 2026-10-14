@@ -35,9 +35,15 @@ final class ActivationFeedbackStateTests: XCTestCase {
   func testActivatedOutcomeRecordsSkippedFeedbackAndClearsPending() async throws {
     let model = ActivationFeedbackState()
     activator.result = .activated(skippedInvalid: 2)
+    let startedAt = Date()
     let outcome = try await model.activate(NodeID(rawValue: "a"), via: workflow)
     XCTAssertEqual(outcome, .activated(skippedInvalid: 2))
     XCTAssertEqual(model.feedback, .activated(skippedInvalid: 2))
+    let completion = try XCTUnwrap(model.completion)
+    XCTAssertEqual(completion.targetID, NodeID(rawValue: "a"))
+    XCTAssertEqual(completion.feedback, model.feedback)
+    XCTAssertGreaterThanOrEqual(completion.completedAt, startedAt)
+    XCTAssertLessThanOrEqual(completion.completedAt, Date())
     XCTAssertNil(model.pendingTargetID)
     XCTAssertFalse(model.isPending)
   }
@@ -49,6 +55,7 @@ final class ActivationFeedbackStateTests: XCTestCase {
     let outcome = try await model.activate(id, via: workflow)
     XCTAssertEqual(outcome, .rejectedActivation(.targetNotFound(id)))
     XCTAssertEqual(model.feedback, .rejected(.targetNotFound(id)))
+    XCTAssertEqual(model.completion?.feedback, model.feedback)
   }
 
   func testUnexpectedErrorRecordsFailedMessageAndRethrows() async throws {
@@ -62,6 +69,7 @@ final class ActivationFeedbackStateTests: XCTestCase {
       XCTAssertEqual(error as? CatalogError, .nodeNotFound(id))
     }
     XCTAssertEqual(model.feedback, .failed(message: "节点不存在（可能已被删除）"))
+    XCTAssertEqual(model.completion?.feedback, model.feedback)
     XCTAssertNil(model.pendingTargetID)
   }
 
@@ -73,7 +81,7 @@ final class ActivationFeedbackStateTests: XCTestCase {
     var ignoredOutcome: ActivationCommandOutcome??
     activator.whileInFlight = {
       observedPending = model.pendingTargetID
-      observedFeedbackCleared = model.feedback == nil
+      observedFeedbackCleared = model.feedback == nil && model.completion == nil
       // 首命令 pending 中的再入：单飞忽略，同步返回 nil。
       do {
         ignoredOutcome = .some(
@@ -97,6 +105,7 @@ final class ActivationFeedbackStateTests: XCTestCase {
     _ = try await model.activate(NodeID(rawValue: "a"), via: workflow)
     XCTAssertEqual(model.feedback, .rejected(.noActiveTarget))
 
+    let firstCompletionID = model.completion?.id
     var feedbackAtSecondCommandStart: ActivationFeedbackState.Feedback? = .activated(
       skippedInvalid: 0)
     activator.whileInFlight = { feedbackAtSecondCommandStart = model.feedback }
@@ -104,6 +113,7 @@ final class ActivationFeedbackStateTests: XCTestCase {
     _ = try await model.activate(NodeID(rawValue: "b"), via: workflow)
     XCTAssertNil(feedbackAtSecondCommandStart, "第二命令开始时应已清空旧反馈")
     XCTAssertEqual(model.feedback, .activated(skippedInvalid: 1))
+    XCTAssertNotEqual(model.completion?.id, firstCompletionID)
   }
 }
 

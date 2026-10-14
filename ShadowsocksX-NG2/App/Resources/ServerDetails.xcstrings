@@ -1,6 +1,17 @@
 {
   "sourceLanguage": "zh-Hans",
   "strings": {
+    "激活成功": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activation succeeded"
+          }
+        }
+      }
+    },
     "信息": {
       "extractionState": "manual",
       "localizations": {

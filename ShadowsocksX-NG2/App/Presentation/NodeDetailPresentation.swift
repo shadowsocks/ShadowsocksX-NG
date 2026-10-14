@@ -14,7 +14,8 @@ struct NodeDetailPresentation {
   }
 
   let title: String
-  var subtitle: String
+  let subtitle: String
+  let activationMessages: [String]
   let secondarySubtitle: String?
   var properties: [Properties]
 
@@ -40,21 +41,23 @@ struct NodeDetailPresentation {
           : String(localized: "订阅配置", table: "ServerDetails"))
     ]
     if isActiveTarget { descriptions.append(String(localized: "活动目标", table: "ServerDetails")) }
+    subtitle = descriptions.joined(separator: " · ")
+    var messages: [String] = []
     if node.isGroup {
       if let reason = eligibility?.ineligibility {
         switch reason {
         case .emptyGroup:
-          descriptions.append(String(localized: "空分组，暂无子节点，不能激活。", table: "ServerDetails"))
+          messages.append(String(localized: "空分组，暂无子节点，不能激活。", table: "ServerDetails"))
         case .noCandidates:
-          descriptions.append(String(localized: "分组中没有可激活的有效服务器。", table: "ServerDetails"))
+          messages.append(String(localized: "分组中没有可激活的有效服务器。", table: "ServerDetails"))
         }
       }
       if let count = eligibility?.skippedInvalidCount, count > 0, eligibility?.canActivate == true {
-        descriptions.append(
+        messages.append(
           String(localized: "激活时将跳过 \(count) 个存在已知阻塞问题的服务器。", table: "ServerDetails"))
       }
     } else {
-      descriptions += node.invalidReasons.map { reason in
+      messages += node.invalidReasons.map { reason in
         if case .pluginNotProvided(let program) = reason,
           let warning = server?.plugin.availabilityWarning(for: program)
         {
@@ -64,7 +67,7 @@ struct NodeDetailPresentation {
           for: ActivationFailure.invalidLeaf(node: node.id, reason: reason))
       }
     }
-    subtitle = descriptions.joined(separator: " · ")
+    activationMessages = messages
     properties = []
     if isRootSubscriptionGroup,
       let subscriptionProperties = Self.subscriptionInformation(
