@@ -67,6 +67,11 @@ extension AppPresentation {
       return systemProxy(SystemProxyOperationFailure(error))
     case let error as TextClipboardFailure:
       return textClipboard(error)
+    case let error as TerminalCommandFailure:
+      switch error {
+      case .credentialUnreadable: return "局域网身份验证密码不可读，请重试。"
+      case .addressUnavailable: return "命令地址已失效，请重新选择 IP。"
+      }
     case let error as ImageClipboardFailure:
       return imageClipboard(error)
     case let error as QrImageSaveFailure:

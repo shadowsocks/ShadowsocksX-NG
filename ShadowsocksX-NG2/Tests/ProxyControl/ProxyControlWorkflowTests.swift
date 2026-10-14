@@ -115,7 +115,22 @@ final class ProxyControlWorkflowTests: XCTestCase {
       "set -gx http_proxy 'http://127.0.0.1:11087'; "
       + "set -gx https_proxy 'http://127.0.0.1:11087'; "
       + "set -gx all_proxy 'socks5://127.0.0.1:11086'; "
-      + "set -gx no_proxy 'localhost,127.0.0.1,::1,.local';")
+      + "set -gx no_proxy 'localhost,127.0.0.1,::1,.local';",
+    nushell:
+      "$env.http_proxy = 'http://127.0.0.1:11087'; "
+      + "$env.https_proxy = 'http://127.0.0.1:11087'; "
+      + "$env.all_proxy = 'socks5://127.0.0.1:11086'; "
+      + "$env.no_proxy = 'localhost,127.0.0.1,::1,.local';",
+    windowsCMD:
+      "set \"http_proxy=http://127.0.0.1:11087\" & "
+      + "set \"https_proxy=http://127.0.0.1:11087\" & "
+      + "set \"all_proxy=socks5://127.0.0.1:11086\" & "
+      + "set \"no_proxy=localhost,127.0.0.1,::1,.local\"",
+    windowsPowerShell:
+      "$env:http_proxy = 'http://127.0.0.1:11087'; "
+      + "$env:https_proxy = 'http://127.0.0.1:11087'; "
+      + "$env:all_proxy = 'socks5://127.0.0.1:11086'; "
+      + "$env:no_proxy = 'localhost,127.0.0.1,::1,.local';")
 
   // MARK: - 整体 snapshot
 

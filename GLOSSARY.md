@@ -219,7 +219,7 @@ _避免用词_：监听范围（Listen scope）。
 仅设置本机 HTTP/HTTPS 代理环境变量的终端命令，目标为本地监听入口。
 
 **终端代理环境命令（Terminal proxy environment commands）**：
-适用于 zsh/bash 和 fish 的命令，通过 HTTP 与 SOCKS 入口设置代理环境变量，并设置本地主机例外。它只影响遵循这些环境变量的子进程。
+按目标 shell 语法设置 HTTP 与 SOCKS 代理环境变量及本地主机例外的命令。它只影响遵循这些环境变量的子进程。
 
 **终端命令地址（Terminal command address）**：
 复制的终端代理环境命令中，HTTP 与 SOCKS 入口共同使用的 IP 地址。它是当前应用会话内的选择，与监听设置和系统代理设置独立。

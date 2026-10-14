@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// 「复制代理环境变量设置命令」卡：按所选 shell 格式复制 HTTP 与 SOCKS 环境变量。
-/// 局域网开启时以单选下拉框选择命令地址，两种 shell
+/// 局域网开启时以单选下拉框选择命令地址，各种 shell
 /// 的全部代理端点共用该选择；局域网关闭时隐藏下拉框并使用本地入口。
 struct TerminalProxyEnvironmentCard: View {
   @ObservedObject var control: ProxyControlWorkflow
@@ -59,8 +59,9 @@ struct TerminalProxyEnvironmentCard: View {
             Text("局域网身份验证密码不可读，请重试。")
               .font(.caption).foregroundStyle(.red)
           }
-          commandButton(for: .zshBash)
-          commandButton(for: .fish)
+          ForEach(control.snapshot.terminalCommandShells, id: \.self) { shell in
+            commandButton(for: shell)
+          }
         }
         .padding(.top, 6)
       }
@@ -84,8 +85,9 @@ struct TerminalProxyEnvironmentCard: View {
 
   private func commandButton(for shell: TerminalCommandShell) -> some View {
     let isCopied = copiedShell == shell
+    let expectedAddress = control.snapshot.commandAddressPicker.selected.identity
     return Button {
-      copy(shell)
+      copy(shell, expectedAddress: expectedAddress)
     } label: {
       HStack(spacing: 10) {
         Image(systemName: isCopied ? "checkmark" : "doc.on.doc")
@@ -109,12 +111,10 @@ struct TerminalProxyEnvironmentCard: View {
     .help(shell.command(from: control.snapshot.terminalProxyEnvironmentCommands))
   }
 
-  private func copy(_ shell: TerminalCommandShell) {
-    // 复制前刷新：失效选择回退后的命令即剪贴板内容，与按钮
-    // 提示保持同一选择。
-    let commands = control.refreshTerminalCommands()
+  private func copy(_ shell: TerminalCommandShell, expectedAddress: TerminalCommandAddressIdentity)
+  {
     do {
-      if let failure = commands.failure { throw failure }
+      let commands = try control.prepareTerminalCommandsForCopy(expectedAddress: expectedAddress)
       try clipboard.write(shell.command(from: commands))
       feedbackTask?.cancel()
       copiedShell = shell
@@ -133,21 +133,14 @@ struct TerminalProxyEnvironmentCard: View {
   }
 }
 
-private enum TerminalCommandShell: Equatable {
-  case zshBash
-  case fish
-
-  var title: String {
+extension TerminalCommandShell {
+  fileprivate var title: String {
     switch self {
     case .zshBash: "zsh / bash"
     case .fish: "fish"
-    }
-  }
-
-  func command(from commands: TerminalProxyEnvironmentCommands) -> String {
-    switch self {
-    case .zshBash: commands.zshBash
-    case .fish: commands.fish
+    case .nushell: "Nushell"
+    case .windowsCMD: "Windows：CMD"
+    case .windowsPowerShell: "Windows：PowerShell"
     }
   }
 }

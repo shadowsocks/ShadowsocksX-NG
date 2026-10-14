@@ -13,12 +13,32 @@ struct HTTPExportCapability: Equatable, Sendable {
 
 /// 首页可复制的 shell 环境变量设置命令。不同 shell 的语法由 workflow 一次投影，
 /// 呈现层只选择格式并执行剪贴板副作用。
-enum TerminalCommandFailure: Error, Equatable, Sendable { case credentialUnreadable }
+enum TerminalCommandFailure: Error, Equatable, Sendable {
+  case credentialUnreadable
+  case addressUnavailable
+}
 
 struct TerminalProxyEnvironmentCommands: Equatable, Sendable {
   let zshBash: String
   let fish: String
+  let nushell: String
+  let windowsCMD: String
+  let windowsPowerShell: String
   var failure: TerminalCommandFailure?
+}
+
+enum TerminalCommandShell: CaseIterable, Hashable, Sendable {
+  case zshBash, fish, nushell, windowsCMD, windowsPowerShell
+
+  func command(from commands: TerminalProxyEnvironmentCommands) -> String {
+    switch self {
+    case .zshBash: commands.zshBash
+    case .fish: commands.fish
+    case .nushell: commands.nushell
+    case .windowsCMD: commands.windowsCMD
+    case .windowsPowerShell: commands.windowsPowerShell
+    }
+  }
 }
 
 /// 活动目标安全事实：存在性 + 可展示路径摘要。身份是不透明
@@ -65,9 +85,15 @@ struct ProxyControlSnapshot: Equatable, Sendable {
   let httpExport: HTTPExportCapability
   /// 首页命令地址选择器：可见性、候选与生效选择。
   let commandAddressPicker: TerminalCommandAddressPicker
-  /// 首页终端代理环境变量命令，分别适用于 zsh/bash 与 fish；端点地址为生效
+  /// 首页终端代理环境变量命令；端点地址为生效
   /// 命令地址选择，端口取已保存监听事实。
   let terminalProxyEnvironmentCommands: TerminalProxyEnvironmentCommands
+
+  /// Windows 格式供其他设备使用，只在局域网入口与网络地址都有效时提供。
+  var terminalCommandShells: [TerminalCommandShell] {
+    commandAddressPicker.isVisible && commandAddressPicker.selected.address != "127.0.0.1"
+      ? TerminalCommandShell.allCases : [.zshBash, .fish, .nushell]
+  }
 }
 
 // MARK: - 适配缝
@@ -248,11 +274,23 @@ final class ProxyControlWorkflow: ObservableObject {
   }
 
   /// 刷新命令地址候选并整体重发布（进入首页与复制前调用；网络变化经接口
-  /// 事实变化通知自动刷新）。返回刷新后的两种 shell 命令供剪贴板副作用
-  /// 使用——失效选择已在本次观察中回退，提示投影与返回值一致。
+  /// 事实变化通知自动刷新）。失效选择回退到本地地址。
   @discardableResult
   func refreshTerminalCommands() -> TerminalProxyEnvironmentCommands {
     republish().terminalProxyEnvironmentCommands
+  }
+
+  /// 复制前核实按钮呈现时的 IP 仍有效；回退只更新界面，不改写剪贴板。
+  /// 显式传入原地址身份，防止网络通知先回退 snapshot 后复制旧按钮。
+  func prepareTerminalCommandsForCopy(expectedAddress: TerminalCommandAddressIdentity) throws
+    -> TerminalProxyEnvironmentCommands
+  {
+    let commands = refreshTerminalCommands()
+    guard snapshot.commandAddressPicker.selected.identity == expectedAddress else {
+      throw TerminalCommandFailure.addressUnavailable
+    }
+    if let failure = commands.failure { throw failure }
+    return commands
   }
 
   // MARK: - 整体观察（implementation，UI 不可见）

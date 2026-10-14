@@ -4,6 +4,57 @@ import Testing
 @testable import ShadowsocksX_NG2
 
 struct SeparateListenerTests {
+  @Test func newFormatsPreserveEncodedLANCredentialsAndBracketIPv6() {
+    var settings = SslocalListenSettings(listenerMode: .allIPv4AndIPv6Interfaces)
+    settings.lan.authenticationEnabled = true
+    settings.lan.username = "u @"
+    let commands = TerminalProxyEnvironmentCommands(
+      listen: RuntimeListenFacts(listen: settings),
+      commandAddress: TerminalCommandAddress(
+        bsdName: "en0", address: "2001:db8::2", displayName: "Wi-Fi"),
+      password: { "p':@/$%!\"&^()" })
+    let http = "http://u%20%40:p%27%3A%40%2F%24%25%21%22%26%5E%28%29@[2001:db8::2]:11089"
+    #expect(commands.nushell.contains("$env.http_proxy = '\(http)'"))
+    #expect(commands.windowsPowerShell.contains("$env:http_proxy = '\(http)'"))
+    let cmdUserInfo = "u%~P20%~P40:p%~P27%~P3A%~P40%~P2F%~P24%~P25%~P21%~P22%~P26%~P5E%~P28%~P29"
+    #expect(
+      commands.windowsCMD
+        == "for %P in (\"%\") do set \"http_proxy=http://\(cmdUserInfo)@[2001:db8::2]:11089\"\r\n"
+        + "for %P in (\"%\") do set \"https_proxy=http://\(cmdUserInfo)@[2001:db8::2]:11089\"\r\n"
+        + "for %P in (\"%\") do set \"all_proxy=socks5://\(cmdUserInfo)@[2001:db8::2]:11088\"\r\n"
+        + "set \"no_proxy=localhost,127.0.0.1,::1,.local\"")
+    #expect(commands.failure == nil)
+  }
+
+  @Test func windowsFormatsSetFourSessionVariablesUsingLANPorts() {
+    let commands = TerminalProxyEnvironmentCommands(
+      listen: RuntimeListenFacts(listen: SslocalListenSettings(listenerMode: .allIPv4Interfaces)),
+      commandAddress: TerminalCommandAddress(
+        bsdName: "en0", address: "192.0.2.2", displayName: "Wi-Fi"))
+    #expect(
+      commands.windowsCMD == "set \"http_proxy=http://192.0.2.2:11089\" & "
+        + "set \"https_proxy=http://192.0.2.2:11089\" & "
+        + "set \"all_proxy=socks5://192.0.2.2:11088\" & "
+        + "set \"no_proxy=localhost,127.0.0.1,::1,.local\"")
+    #expect(
+      commands.windowsPowerShell == "$env:http_proxy = 'http://192.0.2.2:11089'; "
+        + "$env:https_proxy = 'http://192.0.2.2:11089'; "
+        + "$env:all_proxy = 'socks5://192.0.2.2:11088'; "
+        + "$env:no_proxy = 'localhost,127.0.0.1,::1,.local';")
+  }
+
+  @Test func nushellSetsFourSessionVariablesUsingLocalPorts() {
+    let commands = TerminalProxyEnvironmentCommands(
+      listen: RuntimeListenFacts(listen: SslocalListenSettings()),
+      commandAddress: TerminalCommandAddress(
+        bsdName: "lo0", address: "127.0.0.1", displayName: "lo0"))
+    #expect(
+      commands.nushell == "$env.http_proxy = 'http://127.0.0.1:11087'; "
+        + "$env.https_proxy = 'http://127.0.0.1:11087'; "
+        + "$env.all_proxy = 'socks5://127.0.0.1:11086'; "
+        + "$env.no_proxy = 'localhost,127.0.0.1,::1,.local';")
+  }
+
   @Test func disabledIPv6ConfigurationRoundTripsWithoutAffectingEffectiveRuntime() throws {
     let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     defer { try? FileManager.default.removeItem(at: directory) }

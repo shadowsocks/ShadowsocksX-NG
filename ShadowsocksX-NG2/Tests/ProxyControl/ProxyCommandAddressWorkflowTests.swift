@@ -5,6 +5,53 @@ import XCTest
 
 @MainActor
 struct LANCommandEnablementTests {
+  @Test(arguments: [false, true])
+  func copyRejectsLostIPIncludingAButtonRenderedBeforeNetworkNotification(
+    notificationDelivered: Bool
+  ) {
+    let runtime = FakeProxyRuntime()
+    let interfaces = FakeLocalInterfaceFacts()
+    runtime.listenFacts.lan.isEnabled = true
+    interfaces.interfaces = [FakeLocalInterfaceFacts.wifi(addresses: [.ipv4("192.0.2.2")])]
+    let workflow = ProxyControlWorkflow(
+      runtime: runtime, targetFacts: FakeTargetFacts(), interfaceFacts: interfaces)
+    let address = workflow.snapshot.commandAddressPicker.candidates[1]
+    workflow.selectCommandAddress(address)
+    interfaces.interfaces = []
+    if notificationDelivered { interfaces.emitChange() }
+    #expect(throws: TerminalCommandFailure.addressUnavailable) {
+      try workflow.prepareTerminalCommandsForCopy(expectedAddress: address.identity)
+    }
+    #expect(workflow.snapshot.commandAddressPicker.selected.address == "127.0.0.1")
+    #expect(workflow.snapshot.terminalCommandShells == [.zshBash, .fish, .nushell])
+    #expect(runtime.agentCommands.isEmpty)
+    #expect(runtime.systemProxyCommands.isEmpty)
+  }
+
+  @Test func windowsFormatsRequireEnabledLANAndSelectedNetworkIPWithoutRequiringRunningProxy() {
+    let runtime = FakeProxyRuntime()
+    let interfaces = FakeLocalInterfaceFacts()
+    let workflow = ProxyControlWorkflow(
+      runtime: runtime, targetFacts: FakeTargetFacts(), interfaceFacts: interfaces)
+    #expect(workflow.snapshot.terminalCommandShells == [.zshBash, .fish, .nushell])
+    runtime.listenFacts.lan.isEnabled = true
+    interfaces.interfaces = [FakeLocalInterfaceFacts.wifi(addresses: [.ipv4("192.0.2.2")])]
+    runtime.emitChange()
+    #expect(workflow.snapshot.terminalCommandShells == [.zshBash, .fish, .nushell])
+    workflow.selectCommandAddress(workflow.snapshot.commandAddressPicker.candidates[1])
+    runtime.runtimeFacts = ProxyRuntimeFacts(status: .off, isOn: false)
+    runtime.emitChange()
+    #expect(
+      workflow.snapshot.terminalCommandShells == [
+        .zshBash, .fish, .nushell, .windowsCMD, .windowsPowerShell,
+      ])
+    runtime.listenFacts.lan.isEnabled = false
+    runtime.emitChange()
+    #expect(workflow.snapshot.terminalCommandShells == [.zshBash, .fish, .nushell])
+    #expect(runtime.agentCommands.isEmpty)
+    #expect(runtime.systemProxyCommands.isEmpty)
+  }
+
   @Test func disablingLANRetainsIPv6ModeAndFallsBackFromSelectedNetworkAddress() {
     let runtime = FakeProxyRuntime()
     let interfaces = FakeLocalInterfaceFacts()

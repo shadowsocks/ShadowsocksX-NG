@@ -108,8 +108,8 @@ extension HTTPExportCapability {
 }
 
 /// 终端代理环境变量命令的唯一派生点：已保存监听事实 + 生效
-/// 命令地址 → 两种 shell 的可复制命令。HTTP/HTTPS 用已保存 HTTP 端口，
-/// SOCKS 用已保存 SOCKS 端口；变量集合、小写变量名、单引号转义、socks5
+/// 命令地址 → 各种 shell 的可复制命令。HTTP/HTTPS 用已保存 HTTP 端口，
+/// SOCKS 用已保存 SOCKS 端口；变量集合、小写变量名、socks5
 /// 协议与 no_proxy 内容保持不变；IPv6 URL 使用方括号。
 extension TerminalProxyEnvironmentCommands {
   init(
@@ -140,30 +140,38 @@ extension TerminalProxyEnvironmentCommands {
         }
         userInfo = "\(username):\(encodedPassword)@"
       } catch {
-        self.init(zshBash: "", fish: "", failure: .credentialUnreadable)
+        self.init(
+          zshBash: "", fish: "", nushell: "", windowsCMD: "", windowsPowerShell: "",
+          failure: .credentialUnreadable)
         return
       }
     }
-    let httpEndpoint = "'http://\(userInfo)\(urlHost):\(httpPort)'"
-    let socksEndpoint = "'socks5://\(userInfo)\(urlHost):\(socksPort)'"
-    let noProxy = "'localhost,127.0.0.1,::1,.local'"
-    let zshBash =
-      [
-        "export http_proxy=\(httpEndpoint)",
-        "export https_proxy=\(httpEndpoint)",
-        "export all_proxy=\(socksEndpoint)",
-        "export no_proxy=\(noProxy)",
-      ].joined(separator: "; ") + ";"
-    let fish =
-      [
-        "set -gx http_proxy \(httpEndpoint)",
-        "set -gx https_proxy \(httpEndpoint)",
-        "set -gx all_proxy \(socksEndpoint)",
-        "set -gx no_proxy \(noProxy)",
-      ].joined(separator: "; ") + ";"
+    let httpEndpoint = "http://\(userInfo)\(urlHost):\(httpPort)"
+    let socksEndpoint = "socks5://\(userInfo)\(urlHost):\(socksPort)"
+    let variables = [
+      (name: "http_proxy", value: httpEndpoint),
+      (name: "https_proxy", value: httpEndpoint),
+      (name: "all_proxy", value: socksEndpoint),
+      (name: "no_proxy", value: "localhost,127.0.0.1,::1,.local"),
+    ]
+    let windowsAssignments = variables.map { "set \"\($0.name)=\($0.value)\"" }
+    // CMD 会把 %XX% 当作环境变量展开。用交互 FOR 变量插入字面百分号，
+    // 不写临时环境变量；逐行赋值使最长允许凭据仍不超过单行长度限制。
+    let windowsCMD =
+      userInfo.contains("%")
+      ? windowsAssignments.map { assignment in
+        assignment.contains("%")
+          ? "for %P in (\"%\") do \(assignment.replacingOccurrences(of: "%", with: "%~P"))"
+          : assignment
+      }.joined(separator: "\r\n")
+      : windowsAssignments.joined(separator: " & ")
     self.init(
-      zshBash: zshBash,
-      fish: fish)
+      zshBash: variables.map { "export \($0.name)='\($0.value)'" }.joined(separator: "; ") + ";",
+      fish: variables.map { "set -gx \($0.name) '\($0.value)'" }.joined(separator: "; ") + ";",
+      nushell: variables.map { "$env.\($0.name) = '\($0.value)'" }.joined(separator: "; ") + ";",
+      windowsCMD: windowsCMD,
+      windowsPowerShell:
+        variables.map { "$env:\($0.name) = '\($0.value)'" }.joined(separator: "; ") + ";")
   }
 }
 
