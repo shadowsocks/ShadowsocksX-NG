@@ -5,13 +5,23 @@ struct ConnectivityCell: View {
   @ObservedObject var module: ServerConnectivity
   let node: CatalogTreeNode
   let workflow: CatalogWorkflow
+  var selected = false
 
   var body: some View {
     TimelineView(.periodic(from: .now, by: 1)) { context in
       let value = presentation(at: context.date)
       HStack(spacing: 5) {
-        Text(value.text).foregroundStyle(value.expired ? .secondary : .primary)
-        if value.testing { ProgressView().controlSize(.mini) }
+        Text(value.text)
+          .foregroundStyle(
+            selected
+              ? AnyShapeStyle(
+                Color(nsColor: .alternateSelectedControlTextColor)
+                  .opacity(value.expired ? 0.85 : 1))
+              : AnyShapeStyle(value.expired ? .secondary : .primary))
+        if value.testing {
+          ProgressView().controlSize(.mini)
+            .tint(selected ? Color(nsColor: .alternateSelectedControlTextColor) : nil)
+        }
       }
       .help(value.help)
       .accessibilityElement(children: .ignore)

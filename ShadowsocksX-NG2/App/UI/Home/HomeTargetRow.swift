@@ -35,12 +35,14 @@ struct HomeTargetRow: View {
           Text(row.node.name).lineLimit(1).truncationMode(.tail)
           if active {
             Image(systemName: "bolt.fill")
-              .foregroundStyle(selected ? Color(nsColor: .selectedTextColor) : .orange)
+              .foregroundStyle(
+                selected ? Color(nsColor: .alternateSelectedControlTextColor) : .orange
+              )
               .help(String(localized: "活动目标"))
           }
           Spacer(minLength: 4)
           if let module = workflow.connectivity {
-            ConnectivityCell(module: module, node: row.node, workflow: workflow)
+            ConnectivityCell(module: module, node: row.node, workflow: workflow, selected: selected)
               .monospacedDigit()
               .frame(width: 130, alignment: .trailing)
           }
@@ -56,7 +58,7 @@ struct HomeTargetRow: View {
     }
     .padding(.leading, CGFloat(row.depth) * 16 + 2)
     .padding(.trailing, 8)
-    .foregroundStyle(selected ? Color(nsColor: .selectedTextColor) : .primary)
+    .foregroundStyle(selected ? Color(nsColor: .alternateSelectedControlTextColor) : .primary)
     .background(
       selected ? Color(nsColor: .selectedContentBackgroundColor) : .clear,
       in: RoundedRectangle(cornerRadius: 5)
