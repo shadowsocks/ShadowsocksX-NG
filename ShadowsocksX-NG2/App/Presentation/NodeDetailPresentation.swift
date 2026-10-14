@@ -15,13 +15,21 @@ struct NodeDetailPresentation {
 
   let title: String
   var subtitle: String
+  let secondarySubtitle: String?
   var properties: [Properties]
 
   init(
     node: CatalogTreeNode, server: ServerDetailPresentation?,
-    eligibility: ActivationEligibility?, isActiveTarget: Bool
+    eligibility: ActivationEligibility?, isActiveTarget: Bool,
+    subscription: SubscriptionSummary? = nil,
+    locale: Locale = .current, timeZone: TimeZone = .current
   ) {
     title = node.name
+    let isRootSubscriptionGroup = Self.isRootSubscriptionGroup(node)
+    secondarySubtitle =
+      isRootSubscriptionGroup
+      ? String(localized: "配置由远端管理，本地不能修改。", table: "ServerDetails")
+      : nil
     var descriptions = [
       node.isGroup
         ? (node.isManual
@@ -57,8 +65,65 @@ struct NodeDetailPresentation {
       }
     }
     subtitle = descriptions.joined(separator: " · ")
-    properties = [Self.information(for: node, eligibility: eligibility)]
+    properties = []
+    if isRootSubscriptionGroup,
+      let subscriptionProperties = Self.subscriptionInformation(
+        summary: subscription, locale: locale, timeZone: timeZone)
+    {
+      properties.append(subscriptionProperties)
+    }
+    properties.append(Self.information(for: node, eligibility: eligibility))
     if let server { properties.append(Self.connection(for: server)) }
+  }
+
+  private static func isRootSubscriptionGroup(_ node: CatalogTreeNode) -> Bool {
+    node.isGroup && node.source == .subscription && node.parentID == nil
+  }
+
+  private static func subscriptionInformation(
+    summary: SubscriptionSummary?, locale: Locale, timeZone: TimeZone
+  ) -> Properties? {
+    guard let summary else { return nil }
+    var items: [Property] = []
+    if let date = summary.lastSucceededAt {
+      items.append(
+        Property(
+          label: String(localized: "最后更新时间", table: "ServerDetails"),
+          value: subscriptionTimestamp(date, locale: locale, timeZone: timeZone)))
+    }
+    if let used = summary.information?.bytesUsed {
+      items.append(
+        Property(
+          label: String(localized: "已用流量", table: "ServerDetails"),
+          value: SubscriptionInformation.byteCountText(used, locale: locale)))
+    }
+    if let remaining = summary.information?.bytesRemaining {
+      items.append(
+        Property(
+          label: String(localized: "剩余流量", table: "ServerDetails"),
+          value: SubscriptionInformation.byteCountText(remaining, locale: locale)))
+    }
+    if let date = summary.information?.expiresAt {
+      items.append(
+        Property(
+          label: String(localized: "到期时间", table: "ServerDetails"),
+          value: subscriptionTimestamp(date, locale: locale, timeZone: timeZone)))
+    }
+    if let date = summary.information?.trafficResetAt {
+      items.append(
+        Property(
+          label: String(localized: "重置时间", table: "ServerDetails"),
+          value: subscriptionTimestamp(date, locale: locale, timeZone: timeZone)))
+    }
+    guard !items.isEmpty else { return nil }
+    return Properties(title: String(localized: "订阅", table: "ServerDetails"), items: items)
+  }
+
+  private static func subscriptionTimestamp(
+    _ date: Date, locale: Locale, timeZone: TimeZone
+  ) -> String {
+    date.formatted(
+      Date.FormatStyle(date: .abbreviated, time: .shortened, locale: locale, timeZone: timeZone))
   }
 
   private static func connection(for server: ServerDetailPresentation) -> Properties {

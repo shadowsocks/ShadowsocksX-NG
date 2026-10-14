@@ -13,10 +13,18 @@ struct NodeDetailView<Actions: View, Supplement: View>: View {
           Text(detail.title)
             .font(.title2.weight(.semibold))
             .textSelection(.enabled)
-          Text(detail.subtitle)
-            .font(.subheadline)
-            .foregroundStyle(.secondary)
-            .textSelection(.enabled)
+          VStack(alignment: .leading, spacing: 4) {
+            Text(detail.subtitle)
+              .font(.subheadline)
+              .foregroundStyle(.secondary)
+              .textSelection(.enabled)
+            if let secondarySubtitle = detail.secondarySubtitle {
+              Text(secondarySubtitle)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .textSelection(.enabled)
+            }
+          }
           HStack(spacing: 16) { actions }
             .buttonStyle(.link)
         }

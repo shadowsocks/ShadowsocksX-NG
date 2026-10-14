@@ -2,6 +2,8 @@ import SwiftUI
 
 /// 装配当前节点的详情会话；查询、参数装载与命令均留在共用视图之外。
 struct CatalogNodeDetailView: View {
+  @Environment(\.locale) private var locale
+  @Environment(\.timeZone) private var timeZone
   @ObservedObject var workflow: CatalogWorkflow
   @ObservedObject var activation: ActivationFeedbackState
   let nodeID: NodeID
@@ -67,8 +69,10 @@ struct CatalogNodeDetailView: View {
 
   private func presentation(for node: CatalogTreeNode) -> NodeDetailPresentation {
     let server = node.isGroup ? nil : workflow.serverDetailPresentation(for: nodeID)
+    let subscription = subscriptionSummary(for: node)
     var detail = NodeDetailPresentation(
-      node: node, server: server, eligibility: eligibility, isActiveTarget: isActiveTarget)
+      node: node, server: server, eligibility: eligibility, isActiveTarget: isActiveTarget,
+      subscription: subscription, locale: locale, timeZone: timeZone)
     if let server, server.plugin.selection != .none {
       if parameters.failure != nil {
         detail.appendPluginParameterFailure()
@@ -88,5 +92,10 @@ struct CatalogNodeDetailView: View {
       if let message { detail.subtitle += " · " + message }
     }
     return detail
+  }
+
+  private func subscriptionSummary(for node: CatalogTreeNode) -> SubscriptionSummary? {
+    guard node.isGroup, node.source == .subscription, node.parentID == nil else { return nil }
+    return workflow.subscriptions.first { $0.groupID == node.id }
   }
 }

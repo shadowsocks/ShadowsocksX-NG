@@ -341,6 +341,73 @@
           }
         }
       }
+    },
+    "配置由远端管理，本地不能修改。": {
+      "extractionState": "manual",
+      "comment": "Second subtitle line for the root group of a subscription.",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Managed remotely; cannot be modified locally."
+          }
+        }
+      }
+    },
+    "最后更新时间": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Last Update"
+          }
+        }
+      }
+    },
+    "已用流量": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Used Data"
+          }
+        }
+      }
+    },
+    "剩余流量": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remaining Data"
+          }
+        }
+      }
+    },
+    "到期时间": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Expiration"
+          }
+        }
+      }
+    },
+    "重置时间": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Traffic Reset"
+          }
+        }
+      }
     }
   },
   "version": "1.0"
