@@ -16,17 +16,6 @@ struct CatalogNodeDetailView: View {
     if let node {
       NodeDetailView(detail: presentation(for: node)) {
         Button(
-          workflow.isFavorite(nodeID)
-            ? String(localized: "取消收藏", table: "ServerDetails")
-            : String(localized: "收藏", table: "ServerDetails")
-        ) {
-          do {
-            try workflow.setFavorite(nodeID, isFavorite: !workflow.isFavorite(nodeID))
-          } catch {
-            errors.present(error)
-          }
-        }
-        Button(
           activation.pendingTargetID == nodeID
             ? String(localized: "激活中…", table: "ServerDetails")
             : String(localized: "激活", table: "ServerDetails")
@@ -39,7 +28,19 @@ struct CatalogNodeDetailView: View {
             }
           }
         }
+        .buttonStyle(.borderedProminent)
         .disabled(!(eligibility?.canActivate ?? false) || activation.isPending)
+        Button(
+          workflow.isFavorite(nodeID)
+            ? String(localized: "取消收藏", table: "ServerDetails")
+            : String(localized: "收藏", table: "ServerDetails")
+        ) {
+          do {
+            try workflow.setFavorite(nodeID, isFavorite: !workflow.isFavorite(nodeID))
+          } catch {
+            errors.present(error)
+          }
+        }
         if !node.isGroup && parameters.failure != nil {
           Button(String(localized: "重新加载", table: "ServerDetails")) {
             parameters.reload(load: workflow.serverDetailPluginOptions)
