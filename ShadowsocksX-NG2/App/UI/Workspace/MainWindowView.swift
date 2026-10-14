@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// 服务器导入面板：由窗口工具栏「导入服务器配置」按钮打开，窗口壳统一持有
-/// 呈现；添加订阅表单由订阅分区自持（SubscriptionsView）。
+/// 呈现；添加订阅表单由服务器分区自持（ServersView）。
 private enum WorkspaceSheet: String, Identifiable {
   case importServers
 
@@ -136,10 +136,6 @@ struct MainWindowView: View {
         imageClipboard: imageClipboard,
         configurationGroupFileExporter: configurationGroupFileExporter,
         qrImageSaver: qrImageSaver)
-    case .subscriptions:
-      SubscriptionsView(
-        workflow: workflow,
-        onNodesRemoved: clearSelectionIfInvalidated)
     case .rules:
       RulesView(workflow: rulesWorkflow)
     case .settings:
@@ -150,12 +146,6 @@ struct MainWindowView: View {
       .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
   }
-
-  private func clearSelectionIfInvalidated(_ removed: Set<NodeID>) {
-    if let selection, removed.contains(selection) {
-      self.selection = nil
-    }
-  }
 }
 
 extension WorkspaceDestination {
@@ -163,7 +153,6 @@ extension WorkspaceDestination {
     switch self {
     case .home: "首页"
     case .servers: "服务器"
-    case .subscriptions: "订阅"
     case .rules: RulesCopy.text("代理规则")
     case .settings: "设置"
     }
@@ -173,7 +162,6 @@ extension WorkspaceDestination {
     switch self {
     case .home: "house"
     case .servers: "server.rack"
-    case .subscriptions: "arrow.triangle.2.circlepath"
     case .rules: "list.bullet.rectangle"
     case .settings: "gearshape"
     }

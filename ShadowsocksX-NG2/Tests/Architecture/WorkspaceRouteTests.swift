@@ -38,7 +38,7 @@ final class WorkspaceRouteTests: XCTestCase {
   func testDestinationVocabularyIsFiniteAndStable() {
     XCTAssertEqual(
       WorkspaceDestination.allCases,
-      [.home, .servers, .subscriptions, .rules, .settings])
+      [.home, .servers, .rules, .settings])
   }
 
   func testNavigateChangesDestinationOnly() {

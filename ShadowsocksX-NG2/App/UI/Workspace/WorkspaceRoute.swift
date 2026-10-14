@@ -5,7 +5,6 @@ import Combine
 enum WorkspaceDestination: String, CaseIterable, Hashable, Identifiable, Sendable {
   case home
   case servers
-  case subscriptions
   case rules
   case settings
 

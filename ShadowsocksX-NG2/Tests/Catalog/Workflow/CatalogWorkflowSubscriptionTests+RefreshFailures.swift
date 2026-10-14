@@ -134,12 +134,10 @@ extension CatalogWorkflowSubscriptionTests {
     await workflow.refreshSubscription(healthy.id)
 
     let failed = try XCTUnwrap(workflow.subscriptions.first)
-    XCTAssertTrue(failed.status.isFailed)
     guard case .failed(_, let failure) = failed.status else {
       return XCTFail("应保留 typed 失败事实")
     }
     XCTAssertEqual(failure, .transport(.connection))
-    XCTAssertEqual(failed.status.failureDetail, "订阅连接失败")
     XCTAssertEqual(failed.serverCount, 2, "失败保留最后成功的服务器数")
   }
 
