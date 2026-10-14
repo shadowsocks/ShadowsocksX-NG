@@ -64,17 +64,17 @@ enum StatusMenuModel {
   private static func statusText(for status: ProxyRuntimeStatus) -> String {
     switch status {
     case .off:
-      return "代理未运行"
+      return "代理客户端未运行"
     case .starting:
-      return "正在启动代理…"
+      return "正在启动代理客户端…"
     case .running:
-      return "代理运行中"
+      return "代理客户端运行中"
     case .firewallBlocked:
-      return "代理运行中（局域网受阻）"
+      return "代理客户端运行中（局域网受阻）"
     case .launchFailed:
       return "启动失败"
     case .requiresApproval:
-      return "等待允许后台代理"
+      return "等待用户批准后理客户端后台运行"
     case .serviceFailed:
       return "服务管理失败"
     }

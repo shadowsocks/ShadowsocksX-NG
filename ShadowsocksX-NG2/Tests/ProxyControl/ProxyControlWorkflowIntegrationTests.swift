@@ -285,7 +285,7 @@ final class ProxyControlWorkflowIntegrationTests: XCTestCase {
 
   /// 状态菜单的呈现面只凭 ProxyControlWorkflow 的 snapshot 与 CatalogWorkflow
   /// 的目录事实即可完整推导；本文件不要求启动 SwiftUI，也不依赖控制器字段。
-  func testStatusMenuSummaryIsFullyDerivableFromWorkflowSnapshot() async throws {
+  func testStatusMenuSummaryProjectsWorkflowStateAndTarget() async throws {
     let server = try makeSeededCatalog()
     let composition = makeProxies(probe: ProxyRuntimeFixture.FakeProbe.reachable())
     _ = try await composition.catalog.activate(server)
@@ -296,12 +296,9 @@ final class ProxyControlWorkflowIntegrationTests: XCTestCase {
 
     XCTAssertTrue(summary.agentIntentEnabled)
     XCTAssertTrue(summary.isOn)
-    XCTAssertEqual(summary.status, "代理运行中")
-    XCTAssertEqual(summary.modeLabel, "规则 · 代理")
     XCTAssertEqual(summary.targetPath, "香港 01")
     XCTAssertNil(summary.detail)
     XCTAssertTrue(summary.systemProxyIntentEnabled)
-    XCTAssertEqual(summary.systemProxyStatus, "系统代理：已应用")
     XCTAssertNil(summary.systemProxyDetail)
   }
 

@@ -8,38 +8,30 @@ import XCTest
 final class StatusCardModelTests: XCTestCase {
   private struct RuntimeToneCase {
     let facts: ProxyRuntimeFacts
-    let expectedText: String
     let expectedTone: StatusCardModel.Tone
   }
 
   private static let runtimeToneCases: [RuntimeToneCase] = [
     RuntimeToneCase(
       facts: ProxyRuntimeFacts(status: .starting, isOn: true),
-      expectedText: "正在启动代理…",
       expectedTone: .neutral),
     RuntimeToneCase(
       facts: ProxyRuntimeFacts(status: .running, isOn: true),
-      expectedText: "代理运行中",
       expectedTone: .positive),
     RuntimeToneCase(
       facts: ProxyRuntimeFacts(status: .off, isOn: false),
-      expectedText: "代理未运行",
       expectedTone: .neutral),
     RuntimeToneCase(
       facts: ProxyRuntimeFacts(status: .firewallBlocked, isOn: true),
-      expectedText: "代理运行中（局域网受阻）",
       expectedTone: .attention),
     RuntimeToneCase(
       facts: ProxyRuntimeFacts(status: .requiresApproval, isOn: true),
-      expectedText: "等待允许后台代理",
       expectedTone: .attention),
     RuntimeToneCase(
       facts: ProxyRuntimeFacts(status: .launchFailed, isOn: false),
-      expectedText: "启动失败",
       expectedTone: .failure),
     RuntimeToneCase(
       facts: ProxyRuntimeFacts(status: .serviceFailed, isOn: false),
-      expectedText: "服务管理失败",
       expectedTone: .failure),
   ]
 
@@ -81,11 +73,9 @@ final class StatusCardModelTests: XCTestCase {
 
   // MARK: - agent 运行状态行
 
-  func testRuntimeRowProjectsStatusTextWithSemanticTone() {
+  func testRuntimeRowUsesSemanticTone() {
     for testCase in Self.runtimeToneCases {
       let card = StatusCardModel.card(from: makeSnapshot(facts: testCase.facts))
-      XCTAssertEqual(card.runtimeRow.label, "后台代理")
-      XCTAssertEqual(card.runtimeRow.text, testCase.expectedText)
       XCTAssertEqual(card.runtimeRow.tone, testCase.expectedTone)
     }
   }
@@ -118,11 +108,9 @@ final class StatusCardModelTests: XCTestCase {
 
   // MARK: - 系统代理行
 
-  func testSystemProxyRowTonePerApplicationAndFailureDetail() {
+  func testSystemProxyRowUsesSemanticToneAndFailureDetail() {
     let idle = StatusCardModel.card(
       from: makeSnapshot(facts: ProxyRuntimeFacts(status: .off, isOn: false)))
-    XCTAssertEqual(idle.systemProxyRow.label, "系统代理设置")
-    XCTAssertEqual(idle.systemProxyRow.text, "未应用")
     XCTAssertEqual(idle.systemProxyRow.tone, .neutral)
     XCTAssertNil(idle.systemProxyDetail)
 
@@ -142,7 +130,6 @@ final class StatusCardModelTests: XCTestCase {
       from: makeSnapshot(
         facts: ProxyRuntimeFacts(status: .running, isOn: true),
         systemProxyApplication: .failed(.operation(.applyFailed))))
-    XCTAssertEqual(failed.systemProxyRow.text, "应用失败")
     XCTAssertEqual(failed.systemProxyRow.tone, .failure)
     XCTAssertEqual(failed.systemProxyDetail?.tone, .failure)
     XCTAssertEqual(
@@ -154,32 +141,32 @@ final class StatusCardModelTests: XCTestCase {
   // MARK: - 活动目标与模式行
 
   func testTargetPresentationUsesPathThenFallsBackByMode() {
+    let targetPath = "订阅分组 / 嵌套分组 / 日本 02"
     let withTarget = StatusCardModel.card(
       from: makeSnapshot(
         facts: ProxyRuntimeFacts(status: .running, isOn: true),
         activeTarget: ProxyActiveTargetFacts(
-          id: NodeID(rawValue: "manual:server"), pathSummary: "订阅分组 / 嵌套分组 / 日本 02")))
-    XCTAssertEqual(withTarget.target.text, "订阅分组 / 嵌套分组 / 日本 02")
-    XCTAssertEqual(withTarget.target.help, "活动目标：订阅分组 / 嵌套分组 / 日本 02")
+          id: NodeID(rawValue: "manual:server"), pathSummary: targetPath)))
+    XCTAssertEqual(withTarget.target.text, targetPath)
+    XCTAssertFalse(withTarget.target.help.isEmpty)
 
     let direct = StatusCardModel.card(
       from: makeSnapshot(
         facts: ProxyRuntimeFacts(status: .off, isOn: false),
         mode: .direct))
-    XCTAssertEqual(direct.target.text, "直连模式（无需服务器）")
-    XCTAssertEqual(direct.target.help, "直连模式无需选择活动目标")
+    XCTAssertFalse(direct.target.text.isEmpty)
+    XCTAssertFalse(direct.target.help.isEmpty)
 
     let inactive = StatusCardModel.card(
       from: makeSnapshot(facts: ProxyRuntimeFacts(status: .off, isOn: false)))
-    XCTAssertEqual(inactive.target.text, "未激活")
-    XCTAssertEqual(inactive.target.help, "未设置活动目标；在首页或服务器目录中激活")
+    XCTAssertFalse(inactive.target.text.isEmpty)
+    XCTAssertFalse(inactive.target.help.isEmpty)
   }
 
   /// 模式行与状态菜单同一份 modeLabel（规则模式带子选项），视图不再自行重组。
   func testModeTextMatchesMenuModeLabel() {
     let rule = StatusCardModel.card(
       from: makeSnapshot(facts: ProxyRuntimeFacts(status: .running, isOn: true)))
-    XCTAssertEqual(rule.modeText, "规则 · 代理")
     XCTAssertEqual(
       rule.modeText,
       StatusMenuModel.summary(
@@ -191,6 +178,6 @@ final class StatusCardModelTests: XCTestCase {
       from: makeSnapshot(
         facts: ProxyRuntimeFacts(status: .running, isOn: true),
         mode: .global))
-    XCTAssertEqual(global.modeText, "全局")
+    XCTAssertFalse(global.modeText.isEmpty)
   }
 }

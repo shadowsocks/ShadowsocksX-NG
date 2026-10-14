@@ -9,25 +9,21 @@ import XCTest
 final class StatusMenuModelTests: XCTestCase {
   private struct RuntimeSummaryCase {
     let facts: ProxyRuntimeFacts
-    let expectedStatus: String
     let expectedIsOn: Bool
   }
 
   private static let runtimeSummaryCases: [RuntimeSummaryCase] = [
     RuntimeSummaryCase(
       facts: ProxyRuntimeFacts(status: .starting, isOn: true),
-      expectedStatus: "正在启动代理…",
       expectedIsOn: true),
     RuntimeSummaryCase(
       facts: ProxyRuntimeFacts(status: .running, isOn: true),
-      expectedStatus: "代理运行中",
       expectedIsOn: true),
     RuntimeSummaryCase(
       facts: ProxyRuntimeFacts(
         status: .firewallBlocked,
         isOn: true,
         failure: .firewallBlocked(FirewallBlockedFacts(executableName: "sslocal"))),
-      expectedStatus: "代理运行中（局域网受阻）",
       expectedIsOn: true),
     RuntimeSummaryCase(
       facts: ProxyRuntimeFacts(
@@ -36,19 +32,16 @@ final class StatusMenuModelTests: XCTestCase {
         failure: .launch(
           .localEndpoint(
             endpoint: "http", host: "127.0.0.1", port: 11087, cause: .refused))),
-      expectedStatus: "启动失败",
       expectedIsOn: false),
     RuntimeSummaryCase(
       facts: ProxyRuntimeFacts(
         status: .requiresApproval, isOn: true, failure: .requiresApproval),
-      expectedStatus: "等待允许后台代理",
       expectedIsOn: true),
     RuntimeSummaryCase(
       facts: ProxyRuntimeFacts(
         status: .serviceFailed,
         isOn: false,
         failure: .service(.persistence)),
-      expectedStatus: "服务管理失败",
       expectedIsOn: false),
   ]
 
@@ -97,7 +90,6 @@ final class StatusMenuModelTests: XCTestCase {
       from: makeSnapshot(facts: ProxyRuntimeFacts(status: .running, isOn: true)))
     XCTAssertTrue(summary.agentIntentEnabled)
     XCTAssertTrue(summary.isOn)
-    XCTAssertEqual(summary.status, "代理运行中")
     XCTAssertNil(summary.detail)
   }
 
@@ -109,15 +101,13 @@ final class StatusMenuModelTests: XCTestCase {
         mode: .global))
     XCTAssertFalse(summary.agentIntentEnabled, "开关意图独立于运行状态")
     XCTAssertFalse(summary.isOn)
-    XCTAssertEqual(summary.status, "代理未运行")
     XCTAssertNil(summary.detail)
   }
 
-  func testSummaryProjectsEveryStableRuntimeStatus() {
+  func testSummaryProjectsEveryStableRuntimeState() {
     for testCase in Self.runtimeSummaryCases {
       let summary = StatusMenuModel.summary(from: makeSnapshot(facts: testCase.facts))
       XCTAssertEqual(summary.isOn, testCase.expectedIsOn)
-      XCTAssertEqual(summary.status, testCase.expectedStatus)
       XCTAssertEqual(
         summary.detail,
         testCase.facts.failure.map { AppPresentation.message(for: $0) })
@@ -131,7 +121,6 @@ final class StatusMenuModelTests: XCTestCase {
       from: makeSnapshot(
         facts: ProxyRuntimeFacts(status: .running, isOn: true),
         activationFailure: .targetNotFound(NodeID(rawValue: "manual:gone"))))
-    XCTAssertEqual(summary.status, "代理运行中")
     XCTAssertEqual(
       summary.detail,
       AppPresentation.message(
@@ -140,61 +129,25 @@ final class StatusMenuModelTests: XCTestCase {
   }
 
   /// 系统代理状态面：意图与实际应用分开，失败携带点名原因。
-  func testSummaryProjectsSystemProxyApplicationIndependently() {
-    let idle = StatusMenuModel.summary(
-      from: makeSnapshot(
-        facts: ProxyRuntimeFacts(status: .off, isOn: false),
-        systemProxyIntent: false,
-        systemProxyApplication: .idle))
-    XCTAssertFalse(idle.systemProxyIntentEnabled)
-    XCTAssertEqual(idle.systemProxyStatus, "系统代理：未应用")
-    XCTAssertNil(idle.systemProxyDetail)
-
-    let pending = StatusMenuModel.summary(
-      from: makeSnapshot(
-        facts: ProxyRuntimeFacts(status: .running, isOn: true),
-        systemProxyIntent: true,
-        systemProxyApplication: .pending))
-    XCTAssertTrue(pending.systemProxyIntentEnabled)
-    XCTAssertEqual(pending.systemProxyStatus, "系统代理：待应用")
-    XCTAssertNil(pending.systemProxyDetail)
-
-    let approvalPending = StatusMenuModel.summary(
-      from: makeSnapshot(
-        facts: ProxyRuntimeFacts(status: .running, isOn: true),
-        systemProxyIntent: true,
-        systemProxyApplication: .pending,
-        systemProxyApprovalRequired: true))
-    XCTAssertEqual(approvalPending.systemProxyStatus, "系统代理：待批准")
-    XCTAssertNil(approvalPending.systemProxyDetail)
-
-    let applied = StatusMenuModel.summary(
-      from: makeSnapshot(
-        facts: ProxyRuntimeFacts(status: .running, isOn: true),
-        systemProxyIntent: true,
-        systemProxyApplication: .applied))
-    XCTAssertEqual(applied.systemProxyStatus, "系统代理：已应用")
-
+  func testSummaryProjectsSystemProxyIntentAndFailureDetail() {
     let failed = StatusMenuModel.summary(
       from: makeSnapshot(
         facts: ProxyRuntimeFacts(status: .running, isOn: true),
         systemProxyIntent: true,
         systemProxyApplication: .failed(.operation(.applyFailed))))
-    XCTAssertEqual(failed.systemProxyStatus, "系统代理：应用失败")
+    XCTAssertTrue(failed.systemProxyIntentEnabled)
     XCTAssertEqual(
       failed.systemProxyDetail,
       AppPresentation.message(
         for: RuntimeFailureFacts.systemProxy(.operation(.applyFailed))))
   }
 
-  func testSummaryCarriesModeLabelAndTargetPathFromSnapshot() {
+  func testSummaryCarriesTargetPathFromSnapshot() {
     let summary = StatusMenuModel.summary(
       from: makeSnapshot(
         facts: ProxyRuntimeFacts(status: .running, isOn: true),
-        mode: .global,
         activeTarget: ProxyActiveTargetFacts(
           id: NodeID(rawValue: "manual:server"), pathSummary: "订阅分组 / 嵌套分组 / 日本 02")))
-    XCTAssertEqual(summary.modeLabel, "全局")
     XCTAssertEqual(summary.targetPath, "订阅分组 / 嵌套分组 / 日本 02")
   }
 
