@@ -29,6 +29,7 @@ struct ServersView: View {
   @State private var renameTarget: NodeID?
   @State private var newGroupParent: NodeID?
   @State private var isPresentingNewGroup = false
+  @State private var isPresentingAddSubscription = false
   @State private var serverFormOperation: ServerFormSheet.Operation?
   @State private var subscriptionEditTarget: SubscriptionSummary?
   @State private var deleteTarget: DeleteTarget?
@@ -74,6 +75,9 @@ struct ServersView: View {
     }
     .sheet(item: $subscriptionEditTarget) { summary in
       EditSubscriptionURLSheet(workflow: workflow, errors: errors, summary: summary)
+    }
+    .sheet(isPresented: $isPresentingAddSubscription) {
+      AddSubscriptionSheet(workflow: workflow, errors: errors)
     }
     .presentingErrors(errors)
     .confirmationDialog(
@@ -205,7 +209,9 @@ struct ServersView: View {
       if rows.isEmpty {
         ContentUnavailableView(
           "暂无服务器", systemImage: "server.rack",
-          description: Text("用工具栏的「新建服务器」按钮手动录入，或用「导入」菜单导入")
+          description: section == .subscription
+            ? Text("用工具栏的「添加订阅」按钮添加 HTTPS 订阅地址（SIP-008 JSON）")
+            : Text("用工具栏的「新建服务器」按钮手动录入，或用「导入」菜单导入")
         )
         .allowsHitTesting(false)
       }
@@ -324,6 +330,8 @@ extension ServersView {
         .labelStyle(.iconOnly)
         .help("排序")
       }
+    }
+    if section == .manual {
       ToolbarItem(placement: .primaryAction) {
         Button {
           presentNewServer(in: workflow.importTargetParent(for: selection))
@@ -339,6 +347,13 @@ extension ServersView {
           Label("新建分组", systemImage: "folder.badge.plus")
         }
         .help("新建分组")
+      }
+    } else if section == .subscription {
+      ToolbarItem(placement: .primaryAction) {
+        Button("添加订阅", systemImage: "plus") {
+          isPresentingAddSubscription = true
+        }
+        .help("添加订阅")
       }
     }
     ToolbarItem(placement: .primaryAction) {

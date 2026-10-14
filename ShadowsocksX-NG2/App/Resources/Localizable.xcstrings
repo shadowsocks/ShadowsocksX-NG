@@ -1,6 +1,28 @@
 {
   "sourceLanguage": "zh-Hans",
   "strings": {
+    "添加订阅": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add Subscription"
+          }
+        }
+      }
+    },
+    "用工具栏的「添加订阅」按钮添加 HTTPS 订阅地址（SIP-008 JSON）": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use Add Subscription in the toolbar to add an HTTPS subscription URL (SIP-008 JSON)."
+          }
+        }
+      }
+    },
     "位置": {
       "extractionState": "manual",
       "localizations": {
