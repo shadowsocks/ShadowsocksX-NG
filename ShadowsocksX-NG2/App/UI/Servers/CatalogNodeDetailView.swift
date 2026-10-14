@@ -30,6 +30,9 @@ struct CatalogNodeDetailView: View {
         }
         .buttonStyle(.borderedProminent)
         .disabled(!(eligibility?.canActivate ?? false) || activation.isPending)
+        if let module = workflow.connectivity {
+          ConnectivityTestButton(module: module, node: node)
+        }
         Button(
           workflow.isFavorite(nodeID)
             ? String(localized: "取消收藏", table: "ServerDetails")

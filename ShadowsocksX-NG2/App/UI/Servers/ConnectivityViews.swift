@@ -124,10 +124,8 @@ struct ConnectivityDetailView: View {
   var body: some View {
     TimelineView(.periodic(from: .now, by: 1)) { context in
       VStack(alignment: .leading, spacing: 8) {
-        HStack {
-          Text(ConnectivityCopy.text(node.isGroup ? "最快响应延迟" : "连通性测试")).font(.headline)
-          ConnectivityTestButton(module: module, node: node)
-        }
+        Text(ConnectivityCopy.text(node.isGroup ? "最快响应延迟" : "连通性测试"))
+          .font(.headline)
         if node.isGroup {
           ConnectivityCell(module: module, node: node, workflow: workflow)
           let summary = module.summary(for: node.connectivityServerIDs, at: context.date)
