@@ -38,7 +38,6 @@ struct MainWindowView: View {
   @State private var tabSelection: WorkspaceDestination = WorkspaceRoute.initialDestination
   @State private var selection: NodeID?
   @State private var serverSection: ServerListSection = .manual
-  @State private var serverSortOrder: [ServerTableSort] = []
   /// 全局导入面板由窗口壳持有。
   @State private var presentedWorkspaceSheet: WorkspaceSheet?
 
@@ -132,7 +131,6 @@ struct MainWindowView: View {
         activeTargetID: control.snapshot.activeTarget?.id,
         selection: $selection,
         section: $serverSection,
-        sortOrder: $serverSortOrder,
         expansion: expansion,
         clipboard: clipboard,
         imageClipboard: imageClipboard,

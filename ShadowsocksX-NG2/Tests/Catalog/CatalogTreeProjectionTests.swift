@@ -114,9 +114,9 @@ struct SubscriptionRootGroupClassificationTests {
   }
 }
 
-struct ServerTableOrderingTests {
+struct ServerTableDirectoryOrderTests {
   @Test
-  func hierarchySortsEachSiblingSetAndCollapseHidesOnlyThatSubtree() throws {
+  func hierarchyKeepsDirectoryOrderAndCollapseHidesOnlyThatSubtree() throws {
     var catalog = ConfigurationCatalog()
     let outer = try catalog.addGroup("Z 外层")
     let root = try catalog.addGroup("A 根层")
@@ -125,42 +125,51 @@ struct ServerTableOrderingTests {
     let leaf = try catalog.addGroup("孙节点", to: childA)
     let tree = CatalogTreeSnapshot.build(
       from: catalog, credentials: InMemoryCredentialStore(), plugins: NoManagedPluginProvider())
-    let rows = tree.visibleRows(source: .manual, sortedBy: [ServerTableSort(.name)], collapsed: [])
+    let rows = tree.visibleRows(source: .manual, collapsed: [])
 
-    #expect(rows.map(\.id) == [root, outer, childA, leaf, childZ])
-    #expect(rows.map(\.depth) == [0, 0, 1, 2, 1])
+    #expect(rows.map(\.id) == [outer, childZ, childA, leaf, root])
+    #expect(rows.map(\.depth) == [0, 1, 1, 2, 0])
     #expect(
       tree.visibleRows(
-        source: .manual, sortedBy: [ServerTableSort(.name)], collapsed: [outer]
-      ).map(\.id) == [root, outer])
+        source: .manual, collapsed: [outer]
+      ).map(\.id) == [outer, root])
     #expect(tree.roots.map(\.id) == [outer, root])
     #expect(tree.node(withID: outer)?.childNodes.map(\.id) == [childZ, childA])
   }
 
-  @Test(arguments: [SortOrder.forward, .reverse])
-  func sourceFilteringAndTimeSortingKeepUnknownLastAndEqualValuesStable(order: SortOrder) {
-    func node(_ id: String, source: NodeSource = .manual, date: Date?) -> CatalogTreeNode {
+  @Test
+  func sourceFilteringKeepsDirectoryOrderAndCompleteSubtrees() {
+    func node(
+      _ id: String, source: NodeSource = .manual, parentID: NodeID? = nil,
+      children: [CatalogTreeNode] = []
+    ) -> CatalogTreeNode {
       CatalogTreeNode(
-        id: NodeID(rawValue: id), name: id, isGroup: true, source: source, parentID: nil,
-        createdAt: date, updatedAt: date, invalidReasons: [], childCount: 0,
-        subtreeNodeCount: 0, invalidDescendantCount: 0, children: [])
+        id: NodeID(rawValue: id), name: id, isGroup: true, source: source, parentID: parentID,
+        createdAt: nil, updatedAt: nil, invalidReasons: [], childCount: children.count,
+        subtreeNodeCount: children.count, invalidDescendantCount: 0, children: children)
     }
+    let subscription = node(
+      "subscription", source: .subscription,
+      children: [
+        node(
+          "subscription-child", source: .subscription,
+          parentID: NodeID(rawValue: "subscription"))
+      ])
     let tree = CatalogTreeSnapshot(roots: [
-      node("unknown", date: nil),
-      node("newer", date: Date(timeIntervalSince1970: 200)),
-      node("equal-first", date: Date(timeIntervalSince1970: 100)),
-      node("equal-second", date: Date(timeIntervalSince1970: 100)),
-      node("subscription", source: .subscription, date: Date(timeIntervalSince1970: 50)),
+      node("Z-first"), subscription, node("A-last"),
     ])
-    let sorted = tree.roots(for: .manual, sortedBy: [ServerTableSort(.createdAt, order: order)])
     #expect(
-      sorted.map(\.id.rawValue)
-        == (order == .forward
-          ? ["equal-first", "equal-second", "newer", "unknown"]
-          : ["newer", "equal-first", "equal-second", "unknown"]))
+      tree.visibleRows(source: .manual, collapsed: []).map(\.id.rawValue)
+        == ["Z-first", "A-last"])
+    let subscriptionRows = tree.visibleRows(source: .subscription, collapsed: [])
+    #expect(subscriptionRows.map(\.id.rawValue) == ["subscription", "subscription-child"])
+    #expect(subscriptionRows.map(\.depth) == [0, 1])
     #expect(
-      tree.roots(for: .manual, sortedBy: []).map(\.id.rawValue)
-        == ["unknown", "newer", "equal-first", "equal-second"])
+      tree.visibleRows(source: .subscription, collapsed: [subscription.id]).map(\.id.rawValue)
+        == ["subscription"])
+    #expect(
+      tree.visibleRows(collapsed: []).map(\.id.rawValue)
+        == ["Z-first", "subscription", "subscription-child", "A-last"])
   }
 }
 

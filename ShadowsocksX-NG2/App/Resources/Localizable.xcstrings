@@ -1178,28 +1178,6 @@
         }
       }
     },
-    "创建时间": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Date Created"
-          }
-        }
-      }
-    },
-    "修改时间": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Date Modified"
-          }
-        }
-      }
-    },
     "无": {
       "extractionState": "manual",
       "localizations": {
@@ -1207,17 +1185,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "None"
-          }
-        }
-      }
-    },
-    "排序": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sort"
           }
         }
       }

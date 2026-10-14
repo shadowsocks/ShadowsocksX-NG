@@ -121,7 +121,7 @@ struct CatalogTreeSnapshot: Equatable {
 extension CatalogTreeSnapshot {
   /// 折叠投影后的可见行（深度优先）：收起分组的子树不出现，其余保持目录
   /// 序。行序与深度是纯树事实；折叠集合由调用方按自己的持久化策略持有。
-  func visibleRows(collapsed: Set<NodeID>) -> [CatalogTreeRow] {
+  func visibleRows(source: NodeSource? = nil, collapsed: Set<NodeID>) -> [CatalogTreeRow] {
     var rows: [CatalogTreeRow] = []
     func walk(_ nodes: [CatalogTreeNode], depth: Int) {
       for node in nodes {
@@ -131,7 +131,8 @@ extension CatalogTreeSnapshot {
         }
       }
     }
-    walk(roots, depth: 0)
+    // 来源不跨越子树，根层筛选保留完整层级与目录顺序。
+    walk(source.map { source in roots.filter { $0.source == source } } ?? roots, depth: 0)
     return rows
   }
 

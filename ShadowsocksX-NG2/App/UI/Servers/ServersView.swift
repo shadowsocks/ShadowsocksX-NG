@@ -13,7 +13,6 @@ struct ServersView: View {
   let activeTargetID: NodeID?
   @Binding var selection: NodeID?
   @Binding var section: ServerListSection
-  @Binding var sortOrder: [ServerTableSort]
   /// 服务器管理的展开状态跨工作区页面切换保留，不落盘。
   @ObservedObject var expansion: CatalogExpansionState
   let clipboard: any TextClipboard
@@ -132,14 +131,13 @@ struct ServersView: View {
 
   private var serverTable: some View {
     let rows = workflow.tree.visibleRows(
-      source: section.source ?? .manual, sortedBy: sortOrder, collapsed: expansion.collapsedGroupIDs
+      source: section.source ?? .manual, collapsed: expansion.collapsedGroupIDs
     )
     let depths = Dictionary(uniqueKeysWithValues: rows.map { ($0.id, $0.depth) })
     return Table(
-      of: CatalogTreeNode.self, selection: $selection,
-      sortOrder: Binding(get: { sortOrder }, set: { sortOrder = Array($0.prefix(1)) })
+      of: CatalogTreeNode.self, selection: $selection
     ) {
-      TableColumn("名称", sortUsing: ServerTableSort(.name)) { node in
+      TableColumn("名称") { node in
         HStack(spacing: 4) {
           if node.isGroup && !node.childNodes.isEmpty {
             Button {
@@ -307,28 +305,6 @@ extension ServersView {
       ToolbarItem(placement: .primaryAction) {
         ConnectivityBatchButton(
           module: module, targets: workflow.connectivityTargets(source: section.source))
-      }
-    }
-    if section != .favorites {
-      ToolbarItem(placement: .primaryAction) {
-        Menu {
-          Picker(
-            "排序",
-            selection: Binding<ServerTableSort.Field?>(
-              get: { sortOrder.first?.field },
-              set: { field in sortOrder = field.map { [ServerTableSort($0)] } ?? [] })
-          ) {
-            Text("无").tag(nil as ServerTableSort.Field?)
-            Text("名称").tag(ServerTableSort.Field.name as ServerTableSort.Field?)
-            Text("创建时间").tag(ServerTableSort.Field.createdAt as ServerTableSort.Field?)
-            Text("修改时间").tag(ServerTableSort.Field.updatedAt as ServerTableSort.Field?)
-          }
-          .pickerStyle(.inline)
-        } label: {
-          Label("排序", systemImage: "arrow.up.arrow.down")
-        }
-        .labelStyle(.iconOnly)
-        .help("排序")
       }
     }
     if section == .manual {
