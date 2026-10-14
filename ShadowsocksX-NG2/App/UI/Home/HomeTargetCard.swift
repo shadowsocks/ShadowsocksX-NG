@@ -24,7 +24,7 @@ struct HomeTargetCard: View {
         title: activeName,
         subtitle: activeTargetID.map { path(for: $0) },
         trailing: {
-          Button(String(localized: "定位当前", table: "HomeTargets")) {
+          Button(String(localized: "定位", table: "HomeTargets")) {
             requestReveal(
               browser.locate(activeTargetID, in: workflow.tree, favorites: workflow.favorites))
           }
@@ -36,7 +36,6 @@ struct HomeTargetCard: View {
             directory
             Divider()
             selectionSummary
-            actions
           }
           .padding(.top, 14)
         }
@@ -75,7 +74,6 @@ struct HomeTargetCard: View {
       }
       .pickerStyle(.segmented)
       .labelsHidden()
-      .frame(maxWidth: 180)
       Spacer(minLength: 8)
       if let module = workflow.connectivity {
         ConnectivityBatchButton(
@@ -88,6 +86,7 @@ struct HomeTargetCard: View {
             : String(localized: "测试收藏节点及其全部后代服务器，重复项只测试一次。", table: "HomeTargets"))
       }
     }
+    .frame(maxWidth: .infinity, alignment: .leading)
   }
 
   private var directory: some View {
@@ -140,53 +139,58 @@ struct HomeTargetCard: View {
   }
 
   private var selectionSummary: some View {
-    VStack(alignment: .leading, spacing: 4) {
-      if let selected {
-        Text(selected.name).font(.callout.weight(.medium))
-          .lineLimit(1).help(path(for: selected.id))
-        Text(path(for: selected.id)).font(.caption).foregroundStyle(.secondary)
-          .lineLimit(2).help(path(for: selected.id))
-        if selected.isGroup, let eligibility = workflow.activationEligibility(for: selected.id) {
-          Text(
-            String(
-              localized:
-                "可激活 \(eligibility.candidateCount) 个配置，将跳过 \(eligibility.skippedInvalidCount) 个已知无效配置。",
-              table: "HomeTargets")
-          )
-          .font(.caption).foregroundStyle(.secondary)
+    HStack(alignment: .top, spacing: 4) {
+      VStack(alignment: .leading, spacing: 4) {
+        if let selected {
+          Text(selected.name).font(.callout.weight(.medium))
+            .lineLimit(1).help(path(for: selected.id))
+          Text(path(for: selected.id)).font(.caption).foregroundStyle(.secondary)
+            .lineLimit(2).help(path(for: selected.id))
+          if selected.isGroup, let eligibility = workflow.activationEligibility(for: selected.id) {
+            Text(
+              String(
+                localized:
+                  "可激活 \(eligibility.candidateCount) 个配置，将跳过 \(eligibility.skippedInvalidCount) 个已知无效配置。",
+                table: "HomeTargets")
+            )
+            .font(.caption).foregroundStyle(.secondary)
+          }
+        } else {
+          Text(String(localized: "请选择服务器或分组", table: "HomeTargets"))
+            .font(.callout).foregroundStyle(.secondary)
         }
-      } else {
-        Text(String(localized: "请选择服务器或分组", table: "HomeTargets"))
-          .font(.callout).foregroundStyle(.secondary)
       }
+      .frame(maxWidth: .infinity, alignment: .leading)
+      Spacer()
+      actions
     }
-    .frame(maxWidth: .infinity, alignment: .leading)
   }
 
   private var actions: some View {
-    HStack(alignment: .center, spacing: 8) {
+    VStack(alignment: .trailing, spacing: 8) {
+      HStack(alignment: .center, spacing: 8) {
+        if let module = workflow.connectivity, let selected {
+          ConnectivityTestButton(module: module, node: selected)
+        } else {
+          Button(ConnectivityCopy.text("测试连通性")) {}.disabled(true)
+        }
+        Button(
+          activation.isPending
+            ? String(localized: "激活中…", table: "HomeTargets")
+            : String(localized: "激活", table: "HomeTargets")
+        ) {
+          guard let selected else { return }
+          Task { @MainActor in
+            // 现有运行状态卡片呈现失败；这里不重复弹窗或增加内联错误。
+            _ = try? await activation.activate(selected.id, via: workflow)
+          }
+        }
+        .disabled(activationDisabledReason != nil)
+        .help(activationDisabledReason ?? String(localized: "激活所选目标", table: "HomeTargets"))
+      }
       Text(activationDisabledReason ?? "")
         .font(.caption).foregroundStyle(.secondary)
         .fixedSize(horizontal: false, vertical: true)
-      Spacer(minLength: 0)
-      if let module = workflow.connectivity, let selected {
-        ConnectivityTestButton(module: module, node: selected)
-      } else {
-        Button(ConnectivityCopy.text("测试连通性")) {}.disabled(true)
-      }
-      Button(
-        activation.isPending
-          ? String(localized: "激活中…", table: "HomeTargets")
-          : String(localized: "激活", table: "HomeTargets")
-      ) {
-        guard let selected else { return }
-        Task { @MainActor in
-          // 现有运行状态卡片呈现失败；这里不重复弹窗或增加内联错误。
-          _ = try? await activation.activate(selected.id, via: workflow)
-        }
-      }
-      .disabled(activationDisabledReason != nil)
-      .help(activationDisabledReason ?? String(localized: "激活所选目标", table: "HomeTargets"))
     }
   }
 
