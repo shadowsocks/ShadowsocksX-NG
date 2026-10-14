@@ -1,5 +1,11 @@
 import Foundation
 
+extension CatalogTreeNode {
+  var isRootSubscriptionGroup: Bool {
+    isGroup && source == .subscription && parentID == nil
+  }
+}
+
 /// 详情会话的展示值；包含参数明文，不进入目录工作流的非秘密投影或持久快照。
 @MainActor
 struct NodeDetailPresentation {
@@ -26,7 +32,7 @@ struct NodeDetailPresentation {
     locale: Locale = .current, timeZone: TimeZone = .current
   ) {
     title = node.name
-    let isRootSubscriptionGroup = Self.isRootSubscriptionGroup(node)
+    let isRootSubscriptionGroup = node.isRootSubscriptionGroup
     secondarySubtitle =
       isRootSubscriptionGroup
       ? String(localized: "配置由远端管理，本地不能修改。", table: "ServerDetails")
@@ -77,10 +83,6 @@ struct NodeDetailPresentation {
     }
     properties.append(Self.information(for: node, eligibility: eligibility))
     if let server { properties.append(Self.connection(for: server)) }
-  }
-
-  private static func isRootSubscriptionGroup(_ node: CatalogTreeNode) -> Bool {
-    node.isGroup && node.source == .subscription && node.parentID == nil
   }
 
   private static func subscriptionInformation(

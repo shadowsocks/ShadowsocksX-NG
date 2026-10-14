@@ -39,6 +39,7 @@ struct ServerTableNameCell: View {
 struct ServerNodeContextMenu: View {
   let node: CatalogTreeNode
   let workflow: CatalogWorkflow
+  let allowsSubscriptionManagement: Bool
   /// 激活反馈共享状态：命令经它发出（单飞互斥、结果记录在会话反馈里）。
   let activation: ActivationFeedbackState
   let errors: ErrorAlertPresenter
@@ -93,6 +94,12 @@ struct ServerNodeContextMenu: View {
         onNewGroup(node.isGroup ? node.id : node.parentID)
       }
       Divider()
+      Button("删除…", role: .destructive) {
+        onDelete(node.id)
+      }
+    } else if allowsSubscriptionManagement, node.isRootSubscriptionGroup {
+      Divider()
+      Button("编辑 URL…") { onEdit(node.id) }
       Button("删除…", role: .destructive) {
         onDelete(node.id)
       }

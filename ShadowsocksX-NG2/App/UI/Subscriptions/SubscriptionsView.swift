@@ -1,5 +1,15 @@
 import SwiftUI
 
+enum SubscriptionDeletionConfirmation {
+  static func title(for name: String) -> String {
+    "删除订阅「\(name)」及其整棵子树？"
+  }
+
+  static let actionTitle = "删除订阅"
+  static let message =
+    "将移除订阅源、固定分组与全部远端成员；若代理正走此订阅，代理会停止。此操作不可撤销。"
+}
+
 /// 订阅分区：每个订阅以一张卡片呈现
 /// （图标 + 名称 + 「HTTPS 订阅地址已隐藏」+ 状态徽标 + 更新/重试 + 「…」菜单 +
 /// 三列元数据 + 脱敏说明行），失败卡警告色描边。「添加订阅」与「更新全部」
@@ -53,18 +63,16 @@ struct SubscriptionsView: View {
       AddSubscriptionSheet(workflow: workflow, errors: errors)
     }
     .confirmationDialog(
-      "删除订阅「\(deleteTarget?.name ?? "")」及其整棵子树？",
+      SubscriptionDeletionConfirmation.title(for: deleteTarget?.name ?? ""),
       isPresented: Binding(
         get: { deleteTarget != nil },
         set: { if !$0 { deleteTarget = nil } }),
       titleVisibility: .visible
     ) {
-      Button("删除订阅", role: .destructive) { commitDelete() }
+      Button(SubscriptionDeletionConfirmation.actionTitle, role: .destructive) { commitDelete() }
       Button("取消", role: .cancel) { deleteTarget = nil }
     } message: {
-      Text(
-        "将移除订阅源、固定分组与全部远端成员；若代理正走此订阅，代理会停止。此操作不可撤销。"
-      )
+      Text(SubscriptionDeletionConfirmation.message)
     }
     .presentingErrors(errors)
     .toolbar {
@@ -386,7 +394,7 @@ struct AddSubscriptionSheet: View {
 
 /// 「编辑订阅 URL」表单（保留订阅与固定分组身份）；保存后立即刷新。
 /// URL 明文经显式命令读取。
-private struct EditSubscriptionURLSheet: View {
+struct EditSubscriptionURLSheet: View {
   let workflow: CatalogWorkflow
   let errors: ErrorAlertPresenter
   let summary: SubscriptionSummary

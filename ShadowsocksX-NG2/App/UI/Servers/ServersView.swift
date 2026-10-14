@@ -30,7 +30,8 @@ struct ServersView: View {
   @State private var newGroupParent: NodeID?
   @State private var isPresentingNewGroup = false
   @State private var serverFormOperation: ServerFormSheet.Operation?
-  @State private var deleteTarget: NodeID?
+  @State private var subscriptionEditTarget: SubscriptionSummary?
+  @State private var deleteTarget: DeleteTarget?
   @State private var dropState = ServerTableDropState()
   @FocusState private var isServerTableFocused: Bool
   // 分享 popover 打开时冻结载荷、顶部资料与建议文件名。
@@ -71,6 +72,9 @@ struct ServersView: View {
         workflow: workflow, errors: errors, parent: newGroupParent,
         onCreated: selectCreatedNode)
     }
+    .sheet(item: $subscriptionEditTarget) { summary in
+      EditSubscriptionURLSheet(workflow: workflow, errors: errors, summary: summary)
+    }
     .presentingErrors(errors)
     .confirmationDialog(
       deleteTitle,
@@ -79,7 +83,7 @@ struct ServersView: View {
         set: { if !$0 { deleteTarget = nil } }),
       titleVisibility: .visible
     ) {
-      Button("删除", role: .destructive) { commitDelete() }
+      Button(deleteConfirmationActionTitle, role: .destructive) { commitDelete() }
       Button("取消", role: .cancel) { deleteTarget = nil }
     } message: {
       Text(deleteMessage)
@@ -169,6 +173,9 @@ struct ServersView: View {
     } rows: {
       ForEach(rows) { row in
         TableRow(row.node)
+          .contextMenu {
+            nodeContextMenu(for: row.node, allowsSubscriptionManagement: section == .subscription)
+          }
           .itemProvider {
             guard let payload = workflow.dragPayload(for: row.id) else { return nil }
             return dropState.provider(for: row.id, payload: payload)
@@ -189,7 +196,6 @@ struct ServersView: View {
         if !isServerTableFocused { isServerTableFocused = true }
       }
     )
-    .contextMenu(forSelectionType: NodeID.self, menu: nodeContextMenu)
     .onKeyPress(.escape) {
       guard selection != nil else { return .ignored }
       selection = nil
@@ -209,12 +215,22 @@ struct ServersView: View {
   @ViewBuilder
   private func nodeContextMenu(_ ids: Set<NodeID>) -> some View {
     if let id = ids.first, let node = workflow.tree.node(withID: id) {
-      ServerNodeContextMenu(
-        node: node, workflow: workflow, activation: activation, errors: errors,
-        onEdit: presentEditServer, onRename: { renameTarget = $0 },
-        onNewGroup: presentNewGroup, onDuplicate: duplicateNode,
-        onDelete: { deleteTarget = $0 }, onExport: exportConfigurationGroup)
+      nodeContextMenu(for: node, allowsSubscriptionManagement: false)
     }
+  }
+
+  @ViewBuilder
+  private func nodeContextMenu(
+    for node: CatalogTreeNode, allowsSubscriptionManagement: Bool
+  ) -> some View {
+    ServerNodeContextMenu(
+      node: node, workflow: workflow, allowsSubscriptionManagement: allowsSubscriptionManagement,
+      activation: activation, errors: errors,
+      onEdit: presentEditNode, onRename: { renameTarget = $0 },
+      onNewGroup: presentNewGroup, onDuplicate: duplicateNode,
+      onDelete: {
+        requestDelete($0, allowsSubscriptionManagement: allowsSubscriptionManagement)
+      }, onExport: exportConfigurationGroup)
   }
 
   /// 删除结果 → selection invalidation：仅清除失效选择，不自动
@@ -327,13 +343,13 @@ extension ServersView {
     }
     ToolbarItem(placement: .primaryAction) {
       Button {
-        if let selection { presentEditServer(selection) }
+        if let selection { presentEditNode(selection) }
       } label: {
-        Label("编辑服务器", systemImage: "pencil")
+        Label(toolbarEditTitle, systemImage: "pencil")
       }
       .labelStyle(.iconOnly)
-      .help("编辑服务器")
-      .disabled(selection.flatMap { workflow.serverFormPresentation(for: $0) }?.isEditable != true)
+      .help(toolbarEditTitle)
+      .disabled(!canEditSelection)
     }
     ToolbarItem(placement: .primaryAction) {
       Button {
@@ -344,12 +360,12 @@ extension ServersView {
       .help("复制")
       .disabled(selection.map(workflow.canDuplicate) != true)
     }
-    // 删除：作用于当前选中的服务器叶子或手动分组，确认弹窗与右键菜单共用
-    // deleteTarget 流（档位见 deleteFacts）；无选中或选中项不可删（订阅节点
-    // 结构只读，GLOSSARY.md）即禁用，资格判定归政策 seam。
+    // 删除：手动节点走目录政策；订阅根组走订阅管理。
     ToolbarItem(placement: .primaryAction) {
       Button {
-        deleteTarget = selection
+        if let selection {
+          requestDelete(selection, allowsSubscriptionManagement: section == .subscription)
+        }
       } label: {
         Label("删除", systemImage: "trash")
       }
@@ -387,9 +403,43 @@ extension ServersView {
 
   // MARK: - 告警动作
 
-  /// 工具栏删除钮可用性：无选中或选中项不可删（订阅节点、失效选择）即禁用。
+  /// 工具栏删除钮仅对手动节点和订阅根组启用。
   private var canDeleteSelection: Bool {
-    selection.map(workflow.canDelete) ?? false
+    guard let selection, let node = workflow.tree.node(withID: selection) else { return false }
+    if section == .subscription, node.isRootSubscriptionGroup {
+      return subscriptionSummary(forRootGroup: selection) != nil
+    }
+    return workflow.canDelete(selection)
+  }
+
+  private var canEditSelection: Bool {
+    guard let selection, let node = workflow.tree.node(withID: selection) else { return false }
+    if section == .subscription, node.isRootSubscriptionGroup {
+      return subscriptionSummary(forRootGroup: selection) != nil
+    }
+    return workflow.serverFormPresentation(for: selection)?.isEditable == true
+  }
+
+  private var toolbarEditTitle: String {
+    guard section == .subscription, let selection,
+      workflow.tree.node(withID: selection)?.isRootSubscriptionGroup == true
+    else { return "编辑服务器" }
+    return "编辑 URL…"
+  }
+
+  private func subscriptionSummary(forRootGroup id: NodeID) -> SubscriptionSummary? {
+    workflow.subscriptions.first { $0.groupID == id }
+  }
+
+  private func requestDelete(_ id: NodeID, allowsSubscriptionManagement: Bool) {
+    guard let node = workflow.tree.node(withID: id) else { return }
+    if allowsSubscriptionManagement, node.isRootSubscriptionGroup,
+      let summary = subscriptionSummary(forRootGroup: id)
+    {
+      deleteTarget = .subscription(summary)
+    } else if workflow.canDelete(id) {
+      deleteTarget = .node(id)
+    }
   }
 
   private func presentNewGroup(in parent: NodeID?) {
@@ -404,6 +454,17 @@ extension ServersView {
   private func presentEditServer(_ id: NodeID) {
     guard workflow.serverFormPresentation(for: id)?.isEditable == true else { return }
     serverFormOperation = .edit(id)
+  }
+
+  private func presentEditNode(_ id: NodeID) {
+    guard let node = workflow.tree.node(withID: id) else { return }
+    if node.isRootSubscriptionGroup,
+      let summary = subscriptionSummary(forRootGroup: id)
+    {
+      subscriptionEditTarget = summary
+    } else {
+      presentEditServer(id)
+    }
   }
 
   private func selectCreatedNode(_ id: NodeID) {
@@ -425,35 +486,60 @@ extension ServersView {
 
   /// 删除确认文案：档位与规模事实来自 seam；句子由 UI 拼（Q3-A）。
   private var deleteTitle: String {
-    guard let id = deleteTarget else { return "" }
-    let name = workflow.displayName(for: id)
-    switch workflow.deleteFacts(for: id) {
-    case .subtree:
-      return "删除分组「\(name)」及其整棵子树？"
-    case .leaf, .emptyGroup, nil:
-      return "删除「\(name)」？"
+    switch deleteTarget {
+    case .some(.subscription(let summary)):
+      return SubscriptionDeletionConfirmation.title(for: summary.name)
+    case .some(.node(let id)):
+      let name = workflow.displayName(for: id)
+      switch workflow.deleteFacts(for: id) {
+      case .subtree:
+        return "删除分组「\(name)」及其整棵子树？"
+      case .leaf, .emptyGroup, nil:
+        return "删除「\(name)」？"
+      }
+    case .none:
+      return ""
     }
   }
 
   private var deleteMessage: String {
-    guard let id = deleteTarget else { return "" }
-    switch workflow.deleteFacts(for: id) {
-    case .subtree(let count, let includesCredentials):
-      if includesCredentials {
-        return "将递归删除 \(count) 个节点（含其中的服务器与凭据），此操作不可撤销。"
+    switch deleteTarget {
+    case .some(.subscription):
+      return SubscriptionDeletionConfirmation.message
+    case .some(.node(let id)):
+      switch workflow.deleteFacts(for: id) {
+      case .subtree(let count, let includesCredentials):
+        if includesCredentials {
+          return "将递归删除 \(count) 个节点（含其中的服务器与凭据），此操作不可撤销。"
+        }
+        return "将递归删除 \(count) 个节点，此操作不可撤销。"
+      case .leaf, .emptyGroup, nil:
+        return "此操作不可撤销。"
       }
-      return "将递归删除 \(count) 个节点，此操作不可撤销。"
-    case .leaf, .emptyGroup, nil:
-      return "此操作不可撤销。"
+    case .none:
+      return ""
     }
   }
 
+  private var deleteConfirmationActionTitle: String {
+    if case .some(.subscription) = deleteTarget {
+      return SubscriptionDeletionConfirmation.actionTitle
+    }
+    return "删除"
+  }
+
   private func commitDelete() {
-    guard let id = deleteTarget else { return }
+    guard let target = deleteTarget else { return }
     deleteTarget = nil
     Task {
       do {
-        let outcome = try await workflow.remove(id)
+        let outcome: RemovalOutcome
+        switch target {
+        case .node(let id):
+          outcome = try await workflow.remove(id)
+        case .subscription(let summary):
+          outcome = try await workflow.removeSubscription(summary.id)
+        }
         clearSelectionIfInvalidated(outcome.removedNodeIDs)
       } catch {
         errors.present(error)
@@ -466,4 +552,9 @@ extension ServersView {
 private struct NodeContext: Identifiable {
   let nodeID: NodeID
   var id: NodeID { nodeID }
+}
+
+private enum DeleteTarget {
+  case node(NodeID)
+  case subscription(SubscriptionSummary)
 }

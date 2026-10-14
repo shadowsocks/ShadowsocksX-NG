@@ -107,7 +107,7 @@ struct CatalogNodeDetailView: View {
   }
 
   private func subscriptionSummary(for node: CatalogTreeNode) -> SubscriptionSummary? {
-    guard node.isGroup, node.source == .subscription, node.parentID == nil else { return nil }
+    guard node.isRootSubscriptionGroup else { return nil }
     return workflow.subscriptions.first { $0.groupID == node.id }
   }
 }

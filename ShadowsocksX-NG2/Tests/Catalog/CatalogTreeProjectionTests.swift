@@ -89,6 +89,31 @@ struct CatalogTreeTimestampProjectionTests {
   }
 }
 
+struct SubscriptionRootGroupClassificationTests {
+  private func node(
+    _ id: String, source: NodeSource, parentID: NodeID?, isGroup: Bool = true
+  ) -> CatalogTreeNode {
+    CatalogTreeNode(
+      id: NodeID(rawValue: id), name: id, isGroup: isGroup, source: source, parentID: parentID,
+      createdAt: nil, updatedAt: nil, invalidReasons: [], childCount: 0,
+      subtreeNodeCount: 0, invalidDescendantCount: 0, children: isGroup ? [] : nil)
+  }
+
+  @Test
+  func onlyRootSubscriptionGroupsQualify() {
+    let rootID = NodeID(rawValue: "subscription-root")
+    let root = node("subscription-root", source: .subscription, parentID: nil)
+    let nested = node("nested-subscription-group", source: .subscription, parentID: rootID)
+    let manual = node("manual-group", source: .manual, parentID: nil)
+    let server = node("subscription-server", source: .subscription, parentID: nil, isGroup: false)
+
+    #expect(root.isRootSubscriptionGroup)
+    #expect(!nested.isRootSubscriptionGroup)
+    #expect(!manual.isRootSubscriptionGroup)
+    #expect(!server.isRootSubscriptionGroup)
+  }
+}
+
 struct ServerTableOrderingTests {
   @Test
   func hierarchySortsEachSiblingSetAndCollapseHidesOnlyThatSubtree() throws {
