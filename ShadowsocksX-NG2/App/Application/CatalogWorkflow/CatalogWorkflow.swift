@@ -24,6 +24,9 @@ final class CatalogWorkflow: ObservableObject {
   @Published private(set) var subscriptions: [SubscriptionSummary] = []
   /// 正在刷新的订阅身份（并发守卫的只读观察面）。
   @Published private(set) var refreshingSubscriptionIDs: Set<NodeID> = []
+  /// 当前会话的刷新结果；不从持久化状态重建，供各入口共用结束时间。
+  @Published private(set) var subscriptionRefreshCompletions:
+    [NodeID: SubscriptionRefreshCompletion] = [:]
   /// 最近一次订阅刷新失败的 transient projection。这里保留完整凭据回滚
   /// outcome；持久化目录只保存安全的 typed failure facts。
   @Published private(set) var subscriptionRefreshFailures:
@@ -419,6 +422,12 @@ final class CatalogWorkflow: ObservableObject {
     } else {
       refreshingSubscriptionIDs.remove(id)
     }
+  }
+
+  func setSubscriptionRefreshCompletion(
+    _ completion: SubscriptionRefreshCompletion?, for id: NodeID
+  ) {
+    subscriptionRefreshCompletions[id] = completion
   }
 
   func setSubscriptionRefreshFailure(

@@ -331,6 +331,19 @@ struct SubscriptionRefreshFailureResult: Equatable, Sendable {
   let credentialRollback: CredentialRollbackOutcome?
 }
 
+/// 非持久化的刷新回执。每次操作有独立身份，失败事实不含秘密值。
+struct SubscriptionRefreshCompletion: Identifiable, Equatable {
+  let id: UUID
+  let completedAt: Date
+  let failure: SubscriptionRefreshFailure?
+
+  init(id: UUID = UUID(), completedAt: Date = Date(), failure: SubscriptionRefreshFailure? = nil) {
+    self.id = id
+    self.completedAt = completedAt
+    self.failure = failure
+  }
+}
+
 /// Commit failure at the subscription workflow seam. The underlying storage
 /// error is intentionally reduced to a safe category, while the complete
 /// rollback outcome remains available in memory for the current operation.

@@ -1,9 +1,10 @@
 import SwiftUI
 
 /// 只接受展示值与外部动作；不查询节点类型、工作流或凭据。
-struct NodeDetailView<Actions: View, Supplement: View>: View {
+struct NodeDetailView<Actions: View, Feedback: View, Supplement: View>: View {
   let detail: NodeDetailPresentation
   @ViewBuilder let actions: Actions
+  @ViewBuilder let feedback: Feedback
   @ViewBuilder let supplement: Supplement
 
   var body: some View {
@@ -27,6 +28,7 @@ struct NodeDetailView<Actions: View, Supplement: View>: View {
           }
           HStack(spacing: 16) { actions }
             .buttonStyle(.link)
+          feedback
         }
         Divider()
         ForEach(Array(detail.properties.enumerated()), id: \.offset) { _, group in

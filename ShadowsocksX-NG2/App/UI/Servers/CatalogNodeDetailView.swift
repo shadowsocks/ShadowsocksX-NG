@@ -32,6 +32,16 @@ struct CatalogNodeDetailView: View {
         }
         .buttonStyle(.borderedProminent)
         .disabled(!(eligibility?.canActivate ?? false) || activation.isPending)
+        if let subscription = subscriptionSummary(for: node) {
+          Button(
+            workflow.refreshingSubscriptionIDs.contains(subscription.id)
+              ? String(localized: "更新中…", table: "ServerDetails")
+              : String(localized: "更新", table: "ServerDetails")
+          ) {
+            Task { await workflow.refreshSubscription(subscription.id) }
+          }
+          .disabled(workflow.refreshingSubscriptionIDs.contains(subscription.id))
+        }
         if let module = workflow.connectivity {
           ConnectivityTestButton(module: module, node: node)
         }
@@ -50,6 +60,14 @@ struct CatalogNodeDetailView: View {
           Button(String(localized: "重新加载", table: "ServerDetails")) {
             parameters.reload(load: workflow.serverDetailPluginOptions)
           }
+        }
+      } feedback: {
+        if let subscription = subscriptionSummary(for: node) {
+          SubscriptionRefreshFeedbackView(
+            isRefreshing: workflow.refreshingSubscriptionIDs.contains(subscription.id),
+            completion: workflow.subscriptionRefreshCompletions[subscription.id]
+          )
+          .id(subscription.id)
         }
       } supplement: {
         if let module = workflow.connectivity {

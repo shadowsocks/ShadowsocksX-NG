@@ -47,12 +47,16 @@ extension CatalogWorkflow {
     guard !refreshingSubscriptionIDs.contains(id),
       subscriptions.contains(where: { $0.id == id })
     else { return }
+    setSubscriptionRefreshCompletion(nil, for: id)
     setRefreshInFlight(id, true)
     defer { setRefreshInFlight(id, false) }
     do {
       try await performRefresh(id)
       setSubscriptionRefreshFailure(nil, for: id)
       publishSubscriptionServerRefresh(id)
+      if subscriptions.contains(where: { $0.id == id }) {
+        setSubscriptionRefreshCompletion(SubscriptionRefreshCompletion(), for: id)
+      }
     } catch is CancellationError {
       // 取消不构成失败：快照与状态都不动。
     } catch {
@@ -60,6 +64,10 @@ extension CatalogWorkflow {
       let result = Self.refreshFailureResult(from: error)
       setSubscriptionRefreshFailure(result, for: id)
       await markRefreshFailed(subscriptionID: id, failure: result.failure)
+      if subscriptions.contains(where: { $0.id == id }) {
+        setSubscriptionRefreshCompletion(
+          SubscriptionRefreshCompletion(failure: result.failure), for: id)
+      }
     }
   }
 
@@ -98,6 +106,7 @@ extension CatalogWorkflow {
     for ref in [record.urlRef] + Self.credentialRefs(of: removedEntries) {
       try? dependencies.credentials.delete(ref)
     }
+    setSubscriptionRefreshCompletion(nil, for: id)
     return RemovalOutcome(removedNodeIDs: Set(removedEntries.map(\.id)))
   }
 
