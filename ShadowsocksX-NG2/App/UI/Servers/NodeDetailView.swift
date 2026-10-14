@@ -26,8 +26,7 @@ struct NodeDetailView<Actions: View, Feedback: View, Supplement: View>: View {
                 .textSelection(.enabled)
             }
           }
-          HStack(spacing: 16) { actions }
-            .buttonStyle(.link)
+          HStack(spacing: 12) { actions }
           feedback
         }
         Divider()
