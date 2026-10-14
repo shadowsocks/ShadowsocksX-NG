@@ -47,11 +47,11 @@ struct ConnectivityCell: View {
     let summary = module.summary(for: node.connectivityServerIDs, at: date)
     if node.isGroup {
       record = summary.record
-      text = record.map { ConnectivityCopy.fastest($0.outcome) } ?? "—"
+      text = record.map { ConnectivityCopy.fastest($0.outcome) } ?? (summary.hasResults ? "—" : "")
       if let id = summary.serverID { prefix = workflow.displayName(for: id) + " · " }
     } else {
       record = module.history(for: node.id).first
-      text = record.map { ConnectivityCopy.outcome($0.outcome) } ?? "—"
+      text = record.map { ConnectivityCopy.outcome($0.outcome) } ?? ""
     }
     let expired = record?.isExpired(at: date) ?? false
     let help =
