@@ -21,7 +21,8 @@ struct CatalogNodeDetailView: View {
         Button(
           activation.pendingTargetID == nodeID
             ? String(localized: "激活中…", table: "ServerDetails")
-            : String(localized: "激活", table: "ServerDetails")
+            : String(localized: "激活", table: "ServerDetails"),
+          systemImage: "bolt.fill"
         ) {
           Task { @MainActor in
             do {
