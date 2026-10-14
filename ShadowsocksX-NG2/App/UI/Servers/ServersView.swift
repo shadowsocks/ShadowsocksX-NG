@@ -153,19 +153,19 @@ struct ServersView: View {
         }
         .padding(.leading, CGFloat(depths[node.id] ?? 0) * 14)
       }
-      .width(min: 160, ideal: 240)
-      TableColumn(ConnectivityCopy.text("响应延迟")) { node in
-        if let module = workflow.connectivity {
-          ConnectivityCell(module: module, node: node, workflow: workflow)
-        }
-      }
-      .width(min: 90, ideal: 110)
+      .width(min: 160, ideal: 180)
       TableColumn("收藏") { node in
         Image(systemName: workflow.isFavorite(node.id) ? "star.fill" : "star")
           .accessibilityLabel(Text("收藏"))
           .accessibilityValue(Text(workflow.isFavorite(node.id) ? "收藏" : "—"))
       }
-      .width(44)
+      .width(36)
+      TableColumn(ConnectivityCopy.text("响应延迟")) { node in
+        if let module = workflow.connectivity {
+          ConnectivityCell(module: module, node: node, workflow: workflow)
+        }
+      }
+      .width(min: 50, ideal: 60)
       TableColumn("创建时间", sortUsing: ServerTableSort(.createdAt)) { node in
         timestampCell(node.createdAt)
       }

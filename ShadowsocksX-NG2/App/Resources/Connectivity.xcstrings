@@ -391,23 +391,6 @@
           }
         }
       }
-    },
-    "最快 %@": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Fastest %@"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "最快 %@"
-          }
-        }
-      }
     }
   },
   "version": "1.0"

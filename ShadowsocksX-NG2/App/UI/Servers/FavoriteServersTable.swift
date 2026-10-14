@@ -36,13 +36,13 @@ struct FavoriteServersTable<MenuContent: View>: View {
       TableColumn("名称") { node in
         ServerTableNameCell(node: node, activeTargetID: activeTargetID)
       }
-      .width(min: 140, ideal: 200)
+      .width(min: 140, ideal: 160)
       TableColumn(ConnectivityCopy.text("响应延迟")) { node in
         if let module = workflow.connectivity {
           ConnectivityCell(module: module, node: node, workflow: workflow)
         }
       }
-      .width(min: 90, ideal: 110)
+      .width(min: 50, ideal: 60)
       TableColumn("路径") { node in
         let path = path(for: node)
         Text(path)

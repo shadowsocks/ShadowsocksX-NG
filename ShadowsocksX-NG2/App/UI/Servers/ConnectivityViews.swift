@@ -47,7 +47,7 @@ struct ConnectivityCell: View {
     let summary = module.summary(for: node.connectivityServerIDs, at: date)
     if node.isGroup {
       record = summary.record
-      text = record.map { ConnectivityCopy.fastest($0.outcome) } ?? (summary.hasResults ? "—" : "")
+      text = record.map { ConnectivityCopy.outcome($0.outcome) } ?? (summary.hasResults ? "—" : "")
       if let id = summary.serverID { prefix = workflow.displayName(for: id) + " · " }
     } else {
       record = module.history(for: node.id).first
@@ -110,9 +110,6 @@ enum ConnectivityCopy {
     case .network: text("网络错误")
     case .http(let status): "HTTP \(status)"
     }
-  }
-  static func fastest(_ value: ServerConnectivity.Outcome) -> String {
-    String.localizedStringWithFormat(text("最快 %@"), outcome(value))
   }
 }
 
