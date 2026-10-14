@@ -20,15 +20,15 @@ struct HomeView: View {
           HomeTargetCard(
             workflow: workflow, browser: browser, activation: activation,
             activeTargetID: control.snapshot.activeTarget?.id, showServers: showServers)
-          ModeCard(control: control)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         VStack(spacing: 20) {
           RuntimeControlCard(control: control)
+          ModeCard(control: control)
           TerminalProxyEnvironmentCard(control: control, clipboard: clipboard, errors: errors)
           QuickActionCard(workflow: workflow)
         }
-        .frame(width: 300)
+        .frame(width: 400)
       }
       .padding(.leading, 28)
       .padding(.trailing, 32)
