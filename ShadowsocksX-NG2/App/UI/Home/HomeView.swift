@@ -7,6 +7,9 @@ import SwiftUI
 struct HomeView: View {
   @ObservedObject var workflow: CatalogWorkflow
   @ObservedObject var control: ProxyControlWorkflow
+  let browser: HomeTargetBrowser
+  let activation: ActivationFeedbackState
+  let showServers: () -> Void
   let clipboard: any TextClipboard
   let errors: ErrorAlertPresenter
 
@@ -14,6 +17,9 @@ struct HomeView: View {
     ScrollView {
       HStack(alignment: .top, spacing: 20) {
         VStack(spacing: 20) {
+          HomeTargetCard(
+            workflow: workflow, browser: browser, activation: activation,
+            activeTargetID: control.snapshot.activeTarget?.id, showServers: showServers)
           ModeCard(control: control)
         }
         .frame(maxWidth: .infinity, alignment: .leading)

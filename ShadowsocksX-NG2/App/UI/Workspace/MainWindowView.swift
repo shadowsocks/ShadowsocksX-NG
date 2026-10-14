@@ -30,8 +30,9 @@ struct MainWindowView: View {
   let configurationGroupFileExporter: any ConfigurationGroupFileExporter
   let qrImageSaver: any QrImageSaver
 
-  /// 激活反馈共享状态：侧栏右键与分组详情两个激活入口共用。
+  /// 激活反馈由首页、侧栏右键与分组详情共用。
   @StateObject private var activationFeedback = ActivationFeedbackState()
+  @StateObject private var homeBrowser = HomeTargetBrowser()
   /// 系统标签选择先落在 SwiftUI 自管状态，再同步到 route，避免在视图
   /// 更新期间发布；外部导航反向同步，route 仍是导航位置的唯一来源。
   @State private var tabSelection: WorkspaceDestination = WorkspaceRoute.initialDestination
@@ -64,6 +65,12 @@ struct MainWindowView: View {
       if tabSelection != destination {
         tabSelection = destination
       }
+    }
+    .onChange(of: workflow.tree) {
+      homeBrowser.reconcile(in: workflow.tree, favorites: workflow.favorites)
+    }
+    .onChange(of: workflow.favoriteIDs) {
+      homeBrowser.reconcile(in: workflow.tree, favorites: workflow.favorites)
     }
     .onChange(of: selection) {
       guard let selection, let node = workflow.tree.node(withID: selection) else { return }
@@ -114,6 +121,9 @@ struct MainWindowView: View {
       WorkspaceHomeView(
         workflow: workflow,
         control: control,
+        browser: homeBrowser,
+        activation: activationFeedback,
+        showServers: { route.navigate(to: .servers) },
         clipboard: clipboard)
     case .servers:
       ServersView(
@@ -180,6 +190,9 @@ extension WorkspaceDestination {
 private struct WorkspaceHomeView: View {
   @ObservedObject var workflow: CatalogWorkflow
   @ObservedObject var control: ProxyControlWorkflow
+  let browser: HomeTargetBrowser
+  let activation: ActivationFeedbackState
+  let showServers: () -> Void
   let clipboard: any TextClipboard
   @StateObject private var errors = ErrorAlertPresenter()
 
@@ -187,6 +200,9 @@ private struct WorkspaceHomeView: View {
     HomeView(
       workflow: workflow,
       control: control,
+      browser: browser,
+      activation: activation,
+      showServers: showServers,
       clipboard: clipboard,
       errors: errors
     )

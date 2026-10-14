@@ -352,6 +352,38 @@
           }
         }
       }
+    },
+    "尚未测试": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not tested yet"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "尚未测试"
+          }
+        }
+      }
+    },
+    "最快 %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fastest %@"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "最快 %@"
+          }
+        }
+      }
     }
   },
   "version": "1.0"
