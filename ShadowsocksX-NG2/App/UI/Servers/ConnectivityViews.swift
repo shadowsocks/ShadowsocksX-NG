@@ -89,8 +89,13 @@ struct ConnectivityTestButton: View {
   @ObservedObject var module: ServerConnectivity
   let node: CatalogTreeNode
   var body: some View {
-    Button(ConnectivityCopy.text("延迟测试")) { module.test(node.connectivityServerIDs) }
-      .disabled(!node.containsServerConfiguration || (!node.isGroup && module.isCooling(node.id)))
+    let isTesting = node.connectivityServerIDs.contains { module.testing.contains($0) }
+    Button(ConnectivityCopy.text(isTesting ? "测试中..." : "延迟测试")) {
+      module.test(node.connectivityServerIDs)
+    }
+    .disabled(
+      isTesting || !node.containsServerConfiguration || (!node.isGroup && module.isCooling(node.id))
+    )
   }
 }
 
