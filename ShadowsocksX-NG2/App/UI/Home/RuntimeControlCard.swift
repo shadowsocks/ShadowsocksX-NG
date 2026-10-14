@@ -11,13 +11,13 @@ struct RuntimeControlCard: View {
     let summary = StatusMenuModel.summary(from: control.snapshot)
     HomeCard(
       title: "运行控制",
-      subtitle: "后台代理与系统代理相互独立",
+      subtitle: "后台代理客户端与系统代理设置相互独立控制",
       trailing: { EmptyView() },
       content: {
         VStack(alignment: .leading, spacing: 14) {
           VStack(alignment: .leading, spacing: 6) {
             HStack {
-              Toggle("后台代理", isOn: agentBinding)
+              Toggle("后台代理客户端", isOn: agentBinding)
                 .toggleStyle(.switch)
               Spacer(minLength: 0)
               Text(summary.status)
