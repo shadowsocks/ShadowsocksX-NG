@@ -103,19 +103,19 @@
         }
       }
     },
-    "测试连通性": {
+    "延迟测试": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Test Connectivity"
+            "value": "Latency Test"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "测试连通性"
+            "value": "延迟测试"
           }
         }
       }

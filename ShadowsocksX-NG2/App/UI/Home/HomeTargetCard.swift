@@ -172,7 +172,7 @@ struct HomeTargetCard: View {
         if let module = workflow.connectivity, let selected {
           ConnectivityTestButton(module: module, node: selected)
         } else {
-          Button(ConnectivityCopy.text("测试连通性")) {}.disabled(true)
+          Button(ConnectivityCopy.text("延迟测试")) {}.disabled(true)
         }
         Button(
           activation.isPending
