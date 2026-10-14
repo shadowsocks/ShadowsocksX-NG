@@ -2,6 +2,7 @@
   "sourceLanguage": "zh-Hans",
   "strings": {
     "响应延迟": {
+      "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -18,6 +19,7 @@
       }
     },
     "测试中": {
+      "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -34,6 +36,7 @@
       }
     },
     "已过期": {
+      "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -50,6 +53,7 @@
       }
     },
     "无成功结果": {
+      "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -66,6 +70,7 @@
       }
     },
     "测试全部": {
+      "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -82,6 +87,7 @@
       }
     },
     "已跳过冷却中的服务器": {
+      "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -98,6 +104,7 @@
       }
     },
     "测试连通性": {
+      "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -114,6 +121,7 @@
       }
     },
     "配置不支持": {
+      "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -130,6 +138,7 @@
       }
     },
     "准备超时": {
+      "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -146,6 +155,7 @@
       }
     },
     "请求超时": {
+      "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -162,6 +172,7 @@
       }
     },
     "配置错误": {
+      "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -178,6 +189,7 @@
       }
     },
     "启动错误": {
+      "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -194,6 +206,7 @@
       }
     },
     "网络错误": {
+      "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -210,6 +223,7 @@
       }
     },
     "最快响应延迟": {
+      "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -226,6 +240,7 @@
       }
     },
     "连通性测试": {
+      "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -242,6 +257,7 @@
       }
     },
     "测试 URL…": {
+      "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -258,6 +274,7 @@
       }
     },
     "测试 URL": {
+      "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -274,6 +291,7 @@
       }
     },
     "无法读取或保存测试 URL": {
+      "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -290,6 +308,7 @@
       }
     },
     "经指定服务器发送 GET 请求，2xx 为成功；不跟随重定向。": {
+      "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -306,6 +325,7 @@
       }
     },
     "恢复默认": {
+      "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -322,6 +342,7 @@
       }
     },
     "取消": {
+      "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -338,6 +359,7 @@
       }
     },
     "保存": {
+      "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -354,6 +376,7 @@
       }
     },
     "尚未测试": {
+      "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -370,6 +393,7 @@
       }
     },
     "最快 %@": {
+      "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {

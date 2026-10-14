@@ -8,10 +8,9 @@ settings:
   base:
     ARCHS: arm64
     SWIFT_VERSION: "6.0"
-    # 关闭「Use Compiler to Extract Swift Strings」：构建期不再把 SwiftUI
-    # 字面量自动抽取进 xcstrings——本仓库目录按需手工增删 key（中英对照），
-    # 自动抽取会在 IDE 构建时膨胀文件（2026-10-04 实测）。
-    LOCALIZED_STRING_SWIFTUI_SUPPORT: NO
+    # 关闭所有源码本地化抽取路径及构建后的 String Catalog 自动同步。
+    # 本地化目录由仓库手工维护。
+    LOCALIZATION_EXPORT_SUPPORTED: NO
     CODE_SIGN_STYLE: Manual
     ENABLE_HARDENED_RUNTIME: YES
   configs:

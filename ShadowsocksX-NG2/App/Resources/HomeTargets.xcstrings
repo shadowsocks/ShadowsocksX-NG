@@ -2,6 +2,7 @@
   "sourceLanguage": "zh-Hans",
   "strings": {
     "定位当前": {
+      "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -18,6 +19,7 @@
       }
     },
     "未选择活动目标": {
+      "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -34,6 +36,7 @@
       }
     },
     "目录视图": {
+      "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -50,6 +53,7 @@
       }
     },
     "全部": {
+      "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -66,6 +70,7 @@
       }
     },
     "收藏": {
+      "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -82,6 +87,7 @@
       }
     },
     "名称": {
+      "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -98,6 +104,7 @@
       }
     },
     "测试整个目录中的服务器，不受折叠影响。": {
+      "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -114,6 +121,7 @@
       }
     },
     "测试收藏节点及其全部后代服务器，重复项只测试一次。": {
+      "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -130,6 +138,7 @@
       }
     },
     "目录为空，请到服务器页添加配置。": {
+      "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -146,6 +155,7 @@
       }
     },
     "暂无收藏，请到服务器页收藏配置或分组。": {
+      "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -162,6 +172,7 @@
       }
     },
     "前往服务器页": {
+      "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -178,6 +189,7 @@
       }
     },
     "可激活 %lld 个配置，将跳过 %lld 个已知无效配置。": {
+      "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -194,6 +206,7 @@
       }
     },
     "请选择服务器或分组": {
+      "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -210,6 +223,7 @@
       }
     },
     "激活中…": {
+      "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -226,6 +240,7 @@
       }
     },
     "激活": {
+      "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -242,6 +257,7 @@
       }
     },
     "激活所选目标": {
+      "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -258,6 +274,7 @@
       }
     },
     "尚未选择目标": {
+      "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -274,6 +291,7 @@
       }
     },
     "当前项已激活": {
+      "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -290,6 +308,7 @@
       }
     },
     "配置不满足本地激活条件": {
+      "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -306,6 +325,7 @@
       }
     },
     "收起 %@": {
+      "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -322,6 +342,7 @@
       }
     },
     "展开 %@": {
+      "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
