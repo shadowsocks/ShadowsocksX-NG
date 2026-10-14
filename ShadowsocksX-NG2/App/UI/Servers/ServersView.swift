@@ -166,14 +166,6 @@ struct ServersView: View {
         }
       }
       .width(min: 50, ideal: 60)
-      TableColumn("创建时间", sortUsing: ServerTableSort(.createdAt)) { node in
-        timestampCell(node.createdAt)
-      }
-      .width(min: 100, ideal: timestampColumnWidth)
-      TableColumn("修改时间", sortUsing: ServerTableSort(.updatedAt)) { node in
-        timestampCell(node.updatedAt)
-      }
-      .width(min: 100, ideal: timestampColumnWidth)
     } rows: {
       ForEach(rows) { row in
         TableRow(row.node)
@@ -223,25 +215,6 @@ struct ServersView: View {
         onNewGroup: presentNewGroup, onDuplicate: duplicateNode,
         onDelete: { deleteTarget = $0 }, onExport: exportConfigurationGroup)
     }
-  }
-
-  private func timestampCell(_ date: Date?) -> some View {
-    Text(date.map { Self.timestampFormatter.string(from: $0) } ?? "—")
-      .lineLimit(1)
-      .foregroundStyle(.secondary)
-  }
-
-  private static let timestampFormatter: DateFormatter = {
-    let formatter = DateFormatter()
-    formatter.dateStyle = .short
-    formatter.timeStyle = .short
-    return formatter
-  }()
-
-  private var timestampColumnWidth: CGFloat {
-    let text = Self.timestampFormatter.string(from: Date())
-    return ceil(
-      (text as NSString).size(withAttributes: [.font: NSFont.systemFont(ofSize: 13)]).width) + 24
   }
 
   /// 删除结果 → selection invalidation：仅清除失效选择，不自动
