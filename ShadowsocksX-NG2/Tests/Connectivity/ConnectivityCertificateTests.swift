@@ -5,7 +5,7 @@ import Testing
 
 @MainActor
 struct ConnectivityCertificateTests {
-  @Test func HTTPSRejectsUntrustedCertificateThroughRequiredProxy() async throws {
+  @Test func dohRejectsUntrustedCertificateThroughRequiredProxy() async throws {
     let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
     defer { try? FileManager.default.removeItem(at: root) }
@@ -34,23 +34,24 @@ struct ConnectivityCertificateTests {
       Int(
         (String(data: data, encoding: .utf8) ?? "").trimmingCharacters(in: .whitespacesAndNewlines))
     )
-    let id = NodeID.fresh()
-    let server = SslocalServerDocument(
-      id: "test", server: "example.com", serverPort: 443,
-      password: "test", method: "aes-256-gcm", plugin: nil, pluginOpts: nil)
-    let module = ServerConnectivity(
-      configuration: { _ in server },
-      measure: { _, url, _ in
-        await ConnectivityHTTPRequest().perform(url: url, proxyPort: port)
-      })
-    module.setURL(URL(string: "https://localhost/test")!)
-    await module.wait(for: module.test([id]))
-    #expect(module.history(for: id).first?.outcome == .network)
-    #expect(FileManager.default.fileExists(atPath: marker.path))
-    if FileManager.default.fileExists(atPath: marker.path) {
-      let failure = try String(contentsOf: marker, encoding: .utf8)
-      #expect(failure.contains("UNKNOWN_CA") || failure.contains("CERTIFICATE_UNKNOWN"))
+    await #expect(throws: (any Error).self) {
+      try await ConnectivityDoHResolver().query(
+        host: "target.invalid", endpoint: "https://target.invalid/resolve", proxyPort: port,
+        deadline: .now.advanced(by: .seconds(3)))
     }
+    let alertDeadline = ContinuousClock.now.advanced(by: .seconds(1))
+    while !FileManager.default.fileExists(atPath: marker.path), ContinuousClock.now < alertDeadline
+    {
+      try await Task.sleep(for: .milliseconds(10))
+    }
+    let requestMarker = URL(fileURLWithPath: marker.path + ".request")
+    #expect(FileManager.default.fileExists(atPath: requestMarker.path))
+    if FileManager.default.fileExists(atPath: requestMarker.path) {
+      let request = try String(contentsOf: requestMarker, encoding: .utf8)
+      #expect(request.hasPrefix("CONNECT target.invalid:443 "))
+    }
+    #expect(FileManager.default.fileExists(atPath: marker.path))
+
   }
   private func makeCertificate(in root: URL) throws -> (URL, URL) {
     let cert = root.appendingPathComponent("cert.pem")
@@ -59,8 +60,8 @@ struct ConnectivityCertificateTests {
     openssl.executableURL = URL(fileURLWithPath: "/usr/bin/openssl")
     openssl.arguments = [
       "req", "-x509", "-newkey", "rsa:2048", "-nodes", "-keyout", key.path,
-      "-out", cert.path, "-days", "1", "-subj", "/CN=localhost", "-addext",
-      "subjectAltName=DNS:localhost",
+      "-out", cert.path, "-days", "1", "-subj", "/CN=target.invalid", "-addext",
+      "subjectAltName=DNS:target.invalid",
     ]
     openssl.standardOutput = FileHandle.nullDevice
     openssl.standardError = FileHandle.nullDevice
@@ -86,7 +87,8 @@ struct ConnectivityCertificateTests {
             data = connection.recv(4096)
             if not data: break
             request += data
-        if not request.startswith(b'CONNECT localhost:443 '):
+        pathlib.Path(sys.argv[3] + '.request').write_bytes(request)
+        if not request.startswith(b'CONNECT target.invalid:443 '):
             connection.close(); continue
         connection.sendall(b'HTTP/1.1 200 Connection Established\\r\\n\\r\\n')
         try:

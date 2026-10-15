@@ -22,8 +22,8 @@ struct ConnectivityURLSettings: View {
     .sheet(isPresented: $editing) {
       VStack(alignment: .leading, spacing: 16) {
         Text(ConnectivityCopy.text("测试 URL")).font(.headline)
-        TextField("HTTP / HTTPS", text: $value).textFieldStyle(.roundedBorder)
-        Text(ConnectivityCopy.text("经指定服务器发送 GET 请求，2xx 为成功；不跟随重定向。"))
+        TextField("HTTP", text: $value).textFieldStyle(.roundedBorder)
+        Text(ConnectivityCopy.text("仅支持 HTTP。预热后采样 3 次，至少成功 2 次；显示成功样本的中位数。"))
           .font(.caption).foregroundStyle(.secondary)
         if failure { Text(ConnectivityCopy.text("无法读取或保存测试 URL")).foregroundStyle(.red) }
         HStack {

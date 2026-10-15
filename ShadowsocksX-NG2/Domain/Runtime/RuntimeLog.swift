@@ -47,8 +47,18 @@ enum RuntimeLogEvent: Equatable, CustomStringConvertible, Sendable {
   /// 诊断日志由查看器呈现；完整日志查看器属于独立的诊断界面。
   case listenSettingsUnreadable(detail: String)
 
+  case connectivityMeasurement(id: UUID, entry: ConnectivityTrace)
+
+  /// Detailed measurements are available only through explicit in-app log viewing.
+  var standardErrorLine: String? {
+    if case .connectivityMeasurement = self { return nil }
+    return "ssxng: \(description)\n"
+  }
+
   var description: String {
     switch self {
+    case .connectivityMeasurement(let id, let entry):
+      return "connectivity \(id.uuidString) \(entry.description)"
     case .contractWritten(let serverCount):
       return "contract written (servers=\(serverCount))"
     case .contractUnchanged:
@@ -140,8 +150,7 @@ enum RuntimeLog {
   }
 
   static func emit(_ event: RuntimeLogEvent) {
-    let line = "ssxng: \(event.description)\n"
-    FileHandle.standardError.write(Data(line.utf8))
+    if let line = event.standardErrorLine { FileHandle.standardError.write(Data(line.utf8)) }
     sinkHolder.current?.append(event: event, timestamp: Date())
   }
 
@@ -161,5 +170,52 @@ enum RuntimeLog {
       defer { lock.unlock() }
       sink = value
     }
+  }
+}
+
+/// Structured latency observations for explicit local log viewing. These events
+/// are excluded from shared diagnostic reports, including their target IPs.
+struct ConnectivityTrace: Equatable, Sendable, CustomStringConvertible {
+  enum Phase: String, Sendable {
+    case startup, google, cloudflare, candidate, selected, sample, summary
+  }
+  enum Status: String, Sendable {
+    case success, network, timeout, http, configuration, cancelled, insufficientSamples
+  }
+  enum FailureStage: String, Sendable {
+    case none, startup, dns, selection, request, send, headers
+    case localTCP = "local_tcp"
+    case firstByte = "first_byte"
+  }
+  var phase: Phase
+  var status: Status
+  var index: Int = 0
+  var address: String?
+  var milliseconds: Double?
+  var localTCPMilliseconds: Double?
+  var sendMilliseconds: Double?
+  var firstByteMilliseconds: Double?
+  var headersMilliseconds: Double?
+  var failureStage: FailureStage = .none
+  var httpStatus: Int?
+
+  var description: String {
+    var fields = ["phase=\(phase.rawValue)", "result=\(status.rawValue)"]
+    if index > 0 { fields.append("index=\(index)") }
+    if let address { fields.append("ip=\(address)") }
+    if let httpStatus { fields.append("http=\(httpStatus)") }
+    if failureStage != .none { fields.append("failure_stage=\(failureStage.rawValue)") }
+    let times: [(String, Double?)] = [
+      ("total_ms", milliseconds), ("local_tcp_ms", localTCPMilliseconds),
+      ("send_ms", sendMilliseconds), ("wait_first_byte_ms", firstByteMilliseconds),
+      ("first_byte_to_headers_ms", headersMilliseconds),
+    ]
+    for (name, value) in times {
+      if let value {
+        fields.append(
+          "\(name)=\(String(format: "%.3f", locale: Locale(identifier: "en_US_POSIX"), value))")
+      }
+    }
+    return fields.joined(separator: " ")
   }
 }

@@ -29,7 +29,7 @@ struct ServerConnectivityTests {
     #expect(calls == 2)
   }
 
-  @Test func overlappingBatchesShareThreeSlotsUntilCleanupCompletes() async {
+  @Test func overlappingBatchesShareOneSlotUntilCleanupCompletes() async {
     let ids = (0..<7).map { _ in NodeID.fresh() }
     let gate = AsyncGate()
     var active = 0
@@ -48,12 +48,12 @@ struct ServerConnectivityTests {
     let firstTarget = module.test(Array(ids.prefix(5)))
     let secondTarget = module.test(Array(ids.suffix(5)))
     for _ in 0..<100 { await Task.yield() }
-    #expect(calls == 3)
+    #expect(calls == 1)
     #expect(module.testing.count == 7)
     gate.release()
     await module.wait(for: firstTarget)
     await module.wait(for: secondTarget)
-    #expect(peak == 3)
+    #expect(peak == 1)
     #expect(calls == 7)
     #expect(ids.allSatisfy { module.history(for: $0).count == 1 })
   }
@@ -169,9 +169,9 @@ struct ServerConnectivityTests {
     #expect(module.isCooling(ids[3]))
   }
 
-  @Test func URLValidationAllowsHTTPAndHTTPSOnly() {
+  @Test func URLValidationAllowsHTTPOnly() {
     #expect(ServerConnectivity.validURL("http://example.com/check") != nil)
-    #expect(ServerConnectivity.validURL("https://example.com/check?q=secret") != nil)
+    #expect(ServerConnectivity.validURL("https://example.com/check?q=secret") == nil)
     for value in [
       "file:///tmp/check", "ftp://example.com", "https:///", "example.com", "http://x/#fragment",
     ] {

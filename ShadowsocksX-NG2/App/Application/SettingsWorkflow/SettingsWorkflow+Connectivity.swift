@@ -5,8 +5,8 @@ extension SettingsWorkflow {
     guard let reference = committing.committedSettings.connectivityURLReference else {
       return ServerConnectivity.defaultURL.absoluteString
     }
-    guard let secret = try credentials.secret(for: reference),
-      ServerConnectivity.validURL(secret) != nil
+    // Previously supported URLs remain editable after the accepted scheme changes.
+    guard let secret = try credentials.secret(for: reference), !secret.isEmpty
     else {
       throw ServerFormLoadError.credentialsUnavailable
     }

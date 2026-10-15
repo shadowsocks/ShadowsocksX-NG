@@ -6,11 +6,16 @@ import Foundation
 @MainActor
 struct ConnectivityRuntime {
   let executable: URL
+  var measurement = ConnectivityMeasurement()
   var temporaryRoot: URL = FileManager.default.temporaryDirectory
 
   func measure(
     _ server: SslocalServerDocument, url: URL, preparationDeadline deadline: ContinuousClock.Instant
   ) async -> ServerConnectivity.Outcome {
+    let measurementID = UUID()
+    let started = ContinuousClock.now
+    let startupDeadline = min(deadline, started.advanced(by: .seconds(10)))
+    var startupCompleted = false
     let directory = temporaryRoot.appendingPathComponent(UUID().uuidString)
     var pid: pid_t = 0
     var reaped = false
@@ -38,7 +43,7 @@ struct ConnectivityRuntime {
       ])
       try AtomicFileWriter.write(data, to: config)
       pid = try spawn(config)
-      while ContinuousClock.now < deadline {
+      while ContinuousClock.now < startupDeadline {
         try Task.checkCancellation()
         var status: Int32 = 0
         if waitpid(pid, &status, WNOHANG) == pid {
@@ -49,16 +54,41 @@ struct ConnectivityRuntime {
           EndpointHealthProbe.probe(host: "127.0.0.1", port: port, timeout: 0.02) == .reachable
         {
           if ContinuousClock.now >= deadline { break }
-          result = await ConnectivityHTTPRequest().perform(url: url, proxyPort: port)
+          startupCompleted = true
+          let parts = started.duration(to: .now).components
+          RuntimeLog.emit(
+            .connectivityMeasurement(
+              id: measurementID,
+              entry: ConnectivityTrace(
+                phase: .startup, status: .success,
+                milliseconds: Double(parts.seconds) * 1000 + Double(parts.attoseconds) / 1e15)))
+          let measured = await measurement.measure(
+            url: url, proxyPort: port, preparationDeadline: deadline)
+          for entry in measured.trace {
+            RuntimeLog.emit(.connectivityMeasurement(id: measurementID, entry: entry))
+          }
+          result = measured.outcome
           break
         }
         try await Task.sleep(for: .milliseconds(25))
       }
-      if ContinuousClock.now >= deadline, result == .startup { result = .preparationTimeout }
+      if ContinuousClock.now >= startupDeadline, result == .startup { result = .preparationTimeout }
     } catch is CancellationError {
       result = .network
     } catch {
       result = .startup
+    }
+    if !startupCompleted {
+      let parts = started.duration(to: .now).components
+      RuntimeLog.emit(
+        .connectivityMeasurement(
+          id: measurementID,
+          entry: ConnectivityTrace(
+            phase: .startup,
+            status: Task.isCancelled
+              ? .cancelled : result == .preparationTimeout ? .timeout : .network,
+            milliseconds: Double(parts.seconds) * 1000 + Double(parts.attoseconds) / 1e15,
+            failureStage: .startup)))
     }
     await cleanup(pid: pid, reaped: reaped, directory: directory)
     return result

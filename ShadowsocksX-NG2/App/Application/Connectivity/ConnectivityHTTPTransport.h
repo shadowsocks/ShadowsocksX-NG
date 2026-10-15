@@ -5,14 +5,19 @@
 typedef struct ConnectivityHTTPCancellation ConnectivityHTTPCancellation;
 typedef struct {
   int status;
-  int64_t milliseconds;
   int timed_out;
   int received_headers;
+  int stage; /* 1: local TCP, 2: send, 3: first byte, 4: headers, 5: complete */
+  double milliseconds;
+  double local_tcp_ms;
+  double send_ms;
+  double first_byte_ms;
+  double headers_ms;
 } ConnectivityHTTPResult;
 ConnectivityHTTPCancellation *ConnectivityHTTPCreateCancellation(void);
 void ConnectivityHTTPCancel(ConnectivityHTTPCancellation *token);
 void ConnectivityHTTPDestroyCancellation(ConnectivityHTTPCancellation *token);
 uint64_t ConnectivityHTTPNow(void);
-ConnectivityHTTPResult ConnectivityHTTPMeasure(const char *url, int proxy_port,
-  uint64_t started, ConnectivityHTTPCancellation *token);
+ConnectivityHTTPResult ConnectivityHTTPProbe(const char *request, int proxy_port,
+  int timeout_ms, ConnectivityHTTPCancellation *token);
 #endif

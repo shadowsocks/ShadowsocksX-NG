@@ -11,7 +11,7 @@ struct ConnectivitySettingsTests {
     let workflow = SettingsWorkflow(committing: committer, credentials: credentials)
     var published = 0
     workflow.connectivityURLDidChange = { _ in published += 1 }
-    let secretURL = "https://example.com/probe?token=private"
+    let secretURL = "http://example.com/probe?token=private"
     #expect(await workflow.saveConnectivityURL(secretURL))
     #expect(try workflow.beginConnectivityURLEditing() == secretURL)
     #expect(credentials.storageCount == 1)
@@ -36,4 +36,18 @@ struct ConnectivitySettingsTests {
     #expect(committer.committedSettings.connectivityURLReference == nil)
     #expect(credentials.storageCount == 0)
   }
+  @Test func previouslySavedHTTPSURLCanBeOpenedAndReplacedWithHTTP() async throws {
+    let committer = FakeSettingsCommitter()
+    let credentials = InMemoryCredentialStore()
+    let reference = CredentialReference.fresh()
+    try credentials.save("https://example.com/old?token=private", for: reference)
+    committer.committedSettings.connectivityURLReference = reference
+    let workflow = SettingsWorkflow(committing: committer, credentials: credentials)
+    #expect(try workflow.beginConnectivityURLEditing() == "https://example.com/old?token=private")
+    #expect(await !workflow.saveConnectivityURL("https://example.com/new"))
+    #expect(await workflow.saveConnectivityURL("http://example.com/new"))
+    #expect(try workflow.beginConnectivityURLEditing() == "http://example.com/new")
+    #expect(try credentials.secret(for: reference) == nil)
+  }
+
 }

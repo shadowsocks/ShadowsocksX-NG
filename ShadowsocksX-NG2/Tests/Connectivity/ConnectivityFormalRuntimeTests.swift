@@ -42,7 +42,7 @@ struct ConnectivityFormalRuntimeTests {
     let target = controller.activeTargetID
     let document = try Data(contentsOf: runtime.contract)
     let workflow = SettingsWorkflow(committing: controller, credentials: credentials)
-    #expect(await workflow.saveConnectivityURL("https://example.com/probe?token=private"))
+    #expect(await workflow.saveConnectivityURL("http://example.com/probe?token=private"))
     #expect(controller.state == state)
     #expect(controller.activeTargetID == target)
     #expect(agent.registerCount == calls)

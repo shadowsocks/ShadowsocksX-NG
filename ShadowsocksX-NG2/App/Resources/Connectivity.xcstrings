@@ -324,23 +324,6 @@
         }
       }
     },
-    "经指定服务器发送 GET 请求，2xx 为成功；不跟随重定向。": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Send a GET through the selected server. A 2xx response succeeds. Redirects are not followed."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "经指定服务器发送 GET 请求，2xx 为成功；不跟随重定向。"
-          }
-        }
-      }
-    },
     "恢复默认": {
       "extractionState": "manual",
       "localizations": {
@@ -405,6 +388,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "尚未测试"
+          }
+        }
+      }
+    },
+    "仅支持 HTTP。预热后采样 3 次，至少成功 2 次；显示成功样本的中位数。": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "HTTP only. After warm-up, take 3 samples; at least 2 must succeed. Shows the median of successful samples."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "仅支持 HTTP。预热后采样 3 次，至少成功 2 次；显示成功样本的中位数。"
           }
         }
       }

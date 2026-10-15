@@ -26,6 +26,8 @@ extension RuntimeLogEvent {
   /// 事件在安全报告中的呈现文本；nil = 不进报告。
   var diagnosticReportLine: String? {
     switch self {
+    case .connectivityMeasurement:
+      return nil
     case .contractWritten(let serverCount):
       return "contract written (servers=\(serverCount))"
     case .contractUnchanged:

@@ -163,7 +163,6 @@ targets:
         - name: ShadowsocksX-NG2Tests
           parallelizable: true
     dependencies:
-      - sdk: libcurl.tbd
       # 代理运行时 wrapper（BundleProgram）：以独立可执行文件装入
       # Contents/MacOS，由 LaunchAgent plist 以 bundle 相对路径引用。
       - target: ShadowsocksX-NG2Agent
@@ -202,8 +201,6 @@ targets:
         PRODUCT_MODULE_NAME: ShadowsocksX_NG2
         # 静态库产物不签名（app 的 DevID 身份不适用）。
         CODE_SIGNING_ALLOWED: NO
-    dependencies:
-      - sdk: libcurl.tbd
   ShadowsocksX-NG2Agent:
     type: tool
     platform: macOS
@@ -268,7 +265,6 @@ targets:
       path: Tests/Info.plist
       properties: {}
     dependencies:
-      - sdk: libcurl.tbd
       # 去宿主化（ADR 0021）：单测链 Core 静态库镜像而非 app 可执行，测试在
       # 独立 xctest runner 中运行，宿主 app 不再被启动。
       - target: ShadowsocksX-NG2Core
@@ -288,7 +284,6 @@ targets:
       path: Tests/Smoke/Info.plist
       properties: {}
     dependencies:
-      - sdk: libcurl.tbd
       # 去宿主化（ADR 0021）：smoke 同样链 Core 镜像库；真实 sslocal/agent 从
       # scheme 构建的 app 产物取（AppArtifact），宿主 app 不再被启动。
       - target: ShadowsocksX-NG2Core

@@ -69,10 +69,12 @@ final class ServerConnectivity: ObservableObject {
     self.measure = measure
   }
 
-  static func validURL(_ raw: String) -> URL? {
+  nonisolated static func validURL(_ raw: String) -> URL? {
     guard let url = URL(string: raw.trimmingCharacters(in: .whitespacesAndNewlines)),
-      ["http", "https"].contains(url.scheme?.lowercased() ?? ""),
-      let host = url.host, !host.isEmpty, url.fragment == nil
+      url.scheme?.lowercased() == "http",
+      let host = url.host, !host.isEmpty, url.fragment == nil,
+      url.user == nil, url.password == nil,
+      url.port.map({ (1...65535).contains($0) }) ?? true
     else { return nil }
     return url
   }
@@ -177,10 +179,10 @@ final class ServerConnectivity: ObservableObject {
   }
 
   private func pump() {
-    while running < 3, !queue.isEmpty, !stopped {
+    while running < 1, !queue.isEmpty, !stopped {
       let (id, token) = queue.removeFirst()
       guard tokens[id] == token else { continue }
-      let preparationDeadline = ContinuousClock.now.advanced(by: .seconds(10))
+      let preparationDeadline = ContinuousClock.now.advanced(by: .seconds(30))
       guard versions[id] == revision(id) else {
         records.removeValue(forKey: id)
         finish(id)
