@@ -14,7 +14,15 @@ struct NodeDetailPresentation {
     let value: String
   }
 
-  struct Properties: Equatable {
+  enum PropertiesID: Hashable {
+    case subscription
+    case information
+    case connection
+    case pluginParameters
+  }
+
+  struct Properties: Equatable, Identifiable {
+    let id: PropertiesID
     let title: String
     let items: [Property]
   }
@@ -121,7 +129,8 @@ struct NodeDetailPresentation {
           value: subscriptionTimestamp(date, locale: locale, timeZone: timeZone)))
     }
     guard !items.isEmpty else { return nil }
-    return Properties(title: String(localized: "订阅", table: "ServerDetails"), items: items)
+    return Properties(
+      id: .subscription, title: String(localized: "订阅", table: "ServerDetails"), items: items)
   }
 
   private static func subscriptionTimestamp(
@@ -138,7 +147,7 @@ struct NodeDetailPresentation {
     case .named(let name), .unknown(let name): program = name
     }
     return Properties(
-      title: String(localized: "连接信息", table: "ServerDetails"),
+      id: .connection, title: String(localized: "连接信息", table: "ServerDetails"),
       items: [
         Property(label: String(localized: "地址", table: "ServerDetails"), value: server.address),
         Property(
@@ -171,7 +180,8 @@ struct NodeDetailPresentation {
         label: String(localized: "修改时间", table: "ServerDetails"),
         value: Self.timestamp(node.updatedAt)),
     ]
-    return Properties(title: String(localized: "信息", table: "ServerDetails"), items: information)
+    return Properties(
+      id: .information, title: String(localized: "信息", table: "ServerDetails"), items: information)
   }
 
   mutating func appendPluginParameters(_ raw: String) {
@@ -189,13 +199,15 @@ struct NodeDetailPresentation {
       items = [Property(label: String(localized: "原始文本", table: "ServerDetails"), value: raw)]
     }
     properties.append(
-      Properties(title: String(localized: "插件参数", table: "ServerDetails"), items: items))
+      Properties(
+        id: .pluginParameters, title: String(localized: "插件参数", table: "ServerDetails"),
+        items: items))
   }
 
   mutating func appendPluginParameterFailure() {
     properties.append(
       Properties(
-        title: String(localized: "插件参数", table: "ServerDetails"),
+        id: .pluginParameters, title: String(localized: "插件参数", table: "ServerDetails"),
         items: [
           Property(
             label: String(localized: "插件参数", table: "ServerDetails"),

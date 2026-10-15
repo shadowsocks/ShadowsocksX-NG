@@ -75,6 +75,20 @@ struct CatalogNodeDetailView: View {
           )
           .id(subscription.id)
         }
+      } propertiesFooter: { group in
+        if group.id == .subscription,
+          let fraction = subscriptionSummary(for: node)?.information?.usedFraction
+        {
+          ProgressView(value: fraction) {
+            Text("流量消耗")
+          } currentValueLabel: {
+            Text(fraction, format: .percent.precision(.fractionLength(0)))
+          }
+          .progressViewStyle(.linear)
+          .tint(.accentColor)
+        } else {
+          nil
+        }
       } supplement: {
         if let module = workflow.connectivity {
           ConnectivityDetailView(module: module, node: node, workflow: workflow)

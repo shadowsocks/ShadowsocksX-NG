@@ -1,4 +1,6 @@
+import AppKit
 import Foundation
+import SwiftUI
 import Testing
 
 @testable import ShadowsocksX_NG2
@@ -73,6 +75,47 @@ struct NodeDetailPresentationTests {
       server: server, eligibility: nil, isActiveTarget: false)
     #expect(!detail.subtitle.contains("插件文件不可执行"))
     #expect(detail.activationMessages == ["插件文件不可执行，请检查文件类型和执行权限。"])
+  }
+
+  @Test(arguments: [false, true])
+  func propertiesFooterRendersWithAndWithoutRows(hasRows: Bool) throws {
+    var detail = NodeDetailPresentation(
+      node: node(isGroup: true), server: nil, eligibility: nil, isActiveTarget: false)
+    detail.properties = [
+      .init(
+        id: .information, title: "Properties", items: hasRows ? [.init(label: "A", value: "B")] : []
+      )
+    ]
+    let host = NSHostingView(
+      rootView: NodeDetailView(detail: detail) {
+        EmptyView()
+      } secondaryActions: {
+        EmptyView()
+      } feedback: {
+        EmptyView()
+      } propertiesFooter: { group in
+        group.id == .information ? FooterMarker() : nil
+      } supplement: {
+        EmptyView()
+      })
+    host.frame = NSRect(x: 0, y: 0, width: 480, height: 600)
+    host.layoutSubtreeIfNeeded()
+    #expect(containsFooter(in: host))
+  }
+
+  private func containsFooter(in view: NSView) -> Bool {
+    view.identifier?.rawValue == "properties-footer"
+      || view.subviews.contains { containsFooter(in: $0) }
+  }
+
+  private struct FooterMarker: NSViewRepresentable {
+    func makeNSView(context: Context) -> NSTextField {
+      let field = NSTextField(labelWithString: "Custom footer")
+      field.identifier = NSUserInterfaceItemIdentifier("properties-footer")
+      return field
+    }
+
+    func updateNSView(_ nsView: NSTextField, context: Context) {}
   }
 
   private func node(isGroup: Bool, invalidReasons: [LeafInvalidationReason] = []) -> CatalogTreeNode

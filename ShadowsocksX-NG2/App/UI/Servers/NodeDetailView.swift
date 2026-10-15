@@ -2,12 +2,14 @@ import SwiftUI
 
 /// 只接受展示值与外部动作；不查询节点类型、工作流或凭据。
 struct NodeDetailView<
-  PrimaryActions: View, SecondaryActions: View, Feedback: View, Supplement: View
+  PrimaryActions: View, SecondaryActions: View, Feedback: View, PropertiesFooter: View,
+  Supplement: View
 >: View {
   let detail: NodeDetailPresentation
   @ViewBuilder let primaryActions: PrimaryActions
   @ViewBuilder let secondaryActions: SecondaryActions
   @ViewBuilder let feedback: Feedback
+  let propertiesFooter: (NodeDetailPresentation.Properties) -> PropertiesFooter?
   @ViewBuilder let supplement: Supplement
 
   var body: some View {
@@ -45,8 +47,9 @@ struct NodeDetailView<
           feedback
         }
         Divider()
-        ForEach(Array(detail.properties.enumerated()), id: \.offset) { _, group in
-          if !group.items.isEmpty {
+        ForEach(detail.properties) { group in
+          let footer = propertiesFooter(group)
+          if !group.items.isEmpty || footer != nil {
             VStack(alignment: .leading, spacing: 10) {
               Text(group.title).font(.headline)
               Grid(alignment: .leading, horizontalSpacing: 16, verticalSpacing: 8) {
@@ -62,6 +65,7 @@ struct NodeDetailView<
                   }
                 }
               }
+              footer
             }
           }
         }
