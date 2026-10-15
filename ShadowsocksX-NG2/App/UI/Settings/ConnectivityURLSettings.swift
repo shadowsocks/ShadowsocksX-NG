@@ -4,24 +4,46 @@ struct ConnectivityURLSettings: View {
   @ObservedObject var workflow: SettingsWorkflow
   @State private var editing = false
   @State private var value = ""
+  @State private var displayedURL = ""
   @State private var failure = false
 
   var body: some View {
     Section {
-      Button(ConnectivityCopy.text("测试 URL…")) {
-        do {
-          value = try workflow.beginConnectivityURLEditing()
-          failure = false
-          editing = true
-        } catch { failure = true }
+      HStack(spacing: 12) {
+        VStack(alignment: .leading, spacing: 4) {
+          Text(ConnectivityCopy.text("测试链接")).font(.headline)
+          Text(displayedURL)
+            .font(.caption)
+            .foregroundStyle(.secondary)
+            .lineLimit(1)
+            .truncationMode(.middle)
+            .textSelection(.enabled)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+
+        Button(action: beginEditing) {
+          HStack(spacing: 6) {
+            Text(String(localized: "编辑"))
+            Image(systemName: "chevron.right")
+              .font(.caption.weight(.semibold))
+              .accessibilityHidden(true)
+          }
+        }
+        .buttonStyle(.bordered)
       }
-      if failure { Text(ConnectivityCopy.text("无法读取或保存测试 URL")).foregroundStyle(.red) }
+
+      if failure {
+        Text(ConnectivityCopy.text("无法读取或保存测试 URL"))
+          .font(.caption)
+          .foregroundStyle(.red)
+      }
     } header: {
-      Text(ConnectivityCopy.text("连通性测试"))
+      Text(ConnectivityCopy.text("延迟测试"))
     }
+    .onAppear(perform: refreshDisplayedURL)
     .sheet(isPresented: $editing) {
       VStack(alignment: .leading, spacing: 16) {
-        Text(ConnectivityCopy.text("测试 URL")).font(.headline)
+        Text(ConnectivityCopy.text("测试链接")).font(.headline)
         TextField("HTTP", text: $value).textFieldStyle(.roundedBorder)
         Text(ConnectivityCopy.text("仅支持 HTTP。预热后采样 3 次，至少成功 2 次；显示成功样本的中位数。"))
           .font(.caption).foregroundStyle(.secondary)
@@ -35,6 +57,7 @@ struct ConnectivityURLSettings: View {
           Button(ConnectivityCopy.text("保存")) {
             Task {
               if await workflow.saveConnectivityURL(value) {
+                displayedURL = ServerConnectivity.validURL(value)?.absoluteString ?? value
                 editing = false
                 failure = false
               } else {
@@ -48,6 +71,28 @@ struct ConnectivityURLSettings: View {
       }
       .padding(24).frame(width: 520)
       .interactiveDismissDisabled(workflow.isCommitting)
+    }
+  }
+
+  private func refreshDisplayedURL() {
+    do {
+      displayedURL = try workflow.beginConnectivityURLEditing()
+      failure = false
+    } catch {
+      displayedURL = ""
+      failure = true
+    }
+  }
+
+  private func beginEditing() {
+    do {
+      value = try workflow.beginConnectivityURLEditing()
+      displayedURL = value
+      failure = false
+      editing = true
+    } catch {
+      displayedURL = ""
+      failure = true
     }
   }
 }

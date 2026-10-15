@@ -239,24 +239,7 @@
         }
       }
     },
-    "测试 URL…": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Test URL…"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "测试 URL…"
-          }
-        }
-      }
-    },
-    "测试 URL": {
+    "测试链接": {
       "extractionState": "manual",
       "localizations": {
         "en": {
@@ -268,7 +251,7 @@
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "测试 URL"
+            "value": "测试链接"
           }
         }
       }
