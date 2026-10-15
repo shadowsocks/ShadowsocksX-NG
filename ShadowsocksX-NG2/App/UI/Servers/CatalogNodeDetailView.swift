@@ -37,7 +37,8 @@ struct CatalogNodeDetailView: View {
           Button(
             workflow.refreshingSubscriptionIDs.contains(subscription.id)
               ? String(localized: "更新中…", table: "ServerDetails")
-              : String(localized: "更新", table: "ServerDetails")
+              : String(localized: "更新", table: "ServerDetails"),
+            systemImage: "arrow.clockwise"
           ) {
             Task { await workflow.refreshSubscription(subscription.id) }
           }
