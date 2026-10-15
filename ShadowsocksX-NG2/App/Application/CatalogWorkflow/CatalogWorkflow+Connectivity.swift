@@ -29,13 +29,6 @@ extension CatalogWorkflow {
     return ProxyACLDocument.digest((try? JSONEncoder().encode(facts)) ?? Data())
   }
 
-  /// Captures all descendants in catalog order, independently of UI collapse or sort.
-  func connectivityTargets(source: NodeSource?) -> [NodeID] {
-    let nodes = source == nil ? favorites : tree.roots.filter { $0.source == source }
-    var seen = Set<NodeID>()
-    return nodes.flatMap(\.connectivityServerIDs).filter { seen.insert($0).inserted }
-  }
-
   /// This local state machine derives a single leaf without publishing activation.
   func connectivityConfiguration(for id: NodeID) throws -> SslocalServerDocument {
     let catalog = dependencies.coordinator.committedCatalog

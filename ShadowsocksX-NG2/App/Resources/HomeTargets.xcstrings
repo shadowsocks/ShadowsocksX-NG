@@ -103,40 +103,6 @@
         }
       }
     },
-    "测试整个目录中的服务器，不受折叠影响。": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Test every server in the catalog, including collapsed groups."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "测试整个目录中的服务器，不受折叠影响。"
-          }
-        }
-      }
-    },
-    "测试收藏节点及其全部后代服务器，重复项只测试一次。": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Test favorites and all their descendant servers, once per server."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "测试收藏节点及其全部后代服务器，重复项只测试一次。"
-          }
-        }
-      }
-    },
     "目录为空，请到服务器页添加配置。": {
       "extractionState": "manual",
       "localizations": {

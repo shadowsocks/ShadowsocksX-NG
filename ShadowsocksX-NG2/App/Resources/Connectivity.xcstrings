@@ -86,40 +86,6 @@
         }
       }
     },
-    "测试全部": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Test All"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "测试全部"
-          }
-        }
-      }
-    },
-    "已跳过冷却中的服务器": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Skipped servers in cooldown"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "已跳过冷却中的服务器"
-          }
-        }
-      }
-    },
     "延迟测试": {
       "extractionState": "manual",
       "localizations": {

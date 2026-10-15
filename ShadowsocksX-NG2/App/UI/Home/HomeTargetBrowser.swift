@@ -31,12 +31,6 @@ final class HomeTargetBrowser: ObservableObject {
 
   func select(_ id: NodeID?) { selection = id }
 
-  func testTargets(in tree: CatalogTreeSnapshot, favorites: [CatalogTreeNode]) -> [NodeID] {
-    var seen = Set<NodeID>()
-    return (mode == .all ? tree.roots : favorites)
-      .flatMap(\.connectivityServerIDs).filter { seen.insert($0).inserted }
-  }
-
   func reconcile(in tree: CatalogTreeSnapshot, favorites: [CatalogTreeNode]) {
     let groups = Set(tree.visibleRows(collapsed: []).filter(\.node.isGroup).map(\.id))
     expandedGroupIDs.formIntersection(groups)

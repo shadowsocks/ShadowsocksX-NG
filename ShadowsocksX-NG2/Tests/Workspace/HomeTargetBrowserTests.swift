@@ -108,26 +108,4 @@ struct HomeTargetBrowserTests {
     browser.reconcile(in: tree, favorites: [])
     #expect(browser.selection == nil)
   }
-
-  @Test
-  func batchTargetsIncludeCollapsedDescendantsAndDeduplicateOverlappingFavorites() throws {
-    let domain = UUID().uuidString
-    let defaults = UserDefaults(suiteName: domain)!
-    defer { defaults.removePersistentDomain(forName: domain) }
-    let fixture = try CatalogFixtures.makeSubscriptionFixture()
-    let tree = CatalogTreeSnapshot.build(
-      from: fixture.catalog, credentials: InMemoryCredentialStore(),
-      plugins: NoManagedPluginProvider())
-    let favorites = [fixture.serverIDs[1], fixture.groupID].compactMap { tree.node(withID: $0) }
-    let browser = HomeTargetBrowser(defaults: defaults)
-    #expect(
-      browser.testTargets(in: tree, favorites: favorites)
-        == [fixture.serverIDs[1], fixture.serverIDs[0]])
-    browser.setMode(.favorites, in: tree, favorites: favorites)
-    #expect(browser.rows(in: tree, favorites: favorites).count == 2)
-    #expect(
-      browser.testTargets(in: tree, favorites: favorites)
-        == [fixture.serverIDs[1], fixture.serverIDs[0]])
-    #expect(browser.testTargets(in: tree, favorites: []).isEmpty)
-  }
 }

@@ -305,12 +305,6 @@ extension ServersView {
 
   @ToolbarContentBuilder
   private var toolbarContent: some ToolbarContent {
-    if let module = workflow.connectivity {
-      ToolbarItem(placement: .primaryAction) {
-        ConnectivityBatchButton(
-          module: module, targets: workflow.connectivityTargets(source: section.source))
-      }
-    }
     if section == .manual {
       ToolbarItem(placement: .primaryAction) {
         Button {

@@ -65,26 +65,6 @@ struct ConnectivityCell: View {
   }
 }
 
-struct ConnectivityBatchButton: View {
-  @ObservedObject var module: ServerConnectivity
-  let targets: [NodeID]
-  @State private var batchID: UUID?
-
-  var body: some View {
-    HStack(spacing: 6) {
-      Button {
-        batchID = module.test(targets)
-      } label: {
-        Label(ConnectivityCopy.text("测试全部"), systemImage: "waveform.path.ecg")
-      }
-      .disabled(targets.isEmpty)
-      if let batchID, let batch = module.batch(batchID), batch.completed < batch.targets.count {
-        ProgressView().controlSize(.mini)
-      }
-    }
-  }
-}
-
 struct ConnectivityTestButton: View {
   @ObservedObject var module: ServerConnectivity
   let node: CatalogTreeNode

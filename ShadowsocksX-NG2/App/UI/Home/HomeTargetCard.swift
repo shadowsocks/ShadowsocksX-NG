@@ -74,17 +74,7 @@ struct HomeTargetCard: View {
       }
       .pickerStyle(.segmented)
       .labelsHidden()
-      Spacer(minLength: 8)
-      if let module = workflow.connectivity {
-        ConnectivityBatchButton(
-          module: module,
-          targets: browser.testTargets(in: workflow.tree, favorites: workflow.favorites)
-        )
-        .help(
-          browser.mode == .all
-            ? String(localized: "测试整个目录中的服务器，不受折叠影响。", table: "HomeTargets")
-            : String(localized: "测试收藏节点及其全部后代服务器，重复项只测试一次。", table: "HomeTargets"))
-      }
+      Spacer(minLength: 0)
     }
     .frame(maxWidth: .infinity, alignment: .leading)
   }

@@ -5,7 +5,7 @@ import Testing
 
 @MainActor
 struct ConnectivityCatalogTests {
-  @Test func targetScopesExpandFavoriteGroupsWithoutChangingCatalogOrActivation() async throws {
+  @Test func groupConnectivityIDsExpandAndConfigurationReadsCommittedCatalog() throws {
     let subscription = try CatalogFixtures.makeSubscriptionFixture(prefix: UUID().uuidString)
     var catalog = subscription.catalog
     let credentials = InMemoryCredentialStore()
@@ -22,13 +22,6 @@ struct ConnectivityCatalogTests {
     let runtime = FakeCatalogRuntime()
     let coordinator = CatalogCommitCoordinator(fileStore: store, runtime: runtime)
     let workflow = makeCatalogWorkflow(coordinator: coordinator, credentials: credentials)
-    try workflow.setFavorite(group, isFavorite: true)
-    try workflow.setFavorite(secondTarget, isFavorite: true)
-    #expect(workflow.connectivityTargets(source: .manual) == [secondTarget, firstTarget])
-    #expect(
-      workflow.connectivityTargets(source: .subscription)
-        == Array(subscription.serverIDs.reversed()))
-    #expect(workflow.connectivityTargets(source: nil) == [secondTarget, firstTarget])
     #expect(
       workflow.tree.node(withID: group)?.connectivityServerIDs == [secondTarget, firstTarget])
     let before = try Data(contentsOf: store.fileURL)
