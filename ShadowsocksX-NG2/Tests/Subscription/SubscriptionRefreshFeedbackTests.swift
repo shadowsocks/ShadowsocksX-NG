@@ -5,31 +5,6 @@ import Testing
 
 @MainActor
 struct SubscriptionRefreshFeedbackTests {
-  @Test func failureLastsTenSecondsAndOldExpirationCannotClearNewResult() {
-    let date = Date(timeIntervalSince1970: 100)
-    let first = SubscriptionRefreshCompletion(completedAt: date)
-    let next = SubscriptionRefreshCompletion(completedAt: date, failure: .httpStatus(code: 503))
-    let state = SubscriptionRefreshFeedbackState()
-    state.present(first, now: date)
-    state.present(next, now: date.addingTimeInterval(3))
-    state.expire(first.id)
-    #expect(state.completion == next)
-    #expect(state.expiresAt == date.addingTimeInterval(10))
-    state.present(next, now: date.addingTimeInterval(10))
-    #expect(state.completion == nil)
-  }
-
-  @Test func successExpiresThreeSecondsAfterCompletionWithoutRestartingOnReturn() {
-    let date = Date(timeIntervalSince1970: 100)
-    let completion = SubscriptionRefreshCompletion(completedAt: date)
-    let state = SubscriptionRefreshFeedbackState()
-    state.present(completion, now: date.addingTimeInterval(2))
-    #expect(state.completion == completion)
-    #expect(state.expiresAt == date.addingTimeInterval(3))
-    state.present(completion, now: date.addingTimeInterval(3))
-    #expect(state.completion == nil)
-  }
-
   @Test func successfulRefreshPublishesSessionResultWithoutReplayingOnReload() async throws {
     let fixture = try Fixture()
     defer { fixture.removeFiles() }

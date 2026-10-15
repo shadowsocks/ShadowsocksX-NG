@@ -4,31 +4,25 @@ import SwiftUI
 struct ActivationDetailFeedbackView: View {
   let messages: [String]
   let completion: ActivationFeedbackState.Completion?
-  @StateObject private var feedback = ActivationDetailFeedbackState()
 
   var body: some View {
-    VStack(alignment: .leading, spacing: 8) {
-      ForEach(messages, id: \.self) { message in
-        feedbackRow(message, symbol: "exclamationmark.triangle.fill", color: .orange)
+    VStack(alignment: .leading, spacing: 0) {
+      VStack(alignment: .leading, spacing: 8) {
+        ForEach(messages, id: \.self) { message in
+          feedbackRow(message, symbol: "exclamationmark.triangle.fill", color: .orange)
+        }
       }
-      if let result = feedback.completion, result.id == completion?.id {
+      DetailFeedback(completion: completion) { result in
         feedbackRow(
           message(for: result.feedback),
           symbol: result.feedback.isSuccess
             ? "checkmark.circle.fill" : "exclamationmark.triangle.fill",
-          color: result.feedback.isSuccess ? .green : .red)
+          color: result.feedback.isSuccess ? .green : .red
+        )
+        .padding(.top, messages.isEmpty ? 0 : 8)
       }
     }
     .font(.callout)
-    .task(id: completion?.id) {
-      feedback.present(completion)
-      guard let completion, let expiresAt = feedback.expiresAt else { return }
-      do {
-        try await Task.sleep(for: .seconds(max(0, expiresAt.timeIntervalSinceNow)))
-      } catch { return }
-      guard !Task.isCancelled else { return }
-      feedback.expire(completion.id)
-    }
   }
 
   private func feedbackRow(_ message: String, symbol: String, color: Color) -> some View {
