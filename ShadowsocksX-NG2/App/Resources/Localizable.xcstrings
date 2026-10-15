@@ -4168,23 +4168,6 @@
         }
       }
     },
-    "后台代理客户端与系统代理设置相互独立控制": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "后台代理客户端与系统代理设置相互独立控制"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Control the background proxy client and system proxy settings independently"
-          }
-        }
-      }
-    },
     "启动失败": {
       "extractionState": "manual",
       "localizations": {
@@ -8746,6 +8729,24 @@
           "stringUnit": {
             "state": "translated",
             "value": "Waiting for approval to run the proxy client in the background"
+          }
+        }
+      }
+    },
+    "运行后台代理客户端": {
+      "extractionState": "manual",
+      "comment": "首页运行控制卡片中用于启动或停止后台代理客户端的开关标题。",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "运行后台代理客户端"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Run background proxy client"
           }
         }
       }

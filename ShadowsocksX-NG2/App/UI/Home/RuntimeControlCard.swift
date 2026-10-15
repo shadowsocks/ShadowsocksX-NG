@@ -11,61 +11,60 @@ struct RuntimeControlCard: View {
     let summary = StatusMenuModel.summary(from: control.snapshot)
     HomeCard(
       title: String(localized: "运行控制"),
-      subtitle: String(localized: "后台代理客户端与系统代理设置相互独立控制"),
+      subtitle: nil,
       trailing: { EmptyView() },
       content: {
-        VStack(alignment: .leading, spacing: 14) {
-          VStack(alignment: .leading, spacing: 6) {
-            HStack {
-              Toggle("后台代理客户端", isOn: agentBinding)
-                .toggleStyle(.switch)
-              Spacer(minLength: 0)
-              Text(summary.status)
-                .font(.callout.weight(.medium))
-                .foregroundStyle(.secondary)
-                .lineLimit(1)
-            }
-            if let detail = summary.detail {
-              Text(detail)
-                .font(.caption)
-                .foregroundStyle(.orange)
-                .fixedSize(horizontal: false, vertical: true)
-            }
+        VStack(alignment: .leading, spacing: 6) {
+          Toggle(isOn: agentBinding) {
+            Text("运行后台代理客户端")
+              .font(.title3)
+              .frame(maxWidth: .infinity, alignment: .leading)
           }
-          Divider()
-          VStack(alignment: .leading, spacing: 6) {
-            HStack {
-              Toggle("设置系统代理", isOn: systemProxyBinding)
-                .toggleStyle(.switch)
-              Spacer(minLength: 0)
-              Text(summary.systemProxyStateLabel)
-                .font(.callout.weight(.medium))
-                .foregroundStyle(.secondary)
-                .lineLimit(1)
-            }
-            Text(systemProxyHint)
+          .toggleStyle(.switch)
+          Text(summary.status)
+            .font(.body.weight(.medium))
+            .foregroundStyle(.secondary)
+            .lineLimit(1)
+          if let detail = summary.detail {
+            Text(detail)
               .font(.caption)
-              .foregroundStyle(.secondary)
+              .foregroundStyle(.orange)
               .fixedSize(horizontal: false, vertical: true)
-            if systemProxyApprovalNeeded {
-              Button("在登录项中批准…") {
-                Task { await control.openSystemProxyHelperApproval() }
-              }
-              .controlSize(.small)
-            }
-            SystemProxyDifferenceView(control: control)
-            if let systemProxyDetail = summary.systemProxyDetail,
-              control.snapshot.systemProxyApplication != .paused
-            {
-
-              Text(systemProxyDetail)
-                .font(.caption)
-                .foregroundStyle(.orange)
-                .fixedSize(horizontal: false, vertical: true)
-            }
           }
         }
-        .padding(.top, 6)
+        Divider()
+        VStack(alignment: .leading, spacing: 6) {
+          Toggle(isOn: systemProxyBinding) {
+            Text("设置系统代理")
+              .font(.title3)
+              .frame(maxWidth: .infinity, alignment: .leading)
+          }
+          .toggleStyle(.switch)
+          Text(summary.systemProxyStateLabel)
+            .font(.body.weight(.medium))
+            .foregroundStyle(.secondary)
+            .lineLimit(1)
+          Text(systemProxyHint)
+            .font(.caption)
+            .foregroundStyle(.secondary)
+            .fixedSize(horizontal: false, vertical: true)
+          if systemProxyApprovalNeeded {
+            Button("在登录项中批准…") {
+              Task { await control.openSystemProxyHelperApproval() }
+            }
+            .controlSize(.small)
+          }
+          SystemProxyDifferenceView(control: control)
+          if let systemProxyDetail = summary.systemProxyDetail,
+            control.snapshot.systemProxyApplication != .paused
+          {
+
+            Text(systemProxyDetail)
+              .font(.caption)
+              .foregroundStyle(.orange)
+              .fixedSize(horizontal: false, vertical: true)
+          }
+        }
       })
   }
 

@@ -93,14 +93,14 @@ struct TerminalProxyEnvironmentCard: View {
         Image(systemName: isCopied ? "checkmark" : "doc.on.doc")
           .foregroundStyle(isCopied ? Color.green : Color.accentColor)
         Text(isCopied ? String(localized: "已复制") : shell.title)
-          .font(.callout.weight(.medium))
+          .font(.body.weight(.medium).monospaced())
           .foregroundStyle(.primary)
           .lineLimit(1)
         Spacer(minLength: 0)
       }
       .padding(.horizontal, 12)
       .padding(.vertical, 10)
-      .frame(maxWidth: .infinity, alignment: .leading)
+      .frame(maxWidth: .infinity, minHeight: 40, alignment: .leading)
       .contentShape(Rectangle())
     }
     .buttonStyle(.plain)

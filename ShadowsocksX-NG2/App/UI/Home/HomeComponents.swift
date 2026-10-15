@@ -8,11 +8,11 @@ struct HomeCard<Trailing: View, Content: View>: View {
   @ViewBuilder var content: () -> Content
 
   var body: some View {
-    VStack(alignment: .leading, spacing: 0) {
+    VStack(alignment: .leading, spacing: 8) {
       HStack(alignment: .firstTextBaseline) {
         VStack(alignment: .leading, spacing: 2) {
           Text(title)
-            .font(.title3.weight(.semibold))
+            .font(.title2.weight(.semibold))
           if let subtitle {
             Text(subtitle)
               .font(.subheadline)
