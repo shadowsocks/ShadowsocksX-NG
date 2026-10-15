@@ -32,7 +32,6 @@ struct CatalogNodeDetailView: View {
             }
           }
         }
-        .buttonStyle(.borderedProminent)
         .disabled(!(eligibility?.canActivate ?? false) || activation.isPending)
         if let subscription = subscriptionSummary(for: node) {
           Button(
@@ -44,6 +43,7 @@ struct CatalogNodeDetailView: View {
           }
           .disabled(workflow.refreshingSubscriptionIDs.contains(subscription.id))
         }
+      } secondaryActions: {
         if let module = workflow.connectivity {
           ConnectivityTestButton(module: module, node: node)
         }

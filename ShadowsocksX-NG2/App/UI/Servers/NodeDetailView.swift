@@ -1,9 +1,12 @@
 import SwiftUI
 
 /// 只接受展示值与外部动作；不查询节点类型、工作流或凭据。
-struct NodeDetailView<Actions: View, Feedback: View, Supplement: View>: View {
+struct NodeDetailView<
+  PrimaryActions: View, SecondaryActions: View, Feedback: View, Supplement: View
+>: View {
   let detail: NodeDetailPresentation
-  @ViewBuilder let actions: Actions
+  @ViewBuilder let primaryActions: PrimaryActions
+  @ViewBuilder let secondaryActions: SecondaryActions
   @ViewBuilder let feedback: Feedback
   @ViewBuilder let supplement: Supplement
 
@@ -26,7 +29,19 @@ struct NodeDetailView<Actions: View, Feedback: View, Supplement: View>: View {
                 .textSelection(.enabled)
             }
           }
-          HStack(spacing: 12) { actions }
+          VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 12) { primaryActions }
+              .buttonStyle(.borderedProminent)
+            HStack(spacing: 12) { secondaryActions }
+              .buttonStyle(.bordered)
+          }
+          .fixedSize(horizontal: true, vertical: true)
+          .background {
+            GeometryReader { geometry in
+              Color.clear.preference(
+                key: NodeDetailMinimumWidth.self, value: geometry.size.width + 32)
+            }
+          }
           feedback
         }
         Divider()
@@ -56,5 +71,14 @@ struct NodeDetailView<Actions: View, Feedback: View, Supplement: View>: View {
       .padding(.horizontal, 16)
       .padding(.vertical, 16)
     }
+  }
+}
+
+/// 操作区按完整文字测量；包含详情的左右内边距，供外层分栏限制拖动宽度。
+struct NodeDetailMinimumWidth: PreferenceKey {
+  static let defaultValue: CGFloat = 320
+
+  static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+    value = max(value, nextValue())
   }
 }

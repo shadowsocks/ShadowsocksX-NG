@@ -33,6 +33,7 @@ struct ServersView: View {
   @State private var subscriptionEditTarget: SubscriptionSummary?
   @State private var deleteTarget: DeleteTarget?
   @State private var dropState = ServerTableDropState()
+  @State private var detailMinimumWidth: CGFloat = NodeDetailMinimumWidth.defaultValue
   @FocusState private var isServerTableFocused: Bool
   // 分享 popover 打开时冻结载荷、顶部资料与建议文件名。
   @State var shareContext: ShareContext?
@@ -57,7 +58,10 @@ struct ServersView: View {
       ZStack(alignment: .topLeading) {
         serverDetailPane
       }
-      .frame(minWidth: 320, maxWidth: .infinity, maxHeight: .infinity)
+      .frame(minWidth: detailMinimumWidth, maxWidth: .infinity, maxHeight: .infinity)
+      .onPreferenceChange(NodeDetailMinimumWidth.self) {
+        detailMinimumWidth = max(NodeDetailMinimumWidth.defaultValue, $0)
+      }
     }
     .frame(minHeight: 420)
     .sheet(
