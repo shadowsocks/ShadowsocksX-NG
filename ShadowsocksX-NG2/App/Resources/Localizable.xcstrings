@@ -4338,19 +4338,19 @@
         }
       }
     },
-    "复制代理环境变量设置命令": {
+    "拷贝终端代理命令": {
       "extractionState": "manual",
       "localizations": {
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "复制代理环境变量设置命令"
+            "value": "拷贝终端代理命令"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Copy Proxy Environment Commands"
+            "value": "Copy Terminal Proxy Commands"
           }
         }
       }

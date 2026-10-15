@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// 「复制代理环境变量设置命令」卡：按所选 shell 格式复制 HTTP 与 SOCKS 环境变量。
+/// 「拷贝终端代理命令」卡：按所选 shell 格式复制 HTTP 与 SOCKS 环境变量。
 /// 局域网开启时以单选下拉框选择命令地址，各种 shell
 /// 的全部代理端点共用该选择；局域网关闭时隐藏下拉框并使用本地入口。
 struct TerminalProxyEnvironmentCard: View {
@@ -13,7 +13,7 @@ struct TerminalProxyEnvironmentCard: View {
 
   var body: some View {
     HomeCard(
-      title: String(localized: "复制代理环境变量设置命令"),
+      title: String(localized: "拷贝终端代理命令"),
       subtitle: nil,
       trailing: { EmptyView() },
       content: {
