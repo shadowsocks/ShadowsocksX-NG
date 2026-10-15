@@ -54,9 +54,6 @@ struct ServerNodeContextMenu: View {
 
   @ViewBuilder
   var body: some View {
-    if let module = workflow.connectivity {
-      ConnectivityTestButton(module: module, node: node)
-    }
     Button("激活") {
       Task { @MainActor in
         do {
@@ -71,12 +68,19 @@ struct ServerNodeContextMenu: View {
         }
       }
     }
-    if node.isGroup {
-      Divider()
-      Button("导出为 SIP-008 JSON…") { onExport(node.id) }
-        .disabled(!node.containsServerConfiguration)
+    if let module = workflow.connectivity {
+      ConnectivityTestButton(module: module, node: node)
     }
     Divider()
+    if !isSubscription {
+      if node.isGroup {
+        Button("重命名…") { onRename(node.id) }
+      } else {
+        Button("编辑…") { onEdit(node.id) }
+      }
+    } else if allowsSubscriptionManagement, node.isRootSubscriptionGroup {
+      Button("编辑 URL…") { onEdit(node.id) }
+    }
     Button {
       onDuplicate(node.id)
     } label: {
@@ -84,22 +88,17 @@ struct ServerNodeContextMenu: View {
     }
     .disabled(!workflow.canDuplicate(node.id))
     if !isSubscription {
-      Divider()
-      if node.isGroup {
-        Button("重命名…") { onRename(node.id) }
-      } else {
-        Button("编辑…") { onEdit(node.id) }
-      }
       Button("新建分组…") {
         onNewGroup(node.isGroup ? node.id : node.parentID)
       }
+    }
+    if node.isGroup {
       Divider()
-      Button("删除…", role: .destructive) {
-        onDelete(node.id)
-      }
-    } else if allowsSubscriptionManagement, node.isRootSubscriptionGroup {
+      Button("导出为 SIP-008 JSON…") { onExport(node.id) }
+        .disabled(!node.containsServerConfiguration)
+    }
+    if !isSubscription || (allowsSubscriptionManagement && node.isRootSubscriptionGroup) {
       Divider()
-      Button("编辑 URL…") { onEdit(node.id) }
       Button("删除…", role: .destructive) {
         onDelete(node.id)
       }
