@@ -5134,23 +5134,6 @@
         }
       }
     },
-    "快速操作": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "快速操作"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Quick actions"
-          }
-        }
-      }
-    },
     "所有系统代理流量通过本地 SOCKS 与 HTTP 入口转发，不使用规则分流。": {
       "extractionState": "manual",
       "localizations": {
@@ -5814,23 +5797,6 @@
         }
       }
     },
-    "更新全部订阅": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "更新全部订阅"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Refresh All Subscriptions"
-          }
-        }
-      }
-    },
     "有 %lld 台服务器因 UUID 缺失、无效、重复或冲突而生成了新身份。": {
       "extractionState": "manual",
       "localizations": {
@@ -6417,23 +6383,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Applying system proxy settings…"
-          }
-        }
-      }
-    },
-    "正在更新…": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "正在更新…"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Refreshing…"
           }
         }
       }
