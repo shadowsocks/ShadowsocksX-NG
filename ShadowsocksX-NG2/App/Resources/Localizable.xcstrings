@@ -3663,19 +3663,19 @@
         }
       }
     },
-    "其他模式需要可用的活动服务器": {
+    "规则/全局模式需要可用的活动服务器": {
       "extractionState": "manual",
       "localizations": {
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "其他模式需要可用的活动服务器"
+            "value": "规则/全局模式需要可用的活动服务器"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Other modes require an available active server"
+            "value": "Rule/Global modes require an available active server"
           }
         }
       }

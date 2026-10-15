@@ -89,7 +89,7 @@ struct RuntimeControlCard: View {
     let exitRequirement =
       control.snapshot.proxyMode == .direct
       ? String(localized: "直连模式不依赖活动服务器")
-      : String(localized: "其他模式需要可用的活动服务器")
+      : String(localized: "规则/全局模式需要可用的活动服务器")
     if systemProxyApprovalNeeded {
       return String(localized: "系统代理助手等待批准。请在系统设置 → 登录项与扩展中允许。")
     }
