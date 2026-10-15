@@ -68,6 +68,7 @@ struct SettingsView: View {
         .toggleStyle(.switch)
       }
       .padding(.vertical, 4)
+      LanguageSettingsRow()
     } header: {
       sectionHeader("常规")
     }
