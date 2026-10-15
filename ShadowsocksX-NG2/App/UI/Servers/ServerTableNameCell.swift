@@ -18,7 +18,7 @@ struct ServerTableNameCell: View {
             node.invalidReasons.first.map {
               AppPresentation.message(
                 for: ActivationFailure.invalidLeaf(node: node.id, reason: $0))
-            } ?? "服务器存在已知阻塞问题")
+            } ?? String(localized: "服务器存在已知阻塞问题"))
       } else if node.invalidDescendantCount > 0 {
         Image(systemName: "exclamationmark.triangle")
           .foregroundStyle(.orange)

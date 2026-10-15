@@ -40,13 +40,13 @@ extension ProxyRuntimeController {
       guard let raw = lan.passwordReference,
         let password = try credentials.secret(for: CredentialReference(rawValue: raw))
       else {
-        throw ProxySettingsStoreError.credentialFailure(detail: "局域网身份验证密码不可读")
+        throw ProxySettingsStoreError.credentialFailure(detail: String(localized: "局域网身份验证密码不可读"))
       }
       let auth = RuntimeListenerAuthentication(
         username: lan.username, password: password,
         directory: runtimeFileStore.fileURL.deletingLastPathComponent().standardizedFileURL.path)
       guard auth.isValid else {
-        throw ProxySettingsStoreError.credentialFailure(detail: "局域网身份验证凭据无效")
+        throw ProxySettingsStoreError.credentialFailure(detail: String(localized: "局域网身份验证凭据无效"))
       }
       return result.authenticatingLAN(auth)
     } catch {

@@ -167,7 +167,7 @@ struct SystemPortOccupancyProbe: PortOccupancyProbing {
     case "127.0.0.1": mode = .disabled
     case "0.0.0.0": mode = .allIPv4Interfaces
     case "::": mode = .allIPv6Interfaces
-    default: return .unknown(detail: "监听地址无法解析")
+    default: return .unknown(detail: String(localized: "监听地址无法解析"))
     }
     return occupancy(port: port, listenerMode: mode)
   }
@@ -220,7 +220,7 @@ struct SystemPortOccupancyProbe: PortOccupancyProbing {
     address.sin_family = sa_family_t(AF_INET)
     address.sin_port = in_port_t(port).bigEndian
     guard inet_pton(AF_INET, listenerMode.bindAddress, &address.sin_addr) == 1 else {
-      return .unknown(detail: "监听地址无法解析")
+      return .unknown(detail: String(localized: "监听地址无法解析"))
     }
     let descriptor = socket(AF_INET, SOCK_STREAM, 0)
     guard descriptor >= 0 else {

@@ -38,7 +38,7 @@ struct LocalhostListeningEditorSheet: View {
         .keyboardShortcut(.cancelAction)
         .disabled(workflow.isCommitting)
 
-        Button(workflow.isCommitting ? "保存中…" : "保存") {
+        Button(workflow.isCommitting ? String(localized: "保存中…") : String(localized: "保存")) {
           Task {
             if case .persisted = await workflow.savePortSettings(draft) {
               dismiss()

@@ -60,7 +60,7 @@ struct ServerFormSheet: View {
 
   var body: some View {
     VStack(alignment: .leading, spacing: 14) {
-      Text(editID == nil ? "新建服务器" : "编辑服务器")
+      Text(editID == nil ? String(localized: "新建服务器") : String(localized: "编辑服务器"))
         .font(.title2)
       ScrollView {
         VStack(alignment: .leading, spacing: 14) {
@@ -90,7 +90,7 @@ struct ServerFormSheet: View {
           Button("重置") { fields.reloadServer(load: workflow.serverEditForm) }
             .disabled(!fields.hasChanges || fields.presentation?.isEditable != true)
         }
-        Button(editID == nil ? "创建" : "保存", action: submit)
+        Button(editID == nil ? String(localized: "创建") : String(localized: "保存"), action: submit)
           .keyboardShortcut(.defaultAction)
           .disabled(!canSubmit)
       }

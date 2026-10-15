@@ -62,7 +62,7 @@ struct ImportServersSheet: View {
   /// 其余→目录根）。
   private var targetHint: some View {
     let parent = workflow.importTargetParent(for: selection)
-    let path = parent.flatMap { workflow.tree.pathSummary(for: $0) } ?? "目录根"
+    let path = parent.flatMap { workflow.tree.pathSummary(for: $0) } ?? String(localized: "目录根")
     return Text("将导入到：\(path)")
       .font(.callout)
       .foregroundStyle(.secondary)
@@ -124,7 +124,7 @@ struct ImportServersSheet: View {
 
   private var legacyButtonTitle: String {
     workflow.legacyImportState.completed
-      ? "再次导入旧版本服务器" : "从旧版本 ShadowsocksX-NG 导入"
+      ? String(localized: "再次导入旧版本服务器") : String(localized: "从旧版本 ShadowsocksX-NG 导入")
   }
 
   // MARK: - 导入动作
@@ -187,9 +187,9 @@ struct ImportServersSheet: View {
 
   private func targetDisplayName(for result: ImportSourceResult) -> String {
     guard case .imported(_, let groupID) = result else { return "" }
-    guard let groupID else { return "目录根" }
+    guard let groupID else { return String(localized: "目录根") }
     let name = workflow.displayName(for: groupID)
-    return name.isEmpty ? "目录根" : name
+    return name.isEmpty ? String(localized: "目录根") : name
   }
 
   // MARK: - 结果行样式

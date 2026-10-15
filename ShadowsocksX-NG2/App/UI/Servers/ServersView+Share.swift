@@ -83,18 +83,20 @@ struct ShareServerPopover: View {
       Divider()
       VStack(spacing: 2) {
         shareButton(
-          "保存二维码图片", symbol: "square.and.arrow.down", feedback: nil,
+          String(localized: "保存二维码图片"), symbol: "square.and.arrow.down", feedback: nil,
           disabled: png == nil
         ) {
           saveImage()
         }
         shareButton(
-          "拷贝二维码图片", symbol: "doc.on.doc", feedback: .image,
+          String(localized: "拷贝二维码图片"), symbol: "doc.on.doc", feedback: .image,
           disabled: png == nil
         ) {
           copyImage()
         }
-        shareButton("拷贝 URI 链接", symbol: "link", feedback: .link, disabled: false) {
+        shareButton(
+          String(localized: "拷贝 URI 链接"), symbol: "link", feedback: .link, disabled: false
+        ) {
           copySsUri()
         }
       }
@@ -160,7 +162,7 @@ struct ShareServerPopover: View {
       HStack(spacing: 12) {
         Image(systemName: copyFeedback == feedback ? "checkmark" : symbol)
           .frame(width: 20)
-        Text(copyFeedback == feedback ? "已复制" : title)
+        Text(copyFeedback == feedback ? String(localized: "已复制") : title)
         Spacer(minLength: 0)
       }
       .padding(.horizontal, 8)
@@ -262,14 +264,14 @@ struct ShareGroupPopover: View {
       .padding(.horizontal, 8)
       Divider()
       VStack(spacing: 2) {
-        action("保存 SIP008 JSON 文件", symbol: "square.and.arrow.down") {
+        action(String(localized: "保存 SIP008 JSON 文件"), symbol: "square.and.arrow.down") {
           save(.json)
         }
-        action("保存 URI 链接列表文本文件", symbol: "doc.text") {
+        action(String(localized: "保存 URI 链接列表文本文件"), symbol: "doc.text") {
           save(.uriList)
         }
         action(
-          copied ? "已复制" : "拷贝 URI 链接列表文本",
+          copied ? String(localized: "已复制") : String(localized: "拷贝 URI 链接列表文本"),
           symbol: copied ? "checkmark" : "doc.on.doc"
         ) {
           copyURIList()

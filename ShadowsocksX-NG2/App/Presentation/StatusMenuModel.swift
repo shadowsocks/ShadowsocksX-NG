@@ -45,7 +45,7 @@ enum StatusMenuModel {
       status: statusText(for: snapshot.runtime.status),
       detail: agentDetail,
       systemProxyIntentEnabled: snapshot.systemProxyIntentEnabled,
-      systemProxyStatus: "系统代理：\(systemProxy.label)",
+      systemProxyStatus: String(localized: "系统代理：\(systemProxy.label)"),
       systemProxyStateLabel: systemProxy.label,
       systemProxyDetail: systemProxy.detail,
       modeLabel: modeLabel(for: snapshot),
@@ -64,19 +64,19 @@ enum StatusMenuModel {
   private static func statusText(for status: ProxyRuntimeStatus) -> String {
     switch status {
     case .off:
-      return "代理客户端未运行"
+      return String(localized: "代理客户端未运行")
     case .starting:
-      return "正在启动代理客户端…"
+      return String(localized: "正在启动代理客户端…")
     case .running:
-      return "代理客户端运行中"
+      return String(localized: "代理客户端运行中")
     case .firewallBlocked:
-      return "代理客户端运行中（局域网受阻）"
+      return String(localized: "代理客户端运行中（局域网受阻）")
     case .launchFailed:
-      return "启动失败"
+      return String(localized: "启动失败")
     case .requiresApproval:
-      return "等待用户批准后理客户端后台运行"
+      return String(localized: "等待用户批准代理客户端后台运行")
     case .serviceFailed:
-      return "服务管理失败"
+      return String(localized: "服务管理失败")
     }
   }
 
@@ -90,36 +90,42 @@ enum StatusMenuModel {
   ) -> (label: String, detail: String?) {
     switch application {
     case .idle:
-      return ("未应用", nil)
+      return (String(localized: "未应用"), nil)
     case .pending:
-      return approvalRequired ? ("待批准", nil) : ("待应用", nil)
-    case .changed: return ("配置已改变", nil)
-    case .applying: return ("应用中", nil)
-    case .repairing: return ("修复中", nil)
+      return approvalRequired ? (String(localized: "待批准"), nil) : (String(localized: "待应用"), nil)
+    case .changed: return (String(localized: "配置已改变"), nil)
+    case .applying: return (String(localized: "应用中"), nil)
+    case .repairing: return (String(localized: "修复中"), nil)
     case .paused:
-      return ("已暂停", AppPresentation.systemProxyPausedNotice)
+      return (String(localized: "已暂停"), AppPresentation.systemProxyPausedNotice)
     case .unreadable(let facts):
       return (
-        "无法检查",
+        String(localized: "无法检查"),
         AppPresentation.systemProxyUnreadablePrefix
           + AppPresentation.message(for: RuntimeFailureFacts.systemProxy(facts))
       )
     case .repairFailed(let facts):
       return (
-        "修复失败", failureDetail(facts, prefix: "无法修复系统代理配置：", approvalRequired: approvalRequired)
+        String(localized: "修复失败"),
+        failureDetail(
+          facts, prefix: String(localized: "无法修复系统代理配置："), approvalRequired: approvalRequired)
       )
     case .clearFailed(let facts):
       return (
-        "清除失败",
+        String(localized: "清除失败"),
         failureDetail(
           facts,
-          prefix: backgroundUnavailable ? "后台代理不可用，系统代理配置未能清除。\n" : "系统代理配置未能清除：",
+          prefix: backgroundUnavailable
+            ? String(localized: "后台代理不可用，系统代理配置未能清除。\n") : String(localized: "系统代理配置未能清除："),
           approvalRequired: approvalRequired)
       )
     case .applied:
-      return ("已应用", nil)
+      return (String(localized: "已应用"), nil)
     case .failed(let facts):
-      return ("应用失败", failureDetail(facts, prefix: "", approvalRequired: approvalRequired))
+      return (
+        String(localized: "应用失败"),
+        failureDetail(facts, prefix: "", approvalRequired: approvalRequired)
+      )
     }
   }
   private static func failureDetail(

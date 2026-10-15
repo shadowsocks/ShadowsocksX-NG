@@ -70,7 +70,7 @@ struct ProxySettingsFileStore: ProxySettingsStoring {
       && (!RuntimeListenerAuthentication.validUsername(lan.username)
         || lan.passwordReference == nil)
     {
-      throw ProxySettingsStoreError.credentialFailure(detail: "局域网身份验证凭据无效")
+      throw ProxySettingsStoreError.credentialFailure(detail: String(localized: "局域网身份验证凭据无效"))
     }
     let errors = settings.validationErrors
     guard errors.isEmpty else { throw ProxySettingsStoreError.invalid(errors) }

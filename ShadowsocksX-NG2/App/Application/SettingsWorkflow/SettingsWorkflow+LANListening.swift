@@ -8,7 +8,7 @@ extension SettingsWorkflow {
     let password: String
     if let raw = lan.passwordReference {
       guard let saved = try credentials.secret(for: CredentialReference(rawValue: raw)) else {
-        throw ProxySettingsStoreError.credentialFailure(detail: "局域网身份验证密码不可读")
+        throw ProxySettingsStoreError.credentialFailure(detail: String(localized: "局域网身份验证密码不可读"))
       }
       password = saved
     } else {
@@ -37,7 +37,7 @@ extension SettingsWorkflow {
     guard RuntimeListenerAuthentication.validUsername(draft.username),
       RuntimeListenerAuthentication.validPassword(draft.password)
     else {
-      return .persistenceFailed(.store(.credentialFailure(detail: "用户名或密码无效")))
+      return .persistenceFailed(.store(.credentialFailure(detail: String(localized: "用户名或密码无效"))))
     }
     let base = committing.committedSettings
     var proposed = base
@@ -97,7 +97,8 @@ extension SettingsWorkflow {
           return await persistSettings(proposed)
         }
       } catch {
-        return .persistenceFailed(.store(.credentialFailure(detail: "局域网身份验证密码不可读")))
+        return .persistenceFailed(
+          .store(.credentialFailure(detail: String(localized: "局域网身份验证密码不可读"))))
       }
     }
     let reference = CredentialReference.fresh()
@@ -113,7 +114,7 @@ extension SettingsWorkflow {
         return outcome
       }
       if case .partial = journal.rollback() {
-        return .persistenceFailed(.store(.credentialFailure(detail: "凭据回滚失败")))
+        return .persistenceFailed(.store(.credentialFailure(detail: String(localized: "凭据回滚失败"))))
       }
       return outcome
     } catch {
@@ -121,7 +122,8 @@ extension SettingsWorkflow {
       return .persistenceFailed(
         .store(
           .credentialFailure(
-            detail: rollback.isPartial ? "凭据回滚失败" : "凭据保存失败")))
+            detail: rollback.isPartial ? String(localized: "凭据回滚失败") : String(localized: "凭据保存失败")))
+      )
     }
   }
 

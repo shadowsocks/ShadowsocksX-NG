@@ -8,14 +8,14 @@ struct QuickActionCard: View {
 
   var body: some View {
     HomeCard(
-      title: "快速操作",
+      title: String(localized: "快速操作"),
       subtitle: nil,
       trailing: { EmptyView() },
       content: {
         VStack(spacing: 10) {
           QuickActionButton(
             icon: "arrow.triangle.2.circlepath",
-            title: isRefreshingAll ? "正在更新…" : "更新全部订阅",
+            title: isRefreshingAll ? String(localized: "正在更新…") : String(localized: "更新全部订阅"),
             help: nil,
             action: refreshAll
           )

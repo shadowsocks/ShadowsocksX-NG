@@ -6,8 +6,8 @@ struct ListenerPortFields: View {
 
   var body: some View {
     Group {
-      portField2(.socks, title: "SOCKS 代理端口")
-      portField2(.http, title: "HTTP 代理端口")
+      portField2(.socks, title: String(localized: "SOCKS 代理端口"))
+      portField2(.http, title: String(localized: "HTTP 代理端口"))
     }
   }
 
@@ -63,11 +63,12 @@ struct ListenerPortFields: View {
       return nil
     case .occupied(let occupier):
       if state.isRuntimePortException {
-        return "当前代理正在使用此端口"
+        return String(localized: "当前代理正在使用此端口")
       }
-      return "当前端口已占用" + (occupier.map { "（" + $0 + "）" } ?? "")
+      if let occupier { return String(localized: "当前端口已占用（\(occupier)）") }
+      return String(localized: "当前端口已占用")
     case .unknown(let detail):
-      return "端口状态无法确定：" + detail
+      return String(localized: "端口状态无法确定：\(detail)")
     }
   }
 

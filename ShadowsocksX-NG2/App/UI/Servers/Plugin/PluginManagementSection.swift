@@ -53,7 +53,7 @@ struct PluginManagementSection: View {
       PluginEditorSheet(model: model, session: session)
     }
     .confirmationDialog(
-      String(localized: "删除用户插件？"),
+      "删除用户插件？",
       isPresented: Binding(get: { removal != nil }, set: { if !$0 { removal = nil } }),
       titleVisibility: .visible, presenting: removal
     ) { entry in
@@ -103,7 +103,7 @@ struct PluginManagementSection: View {
               }
             }
             .buttonStyle(.bordered)
-            Menu("覆盖名称") {
+            Menu(String(localized: "覆盖名称")) {
               ForEach(entry.names, id: \.self) { name in
                 Button(name) { editor = model.beginOverriding(name) }
                   .disabled(entry.overriddenNames.contains(name))
@@ -129,7 +129,7 @@ struct PluginManagementSection: View {
         }
       }
       if !entry.overriddenNames.isEmpty {
-        Text(String(localized: "已被用户覆盖：") + entry.overriddenNames.joined(separator: ", "))
+        Text("已被用户覆盖：" + entry.overriddenNames.joined(separator: ", "))
           .font(.caption).foregroundStyle(.secondary)
       }
       if let availability = entry.availability,

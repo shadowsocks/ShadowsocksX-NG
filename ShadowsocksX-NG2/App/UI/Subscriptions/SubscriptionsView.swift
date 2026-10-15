@@ -2,12 +2,12 @@ import SwiftUI
 
 enum SubscriptionDeletionConfirmation {
   static func title(for name: String) -> String {
-    "删除订阅「\(name)」及其整棵子树？"
+    String(localized: "删除订阅「\(name)」及其整棵子树？")
   }
 
-  static let actionTitle = "删除订阅"
+  static let actionTitle = String(localized: "删除订阅")
   static let message =
-    "将移除订阅源、固定分组与全部远端成员；若代理正走此订阅，代理会停止。此操作不可撤销。"
+    String(localized: "将移除订阅源、固定分组与全部远端成员；若代理正走此订阅，代理会停止。此操作不可撤销。")
 }
 
 /// 「添加订阅」表单（工具栏入口）：粘贴 HTTPS 订阅地址；创建后立即首次刷新。

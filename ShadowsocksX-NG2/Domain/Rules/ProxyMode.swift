@@ -53,11 +53,11 @@ enum ProxyMode: Codable, Equatable, Hashable, Sendable {
   var label: String {
     switch self {
     case .rule:
-      "规则"
+      String(localized: "规则")
     case .global:
-      "全局"
+      String(localized: "全局")
     case .direct:
-      "直连"
+      String(localized: "直连")
     }
   }
 

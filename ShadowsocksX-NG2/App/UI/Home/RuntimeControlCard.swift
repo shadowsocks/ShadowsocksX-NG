@@ -10,8 +10,8 @@ struct RuntimeControlCard: View {
   var body: some View {
     let summary = StatusMenuModel.summary(from: control.snapshot)
     HomeCard(
-      title: "运行控制",
-      subtitle: "后台代理客户端与系统代理设置相互独立控制",
+      title: String(localized: "运行控制"),
+      subtitle: String(localized: "后台代理客户端与系统代理设置相互独立控制"),
       trailing: { EmptyView() },
       content: {
         VStack(alignment: .leading, spacing: 14) {
@@ -88,30 +88,30 @@ struct RuntimeControlCard: View {
   private var systemProxyHint: String {
     let exitRequirement =
       control.snapshot.proxyMode == .direct
-      ? "直连模式不依赖活动服务器"
-      : "其他模式需要可用的活动服务器"
+      ? String(localized: "直连模式不依赖活动服务器")
+      : String(localized: "其他模式需要可用的活动服务器")
     if systemProxyApprovalNeeded {
-      return "系统代理助手等待批准。请在系统设置 → 登录项与扩展中允许。"
+      return String(localized: "系统代理助手等待批准。请在系统设置 → 登录项与扩展中允许。")
     }
     return switch control.snapshot.systemProxyApplication {
     case .idle:
-      "开启后让 macOS 系统代理指向本地入口；\(exitRequirement)"
+      String(localized: "开启后让 macOS 系统代理指向本地入口；\(exitRequirement)")
     case .pending:
-      "已请求应用系统代理，等待本地入口就绪；\(exitRequirement)"
+      String(localized: "已请求应用系统代理，等待本地入口就绪；\(exitRequirement)")
     case .applied:
-      "系统代理已指向本地入口"
+      String(localized: "系统代理已指向本地入口")
     case .failed, .repairFailed, .clearFailed:
-      "操作失败，原因见下方"
+      String(localized: "操作失败，原因见下方")
     case .paused:
       AppPresentation.systemProxyPausedNotice
     case .changed:
-      "当前系统代理配置与预期存在差异"
+      String(localized: "当前系统代理配置与预期存在差异")
     case .unreadable:
-      "无法检查当前系统代理配置"
+      String(localized: "无法检查当前系统代理配置")
     case .applying:
-      "正在应用系统代理配置…"
+      String(localized: "正在应用系统代理配置…")
     case .repairing:
-      "正在修复系统代理配置…"
+      String(localized: "正在修复系统代理配置…")
     }
   }
 }
@@ -170,9 +170,9 @@ private struct SystemProxyDifferenceView: View {
 
   private func differenceMessage(_ kind: SystemProxyDifference.Kind) -> String {
     switch kind {
-    case .changed: "以下网络接口的代理配置已被改变："
-    case .notApplied: "以下网络接口尚未应用当前系统代理配置："
-    case .remaining: "以下网络接口的代理配置仍有差异："
+    case .changed: String(localized: "以下网络接口的代理配置已被改变：")
+    case .notApplied: String(localized: "以下网络接口尚未应用当前系统代理配置：")
+    case .remaining: String(localized: "以下网络接口的代理配置仍有差异：")
     }
   }
 }

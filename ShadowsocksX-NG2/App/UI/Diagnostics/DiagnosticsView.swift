@@ -22,9 +22,9 @@ struct DiagnosticsView: View {
     var label: String {
       switch self {
       case .guiEvents:
-        return "GUI 事件"
+        return String(localized: "GUI 事件")
       case .agentLog:
-        return "运行日志（wrapper）"
+        return String(localized: "运行日志（wrapper）")
       }
     }
   }
@@ -35,8 +35,7 @@ struct DiagnosticsView: View {
         summaryRow
         logCard
         Text(
-          "诊断导出只包含状态、存在性、权限和脱敏元数据，不包含密码、插件参数、"
-            + "订阅 URL 或运行时 JSON。"
+          "诊断导出只包含状态、存在性、权限和脱敏元数据，不包含密码、插件参数、订阅 URL 或运行时 JSON。"
         )
         .font(.footnote)
         .foregroundStyle(.secondary)
@@ -96,8 +95,13 @@ struct DiagnosticsView: View {
 
   private var summaryRow: some View {
     HStack(alignment: .top, spacing: 14) {
-      statCard("代理状态", value: diagnostics.summary.proxyState.label)
-      statCard("活动目标", value: diagnostics.summary.hasActiveTarget ? "已设置" : "未设置")
+      statCard(
+        String(localized: "代理状态"),
+        value: AppPresentation.diagnosticStatus(diagnostics.summary.proxyState))
+      statCard(
+        String(localized: "活动目标"),
+        value: diagnostics.summary.hasActiveTarget
+          ? String(localized: "已设置") : String(localized: "未设置"))
     }
   }
 
@@ -167,12 +171,12 @@ struct DiagnosticsView: View {
     case .guiEvents:
       return (
         diagnostics.logView.guiEventLines.joined(separator: "\n"),
-        "暂无 GUI 事件；开关代理或激活服务器后，运行事件会实时出现在这里。"
+        String(localized: "暂无 GUI 事件；开关代理或激活服务器后，运行事件会实时出现在这里。")
       )
     case .agentLog:
       return (
         diagnostics.logView.agentLogTail ?? "",
-        "暂无运行日志；代理运行时（wrapper）启动后，它与 sslocal 的输出会收敛到 agent.log 并在此呈现。"
+        String(localized: "暂无运行日志；代理运行时（wrapper）启动后，它与 sslocal 的输出会收敛到 agent.log 并在此呈现。")
       )
     }
   }

@@ -48,12 +48,12 @@ enum StatusCardModel {
     let summary = StatusMenuModel.summary(from: snapshot)
     let runtimeTone = runtimeTone(for: snapshot.runtime.status)
     return Card(
-      runtimeRow: Row(label: "后台代理", text: summary.status, tone: runtimeTone),
+      runtimeRow: Row(label: String(localized: "后台代理"), text: summary.status, tone: runtimeTone),
       runtimeDetail: summary.detail.map {
         DetailLine(text: $0, tone: runtimeDetailTone(snapshot: snapshot, runtimeTone: runtimeTone))
       },
       systemProxyRow: Row(
-        label: "系统代理设置",
+        label: String(localized: "系统代理设置"),
         text: summary.systemProxyStateLabel,
         tone: systemProxyTone(for: snapshot.systemProxyApplication)),
       systemProxyDetail: summary.systemProxyDetail.map {
@@ -96,13 +96,13 @@ enum StatusCardModel {
     summary: StatusMenuModel.Summary, proxyMode: ProxyMode
   ) -> TargetPresentation {
     if let targetPath = summary.targetPath {
-      return TargetPresentation(text: targetPath, help: "活动目标：\(targetPath)")
+      return TargetPresentation(text: targetPath, help: String(localized: "活动目标：\(targetPath)"))
     }
     if proxyMode == .direct {
       return TargetPresentation(
-        text: "直连模式（无需服务器）", help: "直连模式无需选择活动目标")
+        text: String(localized: "直连模式（无需服务器）"), help: String(localized: "直连模式无需选择活动目标"))
     }
     return TargetPresentation(
-      text: "未激活", help: "未设置活动目标；在首页或服务器目录中激活")
+      text: String(localized: "未激活"), help: String(localized: "未设置活动目标；在首页或服务器目录中激活"))
   }
 }

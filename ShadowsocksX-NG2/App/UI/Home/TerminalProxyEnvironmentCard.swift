@@ -13,7 +13,7 @@ struct TerminalProxyEnvironmentCard: View {
 
   var body: some View {
     HomeCard(
-      title: "复制代理环境变量设置命令",
+      title: String(localized: "复制代理环境变量设置命令"),
       subtitle: nil,
       trailing: { EmptyView() },
       content: {
@@ -92,7 +92,7 @@ struct TerminalProxyEnvironmentCard: View {
       HStack(spacing: 10) {
         Image(systemName: isCopied ? "checkmark" : "doc.on.doc")
           .foregroundStyle(isCopied ? Color.green : Color.accentColor)
-        Text(isCopied ? "已复制" : shell.title)
+        Text(isCopied ? String(localized: "已复制") : shell.title)
           .font(.callout.weight(.medium))
           .foregroundStyle(.primary)
           .lineLimit(1)

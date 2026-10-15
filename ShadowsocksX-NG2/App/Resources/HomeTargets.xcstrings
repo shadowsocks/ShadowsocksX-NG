@@ -357,6 +357,23 @@
           }
         }
       }
+    },
+    "定位": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "定位"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Locate"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

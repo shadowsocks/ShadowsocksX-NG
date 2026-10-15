@@ -177,7 +177,7 @@ extension CatalogWorkflow {
       switch child {
       case .group(let nested):
         let nestedID = try catalog.addGroup(
-          nested.name.isEmpty ? "未命名分组" : nested.name, to: groupID, now: now)
+          nested.name.isEmpty ? String(localized: "未命名分组") : nested.name, to: groupID, now: now)
         try mountSnapshotChildren(
           of: nested, into: nestedID, catalog: &catalog, journal: &journal, now: now)
       case .server(let leaf):
@@ -227,7 +227,7 @@ extension CatalogWorkflow {
   private static func fileNameBase(_ name: String) -> String {
     let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
     let base = trimmed.isEmpty ? "" : (trimmed as NSString).deletingPathExtension
-    return base.isEmpty ? "导入的服务器" : base
+    return base.isEmpty ? String(localized: "导入的服务器") : base
   }
 
   /// 内容为 JSON 对象（SIP-008 根形态）即走整份拒绝语义；数组或残缺 JSON

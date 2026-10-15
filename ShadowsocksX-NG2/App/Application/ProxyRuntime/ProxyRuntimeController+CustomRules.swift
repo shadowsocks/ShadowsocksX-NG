@@ -73,8 +73,8 @@ extension CustomRuleUpdateOutcome {
 
   var nextStep: String? {
     switch self {
-    case .persistenceFailed, .busy, .superseded: "请重试规则操作。"
-    case .invalidDocument, .rejected: "请检查规则数据后再操作。"
+    case .persistenceFailed, .busy, .superseded: String(localized: "请重试规则操作。")
+    case .invalidDocument, .rejected: String(localized: "请检查规则数据后再操作。")
     default: nil
     }
   }

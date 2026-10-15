@@ -155,7 +155,7 @@ struct ServersView: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .help(expansion.isCollapsed(node.id) ? "展开" : "收起")
+            .help(Text(expansion.isCollapsed(node.id) ? LocalizedStringKey("展开") : "收起"))
           } else {
             Color.clear.frame(width: 24, height: 28)
           }
@@ -167,7 +167,7 @@ struct ServersView: View {
       TableColumn("收藏") { node in
         Image(systemName: workflow.isFavorite(node.id) ? "star.fill" : "star")
           .accessibilityLabel(Text("收藏"))
-          .accessibilityValue(Text(workflow.isFavorite(node.id) ? "收藏" : "—"))
+          .accessibilityValue(Text(workflow.isFavorite(node.id) ? String(localized: "收藏") : "—"))
       }
       .width(36)
       TableColumn(ConnectivityCopy.text("响应延迟")) { node in
@@ -418,8 +418,8 @@ extension ServersView {
   private var toolbarEditTitle: String {
     guard section == .subscription, let selection,
       workflow.tree.node(withID: selection)?.isRootSubscriptionGroup == true
-    else { return "编辑服务器" }
-    return "编辑 URL…"
+    else { return String(localized: "编辑服务器") }
+    return String(localized: "编辑 URL…")
   }
 
   private func subscriptionSummary(forRootGroup id: NodeID) -> SubscriptionSummary? {
@@ -488,9 +488,9 @@ extension ServersView {
       let name = workflow.displayName(for: id)
       switch workflow.deleteFacts(for: id) {
       case .subtree:
-        return "删除分组「\(name)」及其整棵子树？"
+        return String(localized: "删除分组「\(name)」及其整棵子树？")
       case .leaf, .emptyGroup, nil:
-        return "删除「\(name)」？"
+        return String(localized: "删除「\(name)」？")
       }
     case .none:
       return ""
@@ -505,11 +505,11 @@ extension ServersView {
       switch workflow.deleteFacts(for: id) {
       case .subtree(let count, let includesCredentials):
         if includesCredentials {
-          return "将递归删除 \(count) 个节点（含其中的服务器与凭据），此操作不可撤销。"
+          return String(localized: "将递归删除 \(count) 个节点（含其中的服务器与凭据），此操作不可撤销。")
         }
-        return "将递归删除 \(count) 个节点，此操作不可撤销。"
+        return String(localized: "将递归删除 \(count) 个节点，此操作不可撤销。")
       case .leaf, .emptyGroup, nil:
-        return "此操作不可撤销。"
+        return String(localized: "此操作不可撤销。")
       }
     case .none:
       return ""
@@ -520,7 +520,7 @@ extension ServersView {
     if case .some(.subscription) = deleteTarget {
       return SubscriptionDeletionConfirmation.actionTitle
     }
-    return "删除"
+    return String(localized: "删除")
   }
 
   private func commitDelete() {

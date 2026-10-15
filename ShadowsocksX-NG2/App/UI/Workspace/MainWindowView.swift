@@ -151,10 +151,10 @@ struct MainWindowView: View {
 extension WorkspaceDestination {
   var label: String {
     switch self {
-    case .home: "首页"
-    case .servers: "服务器"
+    case .home: String(localized: "首页")
+    case .servers: String(localized: "服务器")
     case .rules: RulesCopy.text("代理规则")
-    case .settings: "设置"
+    case .settings: String(localized: "设置")
     }
   }
 

@@ -383,8 +383,9 @@ struct ServerFormFieldsGrid: View {
             Image(systemName: fields.showPassword ? "eye.slash" : "eye")
           }
           .buttonStyle(.borderless)
-          .help(fields.showPassword ? "隐藏密码" : "显示密码")
-          .accessibilityLabel(fields.showPassword ? "隐藏密码" : "显示密码")
+          .help(fields.showPassword ? String(localized: "隐藏密码") : String(localized: "显示密码"))
+          .accessibilityLabel(
+            fields.showPassword ? String(localized: "隐藏密码") : String(localized: "显示密码"))
         }
         fieldErrorLabel(.password)
       }

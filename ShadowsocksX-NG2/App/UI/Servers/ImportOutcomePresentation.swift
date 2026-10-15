@@ -10,14 +10,16 @@ enum ImportOutcomePresentation {
     case .imported(let count, _):
       return ImportResultRow(
         sourceName: sourceName,
-        title: "已导入 \(count) 台服务器到「\(targetName)」",
+        title: String(localized: "已导入 \(count) 台服务器到「\(targetName)」"),
         details: [],
         style: .success)
     case .partial(let addedCount, let failures):
       return ImportResultRow(
         sourceName: sourceName,
-        title: "已添加 \(addedCount) 台服务器；以下条目无法解析",
-        details: failures.map { "第 \($0.lineIndex + 1) 行：\($0.reason.presentableMessage)" },
+        title: String(localized: "已添加 \(addedCount) 台服务器；以下条目无法解析"),
+        details: failures.map {
+          String(localized: "第 \($0.lineIndex + 1) 行：\($0.reason.presentableMessage)")
+        },
         style: .partial)
     case .failed(let failure):
       return ImportResultRow(
@@ -30,23 +32,29 @@ enum ImportOutcomePresentation {
 
   /// Legacy 导入报告 → 结果行（与 Legacy 专属表单时代的报告同口径）。
   static func row(for report: LegacyImportReport) -> ImportResultRow {
+    let imported = report.importedServerCount
+    let skipped = report.skippedRecords.count
+    let regenerated = report.regeneratedIdentityCount
     var details = [
-      "统计：导入 \(report.importedServerCount) 台，跳过 "
-        + "\(report.skippedRecords.count) 条，身份重生成 "
-        + "\(report.regeneratedIdentityCount) 个。"
+      String(
+        localized:
+          "统计：导入 \(imported) 台，跳过 \(skipped) 条，身份重生成 \(regenerated) 个。"
+      )
     ]
     if report.regeneratedIdentityCount > 0 {
+      let count = report.regeneratedIdentityCount
       details.append(
-        "有 \(report.regeneratedIdentityCount) 台服务器因 UUID 缺失、无效、重复或冲突"
-          + "而生成了新身份。")
+        String(localized: "有 \(count) 台服务器因 UUID 缺失、无效、重复或冲突而生成了新身份。"))
     }
     details.append(
       contentsOf: report.skippedRecords.map { record in
-        "第 \(record.index + 1) 条（\(record.description)）：\(record.reason.presentableMessage)"
+        String(
+          localized:
+            "第 \(record.index + 1) 条（\(record.description)）：\(record.reason.presentableMessage)")
       })
     return ImportResultRow(
       sourceName: legacySourceName,
-      title: "已导入 \(report.importedServerCount) 台服务器到「\(report.groupName)」",
+      title: String(localized: "已导入 \(report.importedServerCount) 台服务器到「\(report.groupName)」"),
       details: details,
       style: report.skippedRecords.isEmpty ? .success : .partial)
   }
@@ -64,16 +72,16 @@ enum ImportOutcomePresentation {
   static func unreadableFileRow(fileName: String) -> ImportResultRow {
     ImportResultRow(
       sourceName: fileName,
-      title: "文件无法读取",
+      title: String(localized: "文件无法读取"),
       details: [],
       style: .failure)
   }
 
-  static var legacySourceName: String { "旧版本 ShadowsocksX-NG" }
+  static var legacySourceName: String { String(localized: "旧版本 ShadowsocksX-NG") }
 
   static func sourceDisplayName(_ source: ImportSource) -> String {
     switch source {
-    case .clipboardText: return "剪贴板"
+    case .clipboardText: return String(localized: "剪贴板")
     case .file(let name, _): return name
     }
   }

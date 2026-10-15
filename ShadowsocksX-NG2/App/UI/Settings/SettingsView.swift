@@ -42,7 +42,9 @@ struct SettingsView: View {
             get: { loginController.isEnabled },
             set: { loginController.setEnabled($0) })
         ) {
-          settingCopy("登录时启动 ShadowsocksX-NG2", note: "启动菜单栏应用，不会自动开启代理")
+          settingCopy(
+            String(localized: "登录时启动 ShadowsocksX-NG2"), note: String(localized: "启动菜单栏应用，不会自动开启代理")
+          )
         }
         .toggleStyle(.switch)
         if loginController.requiresApproval {
@@ -63,14 +65,14 @@ struct SettingsView: View {
             get: { silentLaunch.isEnabled },
             set: { silentLaunch.setEnabled($0) })
         ) {
-          settingCopy("静默启动", note: "启动时后台运行，不显示主窗口；下次启动生效")
+          settingCopy(String(localized: "静默启动"), note: String(localized: "启动时后台运行，不显示主窗口；下次启动生效"))
         }
         .toggleStyle(.switch)
       }
       .padding(.vertical, 4)
       LanguageSettingsRow()
     } header: {
-      sectionHeader("常规")
+      sectionHeader(String(localized: "常规"))
     }
   }
 
@@ -84,7 +86,7 @@ struct SettingsView: View {
           .foregroundStyle(.red)
       }
       portSettingsRow
-      settingRow("局域网监听") {
+      settingRow(String(localized: "局域网监听")) {
         Button {
           do {
             presentedEditor = .lan(
@@ -92,7 +94,7 @@ struct SettingsView: View {
                 initialDraft: try workflow.beginLANListeningEditing()))
             listenerEditingError = nil
           } catch {
-            listenerEditingError = "局域网身份验证密码不可读，请重试。"
+            listenerEditingError = String(localized: "局域网身份验证密码不可读，请重试。")
           }
         } label: {
           HStack(spacing: 8) {
@@ -117,7 +119,7 @@ struct SettingsView: View {
         Text(listenerEditingError).font(.caption).foregroundStyle(.red)
       }
     } header: {
-      sectionHeader("后台代理客户端")
+      sectionHeader(String(localized: "后台代理客户端"))
     }
   }
 
@@ -134,8 +136,8 @@ struct SettingsView: View {
   private var systemProxySection: some View {
     Section {
       settingRow(
-        "额外系统代理例外",
-        note: "只追加到系统代理；应用固定绕过规则仍生效"
+        String(localized: "额外系统代理例外"),
+        note: String(localized: "只追加到系统代理；应用固定绕过规则仍生效")
       ) {
         Button {
           presentedEditor = .proxyExceptions(
@@ -153,7 +155,7 @@ struct SettingsView: View {
         .accessibilityHint("编辑并保存额外的系统代理例外")
       }
     } header: {
-      sectionHeader("系统代理")
+      sectionHeader(String(localized: "系统代理"))
     }
   }
 
@@ -198,7 +200,7 @@ extension SettingsView {
     let ports = workflow.committedPortDraft
     let socksPort = ports.socksPort.formatted(.number.grouping(.never))
     let httpPort = ports.httpPort.formatted(.number.grouping(.never))
-    return settingRow("本地监听") {
+    return settingRow(String(localized: "本地监听")) {
       Button {
         presentedEditor = .ports(
           PortSettingsEditorSession(initialDraft: workflow.beginPortSettingsEditing()))
@@ -323,7 +325,7 @@ private struct ProxyExceptionsEditorSheet: View {
         .keyboardShortcut(.cancelAction)
         .disabled(workflow.isCommitting)
 
-        Button(workflow.isCommitting ? "保存中…" : "确定") {
+        Button(workflow.isCommitting ? String(localized: "保存中…") : String(localized: "确定")) {
           Task {
             if case .persisted = await workflow.saveProxyExceptions(draft) {
               dismiss()

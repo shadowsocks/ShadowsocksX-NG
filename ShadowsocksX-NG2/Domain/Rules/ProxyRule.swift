@@ -18,8 +18,8 @@ enum RuleDefaultAction: String, Codable, CaseIterable, Equatable, Hashable, Send
 
   var label: String {
     switch self {
-    case .proxyWhenUnmatched: "代理"
-    case .directWhenUnmatched: "直连"
+    case .proxyWhenUnmatched: String(localized: "代理")
+    case .directWhenUnmatched: String(localized: "直连")
     }
   }
 

@@ -284,7 +284,7 @@ extension LegacyImportPlanner {
     guard profile.isDictionary else {
       return .skipped(
         LegacySkippedRecord(
-          index: profile.index, description: "第 \(profile.index + 1) 条记录",
+          index: profile.index, description: String(localized: "第 \(profile.index + 1) 条记录"),
           reason: .notDictionary))
     }
     guard let address = profile.address?.trimmingCharacters(in: .whitespacesAndNewlines),
@@ -292,7 +292,8 @@ extension LegacyImportPlanner {
     else {
       return .skipped(
         LegacySkippedRecord(
-          index: profile.index, description: profile.address ?? "第 \(profile.index + 1) 条记录",
+          index: profile.index,
+          description: profile.address ?? String(localized: "第 \(profile.index + 1) 条记录"),
           reason: .invalidAddress))
     }
     guard let port = profile.port, (1...65_535).contains(port) else {
@@ -358,7 +359,7 @@ extension LegacyImportPlanner {
   }
 
   private static func nextGroupName(in catalog: ConfigurationCatalog) -> String {
-    let base = "Legacy 导入"
+    let base = String(localized: "Legacy 导入")
     let names = Set(
       catalog.entries.values.compactMap { entry -> String? in
         guard case .group(let fields) = entry.kind else { return nil }

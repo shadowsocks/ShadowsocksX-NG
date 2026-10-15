@@ -354,7 +354,7 @@ struct PluginOptionsReadOnlyEditor: View {
               .textSelection(.enabled)
           }
           TableColumn("类型") { row in
-            Text(row.kind == .flag ? "开关" : "值")
+            Text(row.kind == .flag ? String(localized: "开关") : String(localized: "值"))
               .foregroundStyle(.secondary)
           }
           .width(min: 48, ideal: 56, max: 64)

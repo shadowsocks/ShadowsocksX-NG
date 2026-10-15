@@ -66,7 +66,7 @@ struct LANListeningEditorSheet: View {
         Spacer()
         Button("取消", role: .cancel) { dismiss() }
           .keyboardShortcut(.cancelAction)
-        Button(workflow.isCommitting ? "保存中…" : "保存") {
+        Button(workflow.isCommitting ? String(localized: "保存中…") : String(localized: "保存")) {
           Task { await save() }
         }
         .keyboardShortcut(.defaultAction)
@@ -93,8 +93,8 @@ struct LANListeningEditorSheet: View {
           Image(systemName: showPassword ? "eye.slash" : "eye")
         }
         .buttonStyle(.borderless)
-        .help(showPassword ? "隐藏密码" : "显示密码")
-        .accessibilityLabel(showPassword ? "隐藏密码" : "显示密码")
+        .help(showPassword ? String(localized: "隐藏密码") : String(localized: "显示密码"))
+        .accessibilityLabel(showPassword ? String(localized: "隐藏密码") : String(localized: "显示密码"))
 
         if showPassword {
           TextField(text: $draft.password) {
@@ -126,12 +126,12 @@ struct LANListeningEditorSheet: View {
     saveError = nil
     switch await workflow.saveLANListening(draft) {
     case .persisted: dismiss()
-    case .rejected(.occupied): saveError = "端口已占用，未保存局域网监听。"
-    case .rejected: saveError = "配置发生变化或校验未完成，请重试。"
+    case .rejected(.occupied): saveError = String(localized: "端口已占用，未保存局域网监听。")
+    case .rejected: saveError = String(localized: "配置发生变化或校验未完成，请重试。")
     case .persistenceFailed(let failure):
       switch failure {
       case .store(let error): saveError = AppPresentation.message(for: error)
-      case .unknown: saveError = "局域网监听保存失败。"
+      case .unknown: saveError = String(localized: "局域网监听保存失败。")
       }
     case .suggestedPort: break
     }
