@@ -15,6 +15,7 @@ extension SettingsWorkflow {
       let alphabet = Array("abcdefghijklmnopqrstuvwxyz0123456789")
       password = String((0..<10).map { _ in alphabet[Int.random(in: alphabet.indices)] })
     }
+    listenerOccupancy.reset()
     return LANListeningDraft(
       ports: SettingsPortDraft(
         socksPort: lan.socksPort, httpPort: lan.httpPort,
@@ -46,44 +47,17 @@ extension SettingsWorkflow {
     guard errors.isEmpty else {
       return .rejected(.validation(SettingsPortAdapter.fieldIssues(from: errors, group: .lan)))
     }
-    if let rejection = await probeLAN(draft, base: base) { return .rejected(rejection) }
+    if let rejection = await listenerOccupancy.recheck(draft.ports) { return .rejected(rejection) }
+    guard base == committing.committedSettings else {
+      listenerOccupancy.refresh(draft.ports)
+      return .rejected(.superseded)
+    }
     proposed.listen.lan.udpRelayEnabled = draft.udpRelayEnabled
     proposed.listen.lan.authenticationEnabled = draft.authenticationEnabled
     proposed.listen.lan.username = draft.username
     return await saveLANCredentials(
       proposed, password: draft.password,
       oldReference: base.listen.lan.passwordReference)
-  }
-
-  private func probeLAN(_ draft: LANListeningDraft, base: ProxySettings) async
-    -> SettingsCommandRejection?
-  {
-    guard draft.isEnabled else { return nil }
-    let facts = probeFacts(for: draft.ports)
-    let runtime = committing.runtimeListenFacts
-    let processID = committing.runtimeListenerProcessID
-    let probe = occupancyProbe
-    let results = await Task.detached(priority: .utility) {
-      Dictionary(
-        uniqueKeysWithValues: SettingsPortID.allCases.map { id in
-          (
-            id,
-            probe.occupancy(
-              for: PortOccupancyProbeRequest(
-                endpoint: SettingsPortAdapter.endpoint(for: id, group: .lan), listen: facts))
-          )
-        })
-    }.value
-    guard base == committing.committedSettings,
-      processID == committing.runtimeListenerProcessID,
-      runtime == committing.runtimeListenFacts
-    else { return .superseded }
-    let blocked = ListenerModeOccupancyGate.blockedPortIDs(
-      results: results,
-      context: ListenerModeOccupancyContext(
-        group: .lan, proposedListen: facts,
-        runtimeListen: runtime, runtimeProcessID: processID))
-    return blocked.isEmpty ? nil : .occupied(blocked)
   }
 
   private func saveLANCredentials(
@@ -125,10 +99,6 @@ extension SettingsWorkflow {
             detail: rollback.isPartial ? String(localized: "凭据回滚失败") : String(localized: "凭据保存失败")))
       )
     }
-  }
-
-  func probeFacts(for draft: SettingsPortDraft) -> RuntimeListenFacts {
-    RuntimeListenFacts(listen: listenSettings(for: draft))
   }
 
 }
