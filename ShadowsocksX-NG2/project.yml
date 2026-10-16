@@ -43,6 +43,7 @@ targets:
           # 文档不属于 target 源码：App/ 下任何非源码文件都会被 XcodeGen 收进
           # Resources 阶段并封进签名后的 app bundle（实测），因此显式排除。
           - "**/*.md"
+          - "**/*.xcstrings-mcp.lock"
       # 领域核心。目录即主题，根下不留平铺文件，子目录按
       # GLOSSARY.md 的章节口径命名：Catalog（配置目录树与身份）/
       # Subscription（订阅）/ Rules（代理规则，自定义规则在 Rules/Custom）/
@@ -193,6 +194,7 @@ targets:
           - "**/Info.plist"
           - "**/ShadowsocksX-NG2.entitlements"
           - "**/Assets.xcassets"
+          - "**/*.xcstrings-mcp.lock"
       - path: Domain
     settings:
       base:
