@@ -2932,23 +2932,6 @@
         }
       }
     },
-    "HTTP 端口无效，必须是 1025–65535 之间的整数": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "HTTP 端口无效，必须是 1025–65535 之间的整数"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Invalid HTTP port. Enter an integer between 1025 and 65535."
-          }
-        }
-      }
-    },
     "Legacy 导入": {
       "extractionState": "manual",
       "localizations": {
@@ -3047,23 +3030,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Unable to create the SIP-008 document"
-          }
-        }
-      }
-    },
-    "SOCKS 端口无效，必须是 1025–65535 之间的整数": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "SOCKS 端口无效，必须是 1025–65535 之间的整数"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Invalid SOCKS port. Enter an integer between 1025 and 65535."
           }
         }
       }

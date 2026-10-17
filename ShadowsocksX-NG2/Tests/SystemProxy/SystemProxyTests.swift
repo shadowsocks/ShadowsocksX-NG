@@ -7,7 +7,7 @@ import XCTest
 /// Closed typed 配置覆盖 HTTPS/PAC/自动发现/简单主机名与例外列表，
 /// 无条件清理计划与 helper XPC 契约（含序列化 last-writer）都在此验证。
 final class SystemProxyTests: XCTestCase {
-  func testSupportedModesProjectTheSameLocalEndpoints() throws {
+  func testSupportedModesProjectTheSameLocalEndpoints() {
     let document = ProxyRuntimeFixture.makeDocument(
       listenerMode: .allIPv4Interfaces, localPort: 2086)
 
@@ -17,19 +17,19 @@ final class SystemProxyTests: XCTestCase {
       https: .init(host: "127.0.0.1", port: SslocalListenSettings.defaultHTTPPort),
       exceptions: FixedLocalProxyRanges.systemProxyExceptions)
     XCTAssertEqual(
-      try ProxyMode.rule.systemProxyConfiguration(for: document),
+      ProxyMode.rule.systemProxyConfiguration(for: document),
       expected)
     XCTAssertEqual(
-      try ProxyMode.global.systemProxyConfiguration(for: document),
+      ProxyMode.global.systemProxyConfiguration(for: document),
       expected,
       "全局模式的系统例外使用固定本地范围，与 ACL 安全策略一致")
   }
 
-  func testIPv6LANModeKeepsSystemProxyOnLocalIPv4Loopback() throws {
+  func testIPv6LANModeKeepsSystemProxyOnLocalIPv4Loopback() {
     let document = SslocalRuntimeDocument(
       servers: [], listen: SslocalListenSettings(listenerMode: .allIPv6Interfaces))
 
-    let configuration = try ProxyMode.rule.systemProxyConfiguration(for: document)
+    let configuration = ProxyMode.rule.systemProxyConfiguration(for: document)
 
     XCTAssertEqual(configuration.socks.host, "127.0.0.1")
     XCTAssertEqual(configuration.http.host, "127.0.0.1")
@@ -51,10 +51,10 @@ final class SystemProxyTests: XCTestCase {
     XCTAssertNil(SslocalRuntimeDocument.decodeValidated(data), "每组必须同时提供 SOCKS 与 HTTP")
   }
 
-  func testModeProjectionCarriesClosedTypedPolicyDefaults() throws {
+  func testModeProjectionCarriesClosedTypedPolicyDefaults() {
     let document = ProxyRuntimeFixture.makeDocument(localPort: 2086)
 
-    let configuration = try ProxyMode.rule.systemProxyConfiguration(
+    let configuration = ProxyMode.rule.systemProxyConfiguration(
       for: document, exceptions: ["example.com"])
 
     XCTAssertTrue(configuration.pacEnabled == false, "PAC 显式关闭")

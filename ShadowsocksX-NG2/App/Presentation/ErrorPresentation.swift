@@ -51,8 +51,6 @@ extension AppPresentation {
       return reason(error)
     case let error as CommitError:
       return commit(error)
-    case let error as ProxyModeError:
-      return proxyMode(error)
     case let error as PortSettingError:
       return port(error)
     case let error as ProxySettingsStoreError:
@@ -272,13 +270,6 @@ extension AppPresentation {
       return String(localized: "\(message(for: error.underlying))；凭据恢复不完整，请检查配置后重试")
     case .nothingToRestore, .restored:
       return message(for: error.underlying)
-    }
-  }
-
-  static func proxyMode(_ error: ProxyModeError) -> String {
-    switch error {
-    case .invalidSOCKSPort: return String(localized: "SOCKS 端口无效，必须是 1025–65535 之间的整数")
-    case .invalidHTTPPort: return String(localized: "HTTP 端口无效，必须是 1025–65535 之间的整数")
     }
   }
 

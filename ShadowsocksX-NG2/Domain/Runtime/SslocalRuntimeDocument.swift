@@ -228,7 +228,8 @@ extension SslocalRuntimeDocument {
   var socksPort: Int { socksLocal?.localPort ?? 0 }
   var socksMode: String { socksLocal?.mode ?? "" }
 
-  /// HTTP 入站端口；缺 HTTP 入站时为 0（无效端口，系统代理投影层拒绝）。
+  /// HTTP 入站端口；缺 HTTP 入站时为 0。完整入站组由 `isWellFormed` 在
+  /// 跨进程契约缝拒绝，端口合法性由 settings store 保证。
   var httpPort: Int {
     locals.first { $0.inboundProtocol == "http" }?.localPort ?? 0
   }

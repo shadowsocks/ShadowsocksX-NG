@@ -20,10 +20,10 @@ extension ProxyRuntimeController {
   }
 
   /// Desired system proxy configuration：当前保存设置要求的代理值（ADR-0022）。
-  /// 观察机经 init 闭包读取同一事实源。
+  /// 观察机经 init 闭包读取同一事实源。`nil` 只表示尚无运行时文档。
   var desiredSystemProxyConfiguration: SystemProxyConfiguration? {
     guard let document = lastDocument else { return nil }
-    return try? proxyMode.systemProxyConfiguration(
+    return proxyMode.systemProxyConfiguration(
       for: document, exceptions: settings.proxyExceptionList)
   }
 

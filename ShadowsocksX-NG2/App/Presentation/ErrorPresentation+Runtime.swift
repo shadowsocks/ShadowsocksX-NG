@@ -62,7 +62,6 @@ extension AppPresentation {
   private static func systemProxyFailure(_ facts: SystemProxyFailureFacts) -> String {
     switch facts {
     case .operation(let failure): return systemProxy(failure)
-    case .mode(let error): return proxyMode(error)
     case .unknown: return String(localized: "系统代理未能应用")
     }
   }

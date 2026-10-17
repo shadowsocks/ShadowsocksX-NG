@@ -134,7 +134,6 @@ extension SystemProxyOperationFailure {
 
 enum SystemProxyFailureFacts: Equatable, Sendable {
   case operation(SystemProxyOperationFailure)
-  case mode(ProxyModeError)
   case unknown
 }
 

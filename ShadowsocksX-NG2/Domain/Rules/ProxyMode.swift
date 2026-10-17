@@ -77,16 +77,12 @@ enum ProxyMode: Codable, Equatable, Hashable, Sendable {
   /// SOCKS 之外，系统 HTTP/HTTPS 代理指向恒开启的 HTTP 入站。
   /// 投影即 closed typed 配置：HTTPS 显式赋值、PAC/自动发现显式
   /// 关闭、简单主机名排除显式开启、例外列表全量给出。
+  /// 端口合法性由 settings store 与运行时文档派生保证，投影对任意
+  /// 文档都是全函数，保证期望系统代理配置不被静默跳过（ADR-0022）。
   func systemProxyConfiguration(
     for document: SslocalRuntimeDocument,
     exceptions: [String] = []
-  ) throws -> SystemProxyConfiguration {
-    guard ProxyPortRange.valid.contains(document.socksPort) else {
-      throw ProxyModeError.invalidSOCKSPort(document.socksPort)
-    }
-    guard ProxyPortRange.valid.contains(document.httpPort) else {
-      throw ProxyModeError.invalidHTTPPort(document.httpPort)
-    }
+  ) -> SystemProxyConfiguration {
     let loopback = "127.0.0.1"
     return SystemProxyConfiguration(
       socks: .init(host: loopback, port: document.socksPort),
@@ -95,9 +91,4 @@ enum ProxyMode: Codable, Equatable, Hashable, Sendable {
       excludeSimpleHostnames: true,
       exceptions: FixedLocalProxyRanges.systemProxyExceptions(including: exceptions))
   }
-}
-
-enum ProxyModeError: Error, Equatable, Sendable {
-  case invalidSOCKSPort(Int)
-  case invalidHTTPPort(Int)
 }

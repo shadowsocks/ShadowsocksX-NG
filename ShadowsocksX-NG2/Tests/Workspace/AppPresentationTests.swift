@@ -61,7 +61,6 @@ final class AppPresentationTests: XCTestCase {
       .pending,
       .applied,
       .failed(.operation(.applyFailed)),
-      .failed(.mode(.invalidSOCKSPort(0))),
       .failed(.operation(.helperUnavailable)),
       .failed(.unknown),
     ]

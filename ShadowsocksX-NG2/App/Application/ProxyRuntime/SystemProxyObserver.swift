@@ -596,9 +596,6 @@ extension SystemProxyObserver {
     if let error = error as? SystemProxyError {
       return .operation(SystemProxyOperationFailure(error))
     }
-    if let error = error as? ProxyModeError {
-      return .mode(error)
-    }
     return .unknown
   }
 }

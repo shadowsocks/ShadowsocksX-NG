@@ -151,7 +151,7 @@ final class SystemProxyObserverTests: XCTestCase {
       isIntentEnabled: isIntentEnabled,
       isExitAvailable: { true },
       desiredConfiguration: {
-        try? ProxyMode.direct.systemProxyConfiguration(
+        ProxyMode.direct.systemProxyConfiguration(
           for: SslocalRuntimeDocument(servers: [], listen: SslocalListenSettings()),
           exceptions: [])
       },
