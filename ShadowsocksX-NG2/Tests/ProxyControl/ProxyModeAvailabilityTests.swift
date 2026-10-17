@@ -3,8 +3,7 @@ import XCTest
 
 @testable import ShadowsocksX_NG2
 
-/// Domain mode availability is the single policy shared by the menu and
-/// runtime mode entry points.
+/// Built-in modes keep a stable selector order and project local proxy settings.
 final class ProxyModeAvailabilityTests: XCTestCase {
   func testBuiltInModesAreAlwaysAvailableInProductOrder() {
     XCTAssertEqual(

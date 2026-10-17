@@ -248,7 +248,7 @@ final class ProxyControlWorkflow: ObservableObject {
     return republish()
   }
 
-  /// 切换代理模式：可用性与 no-op 语义由控制器既有入口裁定；
+  /// 切换代理模式：no-op 语义由控制器既有入口裁定；
   /// 完成后整体重发布。持久化失败保留旧模式，失败以 typed fact 呈现。
   @discardableResult
   func setProxyMode(_ mode: ProxyMode) async -> ProxyControlSnapshot {

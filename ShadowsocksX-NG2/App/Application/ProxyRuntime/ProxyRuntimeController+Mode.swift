@@ -5,7 +5,6 @@ extension ProxyRuntimeController {
   /// and global) also deploy and verify the ACL runtime even when system proxy
   /// is off, because manually connected SOCKS and HTTP clients use the same ACL.
   func setProxyMode(_ mode: ProxyMode) async {
-    guard ProxyMode.availableModes.contains(mode) else { return }
     guard mode != proxyMode else { return }
     await transitionMode(mode, ruleDefaultAction: settings.ruleDefaultAction)
   }
