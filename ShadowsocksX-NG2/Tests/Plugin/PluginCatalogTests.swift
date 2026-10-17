@@ -22,7 +22,7 @@ struct PluginCatalogTests {
     let snapshot = PluginCatalogSnapshot(
       mappings: ["v2ray-plugin": root.appendingPathComponent("missing").path],
       managed: BundleManagedPluginProvider(bundleURL: root))
-    #expect(snapshot.executablePath(forProgram: "v2ray-plugin") == nil)
+    #expect(snapshot.resolve(program: "v2ray-plugin")?.path == nil)
     #expect(snapshot.entry(for: "v2ray-plugin")?.source == .user)
   }
   @Test @MainActor func savedMappingIsUsedAndRemovalRemovesCustomName() throws {
@@ -35,7 +35,7 @@ struct PluginCatalogTests {
     let store = PluginMappingFileStore(fileURL: root.appendingPathComponent("plugins.json"))
     let catalog = PluginCatalog(store: store, inspector: QuietPluginInspector())
     try catalog.addPlugin(program: "custom-plugin", path: binary.path)
-    #expect(catalog.catalogSnapshot().executablePath(forProgram: "custom-plugin") == binary.path)
+    #expect(catalog.catalogSnapshot().resolve(program: "custom-plugin")?.path == binary.path)
     #expect(
       PluginCatalog(store: store, inspector: QuietPluginInspector()).catalogSnapshot().entry(
         for: "custom-plugin")?.source == .user)
@@ -117,11 +117,11 @@ struct PluginCatalogTests {
     #expect(
       workflow.newFormPluginSection(selection: .named(program: "v2ray-plugin")).mappingsUnreadable)
 
-    #expect(catalog.executablePath(forProgram: "v2ray-plugin") == nil)
+    #expect(catalog.resolve(program: "v2ray-plugin")?.path == nil)
     #expect(catalog.catalogSnapshot().entry(for: "v2ray-plugin")?.source == .unknown)
     #expect(throws: PluginMappingError.unreadable) { try catalog.commit([]) }
     try catalog.replaceTestMappings([:])
-    #expect(catalog.executablePath(forProgram: "v2ray-plugin") == binary.path)
+    #expect(catalog.resolve(program: "v2ray-plugin")?.path == binary.path)
   }
 
   @Test @MainActor func failedPersistenceDoesNotPublishOrInvalidateRuntime() throws {
@@ -156,14 +156,14 @@ struct PluginCatalogTests {
       store: PluginMappingFileStore(fileURL: root.appendingPathComponent("plugins.json")),
       inspector: QuietPluginInspector())
     try catalog.addPlugin(program: " Tool ", path: link.path)
-    #expect(catalog.executablePath(forProgram: "Tool") == link.path)
-    #expect(catalog.executablePath(forProgram: "tool") == nil)
+    #expect(catalog.resolve(program: "Tool")?.path == link.path)
+    #expect(catalog.resolve(program: "tool")?.path == nil)
     let captured = catalog.catalogSnapshot()
     try catalog.renamePlugin(program: "Tool", newProgram: "Other", path: link.path)
-    #expect(catalog.executablePath(forProgram: "Tool") == nil)
-    #expect(captured.executablePath(forProgram: "Tool") == link.path)
+    #expect(catalog.resolve(program: "Tool")?.path == nil)
+    #expect(captured.resolve(program: "Tool")?.path == link.path)
     try FileManager.default.removeItem(at: binary)
-    #expect(catalog.executablePath(forProgram: "Other") == nil)
+    #expect(catalog.resolve(program: "Other")?.path == nil)
     try catalog.removePlugin(program: "Other")
     #expect(catalog.catalogSnapshot().entry(for: "Other") == nil)
   }
@@ -293,11 +293,11 @@ struct PluginCatalogSecurityTests {
     await check.value
     if change == "unchanged" {
       #expect(catalog.securityFacts["tool"]?.policy == .rejected)
-      #expect(catalog.executablePath(forProgram: "tool") == binary.path)
+      #expect(catalog.resolve(program: "tool")?.path == binary.path)
     } else {
       #expect(catalog.securityFacts["tool"] == nil)
       #expect(
-        catalog.executablePath(forProgram: "tool")
+        catalog.resolve(program: "tool")?.path
           == (["remove", "permissions"].contains(change) ? nil : binary.path))
     }
   }
@@ -315,8 +315,8 @@ struct PluginCatalogSecurityTests {
       mappings: ["directory": directoryLink.path, "missing": missingLink.path])
     #expect(snapshot.entry(for: "directory")?.availability == .notExecutable)
     #expect(snapshot.entry(for: "missing")?.availability == .missing)
-    #expect(snapshot.executablePath(forProgram: "directory") == nil)
-    #expect(snapshot.executablePath(forProgram: "missing") == nil)
+    #expect(snapshot.resolve(program: "directory")?.path == nil)
+    #expect(snapshot.resolve(program: "missing")?.path == nil)
   }
 
   @Test func failedFileInspectionIsDistinctFromMissingFile() {
@@ -324,7 +324,7 @@ struct PluginCatalogSecurityTests {
       mappings: ["tool": "/unreadable/tool"],
       managed: BundleManagedPluginProvider(fileManager: UnreadablePluginFileManager()))
     #expect(snapshot.entry(for: "tool")?.availability == .unreadable)
-    #expect(snapshot.executablePath(forProgram: "tool") == nil)
+    #expect(snapshot.resolve(program: "tool")?.path == nil)
   }
 
   @Test func userDiagnosticFactsNeverInheritManagedVersion() {

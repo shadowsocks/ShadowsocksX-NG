@@ -43,9 +43,9 @@ final class BundleManagedPluginProviderTests: XCTestCase {
   func testMajorVersionAliasResolvesToSameBundledExecutable() throws {
     try writePluginBinary(permissions: 0o755)
     XCTAssertEqual(
-      makeProvider().executablePath(forProgram: "v2ray-plugin-v1"),
-      makeProvider().executablePath(forProgram: "v2ray-plugin"))
-    XCTAssertNotNil(makeProvider().executablePath(forProgram: "v2ray-plugin-v1"))
+      makeProvider().resolve(program: "v2ray-plugin-v1")?.path,
+      makeProvider().resolve(program: "v2ray-plugin")?.path)
+    XCTAssertNotNil(makeProvider().resolve(program: "v2ray-plugin-v1")?.path)
   }
 
   func testCloakAliasesUseClientBinaryAndPreserveOptions() throws {
@@ -78,28 +78,28 @@ final class BundleManagedPluginProviderTests: XCTestCase {
 
   func testReturnsBundleAbsolutePathForProvidedManagedProgram() throws {
     try writePluginBinary(permissions: 0o755)
-    let path = try XCTUnwrap(makeProvider().executablePath(forProgram: pluginBinaryName))
+    let path = try XCTUnwrap(makeProvider().resolve(program: pluginBinaryName)?.path)
     XCTAssertEqual(path, pluginURL.path, "配置生成的 plugin 字段是 bundle 内绝对路径")
     XCTAssertTrue(path.hasPrefix(bundleRoot.path))
   }
 
   func testMissingBinaryIsNotProvided() {
-    XCTAssertNil(makeProvider().executablePath(forProgram: pluginBinaryName))
+    XCTAssertNil(makeProvider().resolve(program: pluginBinaryName)?.path)
   }
 
   func testNonExecutableBinaryIsNotProvided() throws {
     try writePluginBinary(permissions: 0o644)
-    XCTAssertNil(makeProvider().executablePath(forProgram: pluginBinaryName))
+    XCTAssertNil(makeProvider().resolve(program: pluginBinaryName)?.path)
   }
 
   func testUnmanagedProgramIsNeverProvided() throws {
     try writePluginBinary(permissions: 0o755)
     let provider = makeProvider()
-    XCTAssertNil(provider.executablePath(forProgram: "obfs-local"), "集外程序名一律未提供")
-    XCTAssertNil(provider.executablePath(forProgram: "sslocal"), "非插件的 bundle 内二进制不算插件")
-    XCTAssertNil(provider.executablePath(forProgram: "../Helpers/sslocal"), "路径形态引用不拼接")
-    XCTAssertNil(provider.executablePath(forProgram: "v2ray-plugin/child"), "子路径引用不拼接")
-    XCTAssertNil(provider.executablePath(forProgram: ""))
+    XCTAssertNil(provider.resolve(program: "obfs-local")?.path, "集外程序名一律未提供")
+    XCTAssertNil(provider.resolve(program: "sslocal")?.path, "非插件的 bundle 内二进制不算插件")
+    XCTAssertNil(provider.resolve(program: "../Helpers/sslocal")?.path, "路径形态引用不拼接")
+    XCTAssertNil(provider.resolve(program: "v2ray-plugin/child")?.path, "子路径引用不拼接")
+    XCTAssertNil(provider.resolve(program: "")?.path)
   }
 
   /// 组合根事实：app bundle（生产默认 provider 的取值来源，经 AppArtifact 按
@@ -108,7 +108,7 @@ final class BundleManagedPluginProviderTests: XCTestCase {
   func testHostAppBundleProvidesManagedPlugin() throws {
     let path = try XCTUnwrap(
       BundleManagedPluginProvider(bundleURL: AppArtifact.bundleURL)
-        .executablePath(forProgram: pluginBinaryName),
+        .resolve(program: pluginBinaryName)?.path,
       "app bundle 未嵌入受管插件（先跑 fetch-external-binaries.sh）")
     XCTAssertTrue(path.hasSuffix("Contents/Helpers/Plugins/\(pluginBinaryName)"))
   }
@@ -116,9 +116,9 @@ final class BundleManagedPluginProviderTests: XCTestCase {
   func testHostAppBundleProvidesCloakAliasesAndNotices() throws {
     let bundle = AppArtifact.bundleURL
     let provider = BundleManagedPluginProvider(bundleURL: bundle)
-    let path = try XCTUnwrap(provider.executablePath(forProgram: "cloak"))
+    let path = try XCTUnwrap(provider.resolve(program: "cloak")?.path)
     XCTAssertTrue(path.hasSuffix("Contents/Helpers/Plugins/ck-client"))
-    XCTAssertEqual(provider.executablePath(forProgram: "cloak-v2"), path)
+    XCTAssertEqual(provider.resolve(program: "cloak-v2")?.path, path)
     for name in ["LICENSE", "NOTICE", "THIRD-PARTY-NOTICES"] {
       XCTAssertTrue(
         FileManager.default.fileExists(

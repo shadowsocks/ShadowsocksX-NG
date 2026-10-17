@@ -175,8 +175,6 @@ extension CatalogTreeSnapshot {
           invalidDescendantCount: children.reduce(0) { $0 + $1.subtreeInvalidServerCount },
           children: children)
       case .server(let fields):
-        let validation = ServerValidation.evaluate(
-          fields, credentials: credentials, plugins: plugins)
         return CatalogTreeNode(
           id: id,
           name: entry.displayName,
@@ -185,7 +183,8 @@ extension CatalogTreeSnapshot {
           parentID: parentID,
           createdAt: entry.createdAt,
           updatedAt: entry.updatedAt,
-          invalidReasons: validation.issues,
+          invalidReasons: LeafPreparation.invalidReasons(
+            fields, credentials: credentials, plugins: plugins),
           childCount: 0,
           subtreeNodeCount: 0,
           invalidDescendantCount: 0,

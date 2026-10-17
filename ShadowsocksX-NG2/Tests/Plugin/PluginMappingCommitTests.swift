@@ -38,7 +38,7 @@ struct PluginMappingCommitTests {
     }
     #expect(fixture.plugins.testMappings["tool"] == fixture.second.path)
     let restored = PluginCatalog(store: fixture.store, inspector: CommitPluginInspector())
-    #expect(restored.executablePath(forProgram: "tool") == fixture.second.path)
+    #expect(restored.resolve(program: "tool")?.path == fixture.second.path)
   }
 
   @Test func unrelatedAndIdenticalMappingsDoNotRestartHealthyRuntime() async throws {

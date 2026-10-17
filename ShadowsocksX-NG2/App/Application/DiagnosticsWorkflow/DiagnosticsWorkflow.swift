@@ -261,7 +261,7 @@ final class DiagnosticsWorkflow: ObservableObject {
       DiagnosticPluginFacts(
         program: info.program,
         version: info.release,
-        present: provider.executablePath(forProgram: info.program) != nil)
+        present: provider.resolve(program: info.program) != nil)
     }
   }
 

@@ -14,10 +14,6 @@ protocol PluginExecutableResolving {
 }
 
 extension PluginExecutableResolving {
-  func executablePath(forProgram program: String) -> String? {
-    resolve(program: program)?.path
-  }
-
   func catalogSnapshot() -> PluginCatalogSnapshot {
     PluginCatalogSnapshot(
       entries: ManagedPluginCatalog.plugins.flatMap { info in

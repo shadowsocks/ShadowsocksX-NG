@@ -111,8 +111,6 @@ struct ActivationStateMachine: Equatable, Sendable {
         } else {
           return .failure(.invalidLeaf(node: skipped.id, reason: skipped.reason))
         }
-      case .failed(let failure):
-        return .failure(failure)
       }
     }
     guard !servers.isEmpty else { return .failure(.targetExpandsToNothing(target)) }
@@ -132,11 +130,11 @@ struct ActivationStateMachine: Equatable, Sendable {
   }
 
   /// 单叶派生结果。`.skippedCandidate` 携带点名原因，分组语义下可跳过，
-  /// 单服务器目标由调用方转成整体拒绝。
-  private enum LeafDerival {
+  /// 单服务器目标由调用方转成整体拒绝。预检已消化全部已知阻塞原因，
+  /// 不再有派生期折回。
+  private enum LeafDerivation {
     case server(SslocalServerDocument)
     case skippedCandidate(SkippedServer)
-    case failed(ActivationFailure)
   }
 
   private func deriveLeaf(
@@ -144,23 +142,31 @@ struct ActivationStateMachine: Equatable, Sendable {
     in catalog: ConfigurationCatalog,
     credentials: CredentialStoring,
     plugins: PluginExecutableResolving
-  ) -> LeafDerival {
+  ) -> LeafDerivation {
     guard let entry = catalog.entry(for: leafID), case .server(let fields) = entry.kind else {
       preconditionFailure("展开结果只含服务器叶子")
     }
-    let validation = ServerValidation.evaluate(fields, credentials: credentials, plugins: plugins)
-    if let issue = validation.issues.first {
+    let preparation = LeafPreparation.prepare(
+      fields, credentials: credentials, plugins: plugins)
+    if let issue = preparation.issues.first {
       return .skippedCandidate(SkippedServer(id: leafID, reason: issue))
     }
-    switch derivedServer(leafID, in: catalog, credentials: credentials, plugins: plugins) {
-    case .success(let server):
-      return .server(server)
-    case .failure(let failure):
-      if case .invalidLeaf(let node, let reason) = failure {
-        return .skippedCandidate(SkippedServer(id: node, reason: reason))
-      }
-      return .failed(failure)
+    // 预检通过 ⇒ 密码已解析；插件事实与选项引用同理由预检给出。
+    guard let password = preparation.password else {
+      preconditionFailure("预检通过则密码必已解析")
     }
+    return .server(
+      SslocalServerDocument(
+        id: leafID.rawValue,
+        server: fields.address.trimmingCharacters(in: .whitespacesAndNewlines),
+        serverPort: fields.port,
+        password: password,
+        method: fields.encryptionMethod.trimmingCharacters(in: .whitespacesAndNewlines),
+        plugin: preparation.plugin?.path,
+        pluginOpts: preparation.pluginOptions,
+        pluginArgs: preparation.plugin?.arguments.isEmpty == true
+          ? nil : preparation.plugin?.arguments,
+        pluginMode: preparation.plugin?.mode == .tcpOnly ? nil : preparation.plugin?.mode))
   }
 
   /// 按显式子序深度优先收集全部服务器叶子；有效性在派生阶段统一预检。
@@ -183,70 +189,6 @@ struct ActivationStateMachine: Equatable, Sendable {
       case .group:
         collectServerLeaves(of: child, in: catalog, into: &leaves)
       }
-    }
-  }
-
-  /// 校验单个有效候选叶子并解析为上游条目；凭据在派生时从凭据存储解析。
-  private func derivedServer(
-    _ leafID: NodeID,
-    in catalog: ConfigurationCatalog,
-    credentials: CredentialStoring,
-    plugins: PluginExecutableResolving
-  ) -> Result<SslocalServerDocument, ActivationFailure> {
-    guard let entry = catalog.entry(for: leafID), case .server(let fields) = entry.kind else {
-      preconditionFailure("展开结果只含服务器叶子")
-    }
-    let password: String
-    switch resolveCredential(fields.passwordRef, of: leafID, credentials: credentials) {
-    case .success(let resolved):
-      password = resolved
-    case .failure(let failure):
-      return .failure(failure)
-    }
-    var pluginPath: String?
-    var pluginOpts: String?
-    var pluginArgs: [String]?
-    var pluginMode: PluginTransportMode?
-    if let program = fields.pluginProgram {
-      guard let resolved = plugins.resolve(program: program) else {
-        return .failure(.invalidLeaf(node: leafID, reason: .pluginNotProvided(program: program)))
-      }
-      pluginMode = resolved.mode == .tcpOnly ? nil : resolved.mode
-      pluginPath = resolved.path
-      pluginArgs = resolved.arguments.isEmpty ? nil : resolved.arguments
-      if let optionsRef = fields.pluginOptionsRef {
-        switch resolveCredential(optionsRef, of: leafID, credentials: credentials) {
-        case .success(let resolved):
-          pluginOpts = resolved
-        case .failure(let failure):
-          return .failure(failure)
-        }
-      }
-    }
-    return .success(
-      SslocalServerDocument(
-        id: leafID.rawValue,
-        server: fields.address.trimmingCharacters(in: .whitespacesAndNewlines),
-        serverPort: fields.port,
-        password: password,
-        method: fields.encryptionMethod.trimmingCharacters(in: .whitespacesAndNewlines),
-        plugin: pluginPath,
-        pluginOpts: pluginOpts, pluginArgs: pluginArgs, pluginMode: pluginMode))
-  }
-
-  /// 凭据解析：无条目与读取失败分别点名（「凭据不可解析 → 停止并清理」）。
-  private func resolveCredential(
-    _ reference: CredentialReference,
-    of leafID: NodeID,
-    credentials: CredentialStoring
-  ) -> Result<String, ActivationFailure> {
-    do {
-      guard let secret = try credentials.secret(for: reference), !secret.isEmpty else {
-        return .failure(.invalidLeaf(node: leafID, reason: .credentialUnresolved(reference)))
-      }
-      return .success(secret)
-    } catch {
-      return .failure(.invalidLeaf(node: leafID, reason: .credentialReadFailed(reference)))
     }
   }
 }
