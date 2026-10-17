@@ -175,8 +175,7 @@ final class PluginCatalog: ObservableObject, PluginExecutableResolving {
         guard !Task.isCancelled else { return }
         let facts = await inspector.inspect(URL(fileURLWithPath: path))
         guard let self, !Task.isCancelled,
-          self.catalogSnapshot().generation == snapshot.generation,
-          self.catalogSnapshot().entry(for: entry.program)?.path == path,
+          self.lock.withLock({ self.state.generation }) == snapshot.generation,
           PluginFileIdentity(path: path) == identity
         else { return }
         for name in names { self.securityFacts[name] = facts }
