@@ -128,7 +128,7 @@ struct LANListeningEditorSheet: View {
     case .persisted: dismiss()
     case .rejected(.occupied): saveError = String(localized: "端口已占用，未保存局域网监听。")
     case .rejected: saveError = String(localized: "配置发生变化或校验未完成，请重试。")
-    case .persistenceFailed(let failure):
+    case .commitFailed(let failure):
       switch failure {
       case .store(let error): saveError = AppPresentation.message(for: error)
       case .unknown: saveError = String(localized: "局域网监听保存失败。")

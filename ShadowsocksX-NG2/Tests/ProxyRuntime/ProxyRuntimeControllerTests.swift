@@ -159,7 +159,6 @@ class ProxyRuntimeControllerTests: XCTestCase {
       runtimeFileStore: runtimeFileStore,
       credentials: credentials,
       plugins: ActivationFixture.plugins,
-      listenRestore: RestoredListenSettings(settings: listen, unreadableError: nil),
       settingsStore: settingsStore ?? InMemoryProxySettingsStore(),
       customRuleStore: customRuleStore
         ?? CustomRuleStore(fileURL: runtime.directory.appendingPathComponent("custom-rules.json")),

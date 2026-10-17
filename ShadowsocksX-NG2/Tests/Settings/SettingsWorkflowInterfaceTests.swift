@@ -199,7 +199,7 @@ final class SettingsWorkflowInterfaceTests: XCTestCase {
 
     XCTAssertEqual(
       outcome,
-      .persistenceFailed(.store(.ioFailure(detail: "disk full"))))
+      .commitFailed(.store(.ioFailure(detail: "disk full"))))
     XCTAssertEqual(workflow.lastFailure, .store(.ioFailure(detail: "disk full")))
     XCTAssertEqual(committing.committedSettings, original)
     XCTAssertTrue(committing.updateCalls.isEmpty)

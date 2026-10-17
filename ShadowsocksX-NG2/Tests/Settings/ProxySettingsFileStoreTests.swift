@@ -128,15 +128,4 @@ final class ProxySettingsFileStoreTests: XCTestCase {
       }
     }
   }
-
-  func testMissingNewFileIgnoresOldListenSettingsAndUsesDefaults() throws {
-    var legacy = SslocalListenSettings()
-    legacy.socksPort = 2086
-    try ListenSettingsFileStore(fileURL: directory.appendingPathComponent("listen-settings.json"))
-      .save(legacy)
-
-    let loaded = try store.load()
-
-    XCTAssertEqual(loaded.listen, SslocalListenSettings())
-  }
 }

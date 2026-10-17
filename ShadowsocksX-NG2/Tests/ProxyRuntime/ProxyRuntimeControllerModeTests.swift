@@ -255,8 +255,6 @@ final class CatalogRuntimeSnapshotIntegrationTests: XCTestCase {
       runtimeFileStore: runtimeFileStore,
       credentials: credentials,
       plugins: ActivationFixture.plugins,
-      listenRestore: RestoredListenSettings(
-        settings: ActivationFixture.listen, unreadableError: nil),
       settingsStore: InMemoryProxySettingsStore(),
       appBundle: AppArtifact.bundle,
       ruleSnapshots: BuiltinRuleSnapshots(loader: ProxyRuntimeFixture.controlFlowRuleSnapshot),

@@ -72,7 +72,7 @@ final class DiagnosticsReportWorkflowTests: DiagnosticsWorkflowTestCase {
     XCTAssertTrue(report.contains("launch agent register failed"))
     XCTAssertTrue(report.contains("listen not established within deadline"))
     XCTAssertTrue(report.contains("runtime metadata persist failed"))
-    XCTAssertTrue(report.contains("listen settings unreadable, falling back to factory defaults"))
+    XCTAssertTrue(report.contains("settings unreadable, falling back to factory defaults"))
     XCTAssertTrue(
       report.contains("activation failed: 激活目标 leaf-9 的插件 simple-obfs 未随 app 提供"),
       "领域点名原因按白名单决策进入报告")

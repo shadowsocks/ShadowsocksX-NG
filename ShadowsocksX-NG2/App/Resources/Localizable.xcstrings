@@ -3612,23 +3612,6 @@
         }
       }
     },
-    "偏好中的敏感 URL 无法从钥匙串读取": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "偏好中的敏感 URL 无法从钥匙串读取"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Unable to read the sensitive URL in preferences from Keychain"
-          }
-        }
-      }
-    },
     "偏好文件损坏": {
       "extractionState": "manual",
       "localizations": {
@@ -5695,23 +5678,6 @@
         }
       }
     },
-    "旧版监听设置无法读取：%@": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "旧版监听设置无法读取：%@"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Unable to read legacy listener settings: %@"
-          }
-        }
-      }
-    },
     "显示密码": {
       "extractionState": "manual",
       "localizations": {
@@ -6655,40 +6621,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Listen on"
-          }
-        }
-      }
-    },
-    "监听设置文件损坏": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "监听设置文件损坏"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "The listener settings file is corrupt"
-          }
-        }
-      }
-    },
-    "监听设置文件读取失败": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "监听设置文件读取失败"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Unable to read the listener settings file"
           }
         }
       }

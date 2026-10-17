@@ -79,8 +79,8 @@ extension RuntimeLogEvent {
       return "activation failed: \(reason)"
     case .diagnosticsExported:
       return "diagnostics report exported (redacted)"
-    case .listenSettingsUnreadable:
-      return "listen settings unreadable, falling back to factory defaults"
+    case .settingsUnreadable:
+      return "settings unreadable, falling back to factory defaults"
     }
   }
 }

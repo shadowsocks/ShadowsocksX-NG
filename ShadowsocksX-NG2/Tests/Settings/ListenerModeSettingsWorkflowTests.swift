@@ -12,7 +12,7 @@ extension SettingsWorkflowInterfaceTests {
       draft.isEnabled = mode != nil
       if let mode { draft.mode = mode }
       return await workflow.saveLANListening(draft)
-    } catch { return .persistenceFailed(.unknown) }
+    } catch { return .commitFailed(.unknown) }
   }
 
   func testListenerModeAllowsReplacingItsOwnActiveListener() async {
@@ -125,7 +125,7 @@ extension SettingsWorkflowInterfaceTests {
 
     XCTAssertEqual(
       outcome,
-      .persistenceFailed(.store(.ioFailure(detail: "disk full"))))
+      .commitFailed(.store(.ioFailure(detail: "disk full"))))
     XCTAssertEqual(workflow.lastFailure, .store(.ioFailure(detail: "disk full")))
     XCTAssertEqual(committing.committedSettings, original)
     XCTAssertTrue(committing.updateCalls.isEmpty)

@@ -54,25 +54,9 @@ struct ProxySettings: Equatable, Sendable {
     return result
   }
 
-  var validationErrors: [ProxySettingsValidationError] {
-    listen.portValidationErrors().map(ProxySettingsValidationError.init)
+  var validationErrors: [PortSettingError] {
+    listen.portValidationErrors()
   }
-}
-
-/// 设置快照的点名校验错误；端口错误保留 的端点与数值信息。
-enum ProxySettingsValidationError: Error, Hashable, Sendable {
-  case portOutOfRange(endpoint: ProxyEndpointKind, port: Int)
-  case duplicatePort(endpoint: ProxyEndpointKind, otherEndpoint: ProxyEndpointKind, port: Int)
-
-  init(_ error: PortSettingError) {
-    switch error {
-    case .portOutOfRange(let endpoint, let port):
-      self = .portOutOfRange(endpoint: endpoint, port: port)
-    case .duplicatePort(let endpoint, let otherEndpoint, let port):
-      self = .duplicatePort(endpoint: endpoint, otherEndpoint: otherEndpoint, port: port)
-    }
-  }
-
 }
 
 protocol ProxySettingsStoring {
@@ -82,11 +66,9 @@ protocol ProxySettingsStoring {
 
 enum ProxySettingsStoreError: Error, Equatable {
   case corrupt(detail: String)
-  case invalid([ProxySettingsValidationError])
+  case invalid([PortSettingError])
   case ioFailure(detail: String)
-  case missingCredential(CredentialReference)
   case credentialFailure(detail: String)
-  case legacyListenSettings(ListenSettingsStoreError)
 }
 
 struct RestoredProxySettings: Equatable {

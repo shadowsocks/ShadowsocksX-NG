@@ -109,7 +109,6 @@ final class SettingsWorkflow: ObservableObject {
     guard !isCommitting else { return .rejected(.inProgress) }
     guard editorDraft.group == .local else { return .rejected(.superseded) }
     let errors = listenSettings(for: editorDraft).portValidationErrors()
-      .map(ProxySettingsValidationError.init)
     guard errors.isEmpty else {
       return .rejected(
         .validation(SettingsPortAdapter.fieldIssues(from: errors, group: editorDraft.group)))
@@ -146,8 +145,7 @@ final class SettingsWorkflow: ObservableObject {
       return .persisted
     } catch {
       isCommitting = false
-      lastFailure = Self.workflowFailure(for: error)
-      return .persistenceFailed(Self.persistenceFailure(for: error))
+      return commitFailure(for: error)
     }
   }
 
@@ -157,7 +155,6 @@ final class SettingsWorkflow: ObservableObject {
 
   private func portIssues(for editorDraft: SettingsPortDraft) -> [SettingsFieldIssue] {
     let errors = listenSettings(for: editorDraft).portValidationErrors()
-      .map(ProxySettingsValidationError.init)
     return SettingsPortAdapter.fieldIssues(from: errors, group: editorDraft.group)
   }
 
@@ -183,16 +180,14 @@ final class SettingsWorkflow: ObservableObject {
       lastFailure = nil
       return .persisted
     } catch {
-      lastFailure = Self.workflowFailure(for: error)
-      return .persistenceFailed(Self.persistenceFailure(for: error))
+      return commitFailure(for: error)
     }
   }
 
-  private static func persistenceFailure(for error: Error) -> SettingsPersistenceFailure {
-    if let error = error as? ProxySettingsStoreError {
-      return .store(error)
-    }
-    return .unknown
+  private func commitFailure(for error: Error) -> SettingsCommandOutcome {
+    let failure = Self.workflowFailure(for: error)
+    lastFailure = failure
+    return .commitFailed(failure)
   }
 
   private static func workflowFailure(for error: Error) -> SettingsWorkflowFailure {

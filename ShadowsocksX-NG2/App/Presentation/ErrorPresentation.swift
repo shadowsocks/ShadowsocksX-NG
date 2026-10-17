@@ -55,12 +55,8 @@ extension AppPresentation {
       return proxyMode(error)
     case let error as PortSettingError:
       return port(error)
-    case let error as ProxySettingsValidationError:
-      return settingsValidation(error)
     case let error as ProxySettingsStoreError:
       return settingsStore(error)
-    case let error as ListenSettingsStoreError:
-      return listenStore(error)
     case let error as LegacyImportError:
       return legacyImport(error)
     case let error as SystemProxyError:
@@ -304,32 +300,12 @@ extension AppPresentation {
     }
   }
 
-  private static func settingsValidation(_ error: ProxySettingsValidationError) -> String {
-    switch error {
-    case .portOutOfRange(let endpoint, let port):
-      return Self.port(.portOutOfRange(endpoint: endpoint, port: port))
-    case .duplicatePort(let endpoint, let otherEndpoint, let port):
-      return Self.port(.duplicatePort(endpoint: endpoint, otherEndpoint: otherEndpoint, port: port))
-    }
-  }
-
   private static func settingsStore(_ error: ProxySettingsStoreError) -> String {
     switch error {
     case .corrupt: return String(localized: "偏好文件损坏")
-    case .invalid(let errors): return errors.map(settingsValidation).joined(separator: "；")
+    case .invalid(let errors): return errors.map(port).joined(separator: "；")
     case .ioFailure: return String(localized: "偏好文件读写失败")
-    case .missingCredential: return String(localized: "偏好中的敏感 URL 无法从钥匙串读取")
     case .credentialFailure(let detail): return String(localized: "凭据操作失败：\(detail)")
-    case .legacyListenSettings(let error):
-      return String(localized: "旧版监听设置无法读取：\(listenStore(error))")
-    }
-  }
-
-  private static func listenStore(_ error: ListenSettingsStoreError) -> String {
-    switch error {
-    case .corrupt: return String(localized: "监听设置文件损坏")
-    case .invalidPorts(let errors): return errors.map(port).joined(separator: "；")
-    case .ioFailure: return String(localized: "监听设置文件读取失败")
     }
   }
 

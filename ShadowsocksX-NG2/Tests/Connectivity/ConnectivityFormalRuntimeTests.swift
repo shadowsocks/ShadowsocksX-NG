@@ -24,13 +24,13 @@ struct ConnectivityFormalRuntimeTests {
       activationFileStore: ActivationStateFileStore(
         fileURL: runtime.directory.appendingPathComponent("activation.json")),
       runtimeFileStore: fileStore, credentials: credentials, plugins: ActivationFixture.plugins,
-      listenRestore: RestoredListenSettings(
-        settings: ActivationFixture.listen, unreadableError: nil),
       settingsStore: store,
       customRuleStore: CustomRuleStore(
         fileURL: runtime.directory.appendingPathComponent("rules.json")),
       appBundle: AppArtifact.bundle,
       ruleSnapshots: BuiltinRuleSnapshots(loader: ProxyRuntimeFixture.controlFlowRuleSnapshot),
+      settingsRestore: RestoredProxySettings(
+        settings: ProxySettings(listen: ActivationFixture.listen), unreadableError: nil),
       agent: agent,
       probe: ProxyRuntimeFixture.FakeProbe.reachable(), systemProxy: systemProxy,
       systemProxyHelper: ProxyRuntimeFixture.FakeSystemProxyHelperService(),

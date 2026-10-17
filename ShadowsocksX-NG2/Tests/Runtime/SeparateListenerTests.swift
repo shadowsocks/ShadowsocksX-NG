@@ -58,13 +58,13 @@ struct SeparateListenerTests {
   @Test func disabledIPv6ConfigurationRoundTripsWithoutAffectingEffectiveRuntime() throws {
     let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     defer { try? FileManager.default.removeItem(at: directory) }
-    let store = ListenSettingsFileStore(fileURL: directory.appendingPathComponent("listen.json"))
+    let store = ProxySettingsFileStore(fileURL: directory.appendingPathComponent("settings.json"))
     var listen = SslocalListenSettings()
     listen.lan.mode = .allIPv6Interfaces
     listen.lan.authenticationEnabled = true
     listen.lan.passwordReference = "saved-reference"
-    try store.save(listen)
-    let restored = try store.load()
+    try store.save(ProxySettings(listen: listen))
+    let restored = try store.load().listen
     #expect(!restored.lan.isEnabled)
     #expect(restored.lan.mode == .allIPv6Interfaces)
     #expect(restored.lan.passwordReference == "saved-reference")

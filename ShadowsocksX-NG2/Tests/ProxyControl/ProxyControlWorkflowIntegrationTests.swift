@@ -69,8 +69,6 @@ final class ProxyControlWorkflowIntegrationTests: XCTestCase {
       runtimeFileStore: runtimeFileStore,
       credentials: credentials,
       plugins: ActivationFixture.plugins,
-      listenRestore: RestoredListenSettings(
-        settings: ActivationFixture.listen, unreadableError: nil),
       settingsStore: settingsStore ?? InMemoryProxySettingsStore(),
       appBundle: AppArtifact.bundle,
       // Keep real ACL compilation; corpus coverage belongs to the packaged-rule tests.

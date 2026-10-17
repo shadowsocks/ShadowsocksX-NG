@@ -43,9 +43,9 @@ enum RuntimeLogEvent: Equatable, CustomStringConvertible, Sendable {
   case activationFailed(reason: String)
   /// 用户显式触发的脱敏诊断导出已完成（不携带导出路径）。
   case diagnosticsExported
-  /// 监听设置持久化读取失败，已回落出厂默认（不静默改端口——事件进
+  /// 偏好设置持久化读取失败，已回落出厂默认（不静默改端口——事件进
   /// 诊断日志由查看器呈现；完整日志查看器属于独立的诊断界面。
-  case listenSettingsUnreadable(detail: String)
+  case settingsUnreadable(detail: String)
 
   case connectivityMeasurement(id: UUID, entry: ConnectivityTrace)
 
@@ -107,8 +107,8 @@ enum RuntimeLogEvent: Equatable, CustomStringConvertible, Sendable {
       return "activation failed: \(reason)"
     case .diagnosticsExported:
       return "diagnostics report exported (redacted)"
-    case .listenSettingsUnreadable(let detail):
-      return "listen settings unreadable, falling back to factory defaults: \(detail)"
+    case .settingsUnreadable(let detail):
+      return "settings unreadable, falling back to factory defaults: \(detail)"
     }
   }
 }

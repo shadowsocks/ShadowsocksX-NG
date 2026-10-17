@@ -16,7 +16,7 @@ extension SettingsWorkflowInterfaceTests {
     let outcome = await workflow.savePortSettings(edited)
 
     XCTAssertEqual(
-      outcome, .persistenceFailed(.store(.ioFailure(detail: "disk full"))))
+      outcome, .commitFailed(.store(.ioFailure(detail: "disk full"))))
     XCTAssertEqual(workflow.lastFailure, .store(.ioFailure(detail: "disk full")))
     XCTAssertTrue(workflow.lastFailure?.presentableMessage.contains("偏好文件") == true)
     XCTAssertEqual(committing.committedSettings, original)

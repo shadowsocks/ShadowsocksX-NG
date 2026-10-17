@@ -59,10 +59,10 @@ final class SettingsWorkflowTests: XCTestCase {
       runtimeFileStore: runtimeFileStore,
       credentials: credentials,
       plugins: ActivationFixture.plugins,
-      listenRestore: RestoredListenSettings(
-        settings: ActivationFixture.listen, unreadableError: nil),
       settingsStore: settingsStore,
       appBundle: AppArtifact.bundle,
+      settingsRestore: RestoredProxySettings(
+        settings: ProxySettings(listen: ActivationFixture.listen), unreadableError: nil),
       agent: agent,
       probe: ProxyRuntimeFixture.FakeProbe.reachable(),
       systemProxy: systemProxy,

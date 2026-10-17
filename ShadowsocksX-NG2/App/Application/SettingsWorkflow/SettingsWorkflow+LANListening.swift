@@ -38,7 +38,7 @@ extension SettingsWorkflow {
     guard RuntimeListenerAuthentication.validUsername(draft.username),
       RuntimeListenerAuthentication.validPassword(draft.password)
     else {
-      return .persistenceFailed(.store(.credentialFailure(detail: String(localized: "用户名或密码无效"))))
+      return .commitFailed(.store(.credentialFailure(detail: String(localized: "用户名或密码无效"))))
     }
     let base = committing.committedSettings
     var proposed = base
@@ -71,7 +71,7 @@ extension SettingsWorkflow {
           return await persistSettings(proposed)
         }
       } catch {
-        return .persistenceFailed(
+        return .commitFailed(
           .store(.credentialFailure(detail: String(localized: "局域网身份验证密码不可读"))))
       }
     }
@@ -88,12 +88,12 @@ extension SettingsWorkflow {
         return outcome
       }
       if case .partial = journal.rollback() {
-        return .persistenceFailed(.store(.credentialFailure(detail: String(localized: "凭据回滚失败"))))
+        return .commitFailed(.store(.credentialFailure(detail: String(localized: "凭据回滚失败"))))
       }
       return outcome
     } catch {
       let rollback = journal.rollback()
-      return .persistenceFailed(
+      return .commitFailed(
         .store(
           .credentialFailure(
             detail: rollback.isPartial ? String(localized: "凭据回滚失败") : String(localized: "凭据保存失败")))

@@ -40,10 +40,6 @@ struct ProxySettingsFileStore: ProxySettingsStoring {
     do {
       let data = try Self.jsonEncoder.encode(record(from: settings))
       try AtomicFileWriter.write(data, to: fileURL)
-    } catch let error as ProxySettingsStoreError {
-      throw error
-    } catch let error as AtomicFileWriter.WriteError {
-      throw ProxySettingsStoreError.ioFailure(detail: String(describing: error))
     } catch {
       throw ProxySettingsStoreError.ioFailure(detail: String(describing: error))
     }
@@ -55,11 +51,11 @@ struct ProxySettingsFileStore: ProxySettingsStoring {
     do {
       return RestoredProxySettings(settings: try store.load(), unreadableError: nil)
     } catch let error as ProxySettingsStoreError {
-      RuntimeLog.emit(.listenSettingsUnreadable(detail: String(describing: error)))
+      RuntimeLog.emit(.settingsUnreadable(detail: String(describing: error)))
       return RestoredProxySettings(settings: ProxySettings(), unreadableError: error)
     } catch {
       let wrapped = ProxySettingsStoreError.ioFailure(detail: String(describing: error))
-      RuntimeLog.emit(.listenSettingsUnreadable(detail: String(describing: error)))
+      RuntimeLog.emit(.settingsUnreadable(detail: String(describing: error)))
       return RestoredProxySettings(settings: ProxySettings(), unreadableError: wrapped)
     }
   }

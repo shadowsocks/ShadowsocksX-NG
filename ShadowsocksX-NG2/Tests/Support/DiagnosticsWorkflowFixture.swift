@@ -132,7 +132,7 @@ class DiagnosticsWorkflowTestCase: XCTestCase {
     events.append(
       event: .agentRegisterFailed(detail: "SECRET-AGENT-DETAIL"), timestamp: stamp)
     events.append(
-      event: .listenSettingsUnreadable(detail: "SECRET-UNREADABLE-DETAIL"), timestamp: stamp)
+      event: .settingsUnreadable(detail: "SECRET-UNREADABLE-DETAIL"), timestamp: stamp)
     // 激活原因是领域点名文案（显式白名单决策）：可在场，但只允许
     // 这类固定文本。
     events.append(

@@ -33,7 +33,7 @@ enum SettingsPortAdapter {
 
   /// 全局端口校验保留四个端点的身份，错误只归位到当前编辑组涉及的字段。
   static func fieldIssues(
-    from errors: [ProxySettingsValidationError], group: SettingsListeningGroup
+    from errors: [PortSettingError], group: SettingsListeningGroup
   ) -> [SettingsFieldIssue] {
     errors.flatMap { error -> [SettingsFieldIssue] in
       let endpoints: [ProxyEndpointKind]

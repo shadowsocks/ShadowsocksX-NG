@@ -130,8 +130,8 @@ extension ProxyRuntimeController {
   }
 
   private func convergeDeployment(_ source: SslocalRuntimeDocument) async -> ConvergenceResult {
-    if listenSettingsUnreadable || settingsUnreadable {
-      RuntimeLog.emit(.activationFailed(reason: "listen settings unreadable"))
+    if settingsUnreadable {
+      RuntimeLog.emit(.activationFailed(reason: "settings unreadable"))
       _ = await execute(.stop, document: nil)
       lastDocument = nil
       skippedServers = []

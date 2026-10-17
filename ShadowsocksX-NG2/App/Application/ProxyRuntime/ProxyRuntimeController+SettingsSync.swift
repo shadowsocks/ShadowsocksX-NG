@@ -79,7 +79,6 @@ extension ProxyRuntimeController {
       && connectionIndependent == proposed
     try settingsStore.save(proposed)
     settings = proposed
-    listenSettingsUnreadable = false
     settingsUnreadable = false
     guard state != .off, !onlyTestURLChanged else { return }
     await convergeToReexpanded(catalog)
@@ -103,7 +102,6 @@ extension ProxyRuntimeController {
     if let restored = try? settingsStore.load() {
       settings = restored
       settingsUnreadable = false
-      listenSettingsUnreadable = false
       proxyMode = Self.makeProxyMode(from: restored)
     }
     let persistedTarget = try? activationFileStore.loadActiveTargetID()

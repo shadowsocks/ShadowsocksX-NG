@@ -230,8 +230,6 @@ struct PluginCatalogTests {
       activationFileStore: ActivationStateFileStore(
         fileURL: runtime.directory.appendingPathComponent("activation.json")),
       runtimeFileStore: files, credentials: credentials, plugins: plugins,
-      listenRestore: RestoredListenSettings(
-        settings: ActivationFixture.listen, unreadableError: nil),
       settingsStore: InMemoryProxySettingsStore(),
       customRuleStore: CustomRuleStore(
         fileURL: runtime.directory.appendingPathComponent("rules.json")),

@@ -62,10 +62,7 @@ final class ProxyRuntimeController {
   let ruleDocuments: RuleDocumentSession
   let ruleSnapshots: BuiltinRuleSnapshots
   var runtimePreparationGeneration = 0
-  /// 监听设置不可读时的点名原因（「任何路径不静默改端口」）；非 nil 时
-  /// 设置只是占位出厂默认，禁止部署（见 `deploy`）。
-  var listenSettingsUnreadable: Bool
-  /// 新版偏好不可读时同样禁止部署，不以出厂端口静默替代用户配置。
+  /// 新版偏好不可读时禁止部署，不以出厂端口静默替代用户配置。
   var settingsUnreadable: Bool
   let agent: LaunchAgentControlling
   let probe: EndpointProbing
@@ -126,7 +123,6 @@ final class ProxyRuntimeController {
     credentials: CredentialStoring = KeychainCredentialStore(),
     plugins: PluginExecutableResolving = BundleManagedPluginProvider(),
     refreshPluginSecurityFacts: @escaping @MainActor () -> Void = {},
-    listenRestore: RestoredListenSettings = ListenSettingsFileStore.restored(),
     settingsStore: ProxySettingsStoring = ProxySettingsFileStore(),
     customRuleStore: CustomRuleStore = CustomRuleStore(),
     appBundle: Bundle = .main,
@@ -166,15 +162,8 @@ final class ProxyRuntimeController {
     self.ruleSnapshots = ruleSnapshots ?? BuiltinRuleSnapshots(bundle: appBundle)
     self.appBundle = appBundle
     let restoredSettings =
-      settingsRestore
-      ?? RestoredProxySettings(
-        settings: ProxySettings(listen: listenRestore.settings),
-        unreadableError: listenRestore.unreadableError.map {
-          .legacyListenSettings($0)
-        })
+      settingsRestore ?? RestoredProxySettings(settings: ProxySettings(), unreadableError: nil)
     settings = restoredSettings.settings
-    listenSettingsUnreadable =
-      settingsRestore == nil && listenRestore.unreadableError != nil
     settingsUnreadable = restoredSettings.unreadableError != nil
     self.agent = agent
     self.probe = probe

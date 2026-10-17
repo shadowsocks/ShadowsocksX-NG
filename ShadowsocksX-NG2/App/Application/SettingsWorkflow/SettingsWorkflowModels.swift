@@ -44,7 +44,7 @@ enum SettingsFieldID: Hashable, Sendable {
 /// 按字段归位的校验问题：每条保留 Domain 的 typed fact；文案由 App
 /// presentation edge 派生。
 enum SettingsFieldIssue: Hashable, Sendable {
-  case port(SettingsPortID, error: ProxySettingsValidationError)
+  case port(SettingsPortID, error: PortSettingError)
 
   var field: SettingsFieldID {
     switch self {
@@ -52,7 +52,7 @@ enum SettingsFieldIssue: Hashable, Sendable {
     }
   }
 
-  var error: ProxySettingsValidationError {
+  var error: PortSettingError {
     switch self {
     case .port(_, let error):
       error
@@ -98,7 +98,8 @@ enum SettingsCommandRejection: Equatable, Sendable {
   case noFreePort(SettingsPortID)
 }
 
-enum SettingsPersistenceFailure: Error, Equatable, Sendable {
+/// Settings workflow 的持久化/提交失败；workflow 不提前渲染句子。
+enum SettingsWorkflowFailure: Error, Equatable, Sendable {
   case store(ProxySettingsStoreError)
   case unknown
 }
@@ -109,13 +110,7 @@ enum SettingsCommandOutcome: Equatable, Sendable {
   case rejected(SettingsCommandRejection)
   case suggestedPort(port: SettingsPortID, value: Int)
   case persisted
-  case persistenceFailed(SettingsPersistenceFailure)
-}
-
-/// Settings workflow 的最后失败仍是 typed；workflow 不提前渲染句子。
-enum SettingsWorkflowFailure: Error, Equatable, Sendable {
-  case store(ProxySettingsStoreError)
-  case unknown
+  case commitFailed(SettingsWorkflowFailure)
 }
 
 /// 局域网 sheet 的完整草稿；密码只属于编辑会话。

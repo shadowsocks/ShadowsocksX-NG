@@ -278,7 +278,6 @@ private struct AppComposition {
       credentials: dependencies.credentials,
       plugins: plugins,
       refreshPluginSecurityFacts: { [weak plugins] in _ = plugins?.refreshSecurityFacts() },
-      listenRestore: dependencies.listenRestore,
       settingsStore: dependencies.settingsStore,
       settingsRestore: dependencies.settingsRestore,
       agent: dependencies.launchAgent,
@@ -321,7 +320,6 @@ private struct ApplicationDependencies {
   let runtimeFileStore: RuntimeFileStore
   let settingsStore: ProxySettingsFileStore
   let settingsRestore: RestoredProxySettings
-  let listenRestore: RestoredListenSettings
   let legacyImportService: LegacyImportService
   let launchAgent: LaunchAgentControlling
   let loginService: LaunchAtLoginControlling
@@ -349,8 +347,6 @@ private struct ApplicationDependencies {
       runtimeFileStore: RuntimeFileStore(),
       settingsStore: settingsStore,
       settingsRestore: restoredSettings,
-      listenRestore: RestoredListenSettings(
-        settings: restoredSettings.settings.listen, unreadableError: nil),
       legacyImportService: LegacyImportService(
         catalogStore: catalogFileStore, credentials: credentials),
       launchAgent: SMAppLaunchAgentService(),

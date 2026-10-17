@@ -57,12 +57,6 @@ enum RuntimePaths {
     runtimeDirectory().appendingPathComponent("settings.json")
   }
 
-  /// 监听设置（ListenSettingsFileStore；settings.json 未建立时的 legacy 回退
-  /// 读取源）。
-  static func listenSettingsFileURL() -> URL {
-    runtimeDirectory().appendingPathComponent("listen-settings.json")
-  }
-
   /// 自定义规则文档（CustomRuleStore）。
   static func customRulesFileURL() -> URL {
     runtimeDirectory().appendingPathComponent("custom-rules.json")
