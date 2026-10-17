@@ -105,11 +105,17 @@ final class ProxyPortSemanticsTests: XCTestCase {
     }
   }
 
-  func testBindProbeReportsUnknownForUnresolvableAddress() {
-    let outcome = SystemPortOccupancyProbe().occupancy(port: 1086, bindAddress: "not-an-ip")
+  func testBindProbeReportsUnknownWhenBindIsNotPermitted() throws {
+    try XCTSkipIf(getuid() == 0, "root 可绑定特权端口，无法用 EACCES 构造 .unknown")
+    // 特权端口：非 root 进程 bind 失败（EACCES）≠ 占用，也不得冒充空闲。
+    let request = PortOccupancyProbeRequest(
+      endpoint: .socks,
+      listen: RuntimeListenFacts(listen: SslocalListenSettings()),
+      port: 80)
+    let outcome = SystemPortOccupancyProbe().occupancy(for: request)
 
     guard case .unknown = outcome else {
-      return XCTFail("地址不可解析时不得冒充空闲或占用，实际 \(outcome)")
+      return XCTFail("绑定失败时必须报 .unknown，不得冒充空闲或占用，实际 \(outcome)")
     }
   }
 

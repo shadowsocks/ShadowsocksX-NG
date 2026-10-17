@@ -155,6 +155,18 @@ final class SystemProxyTests: XCTestCase {
     try PropertyListSerialization.data(fromPropertyList: dictionary, format: .binary, options: 0)
   }
 
+  /// 字典等价：断言「写出什么」，不与生产的语义归一（semanticallyNormalized）混用。
+  private func plistsEqual(_ lhs: Data?, _ rhs: Data?) -> Bool {
+    guard let lhs, let rhs else { return lhs == nil && rhs == nil }
+    guard
+      let left = try? PropertyListSerialization.propertyList(from: lhs, options: [], format: nil)
+        as? NSDictionary,
+      let right = try? PropertyListSerialization.propertyList(from: rhs, options: [], format: nil)
+        as? NSDictionary
+    else { return lhs == rhs }
+    return left.isEqual(right)
+  }
+
   private func service(
     _ id: String, location: String = "location-1", configuration data: Data?
   ) -> SystemProxyServiceState {
@@ -176,7 +188,7 @@ final class SystemProxyTests: XCTestCase {
     XCTAssertEqual(plan.writes.map(\.identifier.serviceID), ["service-2"], "等值服务零写入")
     XCTAssertEqual(plan.outcome, .written)
     let projected = try XCTUnwrap(plan.writes.first?.configuration)
-    XCTAssertTrue(SystemProxyPlanner.equivalent(projected, applied))
+    XCTAssertTrue(plistsEqual(projected, applied))
   }
 
   func testEquivalentDisabledFlagsAndExceptionOrderProduceNoDifference() throws {

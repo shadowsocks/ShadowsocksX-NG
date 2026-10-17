@@ -92,18 +92,6 @@ enum SystemProxyPlanner {
     return ClearPlan(writes: writes)
   }
 
-  /// Property-list semantic equality; dictionary key order does not matter.
-  static func equivalent(_ lhs: Data?, _ rhs: Data?) -> Bool {
-    guard let lhs, let rhs else { return lhs == nil && rhs == nil }
-    guard
-      let left = try? PropertyListSerialization.propertyList(from: lhs, options: [], format: nil)
-        as? NSDictionary,
-      let right = try? PropertyListSerialization.propertyList(from: rhs, options: [], format: nil)
-        as? NSDictionary
-    else { return lhs == rhs }
-    return left.isEqual(right)
-  }
-
   static func dictionary(from data: Data?, serviceID: String) throws -> [String: Any] {
     guard let data else { return [:] }
     guard

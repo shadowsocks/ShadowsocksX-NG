@@ -2,7 +2,8 @@ import Darwin
 import Foundation
 
 /// 端口占用判定结果。空闲与占用之外还有「无法判定」：绑定测试自身失败
-/// （地址不可解析、特权端口等）时如实呈现，不冒充空闲。
+/// （特权端口、socket 不可用等）时如实呈现，不冒充空闲。监听地址由
+/// `ListenerMode.bindAddress` 封闭集合保证可解析，属编程错误而非判定结果。
 enum PortOccupancy: Equatable, Sendable {
   case free
   /// 端口不可绑定；进程名/PID 尽力解析并按地址族记录。`unverifiedFamilyDetail`
@@ -159,19 +160,6 @@ struct SystemPortOccupancyProbe: PortOccupancyProbing {
     occupancy(port: request.port, listenerMode: request.listenerMode)
   }
 
-  /// Compatibility helper for the lower-level probe tests. SettingsWorkflow
-  /// always uses `occupancy(for:)` so production requests retain full facts.
-  func occupancy(port: Int, bindAddress: String) -> PortOccupancy {
-    let mode: ListenerMode
-    switch bindAddress {
-    case "127.0.0.1": mode = .disabled
-    case "0.0.0.0": mode = .allIPv4Interfaces
-    case "::": mode = .allIPv6Interfaces
-    default: return .unknown(detail: String(localized: "监听地址无法解析"))
-    }
-    return occupancy(port: port, listenerMode: mode)
-  }
-
   func occupancy(port: Int, listenerMode: ListenerMode) -> PortOccupancy {
     switch listenerMode {
     case .disabled, .allIPv4Interfaces:
@@ -219,9 +207,10 @@ struct SystemPortOccupancyProbe: PortOccupancyProbing {
     address.sin_len = UInt8(MemoryLayout<sockaddr_in>.size)
     address.sin_family = sa_family_t(AF_INET)
     address.sin_port = in_port_t(port).bigEndian
-    guard inet_pton(AF_INET, listenerMode.bindAddress, &address.sin_addr) == 1 else {
-      return .unknown(detail: String(localized: "监听地址无法解析"))
-    }
+    // 本函数只处理 IPv4 模式（disabled / allIPv4Interfaces），其 bindAddress
+    // 恒为 127.0.0.1 或 0.0.0.0；"::" 走 ipv6Occupancy，不经此路径。
+    let parsed = inet_pton(AF_INET, listenerMode.bindAddress, &address.sin_addr)
+    precondition(parsed == 1, "IPv4 探测的 ListenerMode.bindAddress 必须可解析")
     let descriptor = socket(AF_INET, SOCK_STREAM, 0)
     guard descriptor >= 0 else {
       return .unknown(detail: String(cString: strerror(errno)))

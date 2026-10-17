@@ -50,13 +50,13 @@ struct ProxySettingsFileStore: ProxySettingsStoring {
   {
     do {
       return RestoredProxySettings(settings: try store.load(), unreadableError: nil)
-    } catch let error as ProxySettingsStoreError {
-      RuntimeLog.emit(.settingsUnreadable(detail: String(describing: error)))
-      return RestoredProxySettings(settings: ProxySettings(), unreadableError: error)
     } catch {
-      let wrapped = ProxySettingsStoreError.ioFailure(detail: String(describing: error))
+      // load() 的契约只抛 ProxySettingsStoreError；Swift 的 throws 擦除迫使这里收窄一次。
+      guard let storeError = error as? ProxySettingsStoreError else {
+        preconditionFailure("load() 只抛 ProxySettingsStoreError")
+      }
       RuntimeLog.emit(.settingsUnreadable(detail: String(describing: error)))
-      return RestoredProxySettings(settings: ProxySettings(), unreadableError: wrapped)
+      return RestoredProxySettings(settings: ProxySettings(), unreadableError: storeError)
     }
   }
 

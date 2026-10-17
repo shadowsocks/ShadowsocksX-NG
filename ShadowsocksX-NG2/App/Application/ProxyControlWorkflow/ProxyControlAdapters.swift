@@ -99,11 +99,10 @@ final class ControllerProxyRuntimeAdapter: ProxyRuntimeAdapting {
 }
 
 /// HTTP 导出能力的唯一派生点：监听设置 → 可复制的 http/https 双导出行。
-/// 此导出行始终指向回环地址（与首页完整命令的命令地址选择无关）。
+/// 此导出行始终指向本地监听回环 127.0.0.1，与终端命令地址无关（ADR-0034）。
 extension HTTPExportCapability {
   init(listen: SslocalListenSettings) {
-    let urlHost = listen.proxyLoopbackURLHost
-    let endpoint = "http://\(urlHost):\(listen.httpPort)"
+    let endpoint = "http://127.0.0.1:\(listen.httpPort)"
     self.init(copyableLine: "export http_proxy=\(endpoint);export https_proxy=\(endpoint);")
   }
 }
@@ -169,13 +168,6 @@ extension TerminalProxyEnvironmentCommands {
       windowsCMD: windowsCMD,
       windowsPowerShell:
         variables.map { "$env:\($0.name) = '\($0.value)'" }.joined(separator: "; ") + ";")
-  }
-}
-
-extension SslocalListenSettings {
-  fileprivate var proxyLoopbackURLHost: String {
-    let host = "127.0.0.1"
-    return host.contains(":") ? "[\(host)]" : host
   }
 }
 
