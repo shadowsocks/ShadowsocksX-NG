@@ -61,15 +61,7 @@ struct ProxySettingsFileStore: ProxySettingsStoring {
   }
 
   private func validated(_ settings: ProxySettings) throws -> ProxySettings {
-    let lan = settings.listen.lan
-    if lan.authenticationEnabled
-      && (!RuntimeListenerAuthentication.validUsername(lan.username)
-        || lan.passwordReference == nil)
-    {
-      throw ProxySettingsStoreError.credentialFailure(detail: String(localized: "局域网身份验证凭据无效"))
-    }
-    let errors = settings.validationErrors
-    guard errors.isEmpty else { throw ProxySettingsStoreError.invalid(errors) }
+    try settings.enforcePersistenceConstraints()
     return settings
   }
 

@@ -103,16 +103,12 @@ final class SettingsWorkflow: ObservableObject {
     return await listenerOccupancy.suggestFreePort(for: id, draft: editorDraft)
   }
 
-  /// Save the SOCKS5 and HTTP ports as one item.
+  /// Save the SOCKS5 and HTTP ports as one item. Validity is enforced at the
+  /// store seam; this command only maps a store rejection back to field issues.
   @discardableResult
   func savePortSettings(_ editorDraft: SettingsPortDraft) async -> SettingsCommandOutcome {
     guard !isCommitting else { return .rejected(.inProgress) }
     guard editorDraft.group == .local else { return .rejected(.superseded) }
-    let errors = listenSettings(for: editorDraft).portValidationErrors()
-    guard errors.isEmpty else {
-      return .rejected(
-        .validation(SettingsPortAdapter.fieldIssues(from: errors, group: editorDraft.group)))
-    }
     if let rejection = listenerOccupancy.cachedSaveRejection(for: editorDraft) {
       return .rejected(rejection)
     }
@@ -120,7 +116,7 @@ final class SettingsWorkflow: ObservableObject {
     var proposed = committing.committedSettings
     proposed.listen.socksPort = editorDraft.socksPort
     proposed.listen.httpPort = editorDraft.httpPort
-    return await commitPortSettings(proposed)
+    return await commitPortSettings(proposed, fieldGroup: editorDraft.group)
   }
 
   /// Save only user-added system-proxy exceptions.
@@ -167,19 +163,31 @@ final class SettingsWorkflow: ObservableObject {
 
   func finishCommit() { isCommitting = false }
 
-  func commitPortSettings(_ proposed: ProxySettings) async -> SettingsCommandOutcome {
+  func commitPortSettings(
+    _ proposed: ProxySettings, fieldGroup: SettingsListeningGroup? = nil
+  ) async -> SettingsCommandOutcome {
     guard startCommit() else { return .rejected(.inProgress) }
     defer { finishCommit() }
-    return await persistSettings(proposed)
+    return await persistSettings(proposed, fieldGroup: fieldGroup)
   }
 
   /// 调用方持有共享提交锁；持久化结果与运行状态分别报告。
-  func persistSettings(_ proposed: ProxySettings) async -> SettingsCommandOutcome {
+  /// store 的 `.invalid` 按编辑组归位成字段 issue；其余失败保持持久化形状。
+  func persistSettings(
+    _ proposed: ProxySettings, fieldGroup: SettingsListeningGroup? = nil
+  ) async -> SettingsCommandOutcome {
     do {
       try await committing.updateSettings(proposed)
       lastFailure = nil
       return .persisted
     } catch {
+      if let fieldGroup,
+        let error = error as? ProxySettingsStoreError,
+        case .invalid(let portErrors) = error
+      {
+        return .rejected(
+          .validation(SettingsPortAdapter.fieldIssues(from: portErrors, group: fieldGroup)))
+      }
       return commitFailure(for: error)
     }
   }

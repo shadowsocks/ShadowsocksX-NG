@@ -158,9 +158,13 @@ final class SettingsWorkflowInterfaceTests: XCTestCase {
     XCTAssertEqual(committing.committedSettings, expected)
   }
 
-  func testPortSaveRejectsInvalidPortsWithoutStartingACommit() async {
+  /// store 是唯一强制点：探测门禁通过后，非法端口由 store 拒绝并映射回字段 issue，
+  /// 不写入、不留提交锁。探测未完成时保存命令按占用门禁拒绝，不触达 store。
+  func testPortSaveRejectsInvalidPortsWithoutWriting() async {
     let workflow = makeWorkflow()
     let invalid = SettingsPortDraft(socksPort: 0, httpPort: 11_087)
+    workflow.refreshPortEditorOccupancy(for: invalid)
+    await waitUntil(workflow.portFieldState(for: .socks, editorDraft: invalid).occupancy != nil)
 
     let outcome = await workflow.savePortSettings(invalid)
     XCTAssertEqual(

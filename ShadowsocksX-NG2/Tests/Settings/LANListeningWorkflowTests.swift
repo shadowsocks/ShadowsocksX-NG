@@ -5,6 +5,53 @@ import Testing
 
 @MainActor
 struct LANListeningWorkflowTests {
+  @Test func disabledAuthenticationDoesNotGateLANSaveOnCredentialShape() async throws {
+    let committing = FakeSettingsCommitter()
+    let workflow = SettingsWorkflow(
+      committing: committing, occupancyProbe: FakeOccupancyProbe(),
+      credentials: InMemoryCredentialStore())
+    var draft = try workflow.beginLANListeningEditing()
+    draft.isEnabled = true
+    draft.authenticationEnabled = false
+    draft.username = ""
+    draft.password = ""
+    workflow.refreshPortEditorOccupancy(for: draft.ports)
+    await waitUntil(workflow.portFieldState(for: .socks, editorDraft: draft.ports).occupancy != nil)
+    #expect(workflow.canSaveLANListening(draft))
+    #expect(await workflow.saveLANListening(draft) == .persisted)
+  }
+
+  @Test func enabledAuthenticationGatesLANSaveOnCredentialShape() async throws {
+    let workflow = SettingsWorkflow(
+      committing: FakeSettingsCommitter(), occupancyProbe: FakeOccupancyProbe(),
+      credentials: InMemoryCredentialStore())
+    var draft = try workflow.beginLANListeningEditing()
+    draft.isEnabled = true
+    draft.authenticationEnabled = true
+    draft.username = "user:name"
+    draft.password = "ok"
+    workflow.refreshPortEditorOccupancy(for: draft.ports)
+    await waitUntil(workflow.portFieldState(for: .socks, editorDraft: draft.ports).occupancy != nil)
+    #expect(!workflow.canSaveLANListening(draft))
+  }
+
+  @Test func savingLocalPortsIgnoresPreservedInvalidCredentialsWhileAuthenticationIsOff() async {
+    let committing = FakeSettingsCommitter()
+    committing.committedSettings.listen.lan.authenticationEnabled = false
+    committing.committedSettings.listen.lan.username = ""
+    committing.committedSettings.listen.lan.passwordReference = "kept"
+    let workflow = SettingsWorkflow(
+      committing: committing, occupancyProbe: FakeOccupancyProbe(),
+      credentials: InMemoryCredentialStore())
+    var draft = workflow.beginPortSettingsEditing()
+    draft.socksPort = 13001
+    workflow.refreshPortEditorOccupancy(for: draft)
+    await waitUntil(workflow.portFieldState(for: .socks, editorDraft: draft).occupancy != nil)
+    #expect(workflow.canSavePortSettings(draft))
+    #expect(await workflow.savePortSettings(draft) == .persisted)
+    #expect(committing.committedSettings.listen.lan.username == "")
+  }
+
   @Test func togglingLANInvalidatesOccupancyWithoutChangingModeOrPorts() async throws {
     let probe = FakeOccupancyProbe(occupiedPorts: [11088])
     let workflow = SettingsWorkflow(

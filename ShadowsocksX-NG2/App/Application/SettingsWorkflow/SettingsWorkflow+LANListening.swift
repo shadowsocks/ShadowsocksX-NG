@@ -24,10 +24,14 @@ extension SettingsWorkflow {
       username: lan.username, password: password)
   }
 
+  /// 凭据形状只是身份验证启用时的保存约束；关闭时凭据是保留值（字段禁用），
+  /// 不拦本次保存。整快照端口门禁仍由 `canSavePortSettings` 承担（跨组互异）。
   func canSaveLANListening(_ draft: LANListeningDraft) -> Bool {
-    RuntimeListenerAuthentication.validUsername(draft.username)
-      && RuntimeListenerAuthentication.validPassword(draft.password)
-      && canSavePortSettings(draft.ports)
+    let credentialsSatisfySave =
+      !draft.authenticationEnabled
+      || (RuntimeListenerAuthentication.validUsername(draft.username)
+        && RuntimeListenerAuthentication.validPassword(draft.password))
+    return credentialsSatisfySave && canSavePortSettings(draft.ports)
   }
 
   @discardableResult
@@ -35,18 +39,9 @@ extension SettingsWorkflow {
     guard startCommit() else { return .rejected(.inProgress) }
     defer { finishCommit() }
     guard draft.ports.group == .lan else { return .rejected(.superseded) }
-    guard RuntimeListenerAuthentication.validUsername(draft.username),
-      RuntimeListenerAuthentication.validPassword(draft.password)
-    else {
-      return .commitFailed(.store(.credentialFailure(detail: String(localized: "用户名或密码无效"))))
-    }
     let base = committing.committedSettings
     var proposed = base
     proposed.listen = listenSettings(for: draft.ports)
-    let errors = proposed.validationErrors
-    guard errors.isEmpty else {
-      return .rejected(.validation(SettingsPortAdapter.fieldIssues(from: errors, group: .lan)))
-    }
     if let rejection = await listenerOccupancy.recheck(draft.ports) { return .rejected(rejection) }
     guard base == committing.committedSettings else {
       listenerOccupancy.refresh(draft.ports)
@@ -68,19 +63,27 @@ extension SettingsWorkflow {
     if let old = oldReference {
       do {
         if try credentials.secret(for: CredentialReference(rawValue: old)) == password {
-          return await persistSettings(proposed)
+          return await persistSettings(proposed, fieldGroup: .lan)
         }
       } catch {
         return .commitFailed(
           .store(.credentialFailure(detail: String(localized: "局域网身份验证密码不可读"))))
       }
     }
+    // 身份验证启用时，新写入 keychain 的秘密必须可直接用于运行时认证文件。
+    if proposed.listen.lan.authenticationEnabled,
+      !RuntimeListenerAuthentication.validPassword(password)
+        || !RuntimeListenerAuthentication.validUsername(proposed.listen.lan.username)
+    {
+      return .commitFailed(
+        .store(.credentialFailure(detail: String(localized: "用户名或密码无效"))))
+    }
     let reference = CredentialReference.fresh()
     var journal = CredentialWriteJournal(credentials: credentials)
     do {
       try journal.save(password, for: reference)
       proposed.listen.lan.passwordReference = reference.rawValue
-      let outcome = await persistSettings(proposed)
+      let outcome = await persistSettings(proposed, fieldGroup: .lan)
       if case .persisted = outcome {
         if let old = oldReference {
           try? credentials.delete(CredentialReference(rawValue: old))

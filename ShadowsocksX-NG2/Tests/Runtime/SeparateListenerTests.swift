@@ -4,6 +4,21 @@ import Testing
 @testable import ShadowsocksX_NG2
 
 struct SeparateListenerTests {
+  @Test func terminalCommandsTreatPasswordAsUsableSecretWithoutReshaping() {
+    var settings = SslocalListenSettings(listenerMode: .allIPv4Interfaces)
+    settings.lan.authenticationEnabled = true
+    settings.lan.username = "user"
+    // 契约 = 可用秘密：空密码等不合规形状不再被本层拒绝，只做百分号编码。
+    let commands = TerminalProxyEnvironmentCommands(
+      listen: RuntimeListenFacts(listen: settings),
+      commandAddress: TerminalCommandAddress(
+        bsdName: "en0", address: "192.0.2.2", displayName: "Wi-Fi"),
+      password: { "" })
+    #expect(commands.failure == nil)
+    #expect(commands.zshBash.contains("http://user:@192.0.2.2:11089"))
+    #expect(commands.zshBash.contains("socks5://user:@192.0.2.2:11088"))
+  }
+
   @Test func newFormatsPreserveEncodedLANCredentialsAndBracketIPv6() {
     var settings = SslocalListenSettings(listenerMode: .allIPv4AndIPv6Interfaces)
     settings.lan.authenticationEnabled = true

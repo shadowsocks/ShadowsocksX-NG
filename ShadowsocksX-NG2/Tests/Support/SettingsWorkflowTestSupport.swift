@@ -38,6 +38,7 @@ final class FakeSettingsCommitter: SettingsCommitting {
 
   func updateSettings(_ proposed: ProxySettings) async throws {
     if let updateError { throw updateError }
+    try proposed.enforcePersistenceConstraints()
     if let updateGate { await updateGate.wait() }
     updateCalls.append(proposed)
     committedSettings = proposed

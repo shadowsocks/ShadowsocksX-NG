@@ -41,10 +41,11 @@ final class ControllerProxyRuntimeAdapter: ProxyRuntimeAdapting {
     HTTPExportCapability(listen: controller.listenSettings)
   }
 
+  /// `password()` 契约 = 可直接用于 userinfo 的秘密；此处不再做形状校验
+  /// （凭据暴露边界不承诺防同用户篡改；写明文凭据文件前另有 `auth.isValid` 把关）。
   func terminalLANPassword() throws -> String {
     guard let raw = controller.listenSettings.lan.passwordReference,
-      let password = try controller.credentials.secret(for: CredentialReference(rawValue: raw)),
-      RuntimeListenerAuthentication.validPassword(password)
+      let password = try controller.credentials.secret(for: CredentialReference(rawValue: raw))
     else {
       throw TerminalCommandFailure.credentialUnreadable
     }
@@ -124,12 +125,8 @@ extension TerminalProxyEnvironmentCommands {
     var userInfo = ""
     if isLAN && listen.lan.authenticationEnabled {
       do {
+        // password() 契约 = 可用秘密；不再重验形状。
         let secret = try password()
-        guard RuntimeListenerAuthentication.validUsername(listen.lan.username),
-          RuntimeListenerAuthentication.validPassword(secret)
-        else {
-          throw TerminalCommandFailure.credentialUnreadable
-        }
         let allowed = CharacterSet(
           charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._~")
         guard

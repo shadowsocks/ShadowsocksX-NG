@@ -57,6 +57,20 @@ struct ProxySettings: Equatable, Sendable {
   var validationErrors: [PortSettingError] {
     listen.portValidationErrors()
   }
+
+  /// 持久化强制点：整快照端口互异，且身份验证启用时凭据形状有效、密码引用存在。
+  /// 身份验证关闭时凭据是保留值，不是保存约束。
+  func enforcePersistenceConstraints() throws {
+    let lan = listen.lan
+    if lan.authenticationEnabled
+      && (!RuntimeListenerAuthentication.validUsername(lan.username)
+        || lan.passwordReference == nil)
+    {
+      throw ProxySettingsStoreError.credentialFailure(detail: String(localized: "局域网身份验证凭据无效"))
+    }
+    let errors = validationErrors
+    guard errors.isEmpty else { throw ProxySettingsStoreError.invalid(errors) }
+  }
 }
 
 protocol ProxySettingsStoring {
