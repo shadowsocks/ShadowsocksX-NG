@@ -1,9 +1,6 @@
 import Foundation
 
-/// 配置树磁盘持久化：落盘 `~/Library/Application Support/
-/// ShadowsocksX-NG2/catalog.json`，目录权限 0700、文件 0600；写临时文件
-/// （创建即 0600）后原子替换。文件只含结构化目录、凭据引用与订阅元数据
-/// （URL 仍是凭据引用），永不落秘密明文。
+/// 目录文件边界。生产注入整体加密存储；不带 library 的形态仅用于旧 JSON 迁移与隔离夹具。
 struct CatalogFileStore {
   enum PersistenceError: Error, Equatable {
     /// 文件存在但不是本模型可接受的目录文档：JSON 损坏、版本未知、结构不一致。
@@ -24,14 +21,36 @@ struct CatalogFileStore {
   }()
 
   let fileURL: URL
+  let library: ServerLibraryStorage?
 
-  /// 默认位置：`~/Library/Application Support/ShadowsocksX-NG2/catalog.json`。
+  init(fileURL: URL, library: ServerLibraryStorage? = nil) {
+    self.fileURL = fileURL
+    self.library = library
+  }
+
+  var cleanupFailed: Bool { library?.cleanupFailed ?? false }
+
+  func reset() throws -> CatalogDocument {
+    if let library { return try library.reset(at: fileURL) }
+    let document = CatalogDocument()
+    try save(document)
+    return document
+  }
+
+  /// 默认密文位置：`~/Library/Application Support/ShadowsocksX-NG2/catalog.enc`。
   static func defaultFileURL() -> URL {
     RuntimePaths.catalogFileURL()
   }
 
   /// 文件缺失 → 全新空文档；存在但损坏/版本未知/结构不一致 → `.corrupt`。
   func load() throws -> CatalogDocument {
+    try load(allowingInteraction: false)
+  }
+
+  func load(allowingInteraction: Bool) throws -> CatalogDocument {
+    if let library {
+      return try library.load(at: fileURL, allowingInteraction: allowingInteraction)
+    }
     guard FileManager.default.fileExists(atPath: fileURL.path) else {
       return CatalogDocument()
     }
@@ -41,12 +60,22 @@ struct CatalogFileStore {
     } catch {
       throw PersistenceError.ioFailure(detail: String(describing: error))
     }
-    return try decode(data)
+    return try Self.decode(data)
   }
 
   /// 整体重写并原子替换；失败时保留原文件。目录权限强制为 0700（含自愈）。
   func save(_ document: CatalogDocument) throws {
-    try validateFavorites(document.favoriteIDs, in: document.catalog)
+    if let library { return try library.save(document, at: fileURL) }
+    let data = try Self.encode(document)
+    do {
+      try AtomicFileWriter.write(data, to: fileURL)
+    } catch {
+      throw PersistenceError.ioFailure(detail: String(describing: error))
+    }
+  }
+
+  static func encode(_ document: CatalogDocument) throws -> Data {
+    try Self.validateFavorites(document.favoriteIDs, in: document.catalog)
     let payload = CatalogFilePayload(
       version: Self.currentVersion,
       rootChildren: document.catalog.rootChildren,
@@ -58,14 +87,10 @@ struct CatalogFileStore {
     } catch {
       throw PersistenceError.ioFailure(detail: String(describing: error))
     }
-    do {
-      try AtomicFileWriter.write(data, to: fileURL)
-    } catch {
-      throw PersistenceError.ioFailure(detail: String(describing: error))
-    }
+    return data
   }
 
-  private func decode(_ data: Data) throws -> CatalogDocument {
+  static func decode(_ data: Data) throws -> CatalogDocument {
     let payload: CatalogFilePayload
     do {
       payload = try JSONDecoder().decode(CatalogFilePayload.self, from: data)
@@ -112,7 +137,7 @@ struct CatalogFileStore {
       catalog: catalog, subscriptions: subscriptions, favoriteIDs: favoriteIDs)
   }
 
-  private func validateFavorites(_ ids: [NodeID], in catalog: ConfigurationCatalog) throws {
+  private static func validateFavorites(_ ids: [NodeID], in catalog: ConfigurationCatalog) throws {
     var seen = Set<NodeID>()
     for id in ids {
       guard seen.insert(id).inserted, catalog.entry(for: id) != nil else {

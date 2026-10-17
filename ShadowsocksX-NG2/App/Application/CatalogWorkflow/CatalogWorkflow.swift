@@ -17,6 +17,9 @@ import Foundation
 /// 本类不自行创建生产默认实现。
 @MainActor
 final class CatalogWorkflow: ObservableObject {
+  @Published private(set) var libraryFailure: ServerLibraryFailure?
+  @Published private(set) var libraryCleanupFailed = false
+
   /// 目录树 projection（侧栏、级联、移动目的地、删除确认共用）。
   @Published private(set) var tree: CatalogTreeSnapshot
   @Published private(set) var favoriteIDs: [NodeID]
@@ -59,6 +62,8 @@ final class CatalogWorkflow: ObservableObject {
   init(dependencies: CatalogWorkflowDependencies) {
     self.dependencies = dependencies
     let coordinator = dependencies.coordinator
+    libraryFailure = coordinator.loadError.map(ServerLibraryFailure.init)
+    libraryCleanupFailed = coordinator.fileStore.cleanupFailed
     favoriteIDs = coordinator.committedFavoriteIDs
     tree = .build(
       from: coordinator.committedCatalog,
@@ -88,6 +93,26 @@ final class CatalogWorkflow: ObservableObject {
       let group = tree.node(withID: summary.groupID)
     else { return }
     subscriptionServerRefreshSubject.send(group.subtreeIDs)
+  }
+
+  /// 只有用户主动操作才允许钥匙串请求交互授权。
+  func unlockLibrary() {
+    do {
+      try dependencies.coordinator.reload(allowingInteraction: true)
+      libraryFailure = nil
+      libraryCleanupFailed = dependencies.coordinator.fileStore.cleanupFailed
+      republishCommittedState()
+    } catch { libraryFailure = ServerLibraryFailure(error) }
+  }
+
+  /// UI 必须先取得用户放弃原配置的明确确认。
+  func resetLibrary() {
+    do {
+      try dependencies.coordinator.resetLibrary()
+      libraryFailure = nil
+      libraryCleanupFailed = dependencies.coordinator.fileStore.cleanupFailed
+      republishCommittedState()
+    } catch { libraryFailure = ServerLibraryFailure(error) }
   }
 
   // MARK: - 查询面

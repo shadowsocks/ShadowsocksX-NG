@@ -1,6 +1,278 @@
 {
   "sourceLanguage": "zh-Hans",
   "strings": {
+    "服务器库无法读取": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cannot Read Server Library"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "服务器库无法读取"
+          }
+        }
+      }
+    },
+    "原配置文件和正在运行的代理保持不变。": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your existing configuration file and running proxy remain unchanged."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "原配置文件和正在运行的代理保持不变。"
+          }
+        }
+      }
+    },
+    "钥匙串状态码：%lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keychain status: %lld"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "钥匙串状态码：%lld"
+          }
+        }
+      }
+    },
+    "重试并解锁": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retry and Unlock"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重试并解锁"
+          }
+        }
+      }
+    },
+    "放弃原配置…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Discard Existing Configuration…"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "放弃原配置…"
+          }
+        }
+      }
+    },
+    "放弃原配置并创建空库？": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Discard the existing configuration and create an empty library?"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "放弃原配置并创建空库？"
+          }
+        }
+      }
+    },
+    "放弃原配置并创建空库": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Discard Configuration and Create Empty Library"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "放弃原配置并创建空库"
+          }
+        }
+      }
+    },
+    "新空库将覆盖原服务器库，并撤下原代理出口。未另存的原配置将无法恢复。": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The empty library will replace your existing server library and remove the current proxy server. Configuration without another copy cannot be recovered."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新空库将覆盖原服务器库，并撤下原代理出口。未另存的原配置将无法恢复。"
+          }
+        }
+      }
+    },
+    "钥匙串访问需要授权，或用户取消了授权。请重试并解锁。": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keychain access requires authorization, or authorization was canceled. Retry and unlock the library."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "钥匙串访问需要授权，或用户取消了授权。请重试并解锁。"
+          }
+        }
+      }
+    },
+    "找不到服务器库的主密钥。请恢复原钥匙串后重试。": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The server library master key is missing. Restore the original keychain and retry."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "找不到服务器库的主密钥。请恢复原钥匙串后重试。"
+          }
+        }
+      }
+    },
+    "服务器库认证失败，文件或密钥不匹配。": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Server library authentication failed. The file or key does not match."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "服务器库认证失败，文件或密钥不匹配。"
+          }
+        }
+      }
+    },
+    "此版本无法读取服务器库格式。请使用兼容的应用版本。": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This app version cannot read the server library format. Use a compatible version."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此版本无法读取服务器库格式。请使用兼容的应用版本。"
+          }
+        }
+      }
+    },
+    "服务器库文件损坏或格式无效。": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The server library file is damaged or has an invalid format."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "服务器库文件损坏或格式无效。"
+          }
+        }
+      }
+    },
+    "原配置缺少所需凭据，迁移未完成。": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Migration could not finish because required credentials are missing."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "原配置缺少所需凭据，迁移未完成。"
+          }
+        }
+      }
+    },
+    "服务器库读取或保存失败。请检查存储权限后重试。": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The server library could not be read or saved. Check storage permissions and retry."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "服务器库读取或保存失败。请检查存储权限后重试。"
+          }
+        }
+      }
+    },
+    "旧配置清理失败。新服务器库可以使用，但旧文件或凭据仍有残留。": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Old configuration cleanup failed. The new library is usable, but old files or credentials remain."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "旧配置清理失败。新服务器库可以使用，但旧文件或凭据仍有残留。"
+          }
+        }
+      }
+    },
     "添加订阅": {
       "extractionState": "manual",
       "localizations": {

@@ -69,6 +69,7 @@ extension CatalogWorkflowSubscriptionTests {
 final class GatedFetcher: SubscriptionFetching, @unchecked Sendable {
   private let lock = NSLock()
   private let release = AsyncGate()
+  private let entry = AsyncGate()
   private var count = 0
   private var entered = false
 
@@ -89,9 +90,12 @@ final class GatedFetcher: SubscriptionFetching, @unchecked Sendable {
       count += 1
       entered = true
     }
+    entry.release()
     await release.wait()
     return SubscriptionDocs.flat(serverCount: 0)
   }
+
+  func waitUntilEntered() async { await entry.wait() }
 
   func releaseAll() {
     release.release()

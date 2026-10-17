@@ -99,8 +99,9 @@ extension ProxyRuntimeController {
   /// Re-expands one command-start snapshot; a concurrently published catalog
   /// is intentionally observed by the next command, not halfway through this one.
   func reexpand(in catalog: ConfigurationCatalog) -> ActivationEffect? {
+    guard catalogSnapshotReader.isCatalogAvailable else { return nil }
     let effect = machine.catalogDidCommit(
-      catalog, credentials: credentials, plugins: plugins,
+      catalog, credentials: serverCredentials, plugins: plugins,
       options: settings.runtimeDocumentOptions)
     activeTargetID = machine.activeTargetID
     switch effect {

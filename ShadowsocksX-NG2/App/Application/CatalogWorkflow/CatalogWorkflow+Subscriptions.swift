@@ -85,9 +85,15 @@ extension CatalogWorkflow {
       throw SubscriptionFormError.notFound
     }
     let url = try Self.validatedSubscriptionURL(urlString)
-    // 覆盖写同一引用；URL 编辑不落目录文档（引用与身份不变），新地址刷新
-    // 成功才有新快照——写入失败不触碰目录状态。
-    try dependencies.credentials.save(url.absoluteString, for: record.urlRef)
+    // URL 与目录共同加密，必须在网络刷新前保存；失败时恢复原值。
+    var journal = CredentialWriteJournal(credentials: dependencies.credentials)
+    do {
+      try journal.save(url.absoluteString, for: record.urlRef)
+      try dependencies.coordinator.commitCredentials()
+    } catch {
+      throw CommitError(underlying: error, credentialRollback: journal.rollback())
+    }
+    republishCommittedState()
     await refreshSubscription(record.id)
   }
 

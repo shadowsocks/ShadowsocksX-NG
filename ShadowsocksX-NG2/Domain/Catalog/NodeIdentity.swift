@@ -27,9 +27,8 @@ struct NodeID: Hashable, Codable, Sendable {
   }
 }
 
-/// 凭据引用：指向 Keychain 权威副本的非秘密关联（GLOSSARY.md「Credential
-/// reference」）。配置树只存引用，永不存秘密明文；秘密值按 由
-/// CredentialStoring 写读。
+/// 凭据引用：与秘密值之间的非秘密关联（GLOSSARY.md「Credential reference」）。
+/// 配置树只存引用；秘密值经 CredentialStoring 读写。
 struct CredentialReference: Hashable, Codable, Sendable {
   let rawValue: String
 

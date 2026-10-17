@@ -15,6 +15,7 @@ extension ProxyRuntimeController {
   /// 「有效值未变的提交不做运行时收敛」由收敛脊柱 apply 层的 plan 空判定
   /// 承担（`convergencePlanIsEmpty`）；派生被更新的收敛取代时按重校验呈现。
   func catalogDidCommit(snapshot catalog: ConfigurationCatalog) async -> RuntimeSyncOutcome {
+    guard catalogSnapshotReader.isCatalogAvailable else { return .failed(failure: nil) }
     switch reexpand(in: catalog) {
     case .deployed(let configuration):
       guard settings.agentEnabled else {

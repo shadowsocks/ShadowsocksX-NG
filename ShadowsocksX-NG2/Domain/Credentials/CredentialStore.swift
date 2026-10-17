@@ -1,8 +1,8 @@
 import Foundation
 import Security
 
-/// 凭据存储缝：密码、插件参数、非空远程 URL 等秘密值的权威持久
-/// 副本在 Keychain，配置树只持凭据引用。实现须保证写入/读出一致。
+/// 凭据值访问缝：服务器库凭据在进程内查询，随服务器库整体加密持久化；
+/// 范围外设置凭据由 Keychain 保存。配置树只持凭据引用。
 protocol CredentialStoring {
   /// 写入即覆盖既有值（同一引用始终对应最新秘密）。
   func save(_ secret: String, for reference: CredentialReference) throws

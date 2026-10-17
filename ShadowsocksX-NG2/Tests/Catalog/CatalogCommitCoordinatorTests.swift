@@ -7,6 +7,7 @@ import XCTest
 @MainActor
 final class FakeCatalogRuntime: CatalogRuntimeSyncing {
   var hasActiveTarget = false
+  var onNextConverge: (() -> Void)?
   /// 未编程结果时的默认返回。
   var defaultOutcome: RuntimeSyncOutcome = .converged(skippedServers: [])
   private var outcomeQueue: [RuntimeSyncOutcome] = []
@@ -35,6 +36,9 @@ final class FakeCatalogRuntime: CatalogRuntimeSyncing {
 
   func converge(to snapshot: CommittedCatalogSnapshot) async -> RuntimeSyncOutcome {
     convergeSnapshots.append(snapshot)
+    let callback = onNextConverge
+    onNextConverge = nil
+    callback?()
     let result = outcomeQueue.isEmpty ? defaultOutcome : outcomeQueue.removeFirst()
     if armedGateCount > 0 {
       armedGateCount -= 1

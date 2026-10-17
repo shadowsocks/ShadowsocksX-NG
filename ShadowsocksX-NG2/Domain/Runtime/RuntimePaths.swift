@@ -49,7 +49,7 @@ enum RuntimePaths {
 
   /// 服务器目录（CatalogFileStore）。
   static func catalogFileURL() -> URL {
-    runtimeDirectory().appendingPathComponent("catalog.json")
+    runtimeDirectory().appendingPathComponent("catalog.enc")
   }
 
   /// 代理偏好（ProxySettingsFileStore）。

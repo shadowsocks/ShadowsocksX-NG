@@ -14,6 +14,11 @@ struct CommittedCatalogSnapshot: Equatable, Sendable {
 @MainActor
 protocol RuntimeCatalogSnapshotReading: AnyObject {
   var catalogSnapshot: ConfigurationCatalog { get }
+  var isCatalogAvailable: Bool { get }
+}
+
+extension RuntimeCatalogSnapshotReading {
+  var isCatalogAvailable: Bool { true }
 }
 
 /// Shared in-process catalog value. Only the commit coordinator can publish
@@ -21,13 +26,16 @@ protocol RuntimeCatalogSnapshotReading: AnyObject {
 @MainActor
 private final class CommittedCatalogState: RuntimeCatalogSnapshotReading {
   private(set) var catalogSnapshot: ConfigurationCatalog
+  private(set) var isCatalogAvailable = true
 
-  init(catalog: ConfigurationCatalog) {
+  init(catalog: ConfigurationCatalog, available: Bool = true) {
     catalogSnapshot = catalog
+    isCatalogAvailable = available
   }
 
   fileprivate func publish(_ catalog: ConfigurationCatalog) {
     catalogSnapshot = catalog
+    isCatalogAvailable = true
   }
 }
 
@@ -39,9 +47,11 @@ struct CatalogCommitBootstrap {
   fileprivate let committedCatalogState: CommittedCatalogState
   fileprivate let subscriptions: [SubscriptionRecord]
   fileprivate let favoriteIDs: [NodeID]
+  fileprivate let loadError: Error?
 
-  fileprivate init(document: CatalogDocument) {
-    let state = CommittedCatalogState(catalog: document.catalog)
+  fileprivate init(document: CatalogDocument, loadError: Error? = nil) {
+    self.loadError = loadError
+    let state = CommittedCatalogState(catalog: document.catalog, available: loadError == nil)
     catalogSnapshotReader = state
     committedCatalogState = state
     subscriptions = document.subscriptions
@@ -104,6 +114,7 @@ final class CatalogCommitCoordinator {
   private let catalogState: CommittedCatalogState
   /// 提交代次：每次提交递增，用于丢弃被更新提交取代的旧同步结果。
   private var generation = 0
+  private(set) var loadError: Error?
 
   /// 目录在共享来源中只有一份；订阅状态仍由协调器持有。
   var committedCatalog: ConfigurationCatalog { catalogState.catalogSnapshot }
@@ -117,6 +128,7 @@ final class CatalogCommitCoordinator {
   ) {
     self.fileStore = fileStore
     self.runtime = runtime
+    loadError = bootstrap.loadError
     catalogState = bootstrap.committedCatalogState
     committedSubscriptions = bootstrap.subscriptions
     committedFavoriteIDs = bootstrap.favoriteIDs
@@ -133,7 +145,9 @@ final class CatalogCommitCoordinator {
   /// catalog with the runtime controller before constructing the adapter.
   /// Direct out-of-band file edits are not observed during a GUI session.
   static func bootstrap(fileStore: CatalogFileStore) -> CatalogCommitBootstrap {
-    CatalogCommitBootstrap(document: loadCommitted(from: fileStore))
+    do { return CatalogCommitBootstrap(document: try fileStore.load()) } catch {
+      return CatalogCommitBootstrap(document: CatalogDocument(), loadError: error)
+    }
   }
 
   /// 普通目录变更的唯一提交管线。任一同步步骤失败则已提交状态不动并原样
@@ -141,6 +155,7 @@ final class CatalogCommitCoordinator {
   func commit<T>(
     _ mutate: (inout ConfigurationCatalog, inout [SubscriptionRecord]) throws -> T
   ) throws -> T {
+    if let loadError { throw loadError }
     var workingCatalog = committedCatalog
     var workingSubscriptions = committedSubscriptions
     let result = try mutate(&workingCatalog, &workingSubscriptions)
@@ -159,6 +174,7 @@ final class CatalogCommitCoordinator {
 
   /// 收藏只改变用户选择，不调度运行时收敛，也不修改目录节点时间戳。
   func commitFavorites(_ favoriteIDs: [NodeID]) throws {
+    if let loadError { throw loadError }
     guard favoriteIDs != committedFavoriteIDs else { return }
     try fileStore.save(
       CatalogDocument(
@@ -167,21 +183,50 @@ final class CatalogCommitCoordinator {
     committedFavoriteIDs = favoriteIDs
   }
 
+  /// 仅订阅 URL 等库内凭据改变时立即持久化，不重展开未改变的服务器出口。
+  func commitCredentials() throws {
+    if let loadError { throw loadError }
+    try fileStore.save(
+      CatalogDocument(
+        catalog: committedCatalog, subscriptions: committedSubscriptions,
+        favoriteIDs: committedFavoriteIDs))
+  }
+
   /// Legacy 导入等独立路径直接落盘后对齐已提交状态；不触发运行时收敛
   /// （导入的运行时边界由独立路径自行驱动，不经普通提交管线）。
   func reloadCommittedStateFromStore() {
-    let document = Self.loadCommitted(from: fileStore)
+    do { try reload(allowingInteraction: false, synchronize: false) } catch { loadError = error }
+  }
+
+  func reload(allowingInteraction: Bool, synchronize: Bool = true) throws {
+    let document = try fileStore.load(allowingInteraction: allowingInteraction)
+    publish(document)
+    if synchronize { scheduleRuntimeSync(snapshot(document), force: true) }
+  }
+
+  func resetLibrary() throws {
+    let document = try fileStore.reset()
+    publish(document)
+    scheduleRuntimeSync(snapshot(document), force: true)
+  }
+
+  private func publish(_ document: CatalogDocument) {
+    loadError = nil
     catalogState.publish(document.catalog)
     committedSubscriptions = document.subscriptions
     committedFavoriteIDs = document.favoriteIDs
   }
 
+  private func snapshot(_ document: CatalogDocument) -> CommittedCatalogSnapshot {
+    CommittedCatalogSnapshot(catalog: document.catalog, subscriptions: document.subscriptions)
+  }
+
   /// 异步收敛调度：无活动目标不调用运行时；同步开始前与结束后都以代次
   /// 校验——被更新提交取代的旧同步直接结束或丢弃结果，不覆盖最新状态。
-  private func scheduleRuntimeSync(_ snapshot: CommittedCatalogSnapshot) {
+  private func scheduleRuntimeSync(_ snapshot: CommittedCatalogSnapshot, force: Bool = false) {
     generation += 1
     let generation = generation
-    guard runtime.hasActiveTarget else {
+    guard force || runtime.hasActiveTarget else {
       setSyncStatus(.idle)
       return
     }
@@ -200,13 +245,6 @@ final class CatalogCommitCoordinator {
     syncStatusChanges.send(status)
   }
 
-  /// 磁盘读取的容错口径与首次加载一致：损坏文档回退全新空文档，等待
-  /// 用户经由导入/设置路径修复。
-  private static func loadCommitted(
-    from fileStore: CatalogFileStore
-  ) -> CatalogDocument {
-    (try? fileStore.load()) ?? CatalogDocument()
-  }
 }
 
 /// 生产运行时适配器：协调器与现有代理运行时控制器之间的唯一

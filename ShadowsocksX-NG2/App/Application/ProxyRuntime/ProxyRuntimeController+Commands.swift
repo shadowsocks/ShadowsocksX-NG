@@ -11,11 +11,12 @@ extension ProxyRuntimeController {
   /// 意外错误 throws 并进入 `serviceFailed`。
   @discardableResult
   func activate(_ target: NodeID) async throws -> ActivationCommandOutcome {
+    guard catalogSnapshotReader.isCatalogAvailable else { throw ServerLibraryError.notLoaded }
     refreshPluginSecurityFacts()
     let catalog = catalogSnapshotReader.catalogSnapshot
     do {
       let configuration = try machine.activate(
-        target, in: catalog, credentials: credentials, plugins: plugins,
+        target, in: catalog, credentials: serverCredentials, plugins: plugins,
         options: settings.runtimeDocumentOptions)
       activeTargetID = target
       skippedServers = configuration.skippedServers
@@ -115,6 +116,7 @@ extension ProxyRuntimeController {
   /// GUI startup restores the Agent. Healthy proxy intent only inspects; unhealthy
   /// proxy intent suspends; disabled intent never writes SystemConfiguration.
   func resyncOnLaunch() async {
+    guard catalogSnapshotReader.isCatalogAvailable else { return }
     refreshPluginSecurityFacts()
     systemProxyObserver.beginStartupResync()
     guard settings.agentEnabled else {

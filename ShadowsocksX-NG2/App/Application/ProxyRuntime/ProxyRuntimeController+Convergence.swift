@@ -86,6 +86,7 @@ extension ProxyRuntimeController {
   /// 幂等跳过由 apply 层的 plan 空判定承担；目录重校验（跳过名单、目标失效
   /// 清除）已在 `reexpand` 完成，不受其影响。
   func convergeToReexpanded(_ catalog: ConfigurationCatalog) async {
+    guard catalogSnapshotReader.isCatalogAvailable else { return }
     switch reexpand(in: catalog) {
     case .deployed(let configuration):
       await deploy(configuration.document)
@@ -122,6 +123,7 @@ extension ProxyRuntimeController {
 
   @discardableResult
   func convergeRuntime(_ intent: RuntimeConvergenceIntent) async -> ConvergenceResult {
+    guard catalogSnapshotReader.isCatalogAvailable else { return .failed }
     switch intent {
     case .deployment(let source): return await convergeDeployment(source)
     case .modeTransition(let snapshot): return await convergeModeTransition(snapshot)

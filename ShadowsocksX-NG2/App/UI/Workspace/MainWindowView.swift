@@ -46,12 +46,25 @@ struct MainWindowView: View {
       ForEach(WorkspaceDestination.allCases) { destination in
         Tab(destination.label, systemImage: destination.systemImage, value: destination) {
           if route.destination == destination {
-            destinationView(destination)
+            if let failure = workflow.libraryFailure,
+              destination == .home || destination == .servers
+            {
+              ServerLibraryRecoveryView(workflow: workflow, failure: failure)
+            } else {
+              destinationView(destination)
+            }
           }
         }
       }
     }
     .tabViewStyle(.automatic)
+    .safeAreaInset(edge: .top) {
+      if workflow.libraryCleanupFailed {
+        Label("旧配置清理失败。新服务器库可以使用，但旧文件或凭据仍有残留。", systemImage: "exclamationmark.triangle")
+          .font(.callout)
+          .padding(8)
+      }
+    }
     .toolbar {
       ToolbarItem(placement: .navigation) {
         importButton
@@ -104,6 +117,7 @@ struct MainWindowView: View {
       Label("导入", systemImage: "square.and.arrow.down")
     }
     .help("导入")
+    .disabled(workflow.libraryFailure != nil)
   }
 
   private func presentWorkspaceSheet(_ sheet: WorkspaceSheet) {

@@ -11,8 +11,7 @@ final class LegacyImportService {
 
   init(
     source: LegacySnapshotProviding = UserDefaultsLegacySnapshotProvider(),
-    catalogStore: LegacyCatalogStoring = CatalogFileStore(
-      fileURL: CatalogFileStore.defaultFileURL()),
+    catalogStore: LegacyCatalogStoring,
     credentials: CredentialStoring = KeychainCredentialStore(),
     marker: LegacyImportMarkerStoring = UserDefaultsLegacyImportMarkerStore()
   ) {
