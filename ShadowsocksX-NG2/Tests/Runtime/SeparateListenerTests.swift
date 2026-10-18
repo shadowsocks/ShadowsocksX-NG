@@ -173,12 +173,15 @@ struct SeparateListenerTests {
     #expect(document.locals[0].socks5AuthConfigPath == nil)
     #expect(document.locals[2].socks5AuthConfigPath == auth.socksPath)
     #expect(document.locals[3].httpAuthConfigPath == auth.httpPath)
-    try auth.writeFiles()
+    let store = RuntimeFileStore(fileURL: directory.appendingPathComponent("sslocal-active.json"))
+    try store.write(document)
+    let snapshot = try #require(RuntimePublication.load(at: store.supervisionFileURL))
+    let paths = snapshot.authenticationFiles.map { directory.appendingPathComponent($0).path }
     let http =
-      try JSONSerialization.jsonObject(with: Data(contentsOf: URL(fileURLWithPath: auth.httpPath)))
+      try JSONSerialization.jsonObject(with: Data(contentsOf: URL(fileURLWithPath: paths[1])))
       as? [String: Any]
     #expect(http?["basic"] != nil)
-    for path in [auth.socksPath, auth.httpPath] {
+    for path in paths {
       let permissions =
         try FileManager.default.attributesOfItem(atPath: path)[.posixPermissions] as? Int
       #expect(permissions == 0o600)

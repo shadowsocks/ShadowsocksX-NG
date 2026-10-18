@@ -220,7 +220,7 @@ extension RealSslocalSmokeTests {
     let runtimeStore = RuntimeFileStore(fileURL: contractURL)
     let receiptPublished = try waitForCondition(timeout: 30) {
       guard let receipt = runtimeStore.readRuntimeReceipt() else { return false }
-      return receipt.contractSHA256 == document.deploymentSHA256
+      return receipt.deploymentID == runtimeStore.receiptIdentity(for: document)
         && kill(receipt.processID, 0) == 0
     }
     XCTAssertTrue(receiptPublished, "应发布仍存活的 sslocal 子进程回执")
@@ -232,8 +232,8 @@ extension RealSslocalSmokeTests {
         "回执对应的 sslocal 应拥有 \(local.inboundProtocol) TCP 监听")
     }
     XCTAssertEqual(
-      runtimeStore.readRuntimeReceipt()?.contractSHA256,
-      document.deploymentSHA256)
+      runtimeStore.readRuntimeReceipt()?.deploymentID,
+      runtimeStore.receiptIdentity(for: document))
   }
 }
 

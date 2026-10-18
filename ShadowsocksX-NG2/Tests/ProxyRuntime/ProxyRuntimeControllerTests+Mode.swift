@@ -98,7 +98,7 @@ final class ProxyRuntimeModeCommandTests: ProxyRuntimeControllerTests {
     XCTAssertEqual(restored.proxyMode, .direct, "模式选择从持久快照恢复")
   }
 
-  func testFailedDirectInstanceRestoresOldModeRuntimeAndSystemProxy() async throws {
+  func testFailedDirectInstanceKeepsNewModeAndStopsService() async throws {
     let seeded = try makeSeededCatalog()
     let settingsStore = InMemoryProxySettingsStore()
     let controller = makeController(
@@ -127,14 +127,16 @@ final class ProxyRuntimeModeCommandTests: ProxyRuntimeControllerTests {
     await controller.setProxyMode(.direct)
 
     XCTAssertTrue(observedStates.contains(.starting), "重启期间呈现短暂不可用状态")
-    XCTAssertEqual(controller.proxyMode, .rule, "新实例未验证时恢复旧模式")
-    XCTAssertEqual(controller.settings.preferredMode, .rule)
-    XCTAssertEqual(settingsStore.saved?.preferredMode, .rule)
-    XCTAssertEqual(runtimeStore.loadDocument(), previousDocument)
-    XCTAssertEqual(controller.state, .running, "旧运行时恢复后重新呈现健康")
-    XCTAssertEqual(controller.systemProxyState, .applied)
+    XCTAssertEqual(controller.proxyMode, .direct)
+    XCTAssertEqual(controller.settings.preferredMode, .direct)
+    XCTAssertEqual(settingsStore.saved?.preferredMode, .direct)
+    XCTAssertEqual(runtimeStore.loadDocument()?.aclRuntime?.summary, "direct")
+    XCTAssertEqual(controller.state, .serviceFailed(.agent))
+    XCTAssertTrue(controller.agentIntentEnabled)
+    XCTAssertTrue(controller.systemProxyIntentEnabled)
+    XCTAssertNotNil(runtimeStore.readFailure())
     XCTAssertEqual(systemProxy.applied.count, previousApplicationCount)
-    XCTAssertEqual(systemProxy.clearCount, 0, "切换失败期间保持系统代理应用")
+    XCTAssertGreaterThan(systemProxy.clearCount, 0)
   }
 
   /// Agent 开关持久化失败：保留现状并点名，不静默偏离持久化
@@ -168,23 +170,22 @@ final class ProxyRuntimeModeCommandTests: ProxyRuntimeControllerTests {
     XCTAssertEqual(controller.systemProxyState, .applied)
 
     let runtimeStore = RuntimeFileStore(fileURL: runtime.contract)
-    let previousDocument = try XCTUnwrap(runtimeStore.loadDocument())
     let appliedCount = systemProxy.applied.count
     agent.onRegister = { [runtimeStore] in
       guard let requested = runtimeStore.loadDocument() else { return }
-      // 新直连实例用一次性存活的 pid 43；其余（含回滚后的旧实例）恒活 pid 42。
+      // 新直连实例用一次性存活的 pid 43。
       let processID: Int32 = requested.aclRuntime?.summary == "direct" ? 43 : 42
       try? runtimeStore.writeRuntimeReceipt(for: requested, processID: processID)
     }
 
     await controller.setProxyMode(.direct)
 
-    XCTAssertEqual(controller.proxyMode, .rule, "探测期间新子进程退出时回滚旧模式")
-    XCTAssertEqual(controller.state, .running, "旧实例应保持健康")
-    XCTAssertEqual(runtimeStore.loadDocument(), previousDocument)
-    XCTAssertEqual(controller.systemProxyState, .applied)
-    XCTAssertEqual(systemProxy.applied.count, appliedCount, "旧系统代理保持应用")
-    XCTAssertEqual(systemProxy.clearCount, 0)
+    XCTAssertEqual(controller.proxyMode, .direct)
+    XCTAssertEqual(controller.state, .serviceFailed(.agent))
+    XCTAssertEqual(runtimeStore.loadDocument()?.aclRuntime?.summary, "direct")
+    XCTAssertNotNil(runtimeStore.readFailure())
+    XCTAssertEqual(systemProxy.applied.count, appliedCount)
+    XCTAssertGreaterThan(systemProxy.clearCount, 0)
   }
 
   private enum FakeSettingsSaveError: Error, CustomStringConvertible {

@@ -117,9 +117,9 @@ final class ProxyRuntimeAgentAndSystemProxyTests: ProxyRuntimeControllerTests {
     XCTAssertEqual(controller.systemProxyState, .paused, "失效时清除并保留意图")
     XCTAssertTrue(systemProxy.applied.isEmpty, "端点不健康不得写系统代理")
 
-    // 条件恢复：探测可达后，下一次收敛自动应用待应用意图。
+    // 条件恢复后由用户显式重试；普通收敛不得重试已确认失败。
     probe.setOutcomes([.reachable])
-    try await controller.activate(seeded.server)
+    await controller.setAgentEnabled(true)
     XCTAssertEqual(controller.state, .running)
     XCTAssertEqual(controller.systemProxyState, .applied, "恢复后自动收敛待应用意图")
     XCTAssertEqual(systemProxy.applied.count, 1)

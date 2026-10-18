@@ -159,8 +159,8 @@ final class CustomRuleControllerTests: ProxyRuntimeControllerTests {
     XCTAssertEqual(try store.load(), [existing], "拒绝时旧规则保持不变")
   }
 
-  /// Failed application retains new saved rules and restores only the old runtime.
-  func testFailedCustomRuleDeployKeepsSavedRulesAndRestoresOnlyRuntime() async throws {
+  /// Failed application retains saved rules and the failed deployment.
+  func testFailedCustomRuleDeployKeepsSavedRulesAndStopsRuntime() async throws {
     let seeded = try makeSeededCatalog()
     let (store, _) = try makeCustomRuleStore()
     let existing = CustomRule(
@@ -181,15 +181,7 @@ final class CustomRuleControllerTests: ProxyRuntimeControllerTests {
     let previousApplicationCount = systemProxy.applied.count
 
     agent.onRegister = { [runtimeStore, previousDocument] in
-      guard let requested = runtimeStore.loadDocument() else { return }
-      // 新 ACL 实例不被接受，模拟验证失败（按磁盘变体内容识别新规则）。
-      let content =
-        (try? Data(contentsOf: runtimeStore.aclFileURL))
-        .flatMap { String(bytes: $0, encoding: .utf8) } ?? ""
-      let accepted =
-        content.contains("new-rule.example")
-        ? previousDocument : requested
-      try? runtimeStore.writeRuntimeReceipt(for: accepted, processID: 42)
+      try? runtimeStore.writeRuntimeReceipt(for: previousDocument, processID: 42)
     }
 
     let newRule = CustomRule(
@@ -201,13 +193,13 @@ final class CustomRuleControllerTests: ProxyRuntimeControllerTests {
     await controller.ruleApplicationTask?.value
     XCTAssertNotNil(controller.runtimeFacts.failure)
     XCTAssertEqual(try store.load(), [newRule], "部署失败保留已保存规则")
-    XCTAssertEqual(runtimeStore.loadDocument(), previousDocument, "回滚旧运行时")
-    XCTAssertFalse(
-      try activeACLContent(runtimeStore).contains("new-rule.example"),
-      "回滚后活动变体不含新规则")
-    XCTAssertEqual(controller.state, .running, "旧运行时恢复后重新呈现健康")
+    XCTAssertNotEqual(runtimeStore.loadDocument(), previousDocument)
+    XCTAssertNotNil(runtimeStore.readFailure())
+    XCTAssertFalse(controller.state.isOn)
+    XCTAssertTrue(controller.agentIntentEnabled)
+    XCTAssertTrue(controller.systemProxyIntentEnabled)
     XCTAssertEqual(systemProxy.applied.count, previousApplicationCount)
-    XCTAssertEqual(systemProxy.clearCount, 0, "切换失败期间保持系统代理应用")
+    XCTAssertGreaterThan(systemProxy.clearCount, 0)
   }
 
   /// 全局模式不加载自定义规则：保存成功但 ACL 不变、不触发重启。

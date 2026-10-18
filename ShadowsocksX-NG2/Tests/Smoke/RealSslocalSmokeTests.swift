@@ -78,8 +78,8 @@ class RealSslocalSmokeTests: XCTestCase {
   }
 
   /// 写入给定契约并拉起 wrapper（契约内容由调用方构造：无插件与插件场景各异）。
-  func launchWrapper(_ document: SslocalRuntimeDocument) throws -> Process {
-    try RuntimeFileStore(fileURL: contractURL).write(document)
+  func launchWrapper(_ document: SslocalRuntimeDocument, publish: Bool = true) throws -> Process {
+    if publish { try RuntimeFileStore(fileURL: contractURL).write(document) }
 
     let wrapperURL = AppArtifact.bundleURL.appendingPathComponent(
       "Contents/MacOS/ShadowsocksX-NG2Agent")

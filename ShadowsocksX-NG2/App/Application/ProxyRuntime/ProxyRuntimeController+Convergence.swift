@@ -97,27 +97,19 @@ extension ProxyRuntimeController {
     }
   }
 
-  /// 一个意图入口隐藏派生、执行政策、恢复和失败呈现；调用者不组合执行选项。
+  /// 一个意图入口隐藏派生、执行政策和失败呈现；调用者不组合执行选项。
   enum RuntimeConvergenceIntent {
     case deployment(SslocalRuntimeDocument)
-    case modeTransition(ModeTransitionSnapshot)
+    case modeTransition
     case savedRules
-  }
-
-  /// 用户改变模式前的事实，由意图命令捕获；恢复计划只在收敛实现中构造。
-  struct ModeTransitionSnapshot {
-    let settings: ProxySettings
-    let mode: ProxyMode
-    let document: SslocalRuntimeDocument?
-    let state: AgentRunState
   }
 
   enum ConvergenceResult {
     case applied
     case unchanged
-    /// 派生或部署失败；该意图要求的恢复与失败呈现已经处理。
+    /// 派生或部署失败；失败呈现已经处理。
     case failed
-    /// 被新意图取代，不得恢复或发布旧结果。
+    /// 被新意图取代，不得发布旧结果。
     case superseded
   }
 
@@ -126,7 +118,7 @@ extension ProxyRuntimeController {
     guard catalogSnapshotReader.isCatalogAvailable else { return .failed }
     switch intent {
     case .deployment(let source): return await convergeDeployment(source)
-    case .modeTransition(let snapshot): return await convergeModeTransition(snapshot)
+    case .modeTransition: return await convergeModeTransition()
     case .savedRules: return await convergeSavedRules()
     }
   }
@@ -155,8 +147,7 @@ extension ProxyRuntimeController {
     return await apply(contract.document, ticket: &ticket, policy: .deployment)
   }
 
-  private func convergeModeTransition(_ snapshot: ModeTransitionSnapshot) async -> ConvergenceResult
-  {
+  private func convergeModeTransition() async -> ConvergenceResult {
     var ticket = convergenceTicket()
     guard settings.agentEnabled, state != .off,
       let current = lastDocument ?? runtimeFileStore.loadDocument()
@@ -164,12 +155,6 @@ extension ProxyRuntimeController {
       systemProxyObserver.modeTransitionAwaitingRuntime()
       return .unchanged
     }
-    let plan = RollbackPlan(
-      document: snapshot.document ?? current, state: snapshot.state,
-      payload: .modeTransition(
-        mode: snapshot.mode, ruleDefaultAction: snapshot.settings.ruleDefaultAction),
-      systemProxyIntentAtCapture: snapshot.settings.systemProxyEnabled,
-      convergeProxyOnIntentChange: true)
     let next: SslocalRuntimeDocument
     do {
       next = try await runtimeDocument(current, for: proxyMode)
@@ -178,27 +163,27 @@ extension ProxyRuntimeController {
     } catch {
       RuntimeLog.emit(.runtimePersistFailed(detail: String(describing: error)))
       ticket.preparation = runtimePreparationGeneration
-      await recoverModeTransition(plan, ticket: &ticket)
+      state = .serviceFailed(.runtimeFile)
       return .failed
     }
     // 派生会推进 preparation；仅该意图在派生前捕获了收敛票据。
     ticket.preparation = runtimePreparationGeneration
-    guard next.aclRuntime != current.aclRuntime else {
+    let alreadyRunning: Bool
+    switch state {
+    case .running, .firewallBlocked: alreadyRunning = true
+    default: alreadyRunning = false
+    }
+    if next.aclRuntime == current.aclRuntime,
+      runtimeFileStore.readFailure() == nil,
+      alreadyRunning
+    {
       // 保留原有特殊路径：无系统代理意图即结束；否则只检查健康，不部署或恢复。
       guard settings.systemProxyEnabled else { return .unchanged }
       state = .starting
       return await presentLaunchHealth(next) ? .applied : .failed
     }
     let result = await apply(next, ticket: &ticket, policy: .modeTransition)
-    if case .failed = result { await recoverModeTransition(plan, ticket: &ticket) }
     return result
-  }
-
-  private func recoverModeTransition(_ plan: RollbackPlan, ticket: inout ConvergenceTicket) async {
-    let report = await restore(plan, ticket: &ticket)
-    if report.runtimeHealthy == true, report.payloadFailureDescription != nil {
-      state = .serviceFailed(.persistence)
-    }
   }
 
   private func convergeSavedRules() async -> ConvergenceResult {
@@ -206,10 +191,6 @@ extension ProxyRuntimeController {
       let current = lastDocument ?? runtimeFileStore.loadDocument()
     else { return .unchanged }
     let revision = ruleDocuments.revision
-    let plan = RollbackPlan(
-      document: current, state: state, payload: .runtimeOnly,
-      systemProxyIntentAtCapture: settings.systemProxyEnabled,
-      convergeProxyOnIntentChange: false)
     let next: SslocalRuntimeDocument
     do {
       next = try await runtimeDocument(current, for: proxyMode)
@@ -234,7 +215,6 @@ extension ProxyRuntimeController {
       break
     case .failed:
       let failure = ProxyRuntimeFacts(state: state).failure ?? .service(.runtimeFile)
-      _ = await restore(plan, ticket: &ticket)
       if convergenceIsCurrent(ticket), revision == ruleDocuments.revision {
         ruleApplicationFailure = failure
       }
@@ -249,13 +229,18 @@ extension ProxyRuntimeController {
     case savedRules
   }
 
-  /// 共用执行脊柱；恢复在同一 module 的意图实现中，票据不越过意图 seam。
+  /// 共用执行脊柱；票据不越过意图 seam。
   private func apply(
     _ document: SslocalRuntimeDocument,
     ticket: inout ConvergenceTicket,
     policy: DeploymentPolicy
   ) async -> ConvergenceResult {
     let contract = try? PreparedRuntimeContract(document)
+    if runtimeFileStore.blocksDeployment(document) {
+      state = .serviceFailed(.agent)
+      await systemProxyObserver.holdSystemProxyIntent()
+      return .failed
+    }
     if convergencePlanIsEmpty(document, preparedContract: contract) {
       RuntimeLog.emit(.contractUnchanged)
       ruleApplicationFailure = nil
@@ -267,14 +252,27 @@ extension ProxyRuntimeController {
     let execution = await execute(.run(document), document: document, preparedContract: contract)
     ticket.flow = execution.flow
     guard convergenceIsCurrent(ticket) else { return .superseded }
-    guard execution.succeeded else { return .failed }
+    guard execution.succeeded else {
+      if state != .requiresApproval, runtimeFileStore.receiptIdentity(for: document) != nil {
+        await failDeployment(ticket: &ticket)
+      }
+      return .failed
+    }
     let healthy = await presentLaunchHealth(
       document,
       requiresReceipt: policy != .deployment || document.aclRuntime != nil,
       convergeProxyOnSuccess: policy == .deployment,
-      preserveProxyOnFailure: policy != .deployment, preparedContract: contract)
+      preserveProxyOnFailure: false, preparedContract: contract)
     guard convergenceIsCurrent(ticket) else { return .superseded }
-    guard healthy else { return .failed }
+    guard healthy else {
+      await failDeployment(ticket: &ticket)
+      return .failed
+    }
+    do { try runtimeFileStore.settleSuccessfulDeployment() } catch {
+      state = .serviceFailed(.runtimeFile)
+      await failDeployment(ticket: &ticket)
+      return .failed
+    }
     lastDocument = document
     ruleApplicationFailure = nil
     switch policy {
@@ -285,100 +283,22 @@ extension ProxyRuntimeController {
     return .applied
   }
 
-  /// 按回滚计划整体恢复:先查时效(票据含会话内 agent 意图)再动任何事实——
-  /// 被取代或 agent 已被用户关闭的回滚不得把旧载荷写回持久层、也不得把
-  /// 旧文档重新拉起;随后重持久化载荷 → 计划执行拉回旧文档(含按需拉起,
-  /// 由计划层对注销/信号/注册的裁决保证与旧 restore 例程等价)→ 启动健康
-  /// 门。载荷持久化失败不阻断文档恢复;文档恢复失败或健康不过即撤下系统
-  /// 代理意图。
-  private func restore(_ plan: RollbackPlan, ticket: inout ConvergenceTicket) async -> RestoreReport
-  {
-    guard convergenceIsCurrent(ticket) else {
-      return RestoreReport(payloadFailureDescription: nil, runtimeHealthy: nil)
+  /// 发布后失败保留配置及失败身份，停止服务但不改写两个开关意图。
+  private func failDeployment(ticket: inout ConvergenceTicket) async {
+    guard convergenceIsCurrent(ticket) else { return }
+    var failureState = state
+    do { try runtimeFileStore.recordFailure(reason: "GUI deployment verification failed") } catch {
+      failureState = .serviceFailed(.runtimeFile)
     }
-    var payloadFailureDescription: String?
-    var restoredSettingsForMemory: ProxySettings?
-    var restoredMode: ProxyMode?
-    switch plan.payload {
-    case .modeTransition(let mode, let ruleDefaultAction):
-      // 按快照还原偏好（模式与子选项回退，其余字段保留当前值）。
-      var restored = settings
-      restored.preferredMode = mode.kind
-      restored.ruleDefaultAction = ruleDefaultAction
-      do {
-        try settingsStore.save(restored)
-      } catch {
-        payloadFailureDescription = String(describing: error)
-        RuntimeLog.emit(.runtimePersistFailed(detail: String(describing: error)))
-      }
-      restoredSettingsForMemory = restored
-      restoredMode = mode
-    case .runtimeOnly:
-      break
-    }
-    func report(_ healthy: Bool?) -> RestoreReport {
-      RestoreReport(
-        payloadFailureDescription: payloadFailureDescription, runtimeHealthy: healthy)
-    }
-    if let restoredSettingsForMemory { settings = restoredSettingsForMemory }
-    if let restoredMode { proxyMode = restoredMode }
-    lastDocument = plan.document
-    state = .starting
-    let contract = try? PreparedRuntimeContract(plan.document)
-    let execution = await execute(
-      .run(plan.document), document: plan.document, preparedContract: contract)
-    ticket.flow = execution.flow
-    guard convergenceIsCurrent(ticket) else { return report(nil) }
-    guard execution.succeeded else {
-      await systemProxyObserver.holdSystemProxyIntent()
-      return report(false)
-    }
-    let healthy = await presentLaunchHealth(
-      plan.document, requiresReceipt: true, convergeProxyOnSuccess: false,
-      preparedContract: contract)
-    guard convergenceIsCurrent(ticket) else { return report(nil) }
-    if healthy {
-      if plan.convergeProxyOnIntentChange,
-        settings.systemProxyEnabled != plan.systemProxyIntentAtCapture
-      {
-        await systemProxyObserver.convergeSystemProxy(forceApply: true)
-      } else {
-        state = plan.state
-      }
-    } else {
-      await systemProxyObserver.holdSystemProxyIntent()
-    }
-    return report(healthy)
-  }
-}
-
-/// 收敛失败时的整体回滚计划：恢复到哪个运行时文档、健康通过后呈现哪个
-/// 状态、以及除文档外还要重持久化的载荷。
-private struct RollbackPlan {
-  /// 回滚载荷：除运行时文档外还要恢复的持久化事实。
-  enum Payload {
-    /// mode 切换：设置快照的模式与规则子选项回退（其余字段保留当前值），
-    /// 会话内 proxyMode 一并还原。
-    case modeTransition(mode: ProxyMode, ruleDefaultAction: RuleDefaultAction)
-    /// Rule application restores only the previous runtime, never saved intent.
-    case runtimeOnly
+    let stopped = await unregisterFailedDeployment()
+    guard convergenceIsCurrent(ticket) else { return }
+    if stopped { state = failureState } else { state = .serviceFailed(.agent) }
+    await systemProxyObserver.holdSystemProxyIntent()
   }
 
-  /// 回滚目标文档（调用方已用当次加载值补齐）。
-  let document: SslocalRuntimeDocument
-  /// 健康通过后呈现的状态（收敛开始前捕获）。
-  let state: ProxyRuntimeController.AgentRunState
-  let payload: Payload
-  /// 捕获时的系统代理意图：恢复健康后若当前意图已变化，强制重收敛一次。
-  let systemProxyIntentAtCapture: Bool
-  /// 是否在意图变化时强制重收敛（mode 切换路径；rules 路径为 false）。
-  let convergeProxyOnIntentChange: Bool
-}
-
-/// 回滚报告：载荷重持久化与旧运行时恢复的结果。
-private struct RestoreReport {
-  /// 载荷持久化失败的点名描述；nil = 成功。
-  let payloadFailureDescription: String?
-  /// 旧运行时是否恢复到健康；nil = 恢复未尝试（被弃权或被取代）。
-  let runtimeHealthy: Bool?
+  private func unregisterFailedDeployment() async -> Bool {
+    do { try agent.unregister() } catch { return false }
+    await waitForWrapperExit()
+    return wrapperState() == .notRunning && !runtimeFileStore.hasUnconfirmedChild
+  }
 }

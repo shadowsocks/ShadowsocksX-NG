@@ -5,35 +5,60 @@ import Foundation
 enum ContractLoad {
   case missing
   case invalid
-  case loaded(SslocalRuntimeDocument)
+  case loaded(RuntimeSupervision)
 }
 
 func loadContract() -> ContractLoad {
-  guard let data = try? Data(contentsOf: contractURL) else { return .missing }
-  guard let document = SslocalRuntimeDocument.decodeValidated(data) else { return .invalid }
-  if let acl = document.aclRuntime {
-    // ADR-0011：契约只带身份；Agent 不读 ACL 内容、不核摘要，只保证链接
-    // 解析后落在运行目录内（防逃逸）且文件存在。
-    guard
-      document.aclFilePath == aclFileURL.standardizedFileURL.path,
-      acl.path == aclFileURL.standardizedFileURL.path,
-      ACLActiveLinkPolicy.resolvesToRegularFile(
-        inside: aclFileURL.deletingLastPathComponent(), linkURL: aclFileURL)
-    else { return .invalid }
-  }
+  guard FileManager.default.fileExists(atPath: supervisionURL.path) else { return .missing }
+  guard let document = RuntimePublication.load(at: supervisionURL) else { return .invalid }
   return .loaded(document)
 }
 
-func writeRuntimeReceipt(for document: SslocalRuntimeDocument, processID: Int32) -> Bool {
-  guard let digest = document.deploymentSHA256 else { return false }
-  let receipt = RuntimeDeploymentReceipt(processID: processID, contractSHA256: digest)
-  let encoder = JSONEncoder()
-  encoder.outputFormatting = [.sortedKeys]
-  guard let data = try? encoder.encode(receipt) else { return false }
+func writeRuntimeReceipt(for document: RuntimeSupervision, processID: Int32) -> Bool {
+  let receipt = RuntimeDeploymentReceipt(processID: processID, deploymentID: document.deploymentID)
   do {
-    try AtomicFileWriter.write(data, to: runtimeStatusFileURL)
+    try AtomicFileWriter.write(JSONEncoder().encode(receipt), to: runtimeStatusFileURL)
+    return true
+  } catch { return false }
+}
+
+func deploymentHasFailed(_ document: RuntimeSupervision) -> Bool {
+  guard let data = try? Data(contentsOf: failureURL),
+    let failure = try? JSONDecoder().decode(RuntimeDeploymentFailure.self, from: data)
+  else { return false }
+  return failure.deploymentID == document.deploymentID
+}
+
+func recordDeploymentFailure(_ document: RuntimeSupervision, reason: String) {
+  do {
+    try RuntimePublication.withLock(in: contractURL.deletingLastPathComponent()) {
+      // 新发布不得被旧监管任务标成失败。
+      guard RuntimePublication.metadata(at: supervisionURL)?.deploymentID == document.deploymentID
+      else { return }
+      try AtomicFileWriter.write(
+        JSONEncoder().encode(
+          RuntimeDeploymentFailure(
+            deploymentID: document.deploymentID, reason: reason)), to: failureURL)
+    }
+  } catch {
+    RuntimeLog.emit(.runtimePersistFailed(detail: "Deployment failure persistence failed"))
+  }
+}
+
+func selectDeployment(_ document: RuntimeSupervision) -> Bool {
+  do {
+    try RuntimePublication.select(document, configurationLink: contractURL, aclLink: aclFileURL)
+    return true
+  } catch { return false }
+}
+
+func retireFiles(_ document: RuntimeSupervision, protecting: Set<String>) -> Bool {
+  do {
+    try RuntimePublication.retire(
+      before: document, publishedAt: supervisionURL, protecting: protecting)
     return true
   } catch {
+    RuntimeLog.emit(.runtimePersistFailed(detail: "Retired runtime file cleanup failed"))
     return false
   }
 }
@@ -42,15 +67,8 @@ func clearRuntimeReceipt() {
   try? FileManager.default.removeItem(at: runtimeStatusFileURL)
 }
 
-func spawnSslocal(_ document: SslocalRuntimeDocument) -> Process? {
+func spawnSslocal() -> Process? {
   guard FileManager.default.isExecutableFile(atPath: sslocalURL.path) else { return nil }
-  do {
-    if let auth = document.listen.authentication {
-      guard auth.directory == contractURL.deletingLastPathComponent().standardizedFileURL.path
-      else { return nil }
-      try auth.writeFiles()
-    }
-  } catch { return nil }
   let child = Process()
   let errorPipe = Pipe()
   let logRedactor = SslocalLogRedactor()

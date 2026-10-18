@@ -53,12 +53,21 @@ class AgentLifecycleTests: XCTestCase {
       trap 'rm -f "$child_pid_file"' EXIT
       trap 'echo "SIGTERM" >> "$SSLOCAL_STUB_STATE"; exit 0' TERM
       trap 'echo "SIGUSR1" >> "$SSLOCAL_STUB_STATE"' USR1
+      for other in "$SSLOCAL_STUB_PID_DIR"/*; do
+        if [ -f "$other" ] && kill -0 "${other##*/}" 2>/dev/null; then
+          echo "OVERLAPPING CHILD" >> "$SSLOCAL_STUB_STATE"
+        fi
+      done
       echo "$$" > "$child_pid_file"
       echo "dns-force-builtin: ${SS_SYSTEM_DNS_RESOLVER_FORCE_BUILTIN:-unset}" >> "$SSLOCAL_STUB_STATE"
       echo "invoked: $*" >> "$SSLOCAL_STUB_STATE"
       case "$SSLOCAL_STUB_BEHAVIOR" in
         crash) exit 7 ;;
         exit0) exit 0 ;;
+        drop-acl) rm -f "$SSXNG_RUNTIME_DIR"/acl-0*.ini
+          while :; do sleep 0.05; done ;;
+        ignore-term) trap 'echo "SIGTERM ignored" >> "$SSLOCAL_STUB_STATE"' TERM
+          while :; do sleep 0.05; done ;;
         *) while :; do sleep 0.05; done ;;
       esac
       """
@@ -207,20 +216,21 @@ final class AgentLifecycleCoreTests: AgentLifecycleTests {
     XCTAssertFalse(stateLog().contains("invoked"), "不应拉起 sslocal")
   }
 
-  func testInvalidContractIsUnlinkedThenCleanExit() throws {
-    try Data("not valid json {".utf8).write(to: contractURL)
+  func testInvalidSupervisionIsPreservedAndExitsWithoutSpawn() throws {
+    try Data("not valid json {".utf8).write(
+      to: workDir.appendingPathComponent("agent-supervision.json"))
     let wrapper = try launchWrapper(behavior: "run")
 
     let exitStatus = try waitForExit(wrapper)
 
     XCTAssertEqual(exitStatus, 0)
-    XCTAssertFalse(
-      FileManager.default.fileExists(atPath: contractURL.path),
-      "无效契约按「停止并清理」普通 unlink（D5）")
+    XCTAssertTrue(
+      FileManager.default.fileExists(
+        atPath: workDir.appendingPathComponent("agent-supervision.json").path))
     XCTAssertFalse(stateLog().contains("invoked"))
   }
 
-  func testStructurallyInvalidContractIsAlsoCleaned() throws {
+  func testLegacyConfigurationIsNeverDecodedOrDeleted() throws {
     // 可解码但本地端口无效：wrapper 校验拒绝，不给 sslocal 反复失败的机会。
     // 空 `servers` 是合法契约——无活动目标时也可部署本地监听。
     try SslocalRuntimeDocument(
@@ -231,15 +241,13 @@ final class AgentLifecycleCoreTests: AgentLifecycleTests {
     let exitStatus = try waitForExit(wrapper)
 
     XCTAssertEqual(exitStatus, 0)
-    XCTAssertFalse(FileManager.default.fileExists(atPath: contractURL.path))
+    XCTAssertTrue(FileManager.default.fileExists(atPath: contractURL.path))
   }
 
   /// 空服务器契约是合法部署：wrapper 接受并照常拉起 sslocal，
   /// 由本地入站提供无目标的本地监听。
   func testEmptyServerContractIsValidAndRunsSslocal() throws {
-    try SslocalRuntimeDocument(
-      servers: [], listen: SslocalListenSettings()
-    ).jsonData().write(to: contractURL)
+    try writeContract(SslocalRuntimeDocument(servers: [], listen: SslocalListenSettings()))
     let wrapper = try launchWrapper(behavior: "run")
 
     XCTAssertTrue(

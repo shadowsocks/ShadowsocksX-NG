@@ -10,14 +10,12 @@ enum RuntimePaths {
       .appendingPathComponent("ShadowsocksX-NG2", isDirectory: true)
   }
 
-  /// sslocal 配置契约：激活派生的完整 JSON，GUI 原子写入、wrapper 以绝对路径
-  /// 交给 `sslocal -c`（也是 SIGUSR1 热重载时上游重读的文件）。
+  /// Agent 切换的稳定配置链接；sslocal 启动与 SIGUSR1 重读均使用此路径。
   static func runtimeFileURL() -> URL {
     runtimeDirectory().appendingPathComponent("sslocal-active.json")
   }
 
-  /// ACL 稳定链接（ADR-0011）：sslocal 经契约 `acl` 键读取；指向某个
-  /// `acl-<summary>.ini` 变体，换模式只改链接指向。
+  /// ACL 稳定链接：sslocal 经配置 `acl` 键读取，由 Agent 切换到不可变变体。
   static func aclFileURL() -> URL {
     runtimeDirectory().appendingPathComponent("acl-active.ini")
   }
@@ -30,7 +28,7 @@ enum RuntimePaths {
 
   /// The wrapper's sslocal deployment receipt. ACL-backed receipts are written
   /// after the child owns the configured TCP listeners; the GUI checks its
-  /// digest and PID during direct-mode health checks.
+  /// deployment identity and PID during direct-mode health checks.
   static func agentRuntimeStatusURL() -> URL {
     runtimeDirectory().appendingPathComponent("agent-runtime-status.json")
   }

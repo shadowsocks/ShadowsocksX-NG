@@ -37,7 +37,7 @@ extension ProxyRuntimeController {
     let generation = flowGeneration
     let preparation = runtimePreparationGeneration
     let expectedDigest =
-      requiresReceipt ? (preparedContract?.sha256 ?? document.deploymentSHA256) : nil
+      requiresReceipt ? runtimeFileStore.receiptIdentity(for: document) : nil
     guard !requiresReceipt || expectedDigest != nil else {
       return await reportRuntimeFileFailure(preserveProxyOnFailure: preserveProxyOnFailure)
     }
@@ -79,10 +79,11 @@ extension ProxyRuntimeController {
     _ document: SslocalRuntimeDocument,
     expectedDigest: String?
   ) async -> LaunchHealthAttempt {
+    if runtimeFileStore.blocksDeployment(document) { return .agentLost }
     var receiptForHealth: RuntimeDeploymentReceipt?
     if let expectedDigest {
       guard let receipt = runtimeFileStore.readRuntimeReceipt(),
-        receipt.contractSHA256 == expectedDigest
+        receipt.deploymentID == expectedDigest
       else {
         return .retry(nil)
       }
@@ -169,7 +170,7 @@ extension ProxyRuntimeController {
 
   private func hasLiveReceipt(expectedDigest: String) -> Bool {
     guard let receipt = runtimeFileStore.readRuntimeReceipt(),
-      receipt.contractSHA256 == expectedDigest
+      receipt.deploymentID == expectedDigest
     else { return false }
     return receiptIsCurrentAndLive(receipt)
   }
@@ -233,9 +234,16 @@ extension ProxyRuntimeController {
   }
 
   private func inspectSystemProxyRuntimeHealth(_ document: SslocalRuntimeDocument) async {
+    if runtimeFileStore.blocksDeployment(document) {
+      state = .serviceFailed(.agent)
+      await systemProxyObserver.suspendSystemProxy()
+      return
+    }
     let generation = flowGeneration
     let outcome = await launchHealthAttempt(
-      document, expectedDigest: document.aclRuntime != nil ? document.deploymentSHA256 : nil)
+      document,
+      expectedDigest: document.aclRuntime != nil
+        ? runtimeFileStore.receiptIdentity(for: document) : nil)
     // await 恢复后重查意图与代际：agent 已被关闭或已有新 execute 时，
     // 失败呈现与系统代理挂起都归属新的意图状态，本任务不得再改写。
     guard !Task.isCancelled, generation == flowGeneration, settings.systemProxyEnabled,

@@ -68,7 +68,7 @@ final class RuntimeLogRedactionTests: XCTestCase {
       .sslocalExitedUnexpectedly(status: 78),
       .sslocalStopRequested,
       .contractMissing,
-      .contractInvalidRemoved,
+      .contractInvalid,
       .reloadForwarded,
       .reloadRestarted,
       .endpointProbeFailed(host: "127.0.0.1", port: 1086, detail: "Connection refused"),

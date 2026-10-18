@@ -110,7 +110,7 @@ final class CustomRuleDeletionControllerTests: ProxyRuntimeControllerTests {
     }
   }
 
-  func testDeletionDeploymentFailurePreservesDeletedDocumentAndOldRuntime() async throws {
+  func testDeletionDeploymentFailureKeepsSavedDeletionAndStopsRuntime() async throws {
     let seeded = try makeSeededCatalog()
     let (store, _) = try makeCustomRuleStore()
     let rule = CustomRule(action: .direct, match: .domainExact("keep-one.example"))
@@ -128,12 +128,8 @@ final class CustomRuleDeletionControllerTests: ProxyRuntimeControllerTests {
     let confirmation = try XCTUnwrap(workflow.prepareCustomRuleDeletion())
     let runtimeStore = RuntimeFileStore(fileURL: runtime.contract)
     let previousRuntime = try XCTUnwrap(runtimeStore.loadDocument())
-    let previousACL = try activeACLContent(runtimeStore)
     agent.onRegister = {
-      guard let requested = runtimeStore.loadDocument() else { return }
-      let isRecovery = (try? self.activeACLContent(runtimeStore)) == previousACL
-      try? runtimeStore.writeRuntimeReceipt(
-        for: isRecovery ? requested : previousRuntime, processID: 42)
+      try? runtimeStore.writeRuntimeReceipt(for: previousRuntime, processID: 42)
     }
     await workflow.deleteCustomRules(confirmation)
     XCTAssertEqual(workflow.snapshot.commitOutcome, .saved)
@@ -141,9 +137,9 @@ final class CustomRuleDeletionControllerTests: ProxyRuntimeControllerTests {
     XCTAssertEqual(try store.loadDocument(), saved)
     await controller.ruleApplicationTask?.value
     XCTAssertEqual(try store.loadDocument(), saved)
-    XCTAssertEqual(runtimeStore.loadDocument(), previousRuntime)
-    XCTAssertEqual(try activeACLContent(runtimeStore), previousACL)
-    XCTAssertEqual(controller.state, .running)
+    XCTAssertNotEqual(runtimeStore.loadDocument(), previousRuntime)
+    XCTAssertNotNil(runtimeStore.readFailure())
+    XCTAssertNotEqual(controller.state, .running)
     XCTAssertNotNil(controller.runtimeFacts.failure)
     XCTAssertEqual(workflow.snapshot.commitOutcome, .saved)
     XCTAssertTrue(workflow.snapshot.rows.allSatisfy { $0.customIDs.isEmpty })

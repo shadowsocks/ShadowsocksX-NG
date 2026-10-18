@@ -60,7 +60,7 @@ final class CustomRuleEditingControllerTests: ProxyRuntimeControllerTests {
     XCTAssertEqual(workflow.snapshot.commitFeedback?.operation, .edit)
   }
 
-  func testEditorFailedDeploymentKeepsSavedEditAndRestoresOnlyACL() async throws {
+  func testEditorFailedDeploymentKeepsSavedEditAndStopsRuntime() async throws {
     let seeded = try makeSeededCatalog()
     let (store, _) = try makeCustomRuleStore()
     let existing = CustomRule(action: .direct, match: .domainSuffix("kept.example"))
@@ -77,12 +77,7 @@ final class CustomRuleEditingControllerTests: ProxyRuntimeControllerTests {
     let runtimeStore = RuntimeFileStore(fileURL: runtime.contract)
     let originalRuntime = try XCTUnwrap(runtimeStore.loadDocument())
     agent.onRegister = {
-      guard let requested = runtimeStore.loadDocument() else { return }
-      let content =
-        (try? Data(contentsOf: runtimeStore.aclFileURL))
-        .flatMap { String(bytes: $0, encoding: .utf8) } ?? ""
-      try? runtimeStore.writeRuntimeReceipt(
-        for: content.contains("new-rule.example") ? originalRuntime : requested, processID: 42)
+      try? runtimeStore.writeRuntimeReceipt(for: originalRuntime, processID: 42)
     }
     var draft = try XCTUnwrap(workflow.makeCustomRuleDraft(editing: existing.id))
     draft.content = "new-rule.example"
@@ -95,8 +90,9 @@ final class CustomRuleEditingControllerTests: ProxyRuntimeControllerTests {
     XCTAssertEqual(
       workflow.snapshot.rows.first { $0.customIDs.contains(existing.id) }?.identity,
       RuleIdentity(action: .direct, match: .domainSuffix("new-rule.example")))
-    XCTAssertEqual(runtimeStore.loadDocument(), originalRuntime)
-    XCTAssertEqual(controller.state, .running)
+    XCTAssertNotEqual(runtimeStore.loadDocument(), originalRuntime)
+    XCTAssertNotNil(runtimeStore.readFailure())
+    XCTAssertNotEqual(controller.state, .running)
     let preview = await workflow.previewCustomRule(draft)
     XCTAssertEqual(preview.failure, .staleDraft)
     XCTAssertNotNil(controller.runtimeFacts.failure)

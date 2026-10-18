@@ -69,7 +69,7 @@ extension ProxyRuntimeController {
     guard effectiveRuntimeListenFacts != nil,
       let lastDocument,
       let receipt = runtimeFileStore.readRuntimeReceipt(),
-      receipt.contractSHA256 == lastDocument.deploymentSHA256,
+      receipt.deploymentID == runtimeFileStore.receiptIdentity(for: lastDocument),
       processIsAlive(receipt.processID)
     else { return nil }
     return receipt.processID

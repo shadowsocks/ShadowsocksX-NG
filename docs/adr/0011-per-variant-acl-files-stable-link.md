@@ -2,6 +2,8 @@
 
 **Status**: accepted
 
+**Partially superseded (2026-10-19)**: [ADR-0038](0038-separate-agent-supervision-and-sslocal-input.md) replaces mutable fixed variant names and GUI link switching with immutable generation files, atomic supervision publication and Agent-owned links. Variant reuse, the stable ACL entry and restart-on-ACL-change remain.
+
 (2026-09: the holistic preferences reset referenced below has since been removed from the product.)
 
 **Supersedes in part**: ADR-0009 and ADR-0010's "ACL path, content, digest, and summary are runtime identity" — content is no longer carried in the contract, and the ACL path is a stable link that does not change across mode switches. The restart-on-change rule itself stands.

@@ -18,28 +18,23 @@ struct RuntimeListenerAuthentication: Codable, Equatable, Sendable {
     Self.validUsername(username) && Self.validPassword(password) && directory.hasPrefix("/")
   }
 
-  private var identity: String {
-    ProxyACLDocument.digest(Data((username + ":" + password).utf8))
-  }
-
   var socksPath: String { path("socks") }
   var httpPath: String { path("http") }
 
   private func path(_ name: String) -> String {
-    URL(fileURLWithPath: directory, isDirectory: true)
-      .appendingPathComponent("lan-auth-\(name)-\(identity).json").path
+    URL(fileURLWithPath: directory).appendingPathComponent("lan-auth-\(name).pending.json").path
   }
 
-  /// 内容寻址避免覆盖仍由旧 sslocal 使用的认证文件。
-  func writeFiles() throws {
+  func fileContents() throws -> [(String, Data)] {
     let user = ["user_name": username, "password": password]
-    for (key, path) in [("password", socksPath), ("basic", httpPath)] {
-      let data = try JSONSerialization.data(
-        withJSONObject: [key: ["users": [user]]],
-        options: [.sortedKeys])
-      try AtomicFileWriter.write(data, to: URL(fileURLWithPath: path))
+    return try [("socks", "password"), ("http", "basic")].map { kind, key in
+      (
+        kind,
+        try JSONSerialization.data(withJSONObject: [key: ["users": [user]]], options: [.sortedKeys])
+      )
     }
   }
+
 }
 
 extension SslocalRuntimeDocument {

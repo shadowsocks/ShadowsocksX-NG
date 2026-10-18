@@ -247,10 +247,9 @@ final class ProxyRuntimeControllerCoreTests: ProxyRuntimeControllerTests {
 
     XCTAssertEqual(controller.effectiveRuntimeListenerProcessID, 42)
 
-    let staleDocument = SslocalRuntimeDocument(
-      servers: [],
-      listen: SslocalListenSettings(socksPort: 11088, httpPort: 11089))
-    try runtimeStore.writeRuntimeReceipt(for: staleDocument, processID: 42)
+    let staleReceipt = RuntimeDeploymentReceipt(processID: 42, deploymentID: UUID().uuidString)
+    try AtomicFileWriter.write(
+      JSONEncoder().encode(staleReceipt), to: runtimeStore.runtimeStatusFileURL)
     XCTAssertNil(controller.effectiveRuntimeListenerProcessID, "回执必须匹配当前运行契约")
 
     try runtimeStore.writeRuntimeReceipt(for: document, processID: 42)

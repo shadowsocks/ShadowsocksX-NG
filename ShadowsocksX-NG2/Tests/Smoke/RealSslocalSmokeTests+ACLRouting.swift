@@ -228,7 +228,7 @@ extension RealSslocalSmokeTests {
     XCTAssertTrue(
       try waitForCondition(timeout: 30) {
         guard let receipt = runtimeStore.readRuntimeReceipt() else { return false }
-        return receipt.contractSHA256 == document.deploymentSHA256
+        return receipt.deploymentID == runtimeStore.receiptIdentity(for: document)
           && kill(receipt.processID, 0) == 0
       }, "应发布仍存活的 sslocal 子进程回执")
   }

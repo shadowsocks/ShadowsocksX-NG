@@ -8,10 +8,13 @@ import Foundation
 /// wrapper 的「写动作」供夹具布置磁盘状态。
 extension RuntimeFileStore {
   func writeRuntimeReceipt(for document: SslocalRuntimeDocument, processID: Int32) throws {
-    guard let digest = document.deploymentSHA256 else {
+    guard let digest = receiptIdentity(for: document) else {
       throw PersistenceError.ioFailure(detail: "Runtime contract digest is unavailable")
     }
-    let receipt = RuntimeDeploymentReceipt(processID: processID, contractSHA256: digest)
+    if let snapshot = RuntimePublication.load(at: supervisionFileURL) {
+      try RuntimePublication.select(snapshot, configurationLink: fileURL, aclLink: aclFileURL)
+    }
+    let receipt = RuntimeDeploymentReceipt(processID: processID, deploymentID: digest)
     let encoder = JSONEncoder()
     encoder.outputFormatting = [.sortedKeys]
     do {

@@ -62,8 +62,8 @@ extension RuntimeLogEvent {
       return "listen not established within deadline"
     case .contractMissing:
       return "contract missing"
-    case .contractInvalidRemoved:
-      return "contract invalid, removed"
+    case .contractInvalid:
+      return "supervision invalid, preserved"
     case .reloadForwarded:
       return "reload forwarded to sslocal"
     case .reloadDeferred:

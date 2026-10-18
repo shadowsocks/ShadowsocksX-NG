@@ -68,9 +68,7 @@ struct SslocalLocalDocument: Codable, Equatable, Sendable {
   }
 }
 
-/// wrapper 自有的监听身份扩展（取代已删除的 PAC 扩展）。字段收在
-/// `x_shadowsocksx_ng_listen` 下，上游 sslocal 会忽略该扩展；wrapper 与 GUI
-/// 仍从同一原子文件读取同一份事实。
+/// GUI 私有的派生元数据。上游忽略此扩展，Agent 不编译或解码此类型。
 struct RuntimeListenDocument: Codable, Equatable, Sendable {
   let listenerMode: ListenerMode
   let bindAddress: String
@@ -91,8 +89,7 @@ struct SslocalRuntimeDocument: Codable, Equatable, Sendable {
   var locals: [SslocalLocalDocument]
   let ipv6Only: Bool?
   var listen: RuntimeListenDocument
-  /// Upstream sslocal ACL file path. The wrapper-owned extension carries the
-  /// matching content and digest so both inbounds use the same validated file.
+  /// 两个入站共用的稳定 ACL 路径；GUI 扩展保存变体身份，不编码 ACL 正文。
   let aclFilePath: String?
   let aclRuntime: ProxyACLDocument?
 
@@ -148,7 +145,7 @@ struct SslocalRuntimeDocument: Codable, Equatable, Sendable {
     try Self.jsonEncoder.encode(self)
   }
 
-  var deploymentSHA256: String? {
+  var intentSHA256: String? {
     guard let data = try? jsonData() else { return nil }
     return ProxyACLDocument.digest(data)
   }
@@ -234,8 +231,7 @@ extension SslocalRuntimeDocument {
     locals.first { $0.inboundProtocol == "http" }?.localPort ?? 0
   }
 
-  /// wrapper 读取侧防御校验：端口、协议与共享范围必须一致；无效文件会停止并
-  /// 清理，不能交给 KeepAlive 无限重放。空 `servers` 合法：
+  /// GUI 准备侧校验：端口、协议与共享范围必须一致。空 `servers` 合法：
   /// 无活动目标时 agent 以空服务器列表提供本地监听；上游 sslocal v1.25.0
   /// 接受空 servers 并照常绑定本地入站。
   var isWellFormed: Bool {
@@ -293,8 +289,7 @@ extension SslocalRuntimeDocument {
   }
 }
 
-/// A single deployment's encoded contract and receipt identity. Keep this value
-/// local to preparation/deployment so on-disk state is still checked each time.
+/// GUI 准备的配置字节与私有意图摘要；Agent 回执使用独立随机部署身份。
 struct PreparedRuntimeContract: Sendable {
   let document: SslocalRuntimeDocument
   let data: Data
@@ -304,5 +299,13 @@ struct PreparedRuntimeContract: Sendable {
     self.document = document
     data = try document.jsonData()
     sha256 = ProxyACLDocument.digest(data)
+  }
+}
+
+extension Redactor {
+  /// 运行时文档只允许暴露数量与模式元数据。
+  static func documentSummary(_ document: SslocalRuntimeDocument) -> String {
+    let protocols = document.locals.map(\.inboundProtocol).joined(separator: ",")
+    return "servers=\(document.servers.count) protocols=\(protocols) mode=\(document.socksMode)"
   }
 }

@@ -180,10 +180,3 @@ struct ProxyACLDocument: Codable, Equatable, Sendable {
       .joined()
   }
 }
-
-/// Identifies the deployed sslocal child. The wrapper publishes ACL-backed
-/// receipts only after that child owns every configured TCP listener.
-struct RuntimeDeploymentReceipt: Codable, Equatable, Sendable {
-  let processID: Int32
-  let contractSHA256: String
-}

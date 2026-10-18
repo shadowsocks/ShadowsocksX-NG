@@ -208,18 +208,11 @@ targets:
     platform: macOS
     sources:
       - path: Agent
-      # wrapper 与 GUI 共享的跨进程契约：路径常量、运行时文档（含读取侧校验）
-      # 与日志事件基线；监听建立判定复用端点探测。
-      # 注意：以下 10 条是显式文件路径，Domain/ 内移动文件必须同步此处，否则
-      # xcodegen 以 "missing source directory" 使生成失败（实测，不会静默）。
+      # Agent 只共享非秘密监管协议、路径和探针，不编译 sslocal 配置或凭据类型。
+      # 显式文件路径变动必须同步本清单并重新生成工程。
       - path: Domain/Runtime/RuntimePaths.swift
       - path: Domain/Runtime/AtomicFileWriter.swift
-      - path: Domain/Runtime/ProxyACL.swift
-      - path: Domain/Rules/ProxyRule.swift
-      - path: Domain/Runtime/RuntimeListenerAuthentication.swift
-      - path: Domain/Runtime/SslocalRuntimeDocument.swift
-      - path: Domain/Plugin/PluginTransportMode.swift
-      - path: Domain/Runtime/SslocalListenSettings.swift
+      - path: Domain/Runtime/RuntimeSupervision.swift
       - path: Domain/Runtime/RuntimeLog.swift
       - path: Domain/Runtime/EndpointHealthProbe.swift
       - path: Domain/Runtime/RuntimeSocketOwnershipProbe.swift

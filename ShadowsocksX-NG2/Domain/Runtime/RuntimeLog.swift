@@ -33,7 +33,7 @@ enum RuntimeLogEvent: Equatable, CustomStringConvertible, Sendable {
   /// 日志」；监管继续，GUI 健康门负责呈现，端点为本机监听端点不受脱敏限制）。
   case listenNotEstablished(detail: String)
   case contractMissing
-  case contractInvalidRemoved
+  case contractInvalid
   case reloadForwarded
   case reloadDeferred
   case reloadRestarted
@@ -93,8 +93,8 @@ enum RuntimeLogEvent: Equatable, CustomStringConvertible, Sendable {
       return "listen not established within deadline: \(detail)"
     case .contractMissing:
       return "contract missing"
-    case .contractInvalidRemoved:
-      return "contract invalid, removed"
+    case .contractInvalid:
+      return "supervision invalid, preserved"
     case .reloadForwarded:
       return "reload forwarded to sslocal"
     case .reloadDeferred:
@@ -133,11 +133,6 @@ enum Redactor {
     return "\(parsed.scheme ?? "https")://\(host)/…"
   }
 
-  /// 运行时文档只允许暴露数量与模式元数据。
-  static func documentSummary(_ document: SslocalRuntimeDocument) -> String {
-    let protocols = document.locals.map(\.inboundProtocol).joined(separator: ",")
-    return "servers=\(document.servers.count) protocols=\(protocols) mode=\(document.socksMode)"
-  }
 }
 
 /// 事件发射缝：wrapper 与 GUI 共用 stderr 行式输出（wrapper 侧由 launchd/

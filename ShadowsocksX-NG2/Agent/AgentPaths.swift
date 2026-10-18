@@ -26,3 +26,10 @@ let pidFileURL: URL =
 let runtimeStatusFileURL: URL =
   runtimeDirectoryOverride?.appendingPathComponent("agent-runtime-status.json")
   ?? RuntimePaths.agentRuntimeStatusURL()
+
+let supervisionURL = contractURL.deletingLastPathComponent().appendingPathComponent(
+  "agent-supervision.json")
+let failureURL = contractURL.deletingLastPathComponent().appendingPathComponent(
+  "agent-deployment-failure.json")
+
+let childPIDURL = contractURL.deletingLastPathComponent().appendingPathComponent("sslocal.pid")

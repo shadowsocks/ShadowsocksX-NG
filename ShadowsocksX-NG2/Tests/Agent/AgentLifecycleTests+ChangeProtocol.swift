@@ -42,6 +42,7 @@ final class AgentLifecycleChangeProtocolTests: AgentLifecycleTests {
       "监听结构变化走优雅重启：先 SIGTERM 旧实例再以新契约拉起，实际：\(stateLog())")
     XCTAssertTrue(pidAlive(wrapper.processIdentifier), "重启后 wrapper 常驻")
 
+    XCTAssertFalse(stateLog().contains("OVERLAPPING CHILD"), "新实例启动时旧实例必须已退出")
     // 重启后的实例也要能被显式停止。
     kill(wrapper.processIdentifier, SIGTERM)
     XCTAssertEqual(try waitForExit(wrapper), 0)
@@ -57,7 +58,8 @@ final class AgentLifecycleChangeProtocolTests: AgentLifecycleTests {
     let wrapper = try launchWrapper(behavior: "run")
     XCTAssertTrue(
       try waitUntil {
-        runtimeStore.readRuntimeReceipt()?.contractSHA256 == previous.deploymentSHA256
+        runtimeStore.readRuntimeReceipt()?.deploymentID
+          == runtimeStore.receiptIdentity(for: previous)
       }, "首次实例启动后应发布运行回执")
     let previousProcessID = try XCTUnwrap(runtimeStore.readRuntimeReceipt()?.processID)
 
@@ -137,7 +139,7 @@ final class AgentLifecycleStaleListenerTests: AgentLifecycleTests {
 final class AgentLifecycleListenDeadlineTests: AgentLifecycleTests {
   // MARK: 监听建立判定
 
-  func testListenNotEstablishedWithinDeadlineIsLoggedAndSupervisionContinues() throws {
+  func testListenDeadlinePersistsFailureAndStopsChild() throws {
     // stub sslocal 不监听任何端点：超时后应记 error 日志点名端点，且监管继续。
     try writeContract(ProxyRuntimeFixture.makeDocument())
     let wrapper = try launchWrapper(behavior: "run")
@@ -151,10 +153,9 @@ final class AgentLifecycleListenDeadlineTests: AgentLifecycleTests {
         return log.contains("listen not established within deadline")
       },
       "3 秒未建立监听应以 error 日志点名（D10），实际 agent.log：\(agentLog())")
-    XCTAssertTrue(pidAlive(wrapper.processIdentifier), "监听未建立只记日志，监管循环继续")
-
-    kill(wrapper.processIdentifier, SIGTERM)
-    XCTAssertEqual(try waitForExit(wrapper), 0, "后续显式停止链不受影响")
+    XCTAssertEqual(try waitForExit(wrapper), 0)
+    XCTAssertNotNil(RuntimeFileStore(fileURL: contractURL).readFailure())
+    XCTAssertTrue(stateLog().contains("SIGTERM"))
   }
 }
 

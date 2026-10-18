@@ -7,7 +7,7 @@ import Testing
 @MainActor
 struct RuntimeConvergenceTests {
   @Test(arguments: [false, true])
-  func modeDerivationFailureRestoresRuntimeAndReportsPersistenceFailure(
+  func modeDerivationFailurePreservesNewIntentAndPublishedFiles(
     restorePersistenceFails: Bool
   ) async throws {
     let fixture = try Fixture(
@@ -21,16 +21,74 @@ struct RuntimeConvergenceTests {
 
     await fixture.controller.setProxyMode(.rule)
 
-    #expect(fixture.controller.proxyMode == .global)
-    #expect(fixture.controller.settings.preferredMode == .global)
+    #expect(fixture.controller.proxyMode == .rule)
+    #expect(fixture.controller.settings.preferredMode == .rule)
     #expect(fixture.runtimeStore.loadDocument() == previous)
     #expect(
       fixture.controller.state
-        == (restorePersistenceFails ? .serviceFailed(.persistence) : .running))
-    #expect(fixture.settings.saved?.preferredMode == (restorePersistenceFails ? .rule : .global))
+        == .serviceFailed(.runtimeFile))
+    #expect(fixture.settings.saved?.preferredMode == .rule)
     #expect(fixture.controller.systemProxyState == .applied)
     #expect(fixture.proxy.applied.count == appliedCount)
     #expect(fixture.proxy.clearCount == 0)
+  }
+
+  @Test func publishedFailureSurvivesGUIReconstructionAndExplicitRetryWorks() async throws {
+    let fixture = try Fixture(systemProxyEnabled: true)
+    defer { fixture.cleanUp() }
+    try await fixture.controller.activate(fixture.server)
+    fixture.probe.setOutcomes([.refused(detail: "test failure")])
+    await fixture.controller.setProxyMode(.direct)
+    #expect(fixture.controller.proxyMode == .direct)
+    #expect(fixture.controller.settings.agentEnabled)
+    #expect(fixture.controller.settings.systemProxyEnabled)
+    #expect(!fixture.controller.state.isOn)
+    #expect(fixture.proxy.clearCount > 0)
+    let failure = try #require(fixture.runtimeStore.readFailure())
+    let requested = try #require(fixture.runtimeStore.loadDocument())
+    #expect(requested.aclRuntime?.summary == "direct")
+    let registerCount = fixture.agent.registerCount
+    fixture.probe.setOutcomes([.reachable])
+    await fixture.controller.resyncOnLaunch()
+    #expect(fixture.agent.registerCount == registerCount)
+    #expect(fixture.runtimeStore.readFailure() == failure)
+    // 文件存取对象重建后仍使用磁盘失败身份，而非控制器中的瞬时状态。
+    let reopened = RuntimeFileStore(fileURL: fixture.runtimeStore.fileURL)
+    #expect(reopened.readFailure()?.deploymentID == reopened.receiptIdentity(for: requested))
+    await fixture.controller.setAgentEnabled(true)
+    #expect(fixture.controller.state == .running)
+    #expect(fixture.runtimeStore.readFailure() == nil)
+    #expect(fixture.agent.registerCount > registerCount)
+  }
+
+  @Test(arguments: ["configuration", "acl", "intent"])
+  func missingResourcesCannotTurnGUIRestartIntoRetry(resource: String) async throws {
+    let fixture = try Fixture(systemProxyEnabled: true)
+    defer { fixture.cleanUp() }
+    try await fixture.controller.activate(fixture.server)
+    fixture.probe.setOutcomes([.refused(detail: "failure")])
+    await fixture.controller.setProxyMode(.direct)
+    let snapshot = try #require(
+      RuntimePublication.load(at: fixture.runtimeStore.supervisionFileURL))
+    let name =
+      resource == "configuration"
+      ? snapshot.configuration
+      : resource == "intent" ? snapshot.intentFile : try #require(snapshot.acl?.file)
+    try FileManager.default.removeItem(at: fixture.runtime.directory.appendingPathComponent(name))
+    let count = fixture.agent.registerCount
+    let restarted = fixture.reopeningController()
+    defer {
+      restarted.systemProxyObserver.systemProxyHealthTask?.cancel()
+      restarted.cancelFirewallObservation()
+    }
+    fixture.probe.setOutcomes([.reachable])
+    await restarted.resyncOnLaunch()
+    #expect(fixture.agent.registerCount == count)
+    #expect(restarted.state == .serviceFailed(.agent))
+    #expect(fixture.runtimeStore.readFailure()?.deploymentID == snapshot.deploymentID)
+    await restarted.setAgentEnabled(true)
+    #expect(restarted.state == .running)
+    #expect(fixture.agent.registerCount > count)
   }
 
   @Test(arguments: [false, true])
@@ -119,6 +177,27 @@ struct RuntimeConvergenceTests {
         helperRefreshDelayNanoseconds: 0,
         sendSignal: { recorder.send($0, $1) },
         processIsAlive: { recorder.send($0, 0) == 0 })
+    }
+
+    func reopeningController() -> ProxyRuntimeController {
+      ProxyRuntimeController(
+        catalogSnapshotReader: controller.catalogSnapshotReader,
+        activationFileStore: controller.activationFileStore,
+        runtimeFileStore: runtimeStore, credentials: InMemoryCredentialStore(),
+        plugins: ActivationFixture.plugins, settingsStore: settings,
+        customRuleStore: CustomRuleStore(
+          fileURL: runtime.directory.appendingPathComponent("rules.json")),
+        appBundle: AppArtifact.bundle,
+        ruleSnapshots: BuiltinRuleSnapshots(loader: ProxyRuntimeFixture.controlFlowRuleSnapshot),
+        settingsRestore: RestoredProxySettings(settings: controller.settings, unreadableError: nil),
+        agent: agent, probe: probe, systemProxy: proxy,
+        systemProxyHelper: ProxyRuntimeFixture.FakeSystemProxyHelperService(),
+        firewallChecker: ProxyRuntimeFixture.FakeFirewallChecker(),
+        launchHealthTimeoutSeconds: 0.05, launchHealthRetryDelay: { await Task.yield() },
+        systemProxyHealthPollIntervalNanoseconds: 60_000_000_000,
+        helperRefreshDelayNanoseconds: 0,
+        sendSignal: { [signals] in signals.send($0, $1) },
+        processIsAlive: { [signals] in signals.send($0, 0) == 0 })
     }
 
     func cleanUp() {

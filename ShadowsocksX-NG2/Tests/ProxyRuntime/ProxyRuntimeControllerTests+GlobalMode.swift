@@ -4,7 +4,7 @@ import XCTest
 @testable import ShadowsocksX_NG2
 
 /// 全局模式以 ACL 实现：proxy_all + 固定本地绕过；无活动服务器
-/// 时 agent 仍监听、系统代理保持待应用；ACL 变化完整重启并失败回滚。
+/// 时 agent 仍监听、系统代理保持待应用；ACL 变化完整重启，失败保留最新意图。
 final class ProxyRuntimeGlobalModeTests: ProxyRuntimeControllerTests {
   override func makeDefaultRuleSnapshots() -> BuiltinRuleSnapshots {
     BuiltinRuleSnapshots(loader: ProxyRuntimeFixture.controlFlowRuleSnapshot)
@@ -97,7 +97,7 @@ final class ProxyRuntimeGlobalModeTests: ProxyRuntimeControllerTests {
       .init(host: "127.0.0.1", port: ActivationFixture.listen.httpPort))
   }
 
-  func testFailedGlobalInstanceRestoresOldModeRuntimeAndSystemProxy() async throws {
+  func testFailedGlobalInstanceKeepsNewModeAndStopsService() async throws {
     let seeded = try makeSeededCatalog()
     let settingsStore = InMemoryProxySettingsStore()
     let controller = makeController(
@@ -120,13 +120,13 @@ final class ProxyRuntimeGlobalModeTests: ProxyRuntimeControllerTests {
 
     await controller.setProxyMode(.global)
 
-    XCTAssertEqual(controller.proxyMode, .rule, "新实例未验证时恢复旧模式")
-    XCTAssertEqual(controller.settings.preferredMode, .rule)
-    XCTAssertEqual(settingsStore.saved?.preferredMode, .rule)
-    XCTAssertEqual(runtimeStore.loadDocument(), previousDocument)
-    XCTAssertEqual(controller.state, .running, "旧运行时恢复后重新呈现健康")
-    XCTAssertEqual(controller.systemProxyState, .applied)
+    XCTAssertEqual(controller.proxyMode, .global)
+    XCTAssertEqual(controller.settings.preferredMode, .global)
+    XCTAssertEqual(settingsStore.saved?.preferredMode, .global)
+    XCTAssertEqual(runtimeStore.loadDocument()?.aclRuntime?.summary, "global")
+    XCTAssertEqual(controller.state, .serviceFailed(.agent))
+    XCTAssertNotNil(runtimeStore.readFailure())
     XCTAssertEqual(systemProxy.applied.count, previousApplicationCount)
-    XCTAssertEqual(systemProxy.clearCount, 0, "切换失败期间保持系统代理应用")
+    XCTAssertGreaterThan(systemProxy.clearCount, 0)
   }
 }

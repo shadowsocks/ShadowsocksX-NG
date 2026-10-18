@@ -47,8 +47,19 @@ extension ProxyRuntimeController {
   /// 开启则一并持久化为关闭，该 on→off 迁移触发清理，清理后才停止本地监听；
   /// 系统代理意图本就关闭则不做任何系统设置操作。
   func setAgentEnabled(_ enabled: Bool) async {
+    let retryingFailure = enabled && runtimeFileStore.readFailure() != nil
+    if enabled {
+      do { try runtimeFileStore.clearFailure() } catch {
+        state = .serviceFailed(.runtimeFile)
+        return
+      }
+    }
     if enabled == settings.agentEnabled {
       guard enabled else { return }
+      if retryingFailure {
+        await convergeAgent()
+        return
+      }
       if ruleApplicationFailure != nil {
         scheduleRuleApplication()
         return
@@ -142,7 +153,8 @@ extension ProxyRuntimeController {
   /// 启 + agent 关闭」组合保持待应用（不静默清理，也无需网络观察）。
   func stopAgent() async {
     systemProxyObserver.agentDidStop()
-    _ = await execute(.stop, document: nil)
+    let outcome = await execute(.stop, document: nil)
+    guard outcome.succeeded else { return }
     state = .off
     lastDocument = nil
     skippedServers = []
@@ -258,7 +270,10 @@ extension ProxyRuntimeController {
     case .signalReload(let pid):
       return performSignalReload(pid)
     case .deleteRuntimeFiles:
-      runtimeFileStore.deleteRuntimeFiles()
+      do { try runtimeFileStore.deleteRuntimeFiles() } catch {
+        state = .serviceFailed(.runtimeFile)
+        return false
+      }
       RuntimeLog.emit(.runtimeFilesDeleted)
       return true
     }
@@ -314,6 +329,10 @@ extension ProxyRuntimeController {
     }
     RuntimeLog.emit(.agentUnregistered)
     await waitForWrapperExit()
+    guard wrapperState() == .notRunning, !runtimeFileStore.hasUnconfirmedChild else {
+      state = .serviceFailed(.agent)
+      return false
+    }
     return true
   }
 

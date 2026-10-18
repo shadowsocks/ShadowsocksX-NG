@@ -1,161 +1,138 @@
-import XCTest
+import Foundation
+import Testing
 
 @testable import ShadowsocksX_NG2
 
-/// ACL 部署事务通过临时目录与原子写入故障 seam 验证。
-final class RuntimeFileStoreTransactionTests: XCTestCase {
-  private var runtime: ProxyRuntimeFixture.TemporaryRuntime!
-  private var store: RuntimeFileStore!
-
-  override func setUpWithError() throws {
-    runtime = ProxyRuntimeFixture.makeTemporaryRuntime()
-    store = RuntimeFileStore(fileURL: runtime.contract)
-  }
-
-  override func tearDownWithError() throws {
-    try? FileManager.default.removeItem(at: runtime.directory)
-  }
-
-  func testDecodedDocumentContractFailurePreservesExistingVariant() throws {
-    let original = SslocalRuntimeDocument(
-      servers: [], listen: SslocalListenSettings(), acl: .direct(at: store.aclFileURL))
-    try store.write(original)
-    let decoded = try XCTUnwrap(store.loadDocument())
-    let variant = store.aclVariantFileURL(summary: "direct")
-    let bytes = try Data(contentsOf: variant)
-    let failing = RuntimeFileStore(fileURL: runtime.contract) { _, _ in
-      throw NSError(domain: "contract", code: 1)
-    }
-    XCTAssertThrowsError(try failing.write(decoded))
-    XCTAssertEqual(try Data(contentsOf: variant), bytes)
-    XCTAssertEqual(store.loadDocument(), original)
-  }
-
-  func testUnchangedACLFailureDoesNotRewriteVariantOrLink() throws {
-    let document = SslocalRuntimeDocument(
-      servers: [], listen: SslocalListenSettings(), acl: .direct(at: store.aclFileURL))
-    try store.write(document)
-    let variant = store.aclVariantFileURL(summary: "direct")
-    let bytes = try Data(contentsOf: variant)
-    let linkNumber =
-      try FileManager.default.attributesOfItem(atPath: store.aclFileURL.path)[.systemFileNumber]
-      as? NSNumber
-    var touched: [URL] = []
-    let failing = RuntimeFileStore(fileURL: runtime.contract) { _, url in
-      touched.append(url)
-      throw NSError(domain: "contract", code: 1)
-    }
-    XCTAssertThrowsError(try failing.write(document))
-    XCTAssertEqual(touched, [runtime.contract])
-    XCTAssertEqual(try Data(contentsOf: variant), bytes)
-    XCTAssertEqual(
-      try FileManager.default.attributesOfItem(atPath: store.aclFileURL.path)[.systemFileNumber]
-        as? NSNumber, linkNumber)
-  }
-
-  func testLinkRestoreFailureStillRestoresVariant() throws {
-    let old = SslocalRuntimeDocument(
-      servers: [], listen: SslocalListenSettings(), acl: .global(at: store.aclFileURL))
+struct RuntimeFileStoreTransactionTests {
+  @Test(arguments: ["config-", "acl-", "agent-supervision.json"])
+  func failedPreparationPreservesPublishedDeployment(failingName: String) throws {
+    let runtime = ProxyRuntimeFixture.makeTemporaryRuntime()
+    defer { try? FileManager.default.removeItem(at: runtime.directory) }
+    let store = RuntimeFileStore(fileURL: runtime.contract)
+    let old = ProxyRuntimeFixture.makeDocument().replacingACL(.direct(at: store.aclFileURL))
     try store.write(old)
-    let variant = store.aclVariantFileURL(summary: "global")
-    let oldBytes = try Data(contentsOf: variant)
-    try store.write(old.replacingACL(.direct(at: store.aclFileURL)))
+    let before = try Data(contentsOf: store.supervisionFileURL)
+    let files = try FileManager.default.contentsOfDirectory(atPath: runtime.directory.path).sorted()
     let failing = RuntimeFileStore(fileURL: runtime.contract) { data, url in
-      if url == self.runtime.contract {
-        try FileManager.default.removeItem(at: self.store.aclFileURL)
-        try FileManager.default.createDirectory(
-          at: self.store.aclFileURL, withIntermediateDirectories: false)
-        throw NSError(domain: "contract", code: 1)
-      }
+      if url.lastPathComponent.hasPrefix(failingName) { throw POSIXError(.ENOSPC) }
       try AtomicFileWriter.write(data, to: url)
     }
-    let changed = old.replacingACL(
-      ProxyACLDocument(
-        path: store.aclFileURL.path, summary: "global",
-        content: "[proxy_all]\n[bypass_list]\nexample.com\n"))
-    XCTAssertThrowsError(try failing.write(changed)) { error in
-      guard case RuntimeFileStore.PersistenceError.rollbackFailed = error else {
-        return XCTFail("Expected explicit link rollback failure: \(error)")
-      }
+    #expect(throws: (any Error).self) {
+      try failing.write(old.replacingACL(.global(at: store.aclFileURL)))
     }
-    XCTAssertEqual(try Data(contentsOf: variant), oldBytes)
+    #expect(try Data(contentsOf: store.supervisionFileURL) == before)
+    #expect(store.loadDocument() == old)
+    #expect(
+      try FileManager.default.contentsOfDirectory(atPath: runtime.directory.path).sorted() == files)
   }
 
-  func testDecodedDocumentRejectsMissingOrSymlinkVariant() throws {
-    let document = SslocalRuntimeDocument(
-      servers: [], listen: SslocalListenSettings(), acl: .direct(at: store.aclFileURL))
-    try store.write(document)
-    let decoded = try XCTUnwrap(store.loadDocument())
-    let before = try Data(contentsOf: runtime.contract)
-    let variant = store.aclVariantFileURL(summary: "direct")
-    try FileManager.default.removeItem(at: variant)
-    XCTAssertThrowsError(try store.write(decoded))
-    try FileManager.default.createSymbolicLink(
-      atPath: variant.path, withDestinationPath: runtime.contract.path)
-    XCTAssertThrowsError(try store.write(decoded))
-    XCTAssertEqual(try Data(contentsOf: runtime.contract), before)
+  @Test func reuseAndRetirementProtectPublishedCachesAndFuturePreparations() throws {
+    let runtime = ProxyRuntimeFixture.makeTemporaryRuntime()
+    defer { try? FileManager.default.removeItem(at: runtime.directory) }
+    let store = RuntimeFileStore(fileURL: runtime.contract)
+    let direct = ProxyRuntimeFixture.makeDocument().replacingACL(.direct(at: store.aclFileURL))
+    try store.write(direct)
+    let first = try #require(RuntimePublication.load(at: store.supervisionFileURL))
+    try RuntimePublication.select(
+      first, configurationLink: runtime.contract, aclLink: store.aclFileURL)
+    try store.write(direct.replacingACL(.global(at: store.aclFileURL)))
+    let second = try #require(RuntimePublication.load(at: store.supervisionFileURL))
+    let futureName = "config-00000000000000000099-sslocal.json"
+    let future = runtime.directory.appendingPathComponent(futureName)
+    try AtomicFileWriter.write(Data("preparing".utf8), to: future)
+    // Agent 持有旧快照，GUI 已发布新代；旧进程和新发布引用必须同时存活。
+    try RuntimePublication.retire(
+      before: second, publishedAt: store.supervisionFileURL,
+      protecting: first.retainedFiles)
+    #expect(
+      first.retainedFiles.union(second.retainedFiles).allSatisfy {
+        FileManager.default.fileExists(atPath: runtime.directory.appendingPathComponent($0).path)
+      })
+    try store.write(direct)
+    let third = try #require(RuntimePublication.load(at: store.supervisionFileURL))
+    #expect(third.acl == first.acl)
+    try RuntimePublication.retire(
+      before: second, publishedAt: store.supervisionFileURL,
+      protecting: first.retainedFiles)
+    #expect(
+      FileManager.default.fileExists(
+        atPath: runtime.directory.appendingPathComponent(third.configuration).path))
+    try RuntimePublication.select(
+      third, configurationLink: runtime.contract, aclLink: store.aclFileURL)
+    try RuntimePublication.retire(
+      before: third, publishedAt: store.supervisionFileURL, protecting: [])
+    #expect(
+      !FileManager.default.fileExists(
+        atPath: runtime.directory.appendingPathComponent(first.configuration).path))
+    #expect(FileManager.default.fileExists(atPath: future.path))
+    #expect(try String(contentsOf: store.aclFileURL, encoding: .utf8) == direct.aclRuntime?.content)
   }
+}
 
-  func testRollbackFailureStillRestoresOtherChangedResources() throws {
-    let old = SslocalRuntimeDocument(
-      servers: [], listen: SslocalListenSettings(), acl: .direct(at: store.aclFileURL))
-    try store.write(old)
-    let global = SslocalRuntimeDocument(
-      servers: [], listen: SslocalListenSettings(), acl: .global(at: store.aclFileURL))
-    try store.write(global)
-    try store.write(old)
-    let variant = store.aclVariantFileURL(summary: "global")
-    var writes = 0
+extension RuntimeFileStoreTransactionTests {
+  @Test func writerErrorAfterPublicationDoesNotDeletePublishedResources() throws {
+    let runtime = ProxyRuntimeFixture.makeTemporaryRuntime()
+    defer { try? FileManager.default.removeItem(at: runtime.directory) }
+    let store = RuntimeFileStore(fileURL: runtime.contract)
     let failing = RuntimeFileStore(fileURL: runtime.contract) { data, url in
-      if url == self.runtime.contract { throw NSError(domain: "contract", code: 1) }
-      if url == variant {
-        writes += 1
-        if writes == 2 { throw NSError(domain: "restore", code: 2) }
-      }
       try AtomicFileWriter.write(data, to: url)
+      if url == store.supervisionFileURL { throw POSIXError(.EIO) }
     }
-    let changed = SslocalRuntimeDocument(
-      servers: [], listen: SslocalListenSettings(),
-      acl: ProxyACLDocument(
-        path: store.aclFileURL.path, summary: "global",
-        content: "[proxy_all]\n[bypass_list]\n127.0.0.1\n"))
-    XCTAssertThrowsError(try failing.write(changed)) { error in
-      guard case RuntimeFileStore.PersistenceError.rollbackFailed = error else {
-        return XCTFail("Expected explicit rollback failure: \(error)")
-      }
-    }
-    XCTAssertEqual(
-      try FileManager.default.destinationOfSymbolicLink(atPath: store.aclFileURL.path),
-      "acl-direct.ini")
-    XCTAssertEqual(try Data(contentsOf: runtime.contract), try old.jsonData())
+    #expect(throws: (any Error).self) { try failing.write(ProxyRuntimeFixture.makeDocument()) }
+    #expect(store.loadDocument() == ProxyRuntimeFixture.makeDocument())
+    #expect(RuntimePublication.load(at: store.supervisionFileURL) != nil)
   }
 
-  func testPreparationFailureRestoresWrittenVariantAndReportsRestoreFailure() throws {
-    let document = SslocalRuntimeDocument(
-      servers: [], listen: SslocalListenSettings(), acl: .direct(at: store.aclFileURL))
-    try store.write(document)
-    let variant = store.aclVariantFileURL(summary: "direct")
-    try FileManager.default.removeItem(at: store.aclFileURL)
-    try FileManager.default.createDirectory(
-      at: store.aclFileURL, withIntermediateDirectories: false)
-    var writes = 0
-    let failing = RuntimeFileStore(fileURL: runtime.contract) { data, url in
-      if url == variant {
-        writes += 1
-        if writes == 2 { throw NSError(domain: "restore", code: 1) }
+  @Test func cleanupWaitsForPublicationAndKeepsReusedOlderACL() async throws {
+    let runtime = ProxyRuntimeFixture.makeTemporaryRuntime()
+    defer { try? FileManager.default.removeItem(at: runtime.directory) }
+    let store = RuntimeFileStore(fileURL: runtime.contract)
+    let direct = ProxyRuntimeFixture.makeDocument().replacingACL(.direct(at: store.aclFileURL))
+    try store.write(direct)
+    try store.write(direct.replacingACL(.global(at: store.aclFileURL)))
+    let stale = try #require(RuntimePublication.load(at: store.supervisionFileURL))
+    let preparing = DispatchSemaphore(value: 0)
+    let release = DispatchSemaphore(value: 0)
+    let retired = DispatchSemaphore(value: 0)
+    let contractURL = runtime.contract
+    let publishedURL = store.supervisionFileURL
+    let writer = Task.detached {
+      let preparingStore = RuntimeFileStore(fileURL: contractURL) { data, url in
+        if url.lastPathComponent.hasSuffix("-sslocal.json") {
+          preparing.signal()
+          guard release.wait(timeout: .now() + 5) == .success else { throw POSIXError(.ETIMEDOUT) }
+        }
+        try AtomicFileWriter.write(data, to: url)
       }
-      try AtomicFileWriter.write(data, to: url)
+      try preparingStore.write(direct)
     }
-    let changed = document.replacingACL(
-      ProxyACLDocument(
-        path: store.aclFileURL.path, summary: "direct",
-        content: "[bypass_all]\n[proxy_list]\nexample.com\n"))
-    XCTAssertThrowsError(try failing.write(changed)) { error in
-      guard case RuntimeFileStore.PersistenceError.rollbackFailed = error else {
-        return XCTFail("Expected explicit preparation rollback failure: \(error)")
-      }
+    let awaitPreparation = { preparing.wait(timeout: .now() + 5) }
+    #expect(awaitPreparation() == .success)
+    let cleanup = Task.detached {
+      defer { retired.signal() }
+      try RuntimePublication.retire(before: stale, publishedAt: publishedURL, protecting: [])
     }
-    XCTAssertEqual(writes, 2)
+    let awaitRetirement = { retired.wait(timeout: .now() + 0.05) }
+    #expect(awaitRetirement() == .timedOut)
+    release.signal()
+    try await writer.value
+    try await cleanup.value
+    let current = try #require(RuntimePublication.load(at: publishedURL))
+    #expect(current.generation > stale.generation)
+    #expect(current.acl == stale.aclVariants["direct"])
+    #expect(store.loadDocument() == direct)
   }
+}
 
+extension RuntimeFileStoreTransactionTests {
+  @Test func successfulGUIObservationCannotEraseAgentsCurrentFailure() throws {
+    let runtime = ProxyRuntimeFixture.makeTemporaryRuntime()
+    defer { try? FileManager.default.removeItem(at: runtime.directory) }
+    let store = RuntimeFileStore(fileURL: runtime.contract)
+    try store.write(ProxyRuntimeFixture.makeDocument())
+    try store.recordFailure(reason: "Agent observed failure after GUI probe")
+    let failure = try #require(store.readFailure())
+    #expect(throws: (any Error).self) { try store.settleSuccessfulDeployment() }
+    #expect(store.readFailure() == failure)
+  }
 }

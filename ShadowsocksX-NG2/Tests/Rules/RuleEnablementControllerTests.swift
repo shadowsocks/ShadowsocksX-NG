@@ -243,15 +243,15 @@ final class RuleEnablementControllerTests: ProxyRuntimeControllerTests {
 }
 
 extension RuleEnablementControllerTests {
-  func testAgentOffDuringRecoveryCannotBeOverwrittenByOldRuleTransaction() async throws {
-    try await interruptRuleRecovery(switchMode: false)
+  func testAgentOffDuringDeploymentCannotBeOverwrittenByOldRuleTransaction() async throws {
+    try await interruptRuleDeployment(switchMode: false)
   }
 
-  func testModeSwitchDuringRecoveryCannotBeOverwrittenByOldRuleTransaction() async throws {
-    try await interruptRuleRecovery(switchMode: true)
+  func testModeSwitchDuringDeploymentCannotBeOverwrittenByOldRuleTransaction() async throws {
+    try await interruptRuleDeployment(switchMode: true)
   }
 
-  private func interruptRuleRecovery(switchMode: Bool) async throws {
+  private func interruptRuleDeployment(switchMode: Bool) async throws {
     let seeded = try makeSeededCatalog()
     let (store, _) = try makeCustomRuleStore()
     let rule = CustomRule(action: .direct, match: .domainExact("kept.example"))
@@ -259,16 +259,16 @@ extension RuleEnablementControllerTests {
     let settings = ProxySettings(
       listen: ActivationFixture.listen, preferredMode: .rule,
       ruleDefaultAction: .proxyWhenUnmatched, agentEnabled: true)
-    let recoveryWaiting = expectation(description: "recovery health retry paused")
-    let recoveryGate = RuleRuntimeDelayGate(started: recoveryWaiting)
-    defer { recoveryGate.resume() }
-    var recoveryIsRunning = false
+    let deploymentWaiting = expectation(description: "deployment health retry paused")
+    let deploymentGate = RuleRuntimeDelayGate(started: deploymentWaiting)
+    defer { deploymentGate.resume() }
+    var deploymentIsRunning = false
     let controller = makeRuleEnablementController(
       store: store, settings: settings, proxyMode: .rule,
       launchHealthTimeoutSeconds: 0.05,
       launchHealthRetryDelay: {
-        if recoveryIsRunning {
-          await recoveryGate.wait()
+        if deploymentIsRunning {
+          await deploymentGate.wait()
         } else {
           try await Task.sleep(for: .milliseconds(1))
         }
@@ -276,19 +276,19 @@ extension RuleEnablementControllerTests {
     try await controller.activate(seeded.server)
     let runtimeStore = RuntimeFileStore(fileURL: runtime.contract)
     let initialRegistrations = agent.registerCount
-    configureRecoveryReceipts(runtimeStore, initialRegistrations: initialRegistrations) {
-      recoveryIsRunning = true
+    configureDeploymentReceipts(runtimeStore, initialRegistrations: initialRegistrations) {
+      deploymentIsRunning = true
     }
     let disabledDocument = CustomRuleDocument(rules: [rule], disabledIdentities: [rule.identity])
     let pending = Task { await controller.updateRuleDocument(disabledDocument) }
-    await fulfillment(of: [recoveryWaiting], timeout: 5)
+    await fulfillment(of: [deploymentWaiting], timeout: 5)
     if switchMode {
       await controller.setProxyMode(.global)
     } else {
       await controller.setAgentEnabled(false)
     }
     let registrations = agent.registerCount
-    recoveryGate.resume()
+    deploymentGate.resume()
     let outcome = await pending.value
     XCTAssertEqual(outcome, .saved)
     await controller.ruleApplicationTask?.value
@@ -304,14 +304,14 @@ extension RuleEnablementControllerTests {
     }
   }
 
-  private func configureRecoveryReceipts(
+  private func configureDeploymentReceipts(
     _ runtimeStore: RuntimeFileStore,
     initialRegistrations: Int,
-    onRecovery: @escaping () -> Void
+    onDeployment: @escaping () -> Void
   ) {
     agent.onRegister = { [agent] in
-      if agent?.registerCount == initialRegistrations + 2 { onRecovery() }
-      if (agent?.registerCount ?? 0) <= initialRegistrations + 2 {
+      if agent?.registerCount == initialRegistrations + 1 {
+        onDeployment()
         try? FileManager.default.removeItem(at: runtimeStore.runtimeStatusFileURL)
       } else if let document = runtimeStore.loadDocument() {
         try? runtimeStore.writeRuntimeReceipt(for: document, processID: 42)
@@ -319,7 +319,7 @@ extension RuleEnablementControllerTests {
     }
   }
 
-  func testFailedDisableAndFailedRuntimeRecoveryReportsFailure() async throws {
+  func testFailedDisableKeepsSavedIntentAndReportsDeploymentFailure() async throws {
     let seeded = try makeSeededCatalog()
     let (store, _) = try makeCustomRuleStore()
     let rule = CustomRule(action: .direct, match: .domainExact("kept.example"))
