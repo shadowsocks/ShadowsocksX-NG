@@ -175,13 +175,17 @@ struct LANListeningWorkflowTests {
     draft.isEnabled = true
     draft.mode = .allIPv4Interfaces
     let submission = Task { await workflow.saveLANListening(draft) }
-    await probe.waitUntilEntered()
-    #expect(workflow.isCommitting)
-    #expect(await workflow.saveProxyExceptions("example.com") == .rejected(.inProgress))
-    probe.passThrough(.free)
-    probe.releaseGatedCalls()
-    #expect(await submission.value == .persisted)
-    #expect(!workflow.isCommitting)
+    try await withTestTask(
+      submission, release: { probe.releaseGatedCalls() },
+      body: {
+        try await probe.waitUntilEntered()
+        #expect(workflow.isCommitting)
+        #expect(await workflow.saveProxyExceptions("example.com") == .rejected(.inProgress))
+        probe.passThrough(.free)
+        probe.releaseGatedCalls()
+        #expect(await submission.value == .persisted)
+        #expect(!workflow.isCommitting)
+      })
   }
 
   @Test(arguments: [

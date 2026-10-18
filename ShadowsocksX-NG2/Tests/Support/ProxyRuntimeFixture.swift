@@ -254,14 +254,14 @@ enum ProxyRuntimeFixture {
   /// 线程，不占主 actor）。放行后恢复直通。
   final class BlockingProbe: EndpointProbing, @unchecked Sendable {
     private let lock = NSLock()
-    private var gate: DispatchSemaphore?
+    private var gate: TestBlockingGate?
     private var started: XCTestExpectation?
 
     func arm(started: XCTestExpectation) {
       lock.lock()
       defer { lock.unlock() }
       precondition(gate == nil, "上一次 arm 尚未 release")
-      gate = DispatchSemaphore(value: 0)
+      gate = TestBlockingGate("runtime fixture release")
       self.started = started
     }
 
@@ -271,7 +271,7 @@ enum ProxyRuntimeFixture {
       self.gate = nil
       self.started = nil
       lock.unlock()
-      gate?.signal()
+      gate?.release()
     }
 
     func probe(host: String, port: Int, timeout: TimeInterval) -> EndpointHealthProbe.Outcome {
@@ -281,7 +281,7 @@ enum ProxyRuntimeFixture {
       lock.unlock()
       if let gate {
         started?.fulfill()
-        gate.wait()
+        _ = gate.wait()
       }
       return .reachable
     }
@@ -295,7 +295,7 @@ enum ProxyRuntimeFixture {
     private let outcomes: [FirewallBlockStatus]
     private let blockOnCall: Int
     private let started: XCTestExpectation
-    private let gate = DispatchSemaphore(value: 0)
+    private let gate = TestBlockingGate("runtime fixture release")
 
     init(outcomes: [FirewallBlockStatus], blockOnCall: Int, started: XCTestExpectation) {
       precondition(!outcomes.isEmpty)
@@ -304,7 +304,7 @@ enum ProxyRuntimeFixture {
       self.started = started
     }
 
-    func release() { gate.signal() }
+    func release() { gate.release() }
 
     func status(for executableURL: URL) -> FirewallBlockStatus {
       lock.lock()
@@ -313,7 +313,7 @@ enum ProxyRuntimeFixture {
       lock.unlock()
       if call == blockOnCall {
         started.fulfill()
-        gate.wait()
+        _ = gate.wait()
       }
       return outcomes[min(call, outcomes.count) - 1]
     }

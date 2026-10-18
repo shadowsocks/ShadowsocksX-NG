@@ -34,6 +34,7 @@ ShadowsocksX-NG 的现代化重写版本。新工程的全部源码与构建配�
   跨进程契约按**文件**编入其它 target：`Runtime/` 的 10 个文件同时编入 wrapper（`RuntimePaths`、`SslocalRuntimeDocument`、`RuntimeLog` 等），`SystemProxy/` 全部 6 个文件编入特权 helper。`project.yml` 里这 16 条是显式路径，在 `Domain/` 内移动文件必须同步，漏改会让 `xcodegen generate` 以缺文件直接失败。布局守卫（`Tests/Architecture/SkeletonTests.swift` 的 `DomainLayoutTests`）断言根下无平铺 `.swift`、树下只有 `.swift`（非源码文件会被 XcodeGen 收进 Resources 阶段并封进签名后的 bundle）。
 - `Tests/` — 单元测试 target，随 `ShadowsocksX-NG2` scheme 运行。目录即主题，根下不留平铺测试文件：
   - `Architecture/` — 跨切面工程约束守卫（分层与布局、平台效应 seam、开窗落点、清单完整性），扫源码或构建产物而不驱动行为。
+  - `TestSupport/` — 测试等待与清理 helper 的故障回归用例。
   - `Support/` — 夹具、替身与 helper，不含用例（`CatalogFixtures`、`ProxyRuntimeFixture`、`SystemProxyFakes`、`AppArtifact`、`TestSourceTree` 等）。
   - `Agent/`、`Activation/`、`Catalog/`（工作流用例在 `Catalog/Workflow/`）、`Subscription/`、`Rules/`（自定义规则在 `Rules/Custom/`）、`ProxyRuntime/`、`ProxyControl/`、`Runtime/`、`Settings/`、`SystemProxy/`、`Plugin/`、`Diagnostics/`、`Credentials/`、`Workspace/`、`Servers/` — 按功能领域的用例，与生产代码的领域主题和 `*Workflow` 同名同界。
   - `Smoke/` — 真实进程冒烟，独立 target 与 scheme（`task test:smoke`）。
@@ -96,6 +97,8 @@ task --exit-code --taskfile ShadowsocksX-NG2/Taskfile.dist.yml validate -- lint 
 测试关通过本机 `xcrun xcresulttool get test-results summary` 和系统 `plutil` 尽力读取计数，无需新增脚本或工具依赖。`test-summary.json` 保存原始摘要，`test-summary.stderr.log` 保存 xcresulttool 错误，`count-reader.log` 保存计数读取错误。汇总展示通过、失败、跳过、预期失败及总数（Xcode 汇总口径，参数化测试的实际执行次数可能不同）。关卡与总体退出码由原命令决定，命令失败始终保留失败。结果包缺失或摘要不可读时显著标注 `evidence incomplete`（证据不完整）、计数未知，不改变命令结果，也不把缺失计数写成零。构建关不读取测试计数；未执行的关卡不等同于测试跳过。
 
 统一入口成功表示所选关卡的命令通过，仍需核对证据是否完整；hostless、真实进程 smoke、原生 UI 和真实系统代理的验收边界仍分别成立，发布打包门槛见下文。
+
+`task test` 与 `task test:smoke` 显式启用 Xcode 单测试超时：默认 120 秒，上限 300 秒。这是 runner 兜底，不保证测试任务正常清理，也不是性能门槛。规则阶段等待失败会抛错退出测试体；受保护的测试任务先释放夹具，再取消并等待结束。规则延迟 gate 和同步阻塞夹具的默认等待上限为 10 秒，超时必须报告失败。共享 `AsyncGate` 保留由用例控制的取消语义。Swift Testing 的 detached worker 超时报告保留创建用例名称和源码位置；应同时核对命令退出码与测试计数，不能仅凭单例通过数判断成功。
 
 在本目录内，日常格式化、静态检查、工程生成、构建和测试优先使用 `Taskfile.dist.yml` 定义的任务：
 

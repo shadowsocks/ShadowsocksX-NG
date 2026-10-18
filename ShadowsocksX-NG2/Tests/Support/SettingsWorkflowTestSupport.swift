@@ -191,18 +191,16 @@ final class FakeOccupancyProbe: PortOccupancyProbing, @unchecked Sendable {
 /// 新一轮之后落盘，验证过期结果不得覆盖。
 final class GatedOccupancyProbe: PortOccupancyProbing, @unchecked Sendable {
   private let lock = NSLock()
-  private let gate = DispatchGroup()
+  private let gate = TestBlockingGate("occupancy probe release")
   private var isGated = true
   private var enteredCount = 0
-  private let entry = AsyncGate()
-  private var released = false
+  private let entry = XCTestExpectation(description: "occupancy probe entered")
   private var gatedAnswer: PortOccupancy
   private var passThroughAnswer: PortOccupancy
 
   init(gatedAnswer: PortOccupancy, passThroughAnswer: PortOccupancy) {
     self.gatedAnswer = gatedAnswer
     self.passThroughAnswer = passThroughAnswer
-    gate.enter()
   }
 
   /// 已进入探测的调用数（按端口标识序，socks 先于 http）。
@@ -212,8 +210,8 @@ final class GatedOccupancyProbe: PortOccupancyProbing, @unchecked Sendable {
     return enteredCount
   }
 
-  func waitUntilEntered() async {
-    await entry.wait()
+  func waitUntilEntered() async throws {
+    try await requireTestPhase([entry])
   }
 
   /// 之后的调用立即返回 `answer`；已进入且被扣住的调用仍持有各自应答。
@@ -227,24 +225,21 @@ final class GatedOccupancyProbe: PortOccupancyProbing, @unchecked Sendable {
   /// 放行全部被扣住的调用（广播门闩）。
   func releaseGatedCalls() {
     lock.lock()
-    let shouldRelease = !released
-    released = true
     isGated = false
     lock.unlock()
-    if shouldRelease {
-      gate.leave()
-    }
+    gate.release()
   }
 
   func occupancy(for request: PortOccupancyProbeRequest) -> PortOccupancy {
     lock.lock()
     enteredCount += 1
+    let firstEntry = enteredCount == 1
     let gated = isGated
     let answer = gated ? gatedAnswer : passThroughAnswer
     lock.unlock()
-    entry.release()
-    if gated {
-      gate.wait()
+    if firstEntry { entry.fulfill() }
+    if gated, !gate.wait() {
+      return .unknown(detail: "Test fixture release timed out")
     }
     return answer
   }

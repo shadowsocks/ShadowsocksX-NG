@@ -5,6 +5,7 @@ vars:
   PROJECT_NAME: "ShadowsocksX-NG2"
   BUILD_DIR: "{{ .TASKFILE_DIR }}/.build"
   DERIVED_DATA_DIR: "{{ .BUILD_DIR }}/derivedData"
+  TEST_TIMEOUT_ARGS: '-test-timeouts-enabled YES -default-test-execution-time-allowance 120 -maximum-test-execution-time-allowance 300'
 
 tasks:
   validate:
@@ -167,6 +168,7 @@ tasks:
         -destination 'platform=macOS,arch=arm64'
         -derivedDataPath {{ .DERIVED_DATA_DIR }}
         {{if .RESULT_BUNDLE_PATH}}-resultBundlePath {{.RESULT_BUNDLE_PATH | shellQuote}}{{end}}
+        {{.TEST_TIMEOUT_ARGS}}
         test
 
   test:binaries:
@@ -192,6 +194,7 @@ tasks:
         -destination 'platform=macOS,arch=arm64'
         -derivedDataPath {{ .DERIVED_DATA_DIR }}
         {{if .RESULT_BUNDLE_PATH}}-resultBundlePath {{.RESULT_BUNDLE_PATH | shellQuote}}{{end}}
+        {{.TEST_TIMEOUT_ARGS}}
         test
 
   clean:

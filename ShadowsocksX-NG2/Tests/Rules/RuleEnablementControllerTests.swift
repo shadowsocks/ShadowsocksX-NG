@@ -38,23 +38,28 @@ final class RuleEnablementControllerTests: ProxyRuntimeControllerTests {
       store: store,
       settings: ProxySettings(
         listen: ActivationFixture.listen, preferredMode: .rule, agentEnabled: true),
-      proxyMode: .rule, ruleApplicationDelay: { await applicationGate.wait() })
+      proxyMode: .rule, ruleApplicationDelay: { try await applicationGate.wait() })
     try await controller.activate(seeded.server)
     let before = agent.registerCount
     let one = await controller.commitRuleDocument(CustomRuleDocument(rules: [first]))
-    await fulfillment(of: [applicationStarted], timeout: 3)
-    let two = await controller.commitRuleDocument(CustomRuleDocument(rules: [latest]))
-    XCTAssertEqual(one.outcome, .saved)
-    XCTAssertEqual(two.outcome, .saved)
-    XCTAssertEqual(try store.load(), [latest])
-    XCTAssertEqual(
-      agent.registerCount, before, "Saving does not wait for or start deployment inline")
-    applicationGate.resume()
-    await controller.ruleApplicationTask?.value
-    XCTAssertEqual(agent.registerCount, before + 1)
-    let content = try activeACLContent(RuntimeFileStore(fileURL: runtime.contract))
-    XCTAssertTrue(content.contains("latest-save.example"))
-    XCTAssertFalse(content.contains("first-save.example"))
+    try await withRuleApplicationTask(
+      try XCTUnwrap(controller.ruleApplicationTask), controller: controller,
+      release: applicationGate.resume,
+      body: {
+        try await requireTestPhase([applicationStarted], timeout: 3)
+        let two = await controller.commitRuleDocument(CustomRuleDocument(rules: [latest]))
+        XCTAssertEqual(one.outcome, .saved)
+        XCTAssertEqual(two.outcome, .saved)
+        XCTAssertEqual(try store.load(), [latest])
+        XCTAssertEqual(
+          agent.registerCount, before, "Saving does not wait for or start deployment inline")
+        applicationGate.resume()
+        await controller.ruleApplicationTask?.value
+        XCTAssertEqual(agent.registerCount, before + 1)
+        let content = try activeACLContent(RuntimeFileStore(fileURL: runtime.contract))
+        XCTAssertTrue(content.contains("latest-save.example"))
+        XCTAssertFalse(content.contains("first-save.example"))
+      })
   }
 
   func testSaveDuringDeploymentIsAcceptedAndLatestDocumentConvergesAfterIt() async throws {
@@ -70,7 +75,7 @@ final class RuleEnablementControllerTests: ProxyRuntimeControllerTests {
       settings: ProxySettings(
         listen: ActivationFixture.listen, preferredMode: .rule, agentEnabled: true),
       proxyMode: .rule, launchHealthTimeoutSeconds: 0.3,
-      launchHealthRetryDelay: { await healthGate.wait() })
+      launchHealthRetryDelay: { try await healthGate.wait() })
     try await controller.activate(seeded.server)
     let runtimeStore = RuntimeFileStore(fileURL: runtime.contract)
     let started = expectation(description: "first deployment awaiting receipt")
@@ -88,20 +93,26 @@ final class RuleEnablementControllerTests: ProxyRuntimeControllerTests {
     }
     let one = await controller.commitRuleDocument(CustomRuleDocument(rules: [first]))
     XCTAssertEqual(one.outcome, .saved)
-    await fulfillment(of: [started, healthWaiting], timeout: 3)
-    let two = await controller.commitRuleDocument(CustomRuleDocument(rules: [latest]))
-    XCTAssertEqual(two.outcome, .saved)
-    XCTAssertEqual(try store.load(), [latest])
-    XCTAssertEqual(agent.registerCount, before + 1, "A new save cannot overlap rule deployments")
-    try runtimeStore.writeRuntimeReceipt(for: XCTUnwrap(firstDocument), processID: 42)
-    healthGate.resume()
-    await controller.ruleApplicationTask?.value
-    XCTAssertEqual(try store.load(), [latest])
-    XCTAssertEqual(agent.registerCount, before + 2)
-    let content = try activeACLContent(runtimeStore)
-    XCTAssertTrue(content.contains("after-flight.example"))
-    XCTAssertFalse(content.contains("in-flight.example"))
-    XCTAssertEqual(controller.state, .running)
+    try await withRuleApplicationTask(
+      try XCTUnwrap(controller.ruleApplicationTask), controller: controller,
+      release: healthGate.resume,
+      body: {
+        try await requireTestPhase([started, healthWaiting], timeout: 3)
+        let two = await controller.commitRuleDocument(CustomRuleDocument(rules: [latest]))
+        XCTAssertEqual(two.outcome, .saved)
+        XCTAssertEqual(try store.load(), [latest])
+        XCTAssertEqual(
+          agent.registerCount, before + 1, "A new save cannot overlap rule deployments")
+        try runtimeStore.writeRuntimeReceipt(for: XCTUnwrap(firstDocument), processID: 42)
+        healthGate.resume()
+        await controller.ruleApplicationTask?.value
+        XCTAssertEqual(try store.load(), [latest])
+        XCTAssertEqual(agent.registerCount, before + 2)
+        let content = try activeACLContent(runtimeStore)
+        XCTAssertTrue(content.contains("after-flight.example"))
+        XCTAssertFalse(content.contains("in-flight.example"))
+        XCTAssertEqual(controller.state, .running)
+      })
   }
 
   func testNewPreparationStopsRemainingActionsOfAnAwaitingRuntimeOperation() async throws {
@@ -109,7 +120,7 @@ final class RuleEnablementControllerTests: ProxyRuntimeControllerTests {
     let (store, _) = try makeCustomRuleStore()
     let started = expectation(description: "new source preparation")
     let loader = PausedRuntimeRuleSource(started: started)
-    defer { loader.release.signal() }
+    defer { loader.resume() }
     let controller = makeRuleEnablementController(
       store: store,
       settings: ProxySettings(
@@ -122,17 +133,26 @@ final class RuleEnablementControllerTests: ProxyRuntimeControllerTests {
     let unregistered = expectation(description: "old operation waiting for wrapper exit")
     agent.onUnregister = { unregistered.fulfill() }
     let oldOperation = Task { await controller.execute(.stop, document: nil) }
-    await fulfillment(of: [unregistered], timeout: 3)
-    let newMode = Task { await controller.setProxyMode(.rule) }
-    await fulfillment(of: [started], timeout: 3)
-    try FileManager.default.removeItem(at: runtimeStore.pidFileURL)
-    let completed = await oldOperation.value
-    XCTAssertFalse(completed.succeeded)
-    XCTAssertEqual(runtimeStore.loadDocument(), previous, "Stale stop must not delete the contract")
-    loader.release.signal()
-    await newMode.value
-    XCTAssertEqual(controller.lastDocument?.aclRuntime?.summary, "rule-proxy-default")
-    XCTAssertEqual(controller.state, .running)
+    try await withTestTask(
+      oldOperation, release: { loader.resume() },
+      body: {
+        try await requireTestPhase([unregistered], timeout: 3)
+        let newMode = Task { await controller.setProxyMode(.rule) }
+        try await withTestTask(
+          newMode, release: { loader.resume() },
+          body: {
+            try await requireTestPhase([started], timeout: 3)
+            try FileManager.default.removeItem(at: runtimeStore.pidFileURL)
+            let completed = await oldOperation.value
+            XCTAssertFalse(completed.succeeded)
+            XCTAssertEqual(
+              runtimeStore.loadDocument(), previous, "Stale stop must not delete the contract")
+            loader.resume()
+            await newMode.value
+            XCTAssertEqual(controller.lastDocument?.aclRuntime?.summary, "rule-proxy-default")
+            XCTAssertEqual(controller.state, .running)
+          })
+      })
   }
 
   func testSystemProxyToggleDoesNotDiscardPendingRuleModePreparation() async throws {
@@ -140,7 +160,7 @@ final class RuleEnablementControllerTests: ProxyRuntimeControllerTests {
     let (store, _) = try makeCustomRuleStore()
     let started = expectation(description: "background source preparation")
     let loader = PausedRuntimeRuleSource(started: started)
-    defer { loader.release.signal() }
+    defer { loader.resume() }
     let controller = makeRuleEnablementController(
       store: store,
       settings: ProxySettings(
@@ -148,14 +168,18 @@ final class RuleEnablementControllerTests: ProxyRuntimeControllerTests {
       proxyMode: .global, ruleSnapshots: BuiltinRuleSnapshots(loader: { loader.load($0) }))
     try await controller.activate(seeded.server)
     let modeSwitch = Task { await controller.setProxyMode(.rule) }
-    await fulfillment(of: [started], timeout: 3)
-    await controller.setSystemProxyEnabled(true)
-    loader.release.signal()
-    await modeSwitch.value
-    XCTAssertEqual(controller.proxyMode, .rule)
-    XCTAssertTrue(controller.settings.systemProxyEnabled)
-    XCTAssertEqual(controller.lastDocument?.aclRuntime?.summary, "rule-proxy-default")
-    XCTAssertEqual(controller.state, .running)
+    try await withTestTask(
+      modeSwitch, release: { loader.resume() },
+      body: {
+        try await requireTestPhase([started], timeout: 3)
+        await controller.setSystemProxyEnabled(true)
+        loader.resume()
+        await modeSwitch.value
+        XCTAssertEqual(controller.proxyMode, .rule)
+        XCTAssertTrue(controller.settings.systemProxyEnabled)
+        XCTAssertEqual(controller.lastDocument?.aclRuntime?.summary, "rule-proxy-default")
+        XCTAssertEqual(controller.state, .running)
+      })
   }
 
   func testOffIntentDuringSharedSourcePreparationCannotBeOverwritten() async throws {
@@ -163,7 +187,7 @@ final class RuleEnablementControllerTests: ProxyRuntimeControllerTests {
     let (store, _) = try makeCustomRuleStore()
     let started = expectation(description: "background source preparation")
     let loader = PausedRuntimeRuleSource(started: started)
-    defer { loader.release.signal() }
+    defer { loader.resume() }
     let snapshots = BuiltinRuleSnapshots(loader: { loader.load($0) })
     let settings = ProxySettings(
       listen: ActivationFixture.listen, preferredMode: .global, agentEnabled: true)
@@ -171,29 +195,37 @@ final class RuleEnablementControllerTests: ProxyRuntimeControllerTests {
       store: store, settings: settings, proxyMode: .global, ruleSnapshots: snapshots)
     try await controller.activate(seeded.server)
     let modeSwitch = Task { await controller.setProxyMode(.rule) }
-    await fulfillment(of: [started], timeout: 3)
-    let identity = RuleIdentity(action: .proxy, match: .domainExact("kept.example"))
-    let ruleCommit = Task {
-      await controller.commitRuleDocument(
-        CustomRuleDocument(rules: [], disabledIdentities: [identity]))
-    }
-    // Persistence happens before the awaited source. Observe the owner, not timing.
-    while controller.ruleDocuments.current?.disabledIdentities.contains(identity) != true {
-      await Task.yield()
-    }
-    await controller.setAgentEnabled(false)
-    let registrationsAfterStop = agent.registerCount
-    loader.release.signal()
-    await modeSwitch.value
-    let result = await ruleCommit.value
-    XCTAssertEqual(result.outcome, .saved)
-    await controller.ruleApplicationTask?.value
-    XCTAssertEqual(result.document?.disabledIdentities, [identity])
-    XCTAssertEqual(try store.loadDocument().disabledIdentities, [identity])
-    XCTAssertEqual(controller.state, .off)
-    XCTAssertFalse(controller.settings.agentEnabled)
-    XCTAssertEqual(agent.registerCount, registrationsAfterStop)
-    XCTAssertNil(RuntimeFileStore(fileURL: runtime.contract).loadDocument())
+    try await withTestTask(
+      modeSwitch, release: { loader.resume() },
+      body: {
+        try await requireTestPhase([started], timeout: 3)
+        let identity = RuleIdentity(action: .proxy, match: .domainExact("kept.example"))
+        let ruleCommit = Task {
+          await controller.commitRuleDocument(
+            CustomRuleDocument(rules: [], disabledIdentities: [identity]))
+        }
+        try await withRuleApplicationTask(
+          ruleCommit, controller: controller, release: loader.resume,
+          body: {
+            // Persistence happens before the awaited source. Observe the owner, not timing.
+            try await requireTestCondition("rule document persisted") {
+              controller.ruleDocuments.current?.disabledIdentities.contains(identity) == true
+            }
+            await controller.setAgentEnabled(false)
+            let registrationsAfterStop = agent.registerCount
+            loader.resume()
+            await modeSwitch.value
+            let result = await ruleCommit.value
+            XCTAssertEqual(result.outcome, .saved)
+            await controller.ruleApplicationTask?.value
+            XCTAssertEqual(result.document?.disabledIdentities, [identity])
+            XCTAssertEqual(try store.loadDocument().disabledIdentities, [identity])
+            XCTAssertEqual(controller.state, .off)
+            XCTAssertFalse(controller.settings.agentEnabled)
+            XCTAssertEqual(agent.registerCount, registrationsAfterStop)
+            XCTAssertNil(RuntimeFileStore(fileURL: runtime.contract).loadDocument())
+          })
+      })
   }
 
   func testNewModeSupersedesRulePreparationWithoutRestoringOldMode() async throws {
@@ -201,7 +233,7 @@ final class RuleEnablementControllerTests: ProxyRuntimeControllerTests {
     let (store, _) = try makeCustomRuleStore()
     let started = expectation(description: "background source preparation")
     let loader = PausedRuntimeRuleSource(started: started)
-    defer { loader.release.signal() }
+    defer { loader.resume() }
     let controller = makeRuleEnablementController(
       store: store,
       settings: ProxySettings(
@@ -209,14 +241,18 @@ final class RuleEnablementControllerTests: ProxyRuntimeControllerTests {
       proxyMode: .global, ruleSnapshots: BuiltinRuleSnapshots(loader: { loader.load($0) }))
     try await controller.activate(seeded.server)
     let old = Task { await controller.setProxyMode(.rule) }
-    await fulfillment(of: [started], timeout: 3)
-    await controller.setProxyMode(.direct)
-    loader.release.signal()
-    await old.value
-    XCTAssertEqual(controller.proxyMode, .direct)
-    XCTAssertEqual(controller.state, .running)
-    XCTAssertEqual(
-      RuntimeFileStore(fileURL: runtime.contract).loadDocument()?.aclRuntime?.summary, "direct")
+    try await withTestTask(
+      old, release: { loader.resume() },
+      body: {
+        try await requireTestPhase([started], timeout: 3)
+        await controller.setProxyMode(.direct)
+        loader.resume()
+        await old.value
+        XCTAssertEqual(controller.proxyMode, .direct)
+        XCTAssertEqual(controller.state, .running)
+        XCTAssertEqual(
+          RuntimeFileStore(fileURL: runtime.contract).loadDocument()?.aclRuntime?.summary, "direct")
+      })
   }
 
   func testOffSaveUsesOwnedDocumentAndNewSessionRejectsCorruption() async throws {
@@ -268,7 +304,7 @@ extension RuleEnablementControllerTests {
       launchHealthTimeoutSeconds: 0.05,
       launchHealthRetryDelay: {
         if deploymentIsRunning {
-          await deploymentGate.wait()
+          try await deploymentGate.wait()
         } else {
           try await Task.sleep(for: .milliseconds(1))
         }
@@ -281,27 +317,31 @@ extension RuleEnablementControllerTests {
     }
     let disabledDocument = CustomRuleDocument(rules: [rule], disabledIdentities: [rule.identity])
     let pending = Task { await controller.updateRuleDocument(disabledDocument) }
-    await fulfillment(of: [deploymentWaiting], timeout: 5)
-    if switchMode {
-      await controller.setProxyMode(.global)
-    } else {
-      await controller.setAgentEnabled(false)
-    }
-    let registrations = agent.registerCount
-    deploymentGate.resume()
-    let outcome = await pending.value
-    XCTAssertEqual(outcome, .saved)
-    await controller.ruleApplicationTask?.value
-    XCTAssertEqual(try store.loadDocument().disabledIdentities, [rule.identity])
-    XCTAssertEqual(agent.registerCount, registrations)
-    if switchMode {
-      XCTAssertEqual(controller.proxyMode, .global)
-      XCTAssertEqual(runtimeStore.loadDocument()?.aclRuntime?.summary, "global")
-    } else {
-      XCTAssertFalse(controller.settings.agentEnabled)
-      XCTAssertEqual(controller.state, .off)
-      XCTAssertNil(runtimeStore.loadDocument())
-    }
+    try await withRuleApplicationTask(
+      pending, controller: controller, release: deploymentGate.resume,
+      body: {
+        try await requireTestPhase([deploymentWaiting], timeout: 5)
+        if switchMode {
+          await controller.setProxyMode(.global)
+        } else {
+          await controller.setAgentEnabled(false)
+        }
+        let registrations = agent.registerCount
+        deploymentGate.resume()
+        let outcome = await pending.value
+        XCTAssertEqual(outcome, .saved)
+        await controller.ruleApplicationTask?.value
+        XCTAssertEqual(try store.loadDocument().disabledIdentities, [rule.identity])
+        XCTAssertEqual(agent.registerCount, registrations)
+        if switchMode {
+          XCTAssertEqual(controller.proxyMode, .global)
+          XCTAssertEqual(runtimeStore.loadDocument()?.aclRuntime?.summary, "global")
+        } else {
+          XCTAssertFalse(controller.settings.agentEnabled)
+          XCTAssertEqual(controller.state, .off)
+          XCTAssertNil(runtimeStore.loadDocument())
+        }
+      })
   }
 
   private func configureDeploymentReceipts(
@@ -343,45 +383,5 @@ extension RuleEnablementControllerTests {
     XCTAssertEqual(try store.loadDocument().disabledIdentities, [rule.identity])
     XCTAssertNotNil(controller.runtimeFacts.failure)
     XCTAssertNotEqual(controller.state, .running)
-  }
-}
-
-private final class PausedRuntimeRuleSource: @unchecked Sendable {
-  let started: XCTestExpectation
-  let release = DispatchSemaphore(value: 0)
-  init(started: XCTestExpectation) { self.started = started }
-  func load(_ source: RulesSource) -> RuleSnapshot {
-    if source == .geolocationCN {
-      started.fulfill()
-      release.wait()
-    }
-    return rulesFixture(source)
-  }
-}
-
-/// Pause one retry/debounce phase; subsequent passes remain asynchronous without wall-clock delay.
-@MainActor
-private final class RuleRuntimeDelayGate {
-  private let started: XCTestExpectation
-  private var didPause = false
-  private var continuation: CheckedContinuation<Void, Never>?
-
-  init(started: XCTestExpectation) { self.started = started }
-
-  func wait() async {
-    guard !didPause else {
-      await Task.yield()
-      return
-    }
-    didPause = true
-    await withCheckedContinuation {
-      continuation = $0
-      started.fulfill()
-    }
-  }
-
-  func resume() {
-    continuation?.resume()
-    continuation = nil
   }
 }
