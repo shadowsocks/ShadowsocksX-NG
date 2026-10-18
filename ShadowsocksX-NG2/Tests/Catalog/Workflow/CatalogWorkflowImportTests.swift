@@ -243,7 +243,7 @@ struct CatalogWorkflowImportTests {
 
   // MARK: - 夹具
 
-  /// 临时目录 + 注入内存凭据；UUID 后缀命名，进程私有资源（runner 并行安全）。
+  /// 临时目录 + 内存凭据与库密钥；UUID 后缀命名，进程私有资源（runner 并行安全）。
   private func withImportWorkflow(
     _ body: @MainActor (CatalogWorkflow, InMemoryCredentialStore) async throws -> Void
   ) async throws {
@@ -253,7 +253,7 @@ struct CatalogWorkflowImportTests {
     try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
     let credentials = InMemoryCredentialStore()
     let coordinator = CatalogCommitCoordinator(
-      fileStore: CatalogFileStore(
+      fileStore: makeTestCatalogStore(
         fileURL: directory.appendingPathComponent("catalog.json")),
       runtime: FakeCatalogRuntime())
     let workflow = makeCatalogWorkflow(coordinator: coordinator)
