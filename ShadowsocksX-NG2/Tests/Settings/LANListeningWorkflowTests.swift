@@ -3,6 +3,7 @@ import Testing
 
 @testable import ShadowsocksX_NG2
 
+@Suite(.timeLimit(.minutes(1)))
 @MainActor
 struct LANListeningWorkflowTests {
   @Test func disabledAuthenticationDoesNotGateLANSaveOnCredentialShape() async throws {
@@ -16,7 +17,7 @@ struct LANListeningWorkflowTests {
     draft.username = ""
     draft.password = ""
     workflow.refreshPortEditorOccupancy(for: draft.ports)
-    await waitUntil(workflow.portFieldState(for: .socks, editorDraft: draft.ports).occupancy != nil)
+    await waitForPortEditorOccupancy(workflow, draft: draft.ports, port: .socks)
     #expect(workflow.canSaveLANListening(draft))
     #expect(await workflow.saveLANListening(draft) == .persisted)
   }
@@ -31,7 +32,7 @@ struct LANListeningWorkflowTests {
     draft.username = "user:name"
     draft.password = "ok"
     workflow.refreshPortEditorOccupancy(for: draft.ports)
-    await waitUntil(workflow.portFieldState(for: .socks, editorDraft: draft.ports).occupancy != nil)
+    await waitForPortEditorOccupancy(workflow, draft: draft.ports, port: .socks)
     #expect(!workflow.canSaveLANListening(draft))
   }
 
@@ -46,7 +47,7 @@ struct LANListeningWorkflowTests {
     var draft = workflow.beginPortSettingsEditing()
     draft.socksPort = 13001
     workflow.refreshPortEditorOccupancy(for: draft)
-    await waitUntil(workflow.portFieldState(for: .socks, editorDraft: draft).occupancy != nil)
+    await waitForPortEditorOccupancy(workflow, draft: draft, port: .socks)
     #expect(workflow.canSavePortSettings(draft))
     #expect(await workflow.savePortSettings(draft) == .persisted)
     #expect(committing.committedSettings.listen.lan.username == "")
@@ -60,7 +61,7 @@ struct LANListeningWorkflowTests {
     var draft = try workflow.beginLANListeningEditing()
     draft.isEnabled = true
     workflow.refreshPortEditorOccupancy(for: draft.ports)
-    await waitUntil(workflow.portFieldState(for: .socks, editorDraft: draft.ports).occupancy != nil)
+    await waitForPortEditorOccupancy(workflow, draft: draft.ports, port: .socks)
     #expect(!workflow.canSaveLANListening(draft))
 
     draft.isEnabled = false
@@ -73,7 +74,7 @@ struct LANListeningWorkflowTests {
     #expect(workflow.portFieldState(for: .socks, editorDraft: draft.ports).occupancy == nil)
     #expect(!workflow.canSaveLANListening(draft))
     workflow.refreshPortEditorOccupancy(for: draft.ports)
-    await waitUntil(workflow.portFieldState(for: .socks, editorDraft: draft.ports).occupancy != nil)
+    await waitForPortEditorOccupancy(workflow, draft: draft.ports, port: .socks)
     #expect(probe.callCount == count + 2)
     #expect(!workflow.canSaveLANListening(draft))
   }
@@ -139,7 +140,7 @@ struct LANListeningWorkflowTests {
     var draft = workflow.beginPortSettingsEditing()
     draft.socksPort = 13001
     workflow.refreshPortEditorOccupancy(for: draft)
-    await waitUntil(workflow.portFieldState(for: .http, editorDraft: draft).occupancy != nil)
+    await waitForPortEditorOccupancy(workflow, draft: draft, port: .http)
     #expect(await workflow.savePortSettings(draft) == .persisted)
     #expect(committing.committedSettings.listen.socksPort == 13001)
   }
@@ -174,9 +175,10 @@ struct LANListeningWorkflowTests {
     draft.isEnabled = true
     draft.mode = .allIPv4Interfaces
     let submission = Task { await workflow.saveLANListening(draft) }
-    await waitUntil(probe.entered > 0)
+    await probe.waitUntilEntered()
     #expect(workflow.isCommitting)
     #expect(await workflow.saveProxyExceptions("example.com") == .rejected(.inProgress))
+    probe.passThrough(.free)
     probe.releaseGatedCalls()
     #expect(await submission.value == .persisted)
     #expect(!workflow.isCommitting)
@@ -195,7 +197,7 @@ struct LANListeningWorkflowTests {
     draft.mode = mode
     draft.ports.socksPort = 13001
     workflow.refreshPortEditorOccupancy(for: draft.ports)
-    await waitUntil(workflow.portFieldState(for: .http, editorDraft: draft.ports).occupancy != nil)
+    await waitForPortEditorOccupancy(workflow, draft: draft.ports, port: .http)
 
     var expected = RuntimeListenFacts(listen: committing.committedSettings.listen)
     expected.lan.isEnabled = true
@@ -225,7 +227,7 @@ struct LANListeningWorkflowTests {
     draft.isEnabled = true
     draft.mode = .allIPv6Interfaces
     workflow.refreshPortEditorOccupancy(for: draft.ports)
-    await waitUntil(workflow.portFieldState(for: .socks, editorDraft: draft.ports).occupancy != nil)
+    await waitForPortEditorOccupancy(workflow, draft: draft.ports, port: .socks)
     #expect(workflow.portFieldState(for: .socks, editorDraft: draft.ports).canSuggestFreePort)
     #expect(
       await workflow.suggestFreePort(for: .socks, from: draft.ports)
@@ -252,7 +254,7 @@ struct LANListeningWorkflowTests {
     #expect(workflow.portFieldState(for: .socks, editorDraft: draft).issues.count == 1)
     #expect(workflow.portFieldState(for: .http, editorDraft: draft).issues.isEmpty)
     workflow.refreshPortEditorOccupancy(for: draft)
-    await waitUntil(workflow.portFieldState(for: .http, editorDraft: draft).occupancy != nil)
+    await waitForPortEditorOccupancy(workflow, draft: draft, port: .http)
     #expect(!workflow.canSavePortSettings(draft))
   }
 
@@ -270,7 +272,7 @@ struct LANListeningWorkflowTests {
     draft.isEnabled = true
     draft.mode = .allIPv4Interfaces
     workflow.refreshPortEditorOccupancy(for: draft.ports)
-    await waitUntil(workflow.portFieldState(for: .socks, editorDraft: draft.ports).occupancy != nil)
+    await waitForPortEditorOccupancy(workflow, draft: draft.ports, port: .socks)
     #expect(workflow.portFieldState(for: .socks, editorDraft: draft.ports).isRuntimePortException)
     #expect(await workflow.saveLANListening(draft) == .persisted)
   }
@@ -287,7 +289,7 @@ struct LANListeningWorkflowTests {
     var draft = try workflow.beginLANListeningEditing()
     draft.ports.socksPort = 13001
     workflow.refreshPortEditorOccupancy(for: draft.ports)
-    await waitUntil(workflow.portFieldState(for: .socks, editorDraft: draft.ports).occupancy != nil)
+    await waitForPortEditorOccupancy(workflow, draft: draft.ports, port: .socks)
     #expect(!workflow.portFieldState(for: .socks, editorDraft: draft.ports).isRuntimePortException)
     #expect(await workflow.saveLANListening(draft) == .rejected(.occupied([.socks])))
   }
@@ -298,7 +300,7 @@ struct LANListeningWorkflowTests {
     let workflow = SettingsWorkflow(committing: committing, occupancyProbe: FakeOccupancyProbe())
     let draft = workflow.beginPortSettingsEditing()
     workflow.refreshPortEditorOccupancy(for: draft)
-    await waitUntil(workflow.portFieldState(for: .http, editorDraft: draft).occupancy != nil)
+    await waitForPortEditorOccupancy(workflow, draft: draft, port: .http)
     #expect(workflow.portFieldState(for: .socks, editorDraft: draft).issues.isEmpty)
     #expect(workflow.portFieldState(for: .http, editorDraft: draft).issues.isEmpty)
     #expect(!workflow.canSavePortSettings(draft))

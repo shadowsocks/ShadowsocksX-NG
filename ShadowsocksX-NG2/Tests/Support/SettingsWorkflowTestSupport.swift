@@ -1,3 +1,4 @@
+import Combine
 import Foundation
 import XCTest
 
@@ -16,6 +17,25 @@ func waitUntil(
     try? await Task.sleep(nanoseconds: 10_000_000)
   }
   XCTAssertTrue(condition(), file: file, line: line)
+}
+
+/// 等待工作流发布探测结果；发布前订阅，避免依赖轮询与线程调度耗时。
+/// 调用方用测试框架的 timeLimit 保护永不发布的回归。
+@MainActor
+func waitForPortEditorOccupancy(
+  _ workflow: SettingsWorkflow, draft: SettingsPortDraft, port: SettingsPortID
+) async {
+  let (events, continuation) = AsyncStream<Void>.makeStream(bufferingPolicy: .bufferingNewest(1))
+  let observation = workflow.objectWillChange.sink { continuation.yield(()) }
+  defer {
+    observation.cancel()
+    continuation.finish()
+  }
+  continuation.yield(())
+  for await _ in events
+  where workflow.portFieldState(for: port, editorDraft: draft).occupancy != nil {
+    return
+  }
 }
 
 /// 设置工作流测试的写入缝替身：记录提交调用，可注入失败；
@@ -174,6 +194,8 @@ final class GatedOccupancyProbe: PortOccupancyProbing, @unchecked Sendable {
   private let gate = DispatchGroup()
   private var isGated = true
   private var enteredCount = 0
+  private let entry = AsyncGate()
+  private var released = false
   private var gatedAnswer: PortOccupancy
   private var passThroughAnswer: PortOccupancy
 
@@ -190,6 +212,10 @@ final class GatedOccupancyProbe: PortOccupancyProbing, @unchecked Sendable {
     return enteredCount
   }
 
+  func waitUntilEntered() async {
+    await entry.wait()
+  }
+
   /// 之后的调用立即返回 `answer`；已进入且被扣住的调用仍持有各自应答。
   func passThrough(_ answer: PortOccupancy) {
     lock.lock()
@@ -201,10 +227,11 @@ final class GatedOccupancyProbe: PortOccupancyProbing, @unchecked Sendable {
   /// 放行全部被扣住的调用（广播门闩）。
   func releaseGatedCalls() {
     lock.lock()
-    let wasGated = isGated
+    let shouldRelease = !released
+    released = true
     isGated = false
     lock.unlock()
-    if wasGated {
+    if shouldRelease {
       gate.leave()
     }
   }
@@ -215,6 +242,7 @@ final class GatedOccupancyProbe: PortOccupancyProbing, @unchecked Sendable {
     let gated = isGated
     let answer = gated ? gatedAnswer : passThroughAnswer
     lock.unlock()
+    entry.release()
     if gated {
       gate.wait()
     }

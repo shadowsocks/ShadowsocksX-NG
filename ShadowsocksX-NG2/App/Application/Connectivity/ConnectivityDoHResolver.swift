@@ -90,17 +90,27 @@ struct ConnectivityDoHResolver: Sendable {
         return nil
       }
       defer { group.cancelAll() }
-      var found: [String] = []
-      for _ in 0..<2 {
-        guard let next = await group.next(), let family = next else { break }
-        found += family
-      }
-      return found
+      return await Self.collectAddresses(from: group)
     }
     guard !addresses.isEmpty else { throw Failure.invalidResponse }
     // Stable family order makes equal-time candidate ties reproducible.
     return addresses.filter { ConnectivityAddress.family($0) == AF_INET }
       + addresses.filter { ConnectivityAddress.family($0) == AF_INET6 }
+  }
+
+  /// A nil event is the shared deadline; keep families received before it.
+  static func collectAddresses<Results: AsyncSequence>(from results: Results) async rethrows
+    -> [String] where Results.Element == [String]?
+  {
+    var found: [String] = []
+    var families = 0
+    for try await family in results {
+      guard let family else { break }
+      found += family
+      families += 1
+      if families == 2 { break }
+    }
+    return found
   }
 
   private func answers(host: String, endpoint: String, type: Int, session: URLSession) async

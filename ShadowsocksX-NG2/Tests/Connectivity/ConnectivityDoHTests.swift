@@ -3,6 +3,7 @@ import Testing
 
 @testable import ShadowsocksX_NG2
 
+@Suite(.timeLimit(.minutes(1)))
 struct ConnectivityDoHTests {
   @Test func fallsBackToCloudflareAndAcceptsOnlyMatchingIPRecords() async {
     let resolver = ConnectivityDoHResolver(sessionConfiguration: {
@@ -18,17 +19,42 @@ struct ConnectivityDoHTests {
     #expect(!result.trace.map(\.description).joined().contains("target.invalid"))
   }
 
-  @Test func familyThatExceedsDeadlineDoesNotDiscardOtherFamily() async throws {
+  @Test func familyThatExceedsDeadlineDoesNotDiscardOtherFamily() async {
+    let events = AsyncStream<[String]?> { continuation in
+      continuation.yield(["192.0.2.1"])
+      continuation.yield(nil)
+      continuation.yield(["2001:db8::1"])
+      continuation.finish()
+    }
+    let addresses = await ConnectivityDoHResolver.collectAddresses(from: events)
+    #expect(addresses == ["192.0.2.1"])
+  }
+
+  @Test func completedFamiliesDoNotWaitForDeadline() async {
+    let events = AsyncStream<[String]?> { continuation in
+      continuation.yield(["192.0.2.1"])
+      continuation.yield(["2001:db8::1"])
+    }
+    let addresses = await ConnectivityDoHResolver.collectAddresses(from: events)
+    #expect(addresses == ["192.0.2.1", "2001:db8::1"])
+  }
+
+  @Test func pendingFamiliesAreCancelledAtDeadline() async throws {
     let resolver = ConnectivityDoHResolver(sessionConfiguration: {
       let configuration = URLSessionConfiguration.ephemeral
-      configuration.protocolClasses = [SlowIPv6Protocol.self]
+      configuration.protocolClasses = [PendingAnswersProtocol.self]
       return configuration
     })
     let started = ContinuousClock.now
-    let addresses = try await resolver.query(
-      host: "target.invalid", endpoint: "https://resolver.invalid/resolve", proxyPort: 1234,
-      deadline: .now.advanced(by: .milliseconds(100)))
-    #expect(addresses == ["192.0.2.1"])
+    do {
+      _ = try await resolver.query(
+        host: "target.invalid", endpoint: "https://resolver.invalid/resolve", proxyPort: 1234,
+        deadline: .now.advanced(by: .milliseconds(100)))
+      Issue.record("Pending requests unexpectedly resolved")
+    } catch {
+      #expect(error is ConnectivityDoHResolver.Failure)
+    }
+    #expect(ContinuousClock.now - started >= .milliseconds(100))
     #expect(ContinuousClock.now - started < .seconds(1))
   }
 }
@@ -57,11 +83,6 @@ private class DNSAnswersProtocol: URLProtocol, @unchecked Sendable {
   override func stopLoading() {}
 }
 
-private final class SlowIPv6Protocol: DNSAnswersProtocol, @unchecked Sendable {
-  override func startLoading() {
-    let type = request.url.flatMap { URLComponents(url: $0, resolvingAgainstBaseURL: false) }?
-      .queryItems?.first(where: { $0.name == "type" })?.value
-    if type == "28" { return }
-    super.startLoading()
-  }
+private final class PendingAnswersProtocol: DNSAnswersProtocol, @unchecked Sendable {
+  override func startLoading() {}
 }
