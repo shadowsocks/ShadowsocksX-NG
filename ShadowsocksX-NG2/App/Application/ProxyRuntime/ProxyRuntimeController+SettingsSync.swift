@@ -73,15 +73,10 @@ extension ProxyRuntimeController {
   /// status remains observable through the controller's status stream.
   func updateSettings(_ proposed: ProxySettings) async throws {
     let catalog = catalogSnapshotReader.catalogSnapshot
-    var connectionIndependent = settings
-    connectionIndependent.connectivityURLReference = proposed.connectivityURLReference
-    let onlyTestURLChanged =
-      settings.connectivityURLReference != proposed.connectivityURLReference
-      && connectionIndependent == proposed
     try settingsStore.save(proposed)
     settings = proposed
     settingsUnreadable = false
-    guard state != .off, !onlyTestURLChanged else { return }
+    guard state != .off else { return }
     await convergeToReexpanded(catalog)
   }
 

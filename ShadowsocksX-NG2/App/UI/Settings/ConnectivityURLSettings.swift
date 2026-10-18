@@ -33,7 +33,7 @@ struct ConnectivityURLSettings: View {
       }
 
       if failure {
-        Text(ConnectivityCopy.text("无法读取或保存测试 URL"))
+        Text(ConnectivityCopy.text("无法保存测试 URL"))
           .font(.caption)
           .foregroundStyle(.red)
       }
@@ -47,7 +47,7 @@ struct ConnectivityURLSettings: View {
         TextField("HTTP", text: $value).textFieldStyle(.roundedBorder)
         Text(ConnectivityCopy.text("仅支持 HTTP。预热后采样 3 次，至少成功 2 次；显示成功样本的中位数。"))
           .font(.caption).foregroundStyle(.secondary)
-        if failure { Text(ConnectivityCopy.text("无法读取或保存测试 URL")).foregroundStyle(.red) }
+        if failure { Text(ConnectivityCopy.text("无法保存测试 URL")).foregroundStyle(.red) }
         HStack {
           Button(ConnectivityCopy.text("恢复默认")) {
             value = ServerConnectivity.defaultURL.absoluteString
@@ -75,24 +75,14 @@ struct ConnectivityURLSettings: View {
   }
 
   private func refreshDisplayedURL() {
-    do {
-      displayedURL = try workflow.beginConnectivityURLEditing()
-      failure = false
-    } catch {
-      displayedURL = ""
-      failure = true
-    }
+    displayedURL = workflow.beginConnectivityURLEditing()
+    failure = false
   }
 
   private func beginEditing() {
-    do {
-      value = try workflow.beginConnectivityURLEditing()
-      displayedURL = value
-      failure = false
-      editing = true
-    } catch {
-      displayedURL = ""
-      failure = true
-    }
+    value = workflow.beginConnectivityURLEditing()
+    displayedURL = value
+    failure = false
+    editing = true
   }
 }

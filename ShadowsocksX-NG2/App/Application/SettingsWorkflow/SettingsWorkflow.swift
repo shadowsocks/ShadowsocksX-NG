@@ -5,8 +5,8 @@ import Foundation
 /// The module exposes validation, occupancy facts, shared commit state, and typed
 /// commands; editor-local drafts and presentation state remain in the UI.
 ///
-/// Writes depend on the narrow `SettingsCommitting` seam. The module does not
-/// depend on SwiftUI, persistence formats, or runtime convergence details.
+/// Proxy setting writes use `SettingsCommitting`; the independent test URL
+/// preference uses UserDefaults. Runtime convergence stays behind the commit seam.
 @MainActor
 final class SettingsWorkflow: ObservableObject {
   let listenerOccupancy: ListenerOccupancy
@@ -21,14 +21,17 @@ final class SettingsWorkflow: ObservableObject {
 
   let committing: SettingsCommitting
   let credentials: CredentialStoring
+  let connectivityDefaults: UserDefaults
 
   init(
     committing: SettingsCommitting,
     occupancyProbe: PortOccupancyProbing = SystemPortOccupancyProbe(),
-    credentials: CredentialStoring = KeychainCredentialStore()
+    credentials: CredentialStoring = KeychainCredentialStore(),
+    connectivityDefaults: UserDefaults = .standard
   ) {
     self.committing = committing
     self.credentials = credentials
+    self.connectivityDefaults = connectivityDefaults
     listenerOccupancy = ListenerOccupancy(committing: committing, probe: occupancyProbe)
     occupancyChanges = listenerOccupancy.objectWillChange.sink { [weak self] in
       self?.objectWillChange.send()

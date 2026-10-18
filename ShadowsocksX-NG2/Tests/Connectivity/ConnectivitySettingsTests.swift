@@ -5,49 +5,100 @@ import Testing
 
 @MainActor
 struct ConnectivitySettingsTests {
-  @Test func customURLIsSecretAndFailureDoesNotPublishOrChangeSavedURL() async throws {
+  @Test func customURLPersistsWithoutCredentialsOrProxySettingsCommit() async throws {
+    let suite = "ConnectivitySettingsTests.\(UUID().uuidString)"
+    let defaults = try #require(UserDefaults(suiteName: suite))
+    defer { defaults.removePersistentDomain(forName: suite) }
     let committer = FakeSettingsCommitter()
-    let credentials = InMemoryCredentialStore()
-    let workflow = SettingsWorkflow(committing: committer, credentials: credentials)
-    var published = 0
-    workflow.connectivityURLDidChange = { _ in published += 1 }
-    let secretURL = "http://example.com/probe?token=private"
-    #expect(await workflow.saveConnectivityURL(secretURL))
-    #expect(try workflow.beginConnectivityURLEditing() == secretURL)
-    #expect(credentials.storageCount == 1)
-    let saved = committer.committedSettings
-    let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
-    let file = directory.appendingPathComponent("settings.json")
-    defer { try? FileManager.default.removeItem(at: directory) }
-    let store = ProxySettingsFileStore(fileURL: file)
-    try store.save(saved)
-    #expect(try store.load() == saved)
-    let text = try String(contentsOf: file, encoding: .utf8)
-    #expect(!text.contains("private"))
-    #expect(!text.contains("example.com"))
-    committer.updateError = ProxySettingsStoreError.ioFailure(detail: "fixture")
-    #expect(await !workflow.saveConnectivityURL("http://example.com/new"))
-    #expect(committer.committedSettings == saved)
-    #expect(credentials.storageCount == 1)
-    #expect(published == 1)
-    #expect(try workflow.beginConnectivityURLEditing() == secretURL)
-    committer.updateError = nil
-    #expect(await workflow.saveConnectivityURL(ServerConnectivity.defaultURL.absoluteString))
-    #expect(committer.committedSettings.connectivityURLReference == nil)
-    #expect(credentials.storageCount == 0)
-  }
-  @Test func previouslySavedHTTPSURLCanBeOpenedAndReplacedWithHTTP() async throws {
-    let committer = FakeSettingsCommitter()
-    let credentials = InMemoryCredentialStore()
-    let reference = CredentialReference.fresh()
-    try credentials.save("https://example.com/old?token=private", for: reference)
-    committer.committedSettings.connectivityURLReference = reference
-    let workflow = SettingsWorkflow(committing: committer, credentials: credentials)
-    #expect(try workflow.beginConnectivityURLEditing() == "https://example.com/old?token=private")
-    #expect(await !workflow.saveConnectivityURL("https://example.com/new"))
-    #expect(await workflow.saveConnectivityURL("http://example.com/new"))
-    #expect(try workflow.beginConnectivityURLEditing() == "http://example.com/new")
-    #expect(try credentials.secret(for: reference) == nil)
+    committer.updateError = ProxySettingsStoreError.ioFailure(detail: "must not commit")
+    let credentials = UnavailableConnectivityCredentials()
+    let workflow = SettingsWorkflow(
+      committing: committer, credentials: credentials, connectivityDefaults: defaults)
+    var published: [URL] = []
+    workflow.connectivityURLDidChange = { published.append($0) }
+    let url = "http://example.com/probe?token=public"
+    #expect(await workflow.saveConnectivityURL(url))
+    #expect(workflow.beginConnectivityURLEditing() == url)
+    #expect(committer.committedSettings == ProxySettings())
+    #expect(published.map(\.absoluteString) == [url])
+    let reopened = SettingsWorkflow(
+      committing: committer, credentials: credentials, connectivityDefaults: defaults)
+    #expect(reopened.beginConnectivityURLEditing() == url)
   }
 
+  @Test func missingOrInvalidPreferencesUseDefaultURL() throws {
+    let suite = "ConnectivitySettingsTests.\(UUID().uuidString)"
+    let defaults = try #require(UserDefaults(suiteName: suite))
+    defer { defaults.removePersistentDomain(forName: suite) }
+    let workflow = SettingsWorkflow(
+      committing: FakeSettingsCommitter(), credentials: UnavailableConnectivityCredentials(),
+      connectivityDefaults: defaults)
+    #expect(workflow.beginConnectivityURLEditing() == "http://www.gstatic.com/generate_204")
+    for value: Any in [
+      42, "", "https://example.com", "http://user:pass@example.com",
+      "http://example.com/#fragment", "http://example.com:0",
+    ] {
+      defaults.set(value, forKey: "connectivityTestURL")
+      #expect(workflow.beginConnectivityURLEditing() == "http://www.gstatic.com/generate_204")
+    }
+  }
+
+  @Test func invalidSaveKeepsPreviousURLAndDefaultCanBeRestored() async throws {
+    let suite = "ConnectivitySettingsTests.\(UUID().uuidString)"
+    let defaults = try #require(UserDefaults(suiteName: suite))
+    defer { defaults.removePersistentDomain(forName: suite) }
+    let workflow = SettingsWorkflow(
+      committing: FakeSettingsCommitter(), credentials: UnavailableConnectivityCredentials(),
+      connectivityDefaults: defaults)
+    var published: [URL] = []
+    workflow.connectivityURLDidChange = { published.append($0) }
+    #expect(await workflow.saveConnectivityURL("  http://example.com/probe?token=public \n"))
+    #expect(await !workflow.saveConnectivityURL("https://example.com"))
+    #expect(workflow.beginConnectivityURLEditing() == "http://example.com/probe?token=public")
+    #expect(published.count == 1)
+    #expect(await workflow.saveConnectivityURL("http://www.gstatic.com/generate_204"))
+    #expect(workflow.beginConnectivityURLEditing() == "http://www.gstatic.com/generate_204")
+    #expect(published.count == 2)
+  }
+
+  @Test func oldCredentialReferenceIsIgnoredWithoutLosingOtherSettings() throws {
+    let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: directory) }
+    let file = directory.appendingPathComponent("settings.json")
+    try Data(
+      #"{"connectivityURLReference":{"obsolete":true},"preferredMode":"global"}"#.utf8
+    ).write(to: file)
+    let store = ProxySettingsFileStore(fileURL: file)
+    let settings = try store.load()
+    #expect(settings.preferredMode == .global)
+    try store.save(settings)
+    #expect(try !String(contentsOf: file, encoding: .utf8).contains("connectivityURLReference"))
+    let suite = "ConnectivitySettingsTests.\(UUID().uuidString)"
+    let defaults = try #require(UserDefaults(suiteName: suite))
+    defer { defaults.removePersistentDomain(forName: suite) }
+    let committer = FakeSettingsCommitter()
+    committer.committedSettings = settings
+    let workflow = SettingsWorkflow(
+      committing: committer, credentials: UnavailableConnectivityCredentials(),
+      connectivityDefaults: defaults)
+    #expect(workflow.beginConnectivityURLEditing() == "http://www.gstatic.com/generate_204")
+  }
+}
+
+private struct UnavailableConnectivityCredentials: CredentialStoring {
+  func save(_ secret: String, for reference: CredentialReference) throws {
+    Issue.record("Test URL must not write credentials")
+    throw CredentialStoreError.secretNotUTF8
+  }
+
+  func secret(for reference: CredentialReference) throws -> String? {
+    Issue.record("Test URL must not read credentials")
+    throw CredentialStoreError.secretNotUTF8
+  }
+
+  func delete(_ reference: CredentialReference) throws {
+    Issue.record("Test URL must not delete credentials")
+    throw CredentialStoreError.secretNotUTF8
+  }
 }

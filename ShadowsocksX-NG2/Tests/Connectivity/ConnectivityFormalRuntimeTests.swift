@@ -41,7 +41,11 @@ struct ConnectivityFormalRuntimeTests {
     let calls = agent.registerCount
     let target = controller.activeTargetID
     let document = try Data(contentsOf: runtime.contract)
-    let workflow = SettingsWorkflow(committing: controller, credentials: credentials)
+    let suite = "ConnectivityFormalRuntimeTests.\(UUID().uuidString)"
+    let defaults = try #require(UserDefaults(suiteName: suite))
+    defer { defaults.removePersistentDomain(forName: suite) }
+    let workflow = SettingsWorkflow(
+      committing: controller, credentials: credentials, connectivityDefaults: defaults)
     #expect(await workflow.saveConnectivityURL("http://example.com/probe?token=private"))
     #expect(controller.state == state)
     #expect(controller.activeTargetID == target)

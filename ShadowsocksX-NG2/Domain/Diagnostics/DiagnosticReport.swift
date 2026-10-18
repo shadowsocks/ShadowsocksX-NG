@@ -126,8 +126,8 @@ struct DiagnosticPluginFacts: Equatable, Sendable {
 
 /// 诊断报告构建器：只输出状态、存在性、权限、
 /// 大小/时间、数量与脱敏元数据。测试夹具以投毒数据验证导出不含任何敏感
-/// 类目（密码、插件参数、Keychain 值、完整订阅 URL、URL token、运行时
-/// JSON 内容、服务器地址与备注）。
+/// 类目（密码、插件参数、Keychain 值、完整订阅 URL 及其 token、运行时
+/// JSON 内容、服务器地址与备注）。测试 URL 为非敏感信息，无需脱敏。
 enum DiagnosticReportBuilder {
   /// 目录数量元数据（只含计数，不含名称/地址/备注）。
   struct CatalogCounts: Equatable, Sendable {
@@ -168,7 +168,7 @@ enum DiagnosticReportBuilder {
     lines.append("- 系统：\(snapshot.systemSummary ?? "未提供")")
     lines.append("")
     lines.append("本报告仅含状态、存在性、权限、大小/时间、数量与脱敏元数据；不包含")
-    lines.append("密码、插件参数、钥匙串值、完整订阅 URL、URL token、运行时 JSON")
+    lines.append("密码、插件参数、钥匙串值、完整订阅 URL 及其 token、运行时 JSON")
     lines.append("内容、服务器地址与备注。")
     lines.append("")
     lines.append(contentsOf: statusLines(snapshot))

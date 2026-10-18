@@ -256,19 +256,19 @@
         }
       }
     },
-    "无法读取或保存测试 URL": {
+    "无法保存测试 URL": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Unable to read or save the test URL"
+            "value": "Unable to save the test URL"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "无法读取或保存测试 URL"
+            "value": "无法保存测试 URL"
           }
         }
       }

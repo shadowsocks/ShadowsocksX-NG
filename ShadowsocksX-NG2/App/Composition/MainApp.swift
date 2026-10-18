@@ -210,7 +210,7 @@ private struct AppComposition {
       measure: testRuntime.measure)
     catalogWorkflow.connectivity = connectivity
     connectivity.setURL(
-      (try? settingsWorkflow.beginConnectivityURLEditing()).flatMap(ServerConnectivity.validURL))
+      ServerConnectivity.validURL(settingsWorkflow.beginConnectivityURLEditing()))
     settingsWorkflow.connectivityURLDidChange = { [weak connectivity] in connectivity?.setURL($0) }
     let connectivityLifecycle = ConnectivityLifecycle(module: connectivity)
     // 诊断工作流 module：诊断区唯一 seam，组合根接线一次；进程期

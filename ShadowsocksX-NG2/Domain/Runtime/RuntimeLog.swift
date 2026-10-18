@@ -1,10 +1,10 @@
 import Foundation
 
 /// 运行时日志基线：事件是封闭枚举，脱敏由构造保证——永不
-/// 携带密码、插件参数、Keychain 值、完整订阅 URL、URL token 或运行时 JSON
-/// 内容；服务器地址与备注默认不进普通日志（端点探测失败点名的 host:port
-/// 是本机监听端点，属于需要呈现的事实字段，不受此限）。日志查看与诊断
-/// 日志查看与诊断导出均以本事件流为数据源。
+/// 携带密码、插件参数、Keychain 值、完整订阅 URL 及其 token 或运行时 JSON
+/// 内容；测试 URL 属于非敏感信息，可完整记录。服务器地址与备注默认不进
+/// 普通日志（端点探测失败点名的 host:port 是本机监听端点，属于需要呈现的
+/// 事实字段，不受此限）。日志查看与诊断导出均以本事件流为数据源。
 enum RuntimeLogEvent: Equatable, CustomStringConvertible, Sendable {
   /// 契约文件已原子写入（只携带数量元数据，非内容）。
   case contractWritten(serverCount: Int)
@@ -123,8 +123,9 @@ protocol RuntimeEventSink: Sendable {
 
 /// 敏感信息脱敏工具（「敏感信息」定义的读取面）。
 enum Redactor {
-  /// 非空远程 URL 只保留 scheme+host：路径、查询与片段全部略去，完整订阅
+  /// 敏感远程 URL 只保留 scheme+host：路径、查询与片段全部略去，完整订阅
   /// URL 与 URL token 永不入日志。解析失败一律归并为占位符。
+  /// 测试 URL 无需脱敏，不使用此方法。
   static func remoteURL(_ url: String) -> String {
     guard let parsed = URL(string: url), let host = parsed.host(), !host.isEmpty else {
       return "<redacted-url>"

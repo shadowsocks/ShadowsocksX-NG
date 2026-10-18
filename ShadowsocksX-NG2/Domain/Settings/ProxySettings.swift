@@ -5,7 +5,6 @@ import Foundation
 struct ProxySettings: Equatable, Sendable {
   static let defaultProxyExceptions = ""
 
-  var connectivityURLReference: CredentialReference?
   var listen: SslocalListenSettings
   /// User-added system-proxy exceptions; these entries do not become ACL rules.
   var proxyExceptions: String
@@ -23,14 +22,12 @@ struct ProxySettings: Equatable, Sendable {
 
   init(
     listen: SslocalListenSettings = SslocalListenSettings(),
-    connectivityURLReference: CredentialReference? = nil,
     proxyExceptions: String = ProxySettings.defaultProxyExceptions,
     preferredMode: ProxyModeKind = .rule,
     ruleDefaultAction: RuleDefaultAction = .proxyWhenUnmatched,
     agentEnabled: Bool = false,
     systemProxyEnabled: Bool = false
   ) {
-    self.connectivityURLReference = connectivityURLReference
     self.listen = listen
     self.proxyExceptions = proxyExceptions
     self.preferredMode = preferredMode
