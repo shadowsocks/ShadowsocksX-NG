@@ -97,8 +97,8 @@ class ProxyRuntimeControllerTests: XCTestCase {
   func makeSeededCatalog() throws -> (catalog: ConfigurationCatalog, server: NodeID) {
     var catalog = ConfigurationCatalog()
     let server = try ActivationFixture.addPlainServer(
-      "香港 01", in: &catalog, credentials: credentials)
-    try CatalogFileStore(fileURL: catalogFileURL).save(CatalogDocument(catalog: catalog))
+      "香港 01", in: &catalog)
+    try makeTestCatalogStore(fileURL: catalogFileURL).save(CatalogDocument(catalog: catalog))
     return (catalog, server)
   }
 

@@ -178,8 +178,7 @@ extension ConfigurationCatalog {
     touch(parent, at: now)
   }
 
-  /// 删除节点；手动分组递归删除整棵子树。返回被删除的节点（含其凭据引用，
-  /// 供调用方清理 Keychain 秘密）。空组允许显式删除；空组本身持久保留。
+  /// 删除节点；手动分组递归删除整棵子树。返回被删除的完整记录。空组允许显式删除；空组本身持久保留。
   /// 原落点分组失去子节点，按结构敏感语义更新其修改时间。
   @discardableResult
   mutating func remove(_ id: NodeID, now: Date = Date()) throws -> [CatalogEntry] {
@@ -350,7 +349,7 @@ extension ConfigurationCatalog {
   }
 
   /// 删除订阅：固定分组整棵子树连同固定分组本身一并移除（递归清除，不留
-  /// 墓碑）。返回被删条目（含凭据引用，供调用方清理 Keychain 秘密）。
+  /// 墓碑）。返回被删完整记录。
   /// 固定分组的原落点（目录根）无分组形态，无修改时间可更新。
   @discardableResult
   mutating func removeSubscriptionSubtree(of groupID: NodeID) throws -> [CatalogEntry] {

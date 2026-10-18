@@ -78,9 +78,9 @@ struct RuntimeConvergenceTests {
     ) throws {
       let credentials = InMemoryCredentialStore()
       var catalog = ConfigurationCatalog()
-      server = try ActivationFixture.addPlainServer("收敛测试", in: &catalog, credentials: credentials)
+      server = try ActivationFixture.addPlainServer("收敛测试", in: &catalog)
       let catalogURL = runtime.directory.appendingPathComponent("catalog.json")
-      try CatalogFileStore(fileURL: catalogURL).save(CatalogDocument(catalog: catalog))
+      try makeTestCatalogStore(fileURL: catalogURL).save(CatalogDocument(catalog: catalog))
       runtimeStore = RuntimeFileStore(fileURL: runtime.contract)
       let store = runtimeStore
       let recorder = signals

@@ -57,16 +57,16 @@ final class BundleManagedPluginProviderTests: XCTestCase {
       XCTAssertEqual(provider.resolve(program: name)?.path, client.path)
       XCTAssertEqual(provider.resolve(program: name)?.mode, .tcpOnly)
       var catalog = ConfigurationCatalog()
-      var fields = ActivationFixture.plainFields(remark: "Cloak", passwordRef: .fresh())
+      var fields = ActivationFixture.plainFields(remark: "Cloak", password: "password")
       fields.pluginProgram = name
-      fields.pluginOptionsRef = .fresh()
+      fields.pluginOptions = "options"
       let options = "UID=test;PublicKey=test;ServerName=example.com;EncryptionMethod=plain"
-      try credentials.save("pw", for: fields.passwordRef)
-      try credentials.save(options, for: XCTUnwrap(fields.pluginOptionsRef))
+      fields.password = "pw"
+      fields.pluginOptions = options
       let id = try catalog.addServer(fields)
       var machine = ActivationStateMachine()
       let runtime = try machine.activate(
-        id, in: catalog, credentials: credentials, plugins: provider,
+        id, in: catalog, plugins: provider,
         options: RuntimeDocumentOptions(listen: ActivationFixture.listen))
       let server = try XCTUnwrap(runtime.document.servers.first)
       XCTAssertEqual(server.plugin, client.path)
@@ -131,9 +131,9 @@ final class BundleManagedPluginProviderTests: XCTestCase {
   /// 原子拒绝（app 降级丢插件时同一语义）。
   func testActivationRejectsMissingPluginByNamedReason() throws {
     var catalog = ConfigurationCatalog()
-    var fields = ActivationFixture.plainFields(remark: "带插件", passwordRef: .fresh())
+    var fields = ActivationFixture.plainFields(remark: "带插件", password: "password")
     fields.pluginProgram = pluginBinaryName
-    try credentials.save("pw", for: fields.passwordRef)
+    fields.password = "pw"
     let id = try catalog.addServer(fields)
     var machine = ActivationStateMachine()
 
@@ -141,7 +141,7 @@ final class BundleManagedPluginProviderTests: XCTestCase {
       .invalidLeaf(node: id, reason: .pluginNotProvided(program: pluginBinaryName))
     ) {
       try machine.activate(
-        id, in: catalog, credentials: credentials, plugins: makeProvider(),
+        id, in: catalog, plugins: makeProvider(),
         options: RuntimeDocumentOptions(listen: ActivationFixture.listen))
     }
   }
@@ -150,14 +150,14 @@ final class BundleManagedPluginProviderTests: XCTestCase {
   func testActivationDerivesBundlePathWhenProvided() throws {
     try writePluginBinary(permissions: 0o755)
     var catalog = ConfigurationCatalog()
-    var fields = ActivationFixture.plainFields(remark: "带插件", passwordRef: .fresh())
+    var fields = ActivationFixture.plainFields(remark: "带插件", password: "password")
     fields.pluginProgram = pluginBinaryName
-    try credentials.save("pw", for: fields.passwordRef)
+    fields.password = "pw"
     let id = try catalog.addServer(fields)
     var machine = ActivationStateMachine()
 
     let configuration = try machine.activate(
-      id, in: catalog, credentials: credentials, plugins: makeProvider(),
+      id, in: catalog, plugins: makeProvider(),
       options: RuntimeDocumentOptions(listen: ActivationFixture.listen))
 
     let server = try XCTUnwrap(configuration.document.servers.first)

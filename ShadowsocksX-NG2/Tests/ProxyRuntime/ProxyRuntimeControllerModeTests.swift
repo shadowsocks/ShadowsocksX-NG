@@ -186,7 +186,7 @@ final class CatalogRuntimeSnapshotIntegrationTests: XCTestCase {
   }
 
   func testCommitWithoutActiveTargetFeedsLaterActivationThroughSharedSnapshot() async throws {
-    let fileStore = CatalogFileStore(fileURL: catalogFileURL)
+    let fileStore = makeTestCatalogStore(fileURL: catalogFileURL)
     let bootstrap = CatalogCommitCoordinator.bootstrap(fileStore: fileStore)
     let controller = makeController(
       catalogSnapshotReader: bootstrap.catalogSnapshotReader,
@@ -198,7 +198,7 @@ final class CatalogRuntimeSnapshotIntegrationTests: XCTestCase {
 
     let server = try coordinator.commit { catalog, _ in
       try ActivationFixture.addPlainServer(
-        "提交后激活", in: &catalog, credentials: credentials)
+        "提交后激活", in: &catalog)
     }
 
     XCTAssertEqual(coordinator.syncStatus, .idle, "无目标时目录只发布，不触发运行时")
@@ -212,7 +212,7 @@ final class CatalogRuntimeSnapshotIntegrationTests: XCTestCase {
   func testCoordinatorUsesProductionAdapterToClearRemovedActiveTarget() async throws {
     let server = try makeSeededCatalog()
     try ActivationStateFileStore(fileURL: activationFileURL).save(activeTargetID: server)
-    let fileStore = CatalogFileStore(fileURL: catalogFileURL)
+    let fileStore = makeTestCatalogStore(fileURL: catalogFileURL)
     let bootstrap = CatalogCommitCoordinator.bootstrap(fileStore: fileStore)
     let controller = makeController(
       catalogSnapshotReader: bootstrap.catalogSnapshotReader,
@@ -275,8 +275,8 @@ final class CatalogRuntimeSnapshotIntegrationTests: XCTestCase {
   private func makeSeededCatalog() throws -> NodeID {
     var catalog = ConfigurationCatalog()
     let server = try ActivationFixture.addPlainServer(
-      "待删除", in: &catalog, credentials: credentials)
-    try CatalogFileStore(fileURL: catalogFileURL).save(CatalogDocument(catalog: catalog))
+      "待删除", in: &catalog)
+    try makeTestCatalogStore(fileURL: catalogFileURL).save(CatalogDocument(catalog: catalog))
     return server
   }
 }

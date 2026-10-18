@@ -45,7 +45,7 @@ final class LegacyImportTests: XCTestCase {
     XCTAssertEqual(outcome.report.regeneratedIdentityCount, 3)
     XCTAssertTrue(marker.completed)
 
-    let document = try CatalogFileStore(fileURL: catalogURL).load()
+    let document = try makeTestCatalogStore(fileURL: catalogURL).load()
     let groupID = try XCTUnwrap(document.catalog.rootChildren.first)
     let group = try XCTUnwrap(document.catalog.entry(for: groupID))
     guard case .group(let groupFields) = group.kind else {
@@ -61,9 +61,9 @@ final class LegacyImportTests: XCTestCase {
     XCTAssertEqual(first.id, NodeID(rawValue: Self.validID))
     XCTAssertEqual(fields.pluginProgram, "unknown-plugin")
     XCTAssertEqual(
-      try credentials.secret(for: fields.passwordRef), "password-1")
+      fields.password, "password-1")
     XCTAssertEqual(
-      try credentials.secret(for: try XCTUnwrap(fields.pluginOptionsRef)),
+      fields.pluginOptions,
       "mode=websocket;host=example.test")
     XCTAssertNil(try ActivationStateFileStore(fileURL: activationURL).loadActiveTargetID())
   }
@@ -96,7 +96,7 @@ final class LegacyImportTests: XCTestCase {
     }
 
     let second = try service.importCurrentSnapshot(reimport: true)
-    let document = try CatalogFileStore(fileURL: catalogURL).load()
+    let document = try makeTestCatalogStore(fileURL: catalogURL).load()
     XCTAssertEqual(document.catalog.rootChildren.count, 2)
     XCTAssertNotEqual(document.catalog.rootChildren[0], document.catalog.rootChildren[1])
     XCTAssertNotEqual(second.groupID, first.groupID)
@@ -108,11 +108,12 @@ final class LegacyImportTests: XCTestCase {
     var originalCatalog = ConfigurationCatalog()
     let originalServer = try originalCatalog.addTestServer("原有节点", id: originalID)
     let originalFields = try XCTUnwrap(originalCatalog.entry(for: originalServer))
-    guard case .server(let originalServerFields) = originalFields.kind else {
+    guard case .server(var originalServerFields) = originalFields.kind else {
       return XCTFail("原有夹具应为服务器")
     }
-    try credentials.save("original-password", for: originalServerFields.passwordRef)
-    try CatalogFileStore(fileURL: catalogURL).save(CatalogDocument(catalog: originalCatalog))
+    originalServerFields.password = "original-password"
+    try originalCatalog.updateServer(originalServer, with: originalServerFields)
+    try makeTestCatalogStore(fileURL: catalogURL).save(CatalogDocument(catalog: originalCatalog))
     try ActivationStateFileStore(fileURL: activationURL).save(activeTargetID: originalID)
 
     marker.failWhenSettingCompleted = true
@@ -124,12 +125,11 @@ final class LegacyImportTests: XCTestCase {
       }
     }
 
-    XCTAssertEqual(try CatalogFileStore(fileURL: catalogURL).load().catalog, originalCatalog)
+    XCTAssertEqual(try makeTestCatalogStore(fileURL: catalogURL).load().catalog, originalCatalog)
     XCTAssertEqual(
       try ActivationStateFileStore(fileURL: activationURL).loadActiveTargetID(), originalID)
     XCTAssertEqual(
-      try credentials.secret(for: originalServerFields.passwordRef), "original-password")
-    XCTAssertEqual(credentials.storageCount, 1)
+      originalServerFields.password, "original-password")
     XCTAssertFalse(marker.completed)
   }
 
@@ -234,8 +234,7 @@ extension LegacyImportTests {
   fileprivate func makeService() -> LegacyImportService {
     LegacyImportService(
       source: provider,
-      catalogStore: CatalogFileStore(fileURL: catalogURL),
-      credentials: credentials,
+      catalogStore: makeTestCatalogStore(fileURL: catalogURL),
       marker: marker)
   }
 }

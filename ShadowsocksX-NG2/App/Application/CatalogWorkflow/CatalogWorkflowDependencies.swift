@@ -10,8 +10,6 @@ struct CatalogWorkflowDependencies {
   /// 提交管线与运行时收敛的唯一入口；与代理运行时路径共享同一
   /// committed catalog source（组合根创建并注入）。
   let coordinator: CatalogCommitCoordinator
-  /// 凭据存储：只在 module 内出现，UI 不持有。
-  let credentials: CredentialStoring
   /// 受管插件提供缝（编辑面集内事实与可执行文件存在性）。
   let plugins: PluginExecutableResolving
   /// 订阅获取缝。

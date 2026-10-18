@@ -19,7 +19,7 @@ class DiagnosticsWorkflowTestCase: XCTestCase {
   ]
 
   lazy var secrets: [String] = {
-    [password, address, remark, home, lanAddress] + poisonDetails
+    [password, "SECRET-PLUGIN-OPTIONS", address, remark, home, lanAddress] + poisonDetails
   }()
 
   var workDir: URL!
@@ -104,16 +104,16 @@ class DiagnosticsWorkflowTestCase: XCTestCase {
     _ = try catalog.addServer(
       ServerFields(
         address: address, port: 8388, encryptionMethod: "aes-256-gcm",
-        passwordRef: CredentialReference(rawValue: "pw-ref-1"),
+        password: password,
         remark: remark,
         pluginProgram: "v2ray-plugin",
-        pluginOptionsRef: CredentialReference(rawValue: "opts-ref-1")),
+        pluginOptions: "SECRET-PLUGIN-OPTIONS"),
       to: group)
     let subscriptionGroup = try catalog.addGroup("SECRET-GROUP-sub", source: .subscription)
     _ = try catalog.addServer(
       ServerFields(
         address: address, port: 8389, encryptionMethod: "chacha20-ietf-poly1305",
-        passwordRef: CredentialReference(rawValue: "pw-ref-2"), remark: remark),
+        password: password, remark: remark),
       source: .subscription,
       to: subscriptionGroup)
     return DiagnosticCatalogFacts(counts: DiagnosticReportBuilder.counts(in: catalog))

@@ -192,15 +192,16 @@ private final class PluginMappingCommitFixture {
     var catalog = ConfigurationCatalog()
     group = try catalog.addGroup("Group")
     pluginServer = try ActivationFixture.addPlainServer(
-      "Plugin", to: group, in: &catalog, credentials: credentials)
+      "Plugin", to: group, in: &catalog)
     plainServer = try ActivationFixture.addPlainServer(
-      "Plain", to: group, in: &catalog, credentials: credentials)
+      "Plain", to: group, in: &catalog)
     guard case .server(var fields) = try #require(catalog.entry(for: pluginServer)).kind else {
       throw CocoaError(.fileReadCorruptFile)
     }
     fields.pluginProgram = "tool"
     try catalog.updateServer(pluginServer, with: fields)
-    let catalogStore = CatalogFileStore(fileURL: directory.appendingPathComponent("catalog.json"))
+    let catalogStore = makeTestCatalogStore(
+      fileURL: directory.appendingPathComponent("catalog.json"))
     try catalogStore.save(CatalogDocument(catalog: catalog))
     let bootstrap = CatalogCommitCoordinator.bootstrap(fileStore: catalogStore)
     files = RuntimeFileStore(fileURL: runtime.contract)
@@ -242,8 +243,7 @@ private final class PluginMappingCommitFixture {
     workflow = makeCatalogWorkflow(
       coordinator: CatalogCommitCoordinator(
         fileStore: catalogStore, runtime: ProxyRuntimeSyncAdapter(controller: controller),
-        bootstrap: bootstrap),
-      credentials: credentials, plugins: plugins)
+        bootstrap: bootstrap), plugins: plugins)
     let stream = AsyncStream<RuntimeSyncOutcome>.makeStream()
     applications = stream.stream.makeAsyncIterator()
     let controller = controller

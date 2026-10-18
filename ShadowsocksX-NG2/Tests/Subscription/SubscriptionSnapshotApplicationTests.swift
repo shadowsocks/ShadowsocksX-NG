@@ -120,8 +120,8 @@ final class SubscriptionSnapshotApplicationTests: XCTestCase {
     XCTAssertFalse(catalog.rootChildren.contains(groupID))
     XCTAssertTrue(removed.allSatisfy { $0.source == .subscription })
     // 返回条目带凭据引用供调用方清理。
-    let credentialRefs = removed.compactMap { entry -> CredentialReference? in
-      if case .server(let fields) = entry.kind { return fields.passwordRef }
+    let credentialRefs = removed.compactMap { entry -> String? in
+      if case .server(let fields) = entry.kind { return fields.password }
       return nil
     }
     XCTAssertEqual(credentialRefs.count, 2)
@@ -138,7 +138,6 @@ final class SubscriptionSnapshotApplicationTests: XCTestCase {
   func testActiveTargetInsideRefreshedSubtreeStillExpandsAfterSnapshot() throws {
     var catalog = try makeCatalog()
     var machine = ActivationStateMachine(activeTargetID: NodeID(rawValue: "sub1:id:a"))
-    let credentials = InMemoryCredentialStore()
 
     // 快照后 a 仍在（身份不变）→ 目标有效，重展开产出部署效应。叶子无插件，
     // 激活校验只依赖凭据解析；快照重建后按目录里的真实引用解析秘密。
@@ -152,17 +151,17 @@ final class SubscriptionSnapshotApplicationTests: XCTestCase {
               id: NodeID(rawValue: "sub1:id:a"),
               fields: ServerFields(
                 address: "203.0.113.1", port: 8388,
-                encryptionMethod: "aes-256-gcm", passwordRef: .fresh())))
+                encryptionMethod: "aes-256-gcm", password: "password")))
         ]))
     _ = try catalog.applySubscriptionSnapshot(document, into: groupID)
     for entry in catalog.entries.values {
-      if case .server(let fields) = entry.kind {
-        try credentials.save("resolved", for: fields.passwordRef)
+      if case .server(var fields) = entry.kind {
+        fields.password = "resolved"
       }
     }
 
     let effect = machine.catalogDidCommit(
-      catalog, credentials: credentials, plugins: NoManagedPluginProvider(),
+      catalog, plugins: NoManagedPluginProvider(),
       options: RuntimeDocumentOptions(listen: SslocalListenSettings()))
     guard case .deployed(let configuration) = try XCTUnwrap(effect) else {
       return XCTFail("身份未变的活动目标应部署而非清除")
@@ -174,7 +173,7 @@ final class SubscriptionSnapshotApplicationTests: XCTestCase {
       name: "订阅分组", root: .init(id: groupID, name: "", children: []))
     _ = try catalog.applySubscriptionSnapshot(empty, into: groupID)
     let cleared = machine.catalogDidCommit(
-      catalog, credentials: credentials, plugins: NoManagedPluginProvider(),
+      catalog, plugins: NoManagedPluginProvider(),
       options: RuntimeDocumentOptions(listen: SslocalListenSettings()))
     guard case .clearedAndStopped = try XCTUnwrap(cleared) else {
       return XCTFail("目标随远端删除消失后应清除并停止")

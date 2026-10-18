@@ -33,15 +33,10 @@ extension CatalogWorkflow {
       name = "\(base) \(number)"
       number += 1
     }
-    var journal = CredentialWriteJournal(credentials: dependencies.credentials)
-    do {
-      return try commit { catalog in
-        try copyEntry(
-          entry, from: source, into: &catalog, parent: parent,
-          index: position + 1, name: name, journal: &journal, now: Date())
-      }
-    } catch {
-      throw CommitError(underlying: error, credentialRollback: journal.rollback())
+    return try commit { catalog in
+      try copyEntry(
+        entry, from: source, into: &catalog, parent: parent,
+        index: position + 1, name: name, now: Date())
     }
   }
 
@@ -50,15 +45,11 @@ extension CatalogWorkflow {
   private func copyEntry(
     _ entry: CatalogEntry, from source: ConfigurationCatalog,
     into catalog: inout ConfigurationCatalog, parent: NodeID?, index: Int? = nil,
-    name: String, journal: inout CredentialWriteJournal, now: Date
+    name: String, now: Date
   ) throws -> NodeID {
     switch entry.kind {
     case .server(var fields):
       fields.remark = name
-      fields.passwordRef = try copyCredential(fields.passwordRef, journal: &journal)
-      if let reference = fields.pluginOptionsRef {
-        fields.pluginOptionsRef = try copyCredential(reference, journal: &journal)
-      }
       return try catalog.addServer(fields, to: parent, index: index, now: now)
     case .group(let fields):
       let copy = try catalog.addGroup(name, to: parent, index: index, now: now)
@@ -68,20 +59,10 @@ extension CatalogWorkflow {
         }
         _ = try copyEntry(
           childEntry, from: source, into: &catalog, parent: copy,
-          name: childEntry.displayName, journal: &journal, now: now)
+          name: childEntry.displayName, now: now)
       }
       return copy
     }
   }
 
-  private func copyCredential(
-    _ reference: CredentialReference, journal: inout CredentialWriteJournal
-  ) throws -> CredentialReference {
-    guard let secret = try dependencies.credentials.secret(for: reference) else {
-      throw ServerFormLoadError.credentialsUnavailable
-    }
-    let copy = CredentialReference.fresh()
-    try journal.save(secret, for: copy)
-    return copy
-  }
 }

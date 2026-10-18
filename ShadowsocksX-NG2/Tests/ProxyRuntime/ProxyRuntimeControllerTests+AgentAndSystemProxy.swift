@@ -419,11 +419,11 @@ extension ProxyRuntimeAgentAndSystemProxyTests {
     XCTAssertEqual(controller.systemProxyState, .applied)
 
     // 删除活动目标 → 重展开失败 → 清除目标，agent 继续监听。
-    var catalog = try CatalogFileStore(fileURL: catalogFileURL).load().catalog
+    var catalog = try makeTestCatalogStore(fileURL: catalogFileURL).load().catalog
     try catalog.remove(seeded.server)
-    try CatalogFileStore(fileURL: catalogFileURL).save(CatalogDocument(catalog: catalog))
+    try makeTestCatalogStore(fileURL: catalogFileURL).save(CatalogDocument(catalog: catalog))
 
-    let committed = try CatalogFileStore(fileURL: catalogFileURL).load().catalog
+    let committed = try makeTestCatalogStore(fileURL: catalogFileURL).load().catalog
     _ = await controller.catalogDidCommit(snapshot: committed)
 
     XCTAssertNil(controller.activeTargetID)

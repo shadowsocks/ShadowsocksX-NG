@@ -6,7 +6,7 @@ import ImageIO
 /// 服务器导入深模块：UI 只认识 `importServers(from:into:)` 一个入口与
 /// `ImportRunOutcome` 一个结果类型。来源分派按内容嗅探（图片→二维码、
 /// JSON 对象→SIP-008、其余→ss:// 文本行），解码全部复用 Domain 既有实现，
-/// 每来源独立事务（凭据经 journal）独立结果，来源之间互不影响。
+/// 每来源独立事务独立结果，来源之间互不影响。
 extension CatalogWorkflow {
   /// 逐来源独立导入。不抛错：任何失败都折进对应来源的
   /// `ImportSourceResult.failed`，其他来源不受影响。落点对全部来源一致。
@@ -21,10 +21,10 @@ extension CatalogWorkflow {
       switch source {
       case .clipboardText(let text):
         result = importURIText(
-          text, into: parent, credentials: dependencies.credentials)
+          text, into: parent)
       case .file(let name, let data):
         result = await importFile(
-          name: name, data: data, into: parent, credentials: dependencies.credentials)
+          name: name, data: data, into: parent)
       }
       outcomes.append(ImportSourceOutcome(source: source, result: result))
       if let created = importChildren(of: parent).last(where: { !previousIDs.contains($0.id) }) {
@@ -43,18 +43,18 @@ extension CatalogWorkflow {
   /// JSON 对象走 SIP-008（解析失败按整份拒绝报出，不降级文本行）；其余按
   /// 文本逐行。
   private func importFile(
-    name: String, data: Data, into parent: NodeID?, credentials: CredentialStoring
+    name: String, data: Data, into parent: NodeID?
   ) async -> ImportSourceResult {
     if Self.isDecodableImage(data) {
-      return await importQRImage(name: name, data: data, into: parent, credentials: credentials)
+      return await importQRImage(name: name, data: data, into: parent)
     }
     if Self.looksLikeJSONObject(data) {
-      return importSIP008(fileName: name, data: data, into: parent, credentials: credentials)
+      return importSIP008(fileName: name, data: data, into: parent)
     }
     // 非 UTF-8 文本按 UTF-8 有损解读：文本路径宁可逐行点名失败也不整份丢弃。
     return importURIText(
       // swiftlint:disable:next optional_data_string_conversion
-      String(decoding: data, as: UTF8.self), into: parent, credentials: credentials)
+      String(decoding: data, as: UTF8.self), into: parent)
   }
 
   // MARK: - ss:// 文本行
@@ -64,9 +64,8 @@ extension CatalogWorkflow {
   /// 切分下标（含空行）+ 类型化原因点名，已成功行不被局部失败回滚。空文本
   /// 是来源级失败。
   private func importURIText(
-    _ text: String, into parent: NodeID?, credentials: CredentialStoring
+    _ text: String, into parent: NodeID?
   ) -> ImportSourceResult {
-    var journal = CredentialWriteJournal(credentials: credentials)
     var prepared: [ServerFields] = []
     var failures: [ImportLineFailure] = []
     let lines = text.split(
@@ -76,11 +75,9 @@ extension CatalogWorkflow {
       guard !line.isEmpty else { continue }
       do {
         let uri = try SsUri.decode(line)
-        prepared.append(try Self.serverFields(from: uri, journal: &journal))
+        prepared.append(Self.serverFields(from: uri))
       } catch let error as SsUriError {
         failures.append(ImportLineFailure(lineIndex: index, reason: .decode(error)))
-      } catch let error as CredentialStoreError {
-        failures.append(ImportLineFailure(lineIndex: index, reason: .credential(error)))
       } catch {
         failures.append(
           ImportLineFailure(
@@ -100,7 +97,7 @@ extension CatalogWorkflow {
       }
     } catch {
       return .failed(
-        .commit(CommitError(underlying: error, credentialRollback: journal.rollback())))
+        .commit(error))
     }
     return failures.isEmpty
       ? .imported(count: prepared.count, groupID: parent)
@@ -112,7 +109,7 @@ extension CatalogWorkflow {
   /// 二维码图片一步导入：识别全部负载、仅保留 ss:// 行后按文本行语义导入。
   /// 识别在主线程外执行（Vision 位图处理），无预览确认态。
   private func importQRImage(
-    name: String, data: Data, into parent: NodeID?, credentials: CredentialStoring
+    name: String, data: Data, into parent: NodeID?
   ) async -> ImportSourceResult {
     let payloads: [String]
     do {
@@ -125,7 +122,7 @@ extension CatalogWorkflow {
     let uris = payloads.filter { $0.lowercased().hasPrefix("ss://") }
     guard !uris.isEmpty else { return .failed(.qrPayloadNotFound) }
     return importURIText(
-      uris.joined(separator: "\n"), into: parent, credentials: credentials)
+      uris.joined(separator: "\n"), into: parent)
   }
 
   // MARK: - SIP-008 文件（ADR-0027）
@@ -134,7 +131,7 @@ extension CatalogWorkflow {
   /// 只作装配键，目录身份全部新建；根分组挂入选中落点，凭据与目录在同一
   /// 事务提交。
   private func importSIP008(
-    fileName: String, data: Data, into parent: NodeID?, credentials: CredentialStoring
+    fileName: String, data: Data, into parent: NodeID?
   ) -> ImportSourceResult {
     let snapshot: SubscriptionSnapshot
     do {
@@ -145,7 +142,6 @@ extension CatalogWorkflow {
     } catch {
       return .failed(.parse(.decodingFailure))
     }
-    var journal = CredentialWriteJournal(credentials: credentials)
     do {
       let rootID = try commit { catalog in
         // 一次导入一个写入时刻：根分组与全部后代节点共用（ADR-0031）。
@@ -154,13 +150,13 @@ extension CatalogWorkflow {
         let rootID = try catalog.addGroup(
           Self.uniqueGroupName(base, in: catalog), to: parent, now: now)
         try Self.mountSnapshotChildren(
-          of: snapshot.root, into: rootID, catalog: &catalog, journal: &journal, now: now)
+          of: snapshot.root, into: rootID, catalog: &catalog, now: now)
         return rootID
       }
       return .imported(count: Self.snapshotServerCount(snapshot.root), groupID: rootID)
     } catch {
       return .failed(
-        .commit(CommitError(underlying: error, credentialRollback: journal.rollback())))
+        .commit(error))
     }
   }
 
@@ -170,7 +166,6 @@ extension CatalogWorkflow {
     of group: SubscriptionSnapshot.Group,
     into groupID: NodeID,
     catalog: inout ConfigurationCatalog,
-    journal: inout CredentialWriteJournal,
     now: Date
   ) throws {
     for child in group.children {
@@ -179,32 +174,21 @@ extension CatalogWorkflow {
         let nestedID = try catalog.addGroup(
           nested.name.isEmpty ? String(localized: "未命名分组") : nested.name, to: groupID, now: now)
         try mountSnapshotChildren(
-          of: nested, into: nestedID, catalog: &catalog, journal: &journal, now: now)
+          of: nested, into: nestedID, catalog: &catalog, now: now)
       case .server(let leaf):
         try catalog.addServer(
-          importServerFields(from: leaf.record, journal: &journal), to: groupID, now: now)
+          importServerFields(from: leaf.record), to: groupID, now: now)
       }
     }
   }
 
-  /// SIP-008 记录 → 手动服务器叶子字段：密码与可选插件参数经 journal 写入
-  /// 凭据存储。参数保真：`plugin_opts` 非空即存引用，即使缺插件程序名
-  /// （激活语义按 pluginNotProvided 点名，用户可修复）。
-  private static func importServerFields(
-    from record: RemoteServerRecord, journal: inout CredentialWriteJournal
-  ) throws -> ServerFields {
-    let passwordRef = CredentialReference.fresh()
-    try journal.save(record.password, for: passwordRef)
-    var pluginOptionsRef: CredentialReference?
-    if let options = record.pluginOptions, !options.isEmpty {
-      let reference = CredentialReference.fresh()
-      try journal.save(options, for: reference)
-      pluginOptionsRef = reference
-    }
-    return ServerFields(
+  /// 导入记录直接携带秘密；不解析插件参数，保留供应商原文。
+  static func importServerFields(from record: RemoteServerRecord) -> ServerFields {
+    ServerFields(
       address: record.address, port: record.port, encryptionMethod: record.encryptionMethod,
-      passwordRef: passwordRef, remark: record.remark,
-      pluginProgram: record.pluginProgram, pluginOptionsRef: pluginOptionsRef)
+      password: record.password, remark: record.remark,
+      pluginProgram: record.pluginProgram,
+      pluginOptions: record.pluginOptions.flatMap { $0.isEmpty ? nil : $0 })
   }
 
   // MARK: - 命名与嗅探助手

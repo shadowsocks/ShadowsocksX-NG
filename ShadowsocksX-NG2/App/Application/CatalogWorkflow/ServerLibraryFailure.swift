@@ -8,7 +8,6 @@ enum ServerLibraryFailure: Equatable {
   case authenticationFailed
   case unsupportedVersion
   case malformedFile
-  case missingCredential
   case storage
 
   init(_ error: Error) {
@@ -18,7 +17,6 @@ enum ServerLibraryFailure: Equatable {
     case ServerLibraryError.authenticationFailed: self = .authenticationFailed
     case ServerLibraryError.unsupportedVersion: self = .unsupportedVersion
     case ServerLibraryError.malformedFile: self = .malformedFile
-    case ServerLibraryError.missingCredential: self = .missingCredential
     case CatalogFileStore.PersistenceError.corrupt: self = .malformedFile
     default: self = .storage
     }

@@ -21,9 +21,8 @@ final class ActivationFeedbackStateTests: XCTestCase {
     runtime.hasActiveTarget = true
     workflow = makeCatalogWorkflow(
       coordinator: CatalogCommitCoordinator(
-        fileStore: CatalogFileStore(fileURL: workDir.appendingPathComponent("catalog.json")),
+        fileStore: makeTestCatalogStore(fileURL: workDir.appendingPathComponent("catalog.json")),
         runtime: runtime),
-      credentials: InMemoryCredentialStore(),
       activator: activator)
   }
 

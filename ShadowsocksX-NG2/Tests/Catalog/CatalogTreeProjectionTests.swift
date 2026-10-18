@@ -82,7 +82,7 @@ struct CatalogTreeTimestampProjectionTests {
     let group = try catalog.addGroup("原名", now: created)
     try catalog.renameGroup(group, to: "新名", now: modified)
     let tree = CatalogTreeSnapshot.build(
-      from: catalog, credentials: InMemoryCredentialStore(), plugins: NoManagedPluginProvider())
+      from: catalog, plugins: NoManagedPluginProvider())
 
     #expect(tree.node(withID: group)?.createdAt == created)
     #expect(tree.node(withID: group)?.updatedAt == modified)
@@ -124,7 +124,7 @@ struct ServerTableDirectoryOrderTests {
     let childA = try catalog.addGroup("A 子组", to: outer)
     let leaf = try catalog.addGroup("孙节点", to: childA)
     let tree = CatalogTreeSnapshot.build(
-      from: catalog, credentials: InMemoryCredentialStore(), plugins: NoManagedPluginProvider())
+      from: catalog, plugins: NoManagedPluginProvider())
     let rows = tree.visibleRows(source: .manual, collapsed: [])
 
     #expect(rows.map(\.id) == [outer, childZ, childA, leaf, root])
@@ -184,7 +184,7 @@ struct ServerTableInsertionTests {
     let sibling = try catalog.addGroup("外层成员", to: outer)
     let root = try catalog.addGroup("根层")
     let tree = CatalogTreeSnapshot.build(
-      from: catalog, credentials: InMemoryCredentialStore(), plugins: NoManagedPluginProvider())
+      from: catalog, plugins: NoManagedPluginProvider())
     let rows = tree.visibleRows(collapsed: [])
     #expect(rows.map(\.id) == [outer, inner, leaf, sibling, root])
 
@@ -211,7 +211,7 @@ struct ServerTableRowDropTests {
     let member = try catalog.addTestServer("组内服务器", to: inner)
     let outside = try catalog.addTestServer("组外服务器")
     let tree = CatalogTreeSnapshot.build(
-      from: catalog, credentials: InMemoryCredentialStore(), plugins: NoManagedPluginProvider())
+      from: catalog, plugins: NoManagedPluginProvider())
     let memberNode = try #require(tree.node(withID: member))
     let parent = ServerTableDropState.rowParent(for: memberNode)
     #expect(parent == inner)
@@ -220,7 +220,7 @@ struct ServerTableRowDropTests {
 
     try catalog.move(outside, to: parent)
     let movedTree = CatalogTreeSnapshot.build(
-      from: catalog, credentials: InMemoryCredentialStore(), plugins: NoManagedPluginProvider())
+      from: catalog, plugins: NoManagedPluginProvider())
     #expect(movedTree.node(withID: outside)?.parentID == inner)
     #expect(movedTree.node(withID: member)?.parentID == inner)
     #expect(movedTree.node(withID: inner)?.childNodes.map(\.id) == [member, outside])

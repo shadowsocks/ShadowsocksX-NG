@@ -62,19 +62,6 @@ struct KeychainLibraryMasterKeyStore: LibraryMasterKeyStoring {
   }
 }
 
-/// 旧逐项凭据迁移同样遵守前台授权入口。
-extension KeychainCredentialStore {
-  func librarySecret(for reference: CredentialReference, allowingInteraction: Bool) throws
-    -> String?
-  {
-    try withClassicKeychainInteraction(allowingInteraction) { try secret(for: reference) }
-  }
-
-  func deleteLibrarySecret(_ reference: CredentialReference, allowingInteraction: Bool) throws {
-    try withClassicKeychainInteraction(allowingInteraction) { try delete(reference) }
-  }
-}
-
 /// 经典钥匙串使用进程级交互开关。同步调用结束后恢复原值，不把交互许可留给后台操作。
 private func withClassicKeychainInteraction<T>(_ allowed: Bool, _ operation: () throws -> T) throws
   -> T

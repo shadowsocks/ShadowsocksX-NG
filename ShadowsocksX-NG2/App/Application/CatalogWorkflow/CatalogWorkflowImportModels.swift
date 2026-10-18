@@ -14,7 +14,7 @@ enum ImportSource: Equatable, Sendable {
 }
 
 /// 一次导入的逐来源结果聚合；来源之间互不影响。不标 Sendable：携带的
-/// `CommitError` 含 `any Error`，与既有 CommitError 同口径（管线与 UI 同在
+/// 提交失败携带 `any Error`（管线与 UI 同在
 /// 主 actor，无跨域传递）。
 struct ImportRunOutcome {
   let sources: [ImportSourceOutcome]
@@ -37,7 +37,7 @@ struct ImportSourceOutcome {
 }
 
 /// 单来源结果；整体失败时不产生任何目录变更。非 Equatable：提交失败携带
-/// `CommitError`（含底层 `any Error`），与既有 CommitError 同口径，测试
+/// 底层 `any Error`，测试
 /// 逐 case 模式匹配。
 enum ImportSourceResult {
   /// 全部导入成功。`groupID` 为新建根分组（SIP-008 来源）或落点分组
@@ -58,8 +58,8 @@ enum ImportSourceFailure: Error {
   case qrPayloadNotFound
   /// 文本来源没有可解析的行（空文本）。
   case noImportableLines
-  /// 目录或凭据提交失败；已写入凭据按 journal 尽力回滚。
-  case commit(CommitError)
+  /// 服务器库提交失败；已提交值保持不变。
+  case commit(any Error)
 }
 
 /// 文本行导入的逐行失败（ss:// 文本与剪贴板来源共用）。
@@ -71,7 +71,6 @@ struct ImportLineFailure: Equatable {
 
 enum ImportLineFailureReason: Equatable, Error {
   case decode(SsUriError)
-  case credential(CredentialStoreError)
 }
 
 /// Legacy 快照发现与完成标记：跳过不写标记，显式再导入仍

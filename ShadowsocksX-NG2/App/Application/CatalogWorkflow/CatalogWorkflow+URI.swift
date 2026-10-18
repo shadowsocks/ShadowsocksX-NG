@@ -21,53 +21,26 @@ extension CatalogWorkflow {
       encryptionMethod: fields.encryptionMethod, pluginProgram: fields.pluginProgram)
   }
 
-  /// 服务器 → ss://（SIP002）：凭据从存储解析；无凭据即点名失败
-  /// （不分享空档）。仅在用户明确请求分享时调用。
+  /// 仅在用户明确请求分享时生成包含秘密的 URI。
   func shareURI(for id: NodeID) throws -> String {
     guard let entry = dependencies.coordinator.committedCatalog.entry(for: id),
       case .server(let fields) = entry.kind
     else { throw CatalogError.notAServer(id) }
-    guard let password = try dependencies.credentials.secret(for: fields.passwordRef) else {
-      throw CredentialStoreError.keychainStatus(errSecItemNotFound)
-    }
-    var pluginOptions: String?
-    if let optionsRef = fields.pluginOptionsRef {
-      pluginOptions = try dependencies.credentials.secret(for: optionsRef) ?? ""
-    }
+    guard !fields.password.isEmpty else { throw ServerFormError.invalidPassword }
     return SsUri(
-      method: fields.encryptionMethod,
-      password: password,
-      host: fields.address,
-      port: fields.port,
-      pluginProgram: fields.pluginProgram,
-      pluginOptions: pluginOptions,
+      method: fields.encryptionMethod, password: fields.password,
+      host: fields.address, port: fields.port,
+      pluginProgram: fields.pluginProgram, pluginOptions: fields.pluginOptions,
       remark: fields.remark.isEmpty ? nil : fields.remark
     ).encode()
   }
 
-  // MARK: - URI → 服务器叶子字段
-
-  /// URI → 服务器叶子字段：密码与插件参数经 journal 写入凭据存储、目录只持
-  /// 引用。回滚由调用方持有 journal 统一处理（统一导入管线）。
-  static func serverFields(
-    from uri: SsUri, journal: inout CredentialWriteJournal
-  ) throws -> ServerFields {
-    let passwordRef = CredentialReference.fresh()
-    try journal.save(uri.password, for: passwordRef)
-    var pluginOptionsRef: CredentialReference?
-    if uri.pluginProgram != nil, let options = uri.pluginOptions {
-      let ref = CredentialReference.fresh()
-      try journal.save(options, for: ref)
-      pluginOptionsRef = ref
-    }
-    return ServerFields(
-      address: uri.host,
-      port: uri.port,
-      encryptionMethod: uri.method,
-      passwordRef: passwordRef,
-      remark: uri.remark ?? "",
+  static func serverFields(from uri: SsUri) -> ServerFields {
+    ServerFields(
+      address: uri.host, port: uri.port, encryptionMethod: uri.method,
+      password: uri.password, remark: uri.remark ?? "",
       pluginProgram: uri.pluginProgram,
-      pluginOptionsRef: pluginOptionsRef)
+      pluginOptions: uri.pluginProgram == nil ? nil : uri.pluginOptions)
   }
 
   static func serverFields(of entry: CatalogEntry) -> ServerFields? {
@@ -75,51 +48,19 @@ extension CatalogWorkflow {
     return nil
   }
 
-  /// 条目集合 → 待清理凭据引用（密码 + 可选插件参数）。
-  static func credentialRefs(of entries: [CatalogEntry]) -> [CredentialReference] {
-    entries.flatMap { entry -> [CredentialReference] in
-      guard let fields = serverFields(of: entry) else { return [] }
-      return [fields.passwordRef] + (fields.pluginOptionsRef.map { [$0] } ?? [])
-    }
-  }
-
-  /// 插件选择落盘（GLOSSARY.md 不变量）：「无」整体清除引用与
-  /// 参数秘密；受管程序写引用、参数按空/非空经 journal 写删钥匙串；集外引用
-  /// 原样保留（不因打开或保存表单而漂移，激活语义由状态机点名拒绝）。
-  /// 受管集校验已由 `updateServer` 的表单校验完成。
+  /// 无插件时清除参数；未知插件的原始参数在其他字段编辑时保持不变。
   static func applyPluginSelection(
-    _ selection: PluginSelection,
-    options: String?,
-    to fields: inout ServerFields,
-    credentials: CredentialStoring,
-    journal: inout CredentialWriteJournal
-  ) throws {
+    _ selection: PluginSelection, options: String?, to fields: inout ServerFields
+  ) {
     switch selection {
     case .none:
-      if let reference = fields.pluginOptionsRef {
-        journal.delete(reference)
-      }
       fields.pluginProgram = nil
-      fields.pluginOptionsRef = nil
+      fields.pluginOptions = nil
     case .named(let program):
       fields.pluginProgram = program
-      let trimmedOptions = (options ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
-      if trimmedOptions.isEmpty {
-        if let reference = fields.pluginOptionsRef {
-          journal.delete(reference)
-        }
-        fields.pluginOptionsRef = nil
-      } else if let reference = fields.pluginOptionsRef {
-        try journal.save(trimmedOptions, for: reference)
-      } else {
-        let reference = CredentialReference.fresh()
-        try journal.save(trimmedOptions, for: reference)
-        fields.pluginOptionsRef = reference
-      }
+      let trimmed = (options ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+      fields.pluginOptions = trimmed.isEmpty ? nil : trimmed
     case .unknown:
-      // Imported manual records may contain an unsupported plugin. Keep the opaque
-      // reference unchanged while the user repairs another field or selects a
-      // supported plugin explicitly.
       break
     }
   }

@@ -23,8 +23,6 @@ enum LeafInvalidationReason: Error, Equatable, Sendable {
   case unsupportedEncryptionMethod(String)
   /// 引用本版本未提供的插件程序；受管插件集合来自供应链清单。
   case pluginNotProvided(program: String)
-  /// 凭据引用在 Keychain 无对应条目。
-  case credentialUnresolved(CredentialReference)
-  /// Keychain 读取失败。
-  case credentialReadFailed(CredentialReference)
+  /// 服务器密码为空。
+  case missingPassword
 }

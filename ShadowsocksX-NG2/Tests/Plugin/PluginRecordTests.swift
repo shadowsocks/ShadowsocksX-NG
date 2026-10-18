@@ -82,8 +82,8 @@ struct PluginRecordTests {
     ])
     let workflow = makeCatalogWorkflow(
       coordinator: CatalogCommitCoordinator(
-        fileStore: CatalogFileStore(fileURL: root.appendingPathComponent("catalog.json")),
-        runtime: FakeCatalogRuntime()), credentials: InMemoryCredentialStore(), plugins: plugins)
+        fileStore: makeTestCatalogStore(fileURL: root.appendingPathComponent("catalog.json")),
+        runtime: FakeCatalogRuntime()), plugins: plugins)
     let group = try await workflow.createGroup(named: "Share", into: nil)
     let id = try await workflow.createServer(
       ServerEditDraft(
@@ -203,18 +203,17 @@ struct PluginRecordTests {
           names: ["tool", "tool-v2"], path: binary.path,
           arguments: ["--threads", "4", "--log-file", "/tmp/My Log.txt", ""], mode: mode))
     ])
-    let credentials = InMemoryCredentialStore()
     var catalog = ConfigurationCatalog()
     let leaf = try ActivationFixture.addPlainServer(
-      "Plugin", in: &catalog, credentials: credentials)
+      "Plugin", in: &catalog)
     var fields = try ActivationFixture.serverFields(of: leaf, in: catalog)
     fields.pluginProgram = "tool-v2"
-    fields.pluginOptionsRef = .fresh()
-    try credentials.save("tls;host=example.com", for: #require(fields.pluginOptionsRef))
+    fields.pluginOptions = "options"
+    fields.pluginOptions = "tls;host=example.com"
     try catalog.updateServer(leaf, with: fields)
     var machine = ActivationStateMachine()
     let runtime = try machine.activate(
-      leaf, in: catalog, credentials: credentials, plugins: plugins,
+      leaf, in: catalog, plugins: plugins,
       options: RuntimeDocumentOptions(listen: ActivationFixture.listen))
     let json = try #require(
       JSONSerialization.jsonObject(with: runtime.document.jsonData()) as? [String: Any])

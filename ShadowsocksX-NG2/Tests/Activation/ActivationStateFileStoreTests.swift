@@ -81,22 +81,21 @@ final class ActivationStateFileStoreTests: XCTestCase {
 
   func testActivationLifecycleRoundTripThroughFileStore() throws {
     var catalog = ConfigurationCatalog()
-    let credentials = InMemoryCredentialStore()
-    let leaf = try ActivationFixture.addPlainServer("a", in: &catalog, credentials: credentials)
+    let leaf = try ActivationFixture.addPlainServer("a", in: &catalog)
     var machine = ActivationStateMachine()
-    _ = try ActivationFixture.activate(&machine, leaf, in: catalog, credentials: credentials)
+    _ = try ActivationFixture.activate(&machine, leaf, in: catalog)
     try store.save(activeTargetID: machine.activeTargetID)
 
     // 下次启动：从文件恢复目标，载入目录后立即重校验（「重新校验同步」）。
     var restored = ActivationStateMachine(activeTargetID: try store.loadActiveTargetID())
     let configuration = try ActivationFixture.requireDeployed(
-      ActivationFixture.commit(&restored, catalog, credentials: credentials))
+      ActivationFixture.commit(&restored, catalog))
     XCTAssertEqual(configuration.targetID, leaf, "恢复的目标重放派生")
 
     // 目标随后失效：清除并停止，持久化同步清空。
     try catalog.remove(leaf)
     let failure = try ActivationFixture.requireCleared(
-      ActivationFixture.commit(&restored, catalog, credentials: credentials))
+      ActivationFixture.commit(&restored, catalog))
     XCTAssertEqual(failure, .targetNotFound(leaf))
     try store.save(activeTargetID: restored.activeTargetID)
     XCTAssertNil(try store.loadActiveTargetID(), "清除随持久化落盘，重启不再复活旧目标")

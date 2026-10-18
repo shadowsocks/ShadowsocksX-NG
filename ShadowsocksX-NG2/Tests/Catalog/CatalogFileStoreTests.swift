@@ -12,7 +12,7 @@ final class CatalogFileStoreTests: XCTestCase {
     workDir = FileManager.default.temporaryDirectory
       .appendingPathComponent("catalog-file-store-tests-\(UUID().uuidString)", isDirectory: true)
     try FileManager.default.createDirectory(at: workDir, withIntermediateDirectories: true)
-    store = CatalogFileStore(fileURL: workDir.appendingPathComponent("catalog.json"))
+    store = makeTestCatalogStore(fileURL: workDir.appendingPathComponent("catalog.json"))
   }
 
   override func tearDownWithError() throws {
@@ -35,7 +35,7 @@ final class CatalogFileStoreTests: XCTestCase {
     XCTAssertEqual(server.id, serverID, "身份跨持久化稳定")
     guard case .server(let fields) = server.kind else { return XCTFail("目标应是服务器叶子") }
     XCTAssertEqual(fields.pluginProgram, "v2ray-plugin", "插件程序引用原样保留")
-    XCTAssertEqual(fields.pluginOptionsRef, CredentialReference(rawValue: "ref-plugin-options"))
+    XCTAssertEqual(fields.pluginOptions, "options")
   }
 
   func testSecondSaveReplacesContent() throws {
@@ -74,10 +74,10 @@ final class CatalogFileStoreTests: XCTestCase {
       address: "203.0.113.7",
       port: 8388,
       encryptionMethod: "aes-256-gcm",
-      passwordRef: passwordRef,
+      password: "TOPSECRET-密码",
       remark: "含插件",
       pluginProgram: "v2ray-plugin",
-      pluginOptionsRef: optionsRef
+      pluginOptions: "obfs-local;obfs=http"
     )
     _ = try catalog.addServer(fields)
     try credentials.save("TOPSECRET-密码", for: passwordRef)
@@ -85,11 +85,9 @@ final class CatalogFileStoreTests: XCTestCase {
 
     try store.save(CatalogDocument(catalog: catalog))
 
-    let raw = try String(contentsOf: store.fileURL, encoding: .utf8)
-    XCTAssertFalse(raw.contains("TOPSECRET-密码"), "密码明文不得进入持久化文件")
-    XCTAssertFalse(raw.contains("obfs-local;obfs=http"), "插件参数明文不得进入持久化文件")
-    XCTAssertTrue(raw.contains(passwordRef.rawValue), "文件持凭据引用")
-    XCTAssertTrue(raw.contains(optionsRef.rawValue))
+    let raw = try Data(contentsOf: store.fileURL)
+    XCTAssertFalse(raw.range(of: Data("TOPSECRET-密码".utf8)) != nil, "密码明文不得进入持久化文件")
+    XCTAssertFalse(raw.range(of: Data("obfs-local;obfs=http".utf8)) != nil, "插件参数明文不得进入持久化文件")
   }
 
   /// 富夹具：订阅子树 + 手动组嵌套 + 空组 + 无效节点 + 重排后子序。
@@ -103,10 +101,10 @@ final class CatalogFileStoreTests: XCTestCase {
         address: "198.51.100.5",
         port: 443,
         encryptionMethod: "chacha20-ietf-poly1305",
-        passwordRef: CredentialReference(rawValue: "ref-password"),
+        password: "password",
         remark: "带插件",
         pluginProgram: "v2ray-plugin",
-        pluginOptionsRef: CredentialReference(rawValue: "ref-plugin-options")
+        pluginOptions: "options"
       ),
       id: server,
       to: group
@@ -124,7 +122,7 @@ final class CatalogFileStoreTests: XCTestCase {
     let record = SubscriptionRecord(
       id: NodeID(rawValue: "sub2:source"),
       groupID: NodeID(rawValue: "sub2:group"),
-      urlRef: CredentialReference(rawValue: "ref-sub-url"),
+      url: "https://provider.example/sub",
       status: .failed(
         at: Date(timeIntervalSince1970: 1_789_000_000),
         failure: .httpStatus(code: 503)))
@@ -135,75 +133,8 @@ final class CatalogFileStoreTests: XCTestCase {
     XCTAssertEqual(loaded.subscriptions, [record], "订阅记录与刷新状态无损")
     XCTAssertEqual(loaded.catalog, catalog)
     XCTAssertFalse(
-      try String(contentsOf: store.fileURL, encoding: .utf8).contains("https://"),
+      try Data(contentsOf: store.fileURL).range(of: Data("https://".utf8)) != nil,
       "订阅 URL 明文不得落盘（D5：只存凭据引用）")
-  }
-
-  func testV3FailureReasonMigratesToLegacyAndNextSaveRemovesReason() throws {
-    let fixture = try CatalogFixtures.makeSubscriptionFixture(prefix: "migration")
-    let record = SubscriptionRecord(
-      id: NodeID(rawValue: "migration:source"),
-      groupID: fixture.groupID,
-      urlRef: CredentialReference(rawValue: "ref-sub-url"),
-      status: .failed(at: Date(timeIntervalSince1970: 0), failure: .legacy))
-    try store.save(CatalogDocument(catalog: fixture.catalog, subscriptions: [record]))
-
-    var payload = try XCTUnwrap(
-      JSONSerialization.jsonObject(with: Data(contentsOf: store.fileURL)) as? [String: Any])
-    payload["version"] = 3
-    var records = try XCTUnwrap(payload["subscriptions"] as? [[String: Any]])
-    var migratedRecord = try XCTUnwrap(records.first)
-    var status = try XCTUnwrap(migratedRecord["status"] as? [String: Any])
-    var failed = try XCTUnwrap(status["failed"] as? [String: Any])
-    failed.removeValue(forKey: "failure")
-    failed["reason"] = "https://provider.example/subscription?token=secret"
-    status["failed"] = failed
-    migratedRecord["status"] = status
-    records[0] = migratedRecord
-    payload["subscriptions"] = records
-    try JSONSerialization.data(withJSONObject: payload, options: [.sortedKeys])
-      .write(to: store.fileURL, options: .atomic)
-
-    let loaded = try store.load()
-    guard case .failed(_, let failure) = loaded.subscriptions[0].status else {
-      return XCTFail("v3 failed reason 应保留失败态")
-    }
-    XCTAssertEqual(failure, .legacy)
-
-    try store.save(loaded)
-    let raw = try String(contentsOf: store.fileURL, encoding: .utf8)
-    XCTAssertTrue(raw.contains("\"version\" : 6"))
-    XCTAssertFalse(raw.contains("\"reason\""))
-    XCTAssertFalse(raw.contains("provider.example"))
-  }
-
-  func testV1PayloadLoadsWithEmptySubscriptions() throws {
-    let payload = """
-      {"version": 1, "rootChildren": [], "entries": []}
-      """
-    try payload.write(to: store.fileURL, atomically: true, encoding: .utf8)
-
-    let loaded = try store.load()
-
-    XCTAssertTrue(loaded.subscriptions.isEmpty, "v1 文档无订阅记录")
-    XCTAssertTrue(loaded.catalog.isEmpty)
-  }
-
-  func testLegacyEnabledFieldIsIgnoredAndNextSaveWritesCurrentVersionWithoutIt() throws {
-    let payload = """
-      {"version": 1, "rootChildren": ["g"], "entries": [
-        {"id": "g", "source": "manual", "enabled": false,
-         "kind": {"group": {"_0": {"name": "G", "children": []}}}}
-      ]}
-      """
-    try payload.write(to: store.fileURL, atomically: true, encoding: .utf8)
-
-    let loaded = try store.load()
-    try store.save(loaded)
-
-    let raw = try String(contentsOf: store.fileURL, encoding: .utf8)
-    XCTAssertTrue(raw.contains("\"version\" : 6"))
-    XCTAssertFalse(raw.contains("\"enabled\""), "v3 起不再写出节点级 enabled")
   }
 
   // MARK: 节点时间戳（v5，ADR-0031）
@@ -216,7 +147,7 @@ final class CatalogFileStoreTests: XCTestCase {
         address: "198.51.100.9",
         port: 8388,
         encryptionMethod: "aes-256-gcm",
-        passwordRef: CredentialReference(rawValue: "ref-timestamps"),
+        password: "password",
         remark: "时间戳"
       ),
       id: NodeID(rawValue: "manual:timestamped"),
@@ -231,30 +162,14 @@ final class CatalogFileStoreTests: XCTestCase {
     XCTAssertEqual(entry.updatedAt, created)
   }
 
-  func testLegacyEntriesLoadWithUnknownTimestampsInsteadOfBackfill() throws {
-    let payload = """
-      {"version": 4, "rootChildren": ["g"], "entries": [
-        {"id": "g", "source": "manual",
-         "kind": {"group": {"_0": {"name": "G", "children": []}}}}
-      ]}
-      """
-    try payload.write(to: store.fileURL, atomically: true, encoding: .utf8)
-
-    let loaded = try store.load()
-
-    let group = try XCTUnwrap(loaded.catalog.entry(for: NodeID(rawValue: "g")))
-    XCTAssertNil(group.createdAt, "历史文档缺时间戳读取为未知，不回填")
-    XCTAssertNil(group.updatedAt)
-  }
-
   /// 订阅记录 JSON 用真编码器生成：枚举 Codable 形状是实现细节，不在测试里手写。
   private func subscriptionJSON(
-    id: String, groupID: String, urlRef: String = "ref-sub-url"
+    id: String, groupID: String, url: String = "https://provider.example/sub"
   ) throws -> String {
     let record = SubscriptionRecord(
       id: NodeID(rawValue: id),
       groupID: NodeID(rawValue: groupID),
-      urlRef: CredentialReference(rawValue: urlRef),
+      url: url,
       status: .never)
     return String(data: try JSONEncoder().encode(record), encoding: .utf8)!
   }
@@ -263,11 +178,9 @@ final class CatalogFileStoreTests: XCTestCase {
     let recordJSON = try subscriptionJSON(id: "sub-x", groupID: "ghost")
     let payload =
       """
-      {"version": 2, "rootChildren": [], "entries": [], "subscriptions": [\(recordJSON)]}
+      {"version": 7, "rootChildren": [], "entries": [], "favoriteIDs": [], "subscriptions": [\(recordJSON)]}
       """
-    try payload.write(to: store.fileURL, atomically: true, encoding: .utf8)
-
-    XCTAssertThrowsError(try store.load()) { error in
+    XCTAssertThrowsError(try CatalogFileStore.decode(Data(payload.utf8))) { error in
       guard
         case CatalogFileStore.PersistenceError.corrupt? = error
           as? CatalogFileStore.PersistenceError
@@ -278,15 +191,13 @@ final class CatalogFileStoreTests: XCTestCase {
   }
 
   func testDuplicateSubscriptionIDLoadsAsCorrupt() throws {
-    let first = try subscriptionJSON(id: "sub-x", groupID: "g1", urlRef: "ref-u")
-    let second = try subscriptionJSON(id: "sub-x", groupID: "g1", urlRef: "ref-v")
+    let first = try subscriptionJSON(id: "sub-x", groupID: "g1", url: "https://provider.example/u")
+    let second = try subscriptionJSON(id: "sub-x", groupID: "g1", url: "https://provider.example/v")
     let payload =
       """
-      {"version": 2, "rootChildren": [], "entries": [], "subscriptions": [\(first), \(second)]}
+      {"version": 7, "rootChildren": [], "entries": [], "favoriteIDs": [], "subscriptions": [\(first), \(second)]}
       """
-    try payload.write(to: store.fileURL, atomically: true, encoding: .utf8)
-
-    XCTAssertThrowsError(try store.load()) { error in
+    XCTAssertThrowsError(try CatalogFileStore.decode(Data(payload.utf8))) { error in
       guard
         case CatalogFileStore.PersistenceError.corrupt? = error
           as? CatalogFileStore.PersistenceError

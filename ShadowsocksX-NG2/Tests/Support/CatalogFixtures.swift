@@ -62,10 +62,10 @@ enum CatalogFixtures {
       address: "203.0.113.7",
       port: 8388,
       encryptionMethod: "aes-256-gcm",
-      passwordRef: .fresh(),
+      password: "password",
       remark: remark,
       pluginProgram: "v2ray-plugin",
-      pluginOptionsRef: .fresh()
+      pluginOptions: "options"
     )
   }
 }
@@ -147,7 +147,6 @@ final class InMemoryLegacyImportMarker: LegacyImportMarkerStoring {
 @MainActor
 func makeCatalogWorkflow(
   coordinator: CatalogCommitCoordinator,
-  credentials: CredentialStoring,
   plugins: PluginExecutableResolving = NoManagedPluginProvider(),
   subscriptionFetcher: SubscriptionFetching = FakeSubscriptionFetcher(
     behavior: .success(Data())),
@@ -158,14 +157,12 @@ func makeCatalogWorkflow(
   CatalogWorkflow(
     dependencies: CatalogWorkflowDependencies(
       coordinator: coordinator,
-      credentials: credentials,
       plugins: plugins,
       subscriptionFetcher: subscriptionFetcher,
       legacyImportService: legacyImportService
         ?? LegacyImportService(
           source: EmptyLegacySnapshotProvider(),
           catalogStore: coordinator.fileStore,
-          credentials: credentials,
           marker: InMemoryLegacyImportMarker()),
       postLegacyImport: postLegacyImport,
       activator: activator))
@@ -196,5 +193,27 @@ extension ImportSourceResult {
   var sourceFailure: ImportSourceFailure? {
     if case .failed(let failure) = self { return failure }
     return nil
+  }
+}
+
+/// Isolated encrypted file fixture; process-private keys permit reopening without Keychain.
+func makeTestCatalogStore(
+  fileURL: URL, library: ServerLibraryStorage? = nil
+) -> CatalogFileStore {
+  let store = CatalogFileStore(
+    fileURL: fileURL, library: library ?? ServerLibraryStorage(keys: FixtureLibraryKeys()))
+  _ = try? store.load()
+  return store
+}
+
+private final class FixtureLibraryKeys: LibraryMasterKeyStoring {
+  private static let lock = NSLock()
+  nonisolated(unsafe) private static var values: [UUID: Data] = [:]
+
+  func read(_ id: UUID, allowingInteraction: Bool) throws -> Data? {
+    Self.lock.withLock { Self.values[id] }
+  }
+  func create(_ data: Data, id: UUID, allowingInteraction: Bool) throws {
+    Self.lock.withLock { Self.values[id] = data }
   }
 }

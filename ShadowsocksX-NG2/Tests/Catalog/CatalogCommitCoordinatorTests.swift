@@ -92,7 +92,7 @@ final class CatalogCommitCoordinatorTests: XCTestCase {
   }
 
   private func makeCoordinator() -> CatalogCommitCoordinator {
-    let fileStore = CatalogFileStore(fileURL: fileURL)
+    let fileStore = makeTestCatalogStore(fileURL: fileURL)
     bootstrap = CatalogCommitCoordinator.bootstrap(fileStore: fileStore)
     return CatalogCommitCoordinator(fileStore: fileStore, runtime: runtime, bootstrap: bootstrap)
   }
@@ -101,12 +101,12 @@ final class CatalogCommitCoordinatorTests: XCTestCase {
   private func seedCatalog(_ mutate: (inout ConfigurationCatalog) throws -> Void) throws {
     var catalog = ConfigurationCatalog()
     try mutate(&catalog)
-    try CatalogFileStore(fileURL: fileURL).save(CatalogDocument(catalog: catalog))
+    try makeTestCatalogStore(fileURL: fileURL).save(CatalogDocument(catalog: catalog))
     coordinator = makeCoordinator()
   }
 
   private func persistedCatalog() throws -> ConfigurationCatalog {
-    try CatalogFileStore(fileURL: fileURL).load().catalog
+    try makeTestCatalogStore(fileURL: fileURL).load().catalog
   }
 
   // MARK: - 无活动目标
@@ -281,11 +281,12 @@ final class CatalogCommitCoordinatorTests: XCTestCase {
     var external = ConfigurationCatalog()
     let groupID = NodeID(rawValue: "import:group")
     try external.addGroup("导入订阅组", source: .subscription, id: groupID)
-    try CatalogFileStore(fileURL: fileURL).save(
+    try makeTestCatalogStore(fileURL: fileURL).save(
       CatalogDocument(
         catalog: external,
         subscriptions: [
-          SubscriptionRecord(id: .fresh(), groupID: groupID, urlRef: .fresh(), status: .never)
+          SubscriptionRecord(
+            id: .fresh(), groupID: groupID, url: "https://provider.example/sub", status: .never)
         ]))
 
     coordinator.reloadCommittedStateFromStore()
@@ -301,7 +302,7 @@ final class CatalogCommitCoordinatorTests: XCTestCase {
   func testFailedPersistenceDoesNotPublishSharedCatalog() throws {
     let blocker = workDir.appendingPathComponent("not-a-directory")
     try Data().write(to: blocker)
-    let blockedStore = CatalogFileStore(fileURL: blocker.appendingPathComponent("catalog.json"))
+    let blockedStore = makeTestCatalogStore(fileURL: blocker.appendingPathComponent("catalog.json"))
     let blockedBootstrap = CatalogCommitCoordinator.bootstrap(fileStore: blockedStore)
     let blockedCoordinator = CatalogCommitCoordinator(
       fileStore: blockedStore, runtime: runtime, bootstrap: blockedBootstrap)

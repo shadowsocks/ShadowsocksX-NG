@@ -5,21 +5,14 @@ import Testing
 
 @MainActor
 struct ServerFormLoadingTests {
-  @Test
-  func missingReferencedPasswordFailsLoadingInsteadOfBecomingEmpty() throws {
+  @Test func absentServerCannotLoadAnEditForm() throws {
     let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     defer { try? FileManager.default.removeItem(at: directory) }
-    let store = CatalogFileStore(fileURL: directory.appendingPathComponent("catalog.json"))
-    var catalog = ConfigurationCatalog()
-    let id = try catalog.addServer(
-      ServerFields(
-        address: "203.0.113.1", port: 8388, encryptionMethod: "aes-256-gcm",
-        passwordRef: .fresh(), remark: "服务器"))
-    try store.save(CatalogDocument(catalog: catalog))
     let workflow = makeCatalogWorkflow(
-      coordinator: CatalogCommitCoordinator(fileStore: store, runtime: FakeCatalogRuntime()),
-      credentials: InMemoryCredentialStore())
-    #expect(throws: (any Error).self) { _ = try workflow.serverEditForm(for: id) }
+      coordinator: CatalogCommitCoordinator(
+        fileStore: makeTestCatalogStore(fileURL: directory.appendingPathComponent("catalog.enc")),
+        runtime: FakeCatalogRuntime()))
+    #expect(try workflow.serverEditForm(for: .fresh()) == nil)
   }
   @Test
   func appearingAgainAndUpdatingPresentationDoNotReloadManualDraft() {
@@ -118,41 +111,26 @@ struct ServerFormLoadingTests {
     #expect(fields.password == "manual draft")
   }
 
-  @Test
-  func presentationReadsNoSecretsAndReferencedManagedOptionsMustLoad() async throws {
-    let credentials = FormCredentialStore()
-    try await Self.withWorkflow(credentials: credentials) { workflow in
+  @Test func presentationOmitsSecretsAndEditFormReadsCompleteRecord() async throws {
+    try await Self.withWorkflow(credentials: InMemoryCredentialStore()) { workflow in
       let program = ManagedPluginCatalog.plugins[0].program
       let id = try await workflow.createServer(
         ServerEditDraft(
           address: "203.0.113.1", port: 8388, encryptionMethod: "aes-256-gcm",
           password: "pw", remark: "服务器", plugin: .named(program: program),
           pluginOptions: "mode=websocket"), into: nil)
-      credentials.reads = 0
-      credentials.failReads = true
       let presentation = try #require(workflow.serverFormPresentation(for: id))
       #expect(presentation.isEditable)
       #expect(presentation.plugin.optionsPresent)
       #expect(presentation.plugin.options.isEmpty)
-      #expect(credentials.reads == 0)
-      #expect(throws: ServerFormLoadError.credentialsUnavailable) {
-        _ = try workflow.serverEditForm(for: id)
-      }
-      credentials.failReads = false
       let form = try #require(try workflow.serverEditForm(for: id))
       #expect(form.password == "pw")
       #expect(form.plugin.options == "mode=websocket")
-      let optionsRef = try #require(
-        credentials.storage.storageSnapshot.first(where: { $0.value == "mode=websocket" })?.key)
-      try credentials.delete(CredentialReference(rawValue: optionsRef))
-      #expect(throws: ServerFormLoadError.credentialsUnavailable) {
-        _ = try workflow.serverEditForm(for: id)
-      }
     }
   }
 
   @Test
-  func successfulRefreshReloadsSecretChangesDespiteEqualTreeAndFailureDoesNotReload() async throws {
+  func successfulRefreshReloadsSecretChangesAndFailureDoesNotReload() async throws {
     let fetcher = FakeSubscriptionFetcher(behavior: .success(SubscriptionDocs.flat(serverCount: 1)))
     let credentials = InMemoryCredentialStore()
     try await Self.withWorkflow(credentials: credentials, fetcher: fetcher) { workflow in
@@ -176,7 +154,9 @@ struct ServerFormLoadingTests {
         of: "\"password\": \"pw\"", with: "\"password\": \"new password\"")
       fetcher.setBehavior(.success(Data(changed.utf8)))
       await workflow.refreshSubscription(summary.id)
-      #expect(workflow.tree == oldTree)
+      #expect(workflow.tree.roots.map(\.id) == oldTree.roots.map(\.id))
+      #expect(workflow.tree.node(withID: server.id)?.createdAt == server.createdAt)
+      #expect(workflow.tree.node(withID: server.id)?.updatedAt != server.updatedAt)
       #expect(fields.password == "new password")
       #expect(reloads == 1)
       fetcher.setBehavior(.failure(.transport(detail: "fixture failure")))
@@ -198,9 +178,8 @@ struct ServerFormLoadingTests {
     defer { try? FileManager.default.removeItem(at: directory) }
     let workflow = makeCatalogWorkflow(
       coordinator: CatalogCommitCoordinator(
-        fileStore: CatalogFileStore(fileURL: directory.appendingPathComponent("catalog.json")),
-        runtime: FakeCatalogRuntime()),
-      credentials: credentials, subscriptionFetcher: fetcher)
+        fileStore: makeTestCatalogStore(fileURL: directory.appendingPathComponent("catalog.json")),
+        runtime: FakeCatalogRuntime()), subscriptionFetcher: fetcher)
     try await body(workflow)
   }
 
@@ -227,48 +206,20 @@ extension ServerFormLoadingTests {
     #expect(fields.hasChanges)
   }
 
-  @Test
-  func detailFactsAndOptionsRemainReadableWithoutPassword() async throws {
-    let credentials = FormCredentialStore()
-    try await Self.withWorkflow(credentials: credentials) { workflow in
+  @Test func detailFactsOmitSecretsAndExplicitParameterReadPreservesRawValue() async throws {
+    try await Self.withWorkflow(credentials: InMemoryCredentialStore()) { workflow in
       let program = ManagedPluginCatalog.plugins[0].program
       let id = try await workflow.createServer(
         ServerEditDraft(
           address: "203.0.113.1", port: 8388, encryptionMethod: "aes-256-gcm",
           password: "pw", remark: "服务器", plugin: .named(program: program),
           pluginOptions: "tls;host=example.com;host=other.example;empty="), into: nil)
-      let passwordRef = try #require(
-        credentials.storage.storageSnapshot.first(where: { $0.value == "pw" })?.key)
-      var changedServers: [Set<NodeID>] = []
-      let observation = workflow.serverDetailChanges.sink { changedServers.append($0) }
-      defer { observation.cancel() }
-      let saved = try #require(try workflow.serverEditForm(for: id))
-      try await workflow.updateServer(
-        id,
-        draft: ServerEditDraft(
-          address: saved.address, port: saved.port, encryptionMethod: saved.encryptionMethod,
-          password: "pw", remark: saved.remark, plugin: saved.plugin.selection,
-          pluginOptions: "tls;host=example.com;host=other.example;empty="))
-      #expect(changedServers == [[id]])
-      try credentials.delete(CredentialReference(rawValue: passwordRef))
-      credentials.reads = 0
       let facts = try #require(workflow.serverDetailPresentation(for: id))
       #expect(facts.name == "服务器")
-      #expect(facts.address == "203.0.113.1")
       #expect(facts.plugin.options.isEmpty)
-      #expect(credentials.reads == 0)
       #expect(
         try workflow.serverDetailPluginOptions(for: id)
           == "tls;host=example.com;host=other.example;empty=")
-      #expect(credentials.reads == 1)
-      #expect(throws: ServerFormLoadError.credentialsUnavailable) {
-        _ = try workflow.serverEditForm(for: id)
-      }
-      credentials.failReads = true
-      #expect(throws: ServerFormLoadError.credentialsUnavailable) {
-        _ = try workflow.serverDetailPluginOptions(for: id)
-      }
-      #expect(workflow.serverDetailPresentation(for: id)?.address == "203.0.113.1")
     }
   }
 
@@ -276,7 +227,7 @@ extension ServerFormLoadingTests {
   func unknownPluginDetailReadsOptionsWithoutLoadingPassword() throws {
     let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     defer { try? FileManager.default.removeItem(at: directory) }
-    let store = CatalogFileStore(fileURL: directory.appendingPathComponent("catalog.json"))
+    let store = makeTestCatalogStore(fileURL: directory.appendingPathComponent("catalog.json"))
     let credentials = FormCredentialStore()
     let optionsRef = CredentialReference.fresh()
     try credentials.save("opaque=one;opaque=two", for: optionsRef)
@@ -284,19 +235,18 @@ extension ServerFormLoadingTests {
     let id = try catalog.addServer(
       ServerFields(
         address: "203.0.113.1", port: 8388, encryptionMethod: "aes-256-gcm",
-        passwordRef: .fresh(), remark: "未知插件服务器",
-        pluginProgram: "unknown-test-plugin", pluginOptionsRef: optionsRef))
+        password: "password", remark: "未知插件服务器",
+        pluginProgram: "unknown-test-plugin", pluginOptions: "opaque=one;opaque=two"))
     try store.save(CatalogDocument(catalog: catalog))
     let workflow = makeCatalogWorkflow(
-      coordinator: CatalogCommitCoordinator(fileStore: store, runtime: FakeCatalogRuntime()),
-      credentials: credentials)
+      coordinator: CatalogCommitCoordinator(fileStore: store, runtime: FakeCatalogRuntime()))
     credentials.reads = 0
     #expect(
       workflow.serverDetailPresentation(for: id)?.plugin.selection
         == .unknown(program: "unknown-test-plugin"))
     #expect(credentials.reads == 0)
     #expect(try workflow.serverDetailPluginOptions(for: id) == "opaque=one;opaque=two")
-    #expect(credentials.reads == 1)
+    #expect(credentials.reads == 0)
   }
 
   @Test

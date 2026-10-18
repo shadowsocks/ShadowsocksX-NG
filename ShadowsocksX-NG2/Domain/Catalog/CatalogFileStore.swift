@@ -1,6 +1,6 @@
 import Foundation
 
-/// 目录文件边界。生产注入整体加密存储；不带 library 的形态仅用于旧 JSON 迁移与隔离夹具。
+/// 服务器库文件存储；生产和测试均通过整体加密存储写盘。
 struct CatalogFileStore {
   enum PersistenceError: Error, Equatable {
     /// 文件存在但不是本模型可接受的目录文档：JSON 损坏、版本未知、结构不一致。
@@ -9,11 +9,7 @@ struct CatalogFileStore {
     case ioFailure(detail: String)
   }
 
-  /// v2 起携带订阅记录；v1（无订阅字段）仍可读取。v3 移除节点级 enabled
-  /// 语义；v4 把订阅失败字符串替换为 typed facts；v5 增加节点创建/修改时间
-  /// （v1–v4 读取为 nil 未知，不回填）；v6 增加有序收藏。读取兼容 v1–v6。
-  private static let supportedVersions: Set<Int> = [1, 2, 3, 4, 5, 6]
-  private static let currentVersion = 6
+  private static let currentVersion = 7
   private static let jsonEncoder: JSONEncoder = {
     let encoder = JSONEncoder()
     encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
@@ -21,20 +17,15 @@ struct CatalogFileStore {
   }()
 
   let fileURL: URL
-  let library: ServerLibraryStorage?
+  private let library: ServerLibraryStorage
 
-  init(fileURL: URL, library: ServerLibraryStorage? = nil) {
+  init(fileURL: URL, library: ServerLibraryStorage = ServerLibraryStorage()) {
     self.fileURL = fileURL
     self.library = library
   }
 
-  var cleanupFailed: Bool { library?.cleanupFailed ?? false }
-
   func reset() throws -> CatalogDocument {
-    if let library { return try library.reset(at: fileURL) }
-    let document = CatalogDocument()
-    try save(document)
-    return document
+    try library.reset(at: fileURL)
   }
 
   /// 默认密文位置：`~/Library/Application Support/ShadowsocksX-NG2/catalog.enc`。
@@ -48,30 +39,12 @@ struct CatalogFileStore {
   }
 
   func load(allowingInteraction: Bool) throws -> CatalogDocument {
-    if let library {
-      return try library.load(at: fileURL, allowingInteraction: allowingInteraction)
-    }
-    guard FileManager.default.fileExists(atPath: fileURL.path) else {
-      return CatalogDocument()
-    }
-    let data: Data
-    do {
-      data = try Data(contentsOf: fileURL)
-    } catch {
-      throw PersistenceError.ioFailure(detail: String(describing: error))
-    }
-    return try Self.decode(data)
+    try library.load(at: fileURL, allowingInteraction: allowingInteraction)
   }
 
-  /// 整体重写并原子替换；失败时保留原文件。目录权限强制为 0700（含自愈）。
+  /// 整体加密后原子替换，失败时保留原文件。
   func save(_ document: CatalogDocument) throws {
-    if let library { return try library.save(document, at: fileURL) }
-    let data = try Self.encode(document)
-    do {
-      try AtomicFileWriter.write(data, to: fileURL)
-    } catch {
-      throw PersistenceError.ioFailure(detail: String(describing: error))
-    }
+    try library.save(document, at: fileURL)
   }
 
   static func encode(_ document: CatalogDocument) throws -> Data {
@@ -97,7 +70,7 @@ struct CatalogFileStore {
     } catch {
       throw PersistenceError.corrupt(detail: String(describing: error))
     }
-    guard Self.supportedVersions.contains(payload.version) else {
+    guard payload.version == Self.currentVersion else {
       throw PersistenceError.corrupt(detail: "unsupported version \(payload.version)")
     }
     var entries: [NodeID: CatalogEntry] = [:]
@@ -114,7 +87,7 @@ struct CatalogFileStore {
     } catch let error as CatalogError {
       throw PersistenceError.corrupt(detail: String(describing: error))
     }
-    let subscriptions = payload.subscriptions ?? []
+    let subscriptions = payload.subscriptions
     var seen = Set<NodeID>()
     for record in subscriptions {
       guard seen.insert(record.id).inserted else {
@@ -131,7 +104,7 @@ struct CatalogFileStore {
           detail: "subscription group missing \(record.groupID.rawValue)")
       }
     }
-    let favoriteIDs = payload.favoriteIDs ?? []
+    let favoriteIDs = payload.favoriteIDs
     try validateFavorites(favoriteIDs, in: catalog)
     return CatalogDocument(
       catalog: catalog, subscriptions: subscriptions, favoriteIDs: favoriteIDs)
@@ -148,14 +121,11 @@ struct CatalogFileStore {
 
 }
 
-/// 落盘文档形态：版本号 + 根子序 + 全量节点表（顺序语义在根序与分组显子序中）
-/// + 订阅记录（v2 起携带；v1 缺省为空）。v3 节点条目不再写出 `enabled`；
-/// v4 的失败状态只写 typed facts，不再写旧 `reason` 字段；v5 节点条目携带
-/// 创建/修改时间，未知（历史文档迁移节点）省略键；v6 保存独立的收藏序列。
+/// 当前服务器库明文载荷；只能在内存中编解码，由整体加密存储写盘。
 private struct CatalogFilePayload: Codable {
   var version: Int
   var rootChildren: [NodeID]
   var entries: [CatalogEntry]
-  var subscriptions: [SubscriptionRecord]?
-  var favoriteIDs: [NodeID]?
+  var subscriptions: [SubscriptionRecord]
+  var favoriteIDs: [NodeID]
 }

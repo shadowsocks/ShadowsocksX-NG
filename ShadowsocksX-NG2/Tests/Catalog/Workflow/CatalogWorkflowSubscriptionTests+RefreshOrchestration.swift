@@ -31,8 +31,7 @@ extension CatalogWorkflowSubscriptionTests {
 
     let reloaded = makeCatalogWorkflow(
       coordinator: CatalogCommitCoordinator(
-        fileStore: CatalogFileStore(fileURL: fileURL), runtime: FakeCatalogRuntime()),
-      credentials: credentials)
+        fileStore: makeTestCatalogStore(fileURL: fileURL), runtime: FakeCatalogRuntime()))
     XCTAssertEqual(reloaded.subscriptions.count, 1)
     XCTAssertEqual(reloaded.subscriptions[0].id, record.id)
     guard case .succeeded = reloaded.subscriptions[0].status else {

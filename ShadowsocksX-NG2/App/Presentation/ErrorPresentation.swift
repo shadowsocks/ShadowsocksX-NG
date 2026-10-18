@@ -34,11 +34,6 @@ extension AppPresentation {
       return subscriptionFetch(error)
     case let error as SubscriptionParseError:
       return subscriptionParse(error)
-    case let error as SubscriptionRefreshCommitError:
-      return message(
-        for: .commit(
-          category: error.category,
-          rollback: SubscriptionRefreshFailure.rollbackStatus(for: error.rollback)))
     case let error as SettingsWorkflowFailure:
       return message(for: error)
     case let error as RuntimeFailureFacts:
@@ -49,8 +44,6 @@ extension AppPresentation {
       return importSource(error)
     case let error as LegacySkippedRecord.Reason:
       return reason(error)
-    case let error as CommitError:
-      return commit(error)
     case let error as PortSettingError:
       return port(error)
     case let error as ProxySettingsStoreError:
@@ -116,22 +109,8 @@ extension AppPresentation {
       return String(localized: "订阅第 \(index + 1) 条服务器记录的\(recordFieldName(field))无效")
     case .duplicateIdentity:
       return String(localized: "订阅包含重复的服务器身份")
-    case .credential(let category):
-      switch category {
-      case .missing: return String(localized: "订阅凭据不存在")
-      case .read: return String(localized: "订阅凭据读取失败")
-      case .write: return String(localized: "订阅凭据写入失败")
-      }
-    case .commit(let category, let rollback):
-      let commitMessage =
-        category == .credentials ? String(localized: "订阅凭据提交失败") : String(localized: "订阅快照保存失败")
-      switch rollback {
-      case .notNeeded: return commitMessage
-      case .restored: return String(localized: "\(commitMessage)，旧凭据已恢复")
-      case .incomplete: return String(localized: "\(commitMessage)，凭据恢复不完整；最后一次成功快照仍保留")
-      }
-    case .legacy:
-      return String(localized: "订阅刷新失败（旧版失败记录）")
+    case .commit:
+      return String(localized: "订阅快照保存失败")
     case .unknown:
       return unknownError
     }
@@ -189,8 +168,7 @@ extension AppPresentation {
     case .missingEncryptionMethod: return String(localized: "缺少加密方法")
     case .unsupportedEncryptionMethod: return String(localized: "加密方法不受支持")
     case .pluginNotProvided: return String(localized: "插件未提供")
-    case .credentialUnresolved: return String(localized: "凭据不存在")
-    case .credentialReadFailed: return String(localized: "凭据读取失败")
+    case .missingPassword: return String(localized: "密码缺失或为空")
     }
   }
 
@@ -238,12 +216,11 @@ extension AppPresentation {
   private static func importLine(_ error: ImportLineFailureReason) -> String {
     switch error {
     case .decode(let error): return ssURI(error)
-    case .credential(let error): return credential(error)
     }
   }
 
   /// 统一导入的来源级失败：解析失败复用订阅解析文案族，提交失败复用
-  /// CommitError 口径（含回滚状态），其余点名具体原因。
+  /// 提交错误经过统一呈现，其余点名具体原因。
   private static func importSource(_ error: ImportSourceFailure) -> String {
     switch error {
     case .parse(let error): return subscriptionParse(error)
@@ -261,15 +238,6 @@ extension AppPresentation {
     case .invalidPort: return String(localized: "服务器端口缺失或无效")
     case .invalidEncryptionMethod: return String(localized: "加密方式缺失或无效")
     case .missingPassword: return String(localized: "密码缺失或为空")
-    }
-  }
-
-  private static func commit(_ error: CommitError) -> String {
-    switch error.credentialRollback {
-    case .partial:
-      return String(localized: "\(message(for: error.underlying))；凭据恢复不完整，请检查配置后重试")
-    case .nothingToRestore, .restored:
-      return message(for: error.underlying)
     }
   }
 
@@ -345,10 +313,6 @@ extension AppPresentation {
     case .targetIsNotGroup: return String(localized: "所选节点不是分组")
     case .noServers: return String(localized: "分组中没有服务器配置")
     case .invalidServer(_, let problem): return invalidServerExport(problem)
-    case .credentialUnavailable(_, let credential):
-      return credential == .password
-        ? String(localized: "服务器密码无法读取，无法导出 SIP-008 文件")
-        : String(localized: "插件参数无法读取，无法导出 SIP-008 文件")
     case .pluginOptionsWithoutProgram:
       return String(localized: "服务器配置了插件参数但没有插件名称，无法导出 SIP-008 文件")
     case .documentEncodingFailed:

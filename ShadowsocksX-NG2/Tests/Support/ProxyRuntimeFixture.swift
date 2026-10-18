@@ -45,7 +45,7 @@ enum ProxyRuntimeFixture {
 
   @MainActor
   static func catalogSnapshotReader(at fileURL: URL) -> RuntimeCatalogSnapshotReading {
-    CatalogCommitCoordinator.bootstrap(fileStore: CatalogFileStore(fileURL: fileURL))
+    CatalogCommitCoordinator.bootstrap(fileStore: makeTestCatalogStore(fileURL: fileURL))
       .catalogSnapshotReader
   }
 

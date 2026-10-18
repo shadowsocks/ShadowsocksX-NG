@@ -11,7 +11,6 @@ final class CatalogWorkflowRollbackTests: XCTestCase {
   private var fileURL: URL!
   private var settingsURL: URL!
   private var activationURL: URL!
-  private var credentials: InMemoryCredentialStore!
   private var runtime: FakeCatalogRuntime!
   private var bootstrap: CatalogCommitBootstrap!
   private var rootsSeenByLegacyPostImport: [NodeID]?
@@ -26,7 +25,6 @@ final class CatalogWorkflowRollbackTests: XCTestCase {
     fileURL = workDir.appendingPathComponent("gate/catalog.json")
     settingsURL = workDir.appendingPathComponent("settings.json")
     activationURL = workDir.appendingPathComponent("activation.json")
-    credentials = InMemoryCredentialStore()
     runtime = FakeCatalogRuntime()
   }
 
@@ -48,27 +46,25 @@ final class CatalogWorkflowRollbackTests: XCTestCase {
     postLegacyImport: ((LegacyImportOutcome) async -> Void)? = nil
   ) -> CatalogWorkflow {
     runtime.hasActiveTarget = true
-    let fileStore = CatalogFileStore(fileURL: fileURL)
+    let fileStore = makeTestCatalogStore(fileURL: fileURL)
     bootstrap = CatalogCommitCoordinator.bootstrap(fileStore: fileStore)
     let coordinator = CatalogCommitCoordinator(
       fileStore: fileStore, runtime: runtime, bootstrap: bootstrap)
     return makeCatalogWorkflow(
       coordinator: coordinator,
-      credentials: credentials,
       plugins: NoManagedPluginProvider(),
       legacyImportService: legacyImportService,
       postLegacyImport: postLegacyImport)
   }
 
-  /// 直建一条服务器（凭据引用固定，便于观察回滚），返回其身份。
+  /// 直建一条完整服务器记录，返回其身份。
   private func seedServer(password: String) async throws -> NodeID {
     var catalog = ConfigurationCatalog()
     let fields = ServerFields(
       address: "203.0.113.7", port: 8388, encryptionMethod: "aes-256-gcm",
-      passwordRef: CredentialReference(rawValue: "ref-pw"), remark: "夹具")
-    try credentials.save(password, for: fields.passwordRef)
+      password: password, remark: "夹具")
     try catalog.addServer(fields)
-    try CatalogFileStore(fileURL: fileURL).save(CatalogDocument(catalog: catalog))
+    try makeTestCatalogStore(fileURL: fileURL).save(CatalogDocument(catalog: catalog))
     let workflow = makeWorkflow()
     self.workflow = workflow
     return try XCTUnwrap(workflow.tree.roots.first?.id)
@@ -83,7 +79,7 @@ final class CatalogWorkflowRollbackTests: XCTestCase {
 
   // MARK: - 持久化失败 → 旧配置与旧凭据都保持有效
 
-  func testUpdateServerRollsBackCredentialWhenPersistenceFails() async throws {
+  func testFailedSavePreservesServerFieldsAndPassword() async throws {
     let id = try await seedServer(password: "旧密码")
 
     try breakPersistence()
@@ -94,34 +90,23 @@ final class CatalogWorkflowRollbackTests: XCTestCase {
         draft: ServerEditDraft(
           address: "198.51.100.9", port: 9999, encryptionMethod: "aes-256-gcm",
           password: "新密码", remark: "新名称", plugin: .none, pluginOptions: nil))
-    } onThrow: { error in
-      guard let commitError = error as? CommitError else {
-        XCTFail("预期 CommitError，收到 \(error)")
-        return
-      }
-      XCTAssertEqual(
-        commitError.credentialRollback,
-        .restored([CredentialReference(rawValue: "ref-pw")]),
-        "journal 回滚经 typed outcome 报出（story 13）")
     }
 
     let form = try XCTUnwrap(try workflow.serverEditForm(for: id))
     XCTAssertEqual(form.address, "203.0.113.7", "目录提交失败则已发布状态不动")
-    XCTAssertEqual(form.password, "旧密码", "旧凭据继续生效（journal 回滚，story 13）")
+    XCTAssertEqual(form.password, "旧密码", "保存失败保留旧密码")
   }
 
-  func testUpdateServerRollsBackPluginOptionsDeletionWhenPersistenceFails() async throws {
-    // 带参数引用的服务器；把参数改为空触发 journal delete，再让持久化失败。
+  func testFailedSavePreservesPluginOptions() async throws {
+    // 尝试移除插件参数时保存失败，应保留完整旧记录。
     var catalog = ConfigurationCatalog()
     let fields = ServerFields(
       address: "203.0.113.7", port: 8388, encryptionMethod: "aes-256-gcm",
-      passwordRef: CredentialReference(rawValue: "ref-pw"), remark: "夹具",
+      password: "旧密码", remark: "夹具",
       pluginProgram: "v2ray-plugin",
-      pluginOptionsRef: CredentialReference(rawValue: "ref-opts"))
-    try credentials.save("旧密码", for: fields.passwordRef)
-    try credentials.save("mode=websocket", for: try XCTUnwrap(fields.pluginOptionsRef))
+      pluginOptions: "mode=websocket")
     try catalog.addServer(fields)
-    try CatalogFileStore(fileURL: fileURL).save(CatalogDocument(catalog: catalog))
+    try makeTestCatalogStore(fileURL: fileURL).save(CatalogDocument(catalog: catalog))
     workflow = makeWorkflow()
     let id = try XCTUnwrap(workflow.tree.roots.first?.id)
 
@@ -133,18 +118,6 @@ final class CatalogWorkflowRollbackTests: XCTestCase {
         draft: ServerEditDraft(
           address: "203.0.113.7", port: 8388, encryptionMethod: "aes-256-gcm",
           password: "旧密码", remark: "新名称", plugin: .none, pluginOptions: nil))
-    } onThrow: { error in
-      guard let commitError = error as? CommitError else {
-        XCTFail("预期 CommitError，收到 \(error)")
-        return
-      }
-      XCTAssertEqual(
-        commitError.credentialRollback,
-        .restored([
-          CredentialReference(rawValue: "ref-pw"),
-          CredentialReference(rawValue: "ref-opts"),
-        ]),
-        "密码覆盖写与参数删除都被回滚（story 13）")
     }
 
     let form = try XCTUnwrap(try workflow.serverEditForm(for: id))
@@ -152,31 +125,26 @@ final class CatalogWorkflowRollbackTests: XCTestCase {
     XCTAssertEqual(form.plugin.options, "mode=websocket", "被删除的参数秘密已恢复")
   }
 
-  func testCommitFailureWithoutCredentialTouchReportsNothingToRestore() async throws {
+  func testMissingServerUpdateFailsWithoutPublishing() async throws {
     _ = try await seedServer(password: "旧密码")
 
-    // 节点不存在时提交在写凭据之前失败：无触碰即 nothingToRestore。
+    // 节点不存在时拒绝更新。
     await expectThrowsAsync {
       try await workflow.updateServer(
         NodeID(rawValue: "missing"),
         draft: ServerEditDraft(
           address: "198.51.100.9", port: 9999, encryptionMethod: "aes-256-gcm",
           password: "新密码", remark: "新名称", plugin: .none, pluginOptions: nil))
-    } onThrow: { error in
-      guard let commitError = error as? CommitError else {
-        XCTFail("预期 CommitError，收到 \(error)")
-        return
-      }
-      XCTAssertEqual(commitError.credentialRollback, .nothingToRestore)
     }
   }
 
-  // MARK: - 表单新建持久化失败 → 新写凭据回滚为不存在
+  // MARK: - 表单新建持久化失败不发布记录
 
-  func testCreateServerRollsBackFreshCredentialWhenPersistenceFails() async throws {
+  func testFailedCreateDoesNotPublishServer() async throws {
     let workflow = makeWorkflow()
     // 先落一份空目录建立 gate 存储（写入器才会创建父目录），再破坏持久化。
-    try CatalogFileStore(fileURL: fileURL).save(CatalogDocument(catalog: ConfigurationCatalog()))
+    try makeTestCatalogStore(fileURL: fileURL).save(
+      CatalogDocument(catalog: ConfigurationCatalog()))
 
     try breakPersistence()
 
@@ -186,18 +154,9 @@ final class CatalogWorkflowRollbackTests: XCTestCase {
           address: "198.51.100.9", port: 8388, encryptionMethod: "aes-256-gcm",
           password: "新密码", remark: "新名称", plugin: .none, pluginOptions: nil),
         into: nil)
-    } onThrow: { error in
-      guard let commitError = error as? CommitError else {
-        XCTFail("预期 CommitError，收到 \(error)")
-        return
-      }
-      guard case .restored(let refs) = commitError.credentialRollback, refs.count == 1 else {
-        return XCTFail("预期恰有一个全新引用回滚为删除，实际 \(commitError.credentialRollback)")
-      }
     }
 
     XCTAssertTrue(workflow.tree.isEmpty, "目录提交失败则已发布状态不动")
-    XCTAssertTrue(credentials.storageSnapshot.isEmpty, "新写秘密已删除，不留孤儿")
   }
 
   // MARK: - 提交完成与运行时收敛是分离的观察面
@@ -312,8 +271,7 @@ final class CatalogWorkflowRollbackTests: XCTestCase {
     let snapshot = try makeLegacySnapshot()
     return LegacyImportService(
       source: FixedLegacySnapshotProvider(snapshot: snapshot),
-      catalogStore: CatalogFileStore(fileURL: fileURL),
-      credentials: credentials,
+      catalogStore: makeTestCatalogStore(fileURL: fileURL),
       marker: InMemoryLegacyImportMarker())
   }
 }

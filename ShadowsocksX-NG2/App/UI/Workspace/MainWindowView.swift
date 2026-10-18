@@ -58,13 +58,6 @@ struct MainWindowView: View {
       }
     }
     .tabViewStyle(.automatic)
-    .safeAreaInset(edge: .top) {
-      if workflow.libraryCleanupFailed {
-        Label("旧配置清理失败。新服务器库可以使用，但旧文件或凭据仍有残留。", systemImage: "exclamationmark.triangle")
-          .font(.callout)
-          .padding(8)
-      }
-    }
     .toolbar {
       ToolbarItem(placement: .navigation) {
         importButton

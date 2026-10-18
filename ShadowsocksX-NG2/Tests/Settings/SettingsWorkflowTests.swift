@@ -46,7 +46,7 @@ final class SettingsWorkflowTests: XCTestCase {
 
   private func makePair() -> (controller: ProxyRuntimeController, workflow: SettingsWorkflow) {
     let catalogSnapshotReader = CatalogCommitCoordinator.bootstrap(
-      fileStore: CatalogFileStore(fileURL: catalogFileURL)
+      fileStore: makeTestCatalogStore(fileURL: catalogFileURL)
     ).catalogSnapshotReader
     let runtimeFileStore = RuntimeFileStore(fileURL: runtime.contract)
     agent.onRegister = { [runtimeFileStore] in

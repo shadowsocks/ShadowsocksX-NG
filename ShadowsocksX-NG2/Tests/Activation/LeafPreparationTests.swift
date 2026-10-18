@@ -6,22 +6,16 @@ import XCTest
 /// 运行时装配共用的事实。文档装配不在本缝。
 final class LeafPreparationTests: XCTestCase {
   func testSupportedServerWithOpaquePluginOptionsIsReady() throws {
-    let passwordRef = CredentialReference(rawValue: "password")
-    let optionsRef = CredentialReference(rawValue: "options")
-    let credentials = try ActivationFixture.makeCredentials([
-      passwordRef: "password",
-      optionsRef: "plugin-option-that-the-app-does-not-parse",
-    ])
     let fields = ServerFields(
       address: "203.0.113.7",
       port: 8388,
       encryptionMethod: "aes-256-gcm",
-      passwordRef: passwordRef,
+      password: "password",
       pluginProgram: "v2ray-plugin",
-      pluginOptionsRef: optionsRef)
+      pluginOptions: "plugin-option-that-the-app-does-not-parse")
 
     let preparation = LeafPreparation.prepare(
-      fields, credentials: credentials, plugins: ActivationFixture.plugins)
+      fields, plugins: ActivationFixture.plugins)
 
     XCTAssertEqual(preparation.issues, [])
     XCTAssertEqual(preparation.password, "password")
@@ -30,37 +24,29 @@ final class LeafPreparationTests: XCTestCase {
   }
 
   func testUnsupportedEncryptionMethodIsAnInvalidActivationCandidate() throws {
-    let passwordRef = CredentialReference(rawValue: "password")
-    let credentials = try ActivationFixture.makeCredentials([passwordRef: "password"])
     let fields = ServerFields(
       address: "203.0.113.7",
       port: 8388,
       encryptionMethod: "future-cipher",
-      passwordRef: passwordRef)
+      password: "password")
 
     let preparation = LeafPreparation.prepare(
-      fields, credentials: credentials, plugins: ActivationFixture.plugins)
+      fields, plugins: ActivationFixture.plugins)
 
     XCTAssertEqual(preparation.issues, [.unsupportedEncryptionMethod("future-cipher")])
   }
 
   func testMissingPluginExecutableIsInvalidWithoutInspectingOptions() throws {
-    let passwordRef = CredentialReference(rawValue: "password")
-    let optionsRef = CredentialReference(rawValue: "options")
-    let credentials = try ActivationFixture.makeCredentials([
-      passwordRef: "password",
-      optionsRef: "opaque-options",
-    ])
     let fields = ServerFields(
       address: "203.0.113.7",
       port: 8388,
       encryptionMethod: "aes-256-gcm",
-      passwordRef: passwordRef,
+      password: "password",
       pluginProgram: "unknown-plugin",
-      pluginOptionsRef: optionsRef)
+      pluginOptions: "opaque-options")
 
     let preparation = LeafPreparation.prepare(
-      fields, credentials: credentials, plugins: NoManagedPluginProvider())
+      fields, plugins: NoManagedPluginProvider())
 
     XCTAssertEqual(
       preparation.issues,
@@ -68,27 +54,23 @@ final class LeafPreparationTests: XCTestCase {
   }
 
   func testMissingPasswordIsInvalid() throws {
-    let passwordRef = CredentialReference(rawValue: "password")
-    let credentials = try ActivationFixture.makeCredentials([passwordRef: ""])
-    let fields = ActivationFixture.plainFields(remark: "server", passwordRef: passwordRef)
+    let fields = ActivationFixture.plainFields(remark: "server", password: "")
 
     let preparation = LeafPreparation.prepare(
-      fields, credentials: credentials, plugins: ActivationFixture.plugins)
+      fields, plugins: ActivationFixture.plugins)
 
-    XCTAssertEqual(preparation.issues, [.credentialUnresolved(passwordRef)])
+    XCTAssertEqual(preparation.issues, [.missingPassword])
   }
 
   func testFieldAndCredentialIssuesAreAllCollected() throws {
-    let passwordRef = CredentialReference(rawValue: "password")
-    let credentials = try ActivationFixture.makeCredentials([passwordRef: ""])
     let fields = ServerFields(
       address: " ",
       port: 0,
       encryptionMethod: "future-cipher",
-      passwordRef: passwordRef)
+      password: "")
 
     let preparation = LeafPreparation.prepare(
-      fields, credentials: credentials, plugins: ActivationFixture.plugins)
+      fields, plugins: ActivationFixture.plugins)
 
     XCTAssertEqual(
       preparation.issues,
@@ -96,7 +78,7 @@ final class LeafPreparationTests: XCTestCase {
         .invalidAddress,
         .invalidPort(0),
         .unsupportedEncryptionMethod("future-cipher"),
-        .credentialUnresolved(passwordRef),
+        .missingPassword,
       ])
     XCTAssertNil(preparation.password)
     XCTAssertNil(preparation.plugin)
@@ -104,13 +86,11 @@ final class LeafPreparationTests: XCTestCase {
   }
 
   func testResolvedPluginFactsPassThroughForAssembly() throws {
-    let passwordRef = CredentialReference(rawValue: "password")
-    let credentials = try ActivationFixture.makeCredentials([passwordRef: "SECRET"])
-    var fields = ActivationFixture.plainFields(remark: "带插件", passwordRef: passwordRef)
+    var fields = ActivationFixture.plainFields(remark: "带插件", password: "SECRET")
     fields.pluginProgram = "v2ray-plugin"
 
     let preparation = LeafPreparation.prepare(
-      fields, credentials: credentials, plugins: ActivationFixture.plugins)
+      fields, plugins: ActivationFixture.plugins)
 
     XCTAssertEqual(preparation.issues, [])
     XCTAssertEqual(preparation.password, "SECRET")

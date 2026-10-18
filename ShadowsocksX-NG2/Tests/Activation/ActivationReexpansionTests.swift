@@ -11,41 +11,39 @@ final class ActivationReexpansionTests: XCTestCase {
 
   @discardableResult
   private func activate(
-    _ target: NodeID, in catalog: ConfigurationCatalog, credentials: CredentialStoring
+    _ target: NodeID, in catalog: ConfigurationCatalog
   ) throws -> RuntimeConfiguration {
-    try ActivationFixture.activate(&machine, target, in: catalog, credentials: credentials)
+    try ActivationFixture.activate(&machine, target, in: catalog)
   }
 
   private func commit(
-    _ catalog: ConfigurationCatalog, credentials: CredentialStoring
+    _ catalog: ConfigurationCatalog
   ) -> ActivationEffect? {
-    ActivationFixture.commit(&machine, catalog, credentials: credentials)
+    ActivationFixture.commit(&machine, catalog)
   }
 
   func testCommitWithoutActiveTargetProducesNoEffect() throws {
     var catalog = ConfigurationCatalog()
-    let credentials = InMemoryCredentialStore()
-    _ = try ActivationFixture.addPlainServer("a", in: &catalog, credentials: credentials)
+    _ = try ActivationFixture.addPlainServer("a", in: &catalog)
 
-    XCTAssertNil(commit(catalog, credentials: credentials))
+    XCTAssertNil(commit(catalog))
   }
 
   func testSubtreeEditReexpandsAndDeploysUpdatedDocumentAtomically() throws {
     var catalog = ConfigurationCatalog()
-    let credentials = InMemoryCredentialStore()
     let group = try catalog.addGroup("组")
     let leaf = try ActivationFixture.addPlainServer(
-      "a", to: group, in: &catalog, credentials: credentials)
-    try activate(group, in: catalog, credentials: credentials)
+      "a", to: group, in: &catalog)
+    try activate(group, in: catalog)
 
     var updatedFields = try ActivationFixture.serverFields(of: leaf, in: catalog)
     updatedFields.address = "198.51.100.9"
     updatedFields.port = 443
+    updatedFields.password = "new-secret"
     try catalog.updateServer(leaf, with: updatedFields)
-    try credentials.save("new-secret", for: updatedFields.passwordRef)
 
     let configuration = try ActivationFixture.requireDeployed(
-      commit(catalog, credentials: credentials))
+      commit(catalog))
     XCTAssertEqual(machine.activeTargetID, group, "重展开不改变活动目标")
     XCTAssertEqual(configuration.targetID, group)
     XCTAssertEqual(configuration.document.servers[0].server, "198.51.100.9")
@@ -56,29 +54,27 @@ final class ActivationReexpansionTests: XCTestCase {
 
   func testDeleteActiveTargetClearsTargetAndEmitsStopIntent() throws {
     var catalog = ConfigurationCatalog()
-    let credentials = InMemoryCredentialStore()
-    let leaf = try ActivationFixture.addPlainServer("a", in: &catalog, credentials: credentials)
-    try activate(leaf, in: catalog, credentials: credentials)
+    let leaf = try ActivationFixture.addPlainServer("a", in: &catalog)
+    try activate(leaf, in: catalog)
 
     try catalog.remove(leaf)
 
-    let failure = try ActivationFixture.requireCleared(commit(catalog, credentials: credentials))
+    let failure = try ActivationFixture.requireCleared(commit(catalog))
     XCTAssertEqual(failure, .targetNotFound(leaf), "点名原因")
     XCTAssertNil(machine.activeTargetID, "目标被清除")
-    XCTAssertNil(commit(catalog, credentials: credentials), "清除后不再产生效应")
+    XCTAssertNil(commit(catalog), "清除后不再产生效应")
   }
 
   func testInvalidActiveServerClearsTargetAndStops() throws {
     var catalog = ConfigurationCatalog()
-    let credentials = InMemoryCredentialStore()
-    let leaf = try ActivationFixture.addPlainServer("a", in: &catalog, credentials: credentials)
-    try activate(leaf, in: catalog, credentials: credentials)
+    let leaf = try ActivationFixture.addPlainServer("a", in: &catalog)
+    try activate(leaf, in: catalog)
 
     var fields = try ActivationFixture.serverFields(of: leaf, in: catalog)
     fields.encryptionMethod = "future-cipher"
     try catalog.updateServer(leaf, with: fields)
 
-    let failure = try ActivationFixture.requireCleared(commit(catalog, credentials: credentials))
+    let failure = try ActivationFixture.requireCleared(commit(catalog))
     XCTAssertEqual(
       failure, .invalidLeaf(node: leaf, reason: .unsupportedEncryptionMethod("future-cipher")))
     XCTAssertNil(machine.activeTargetID)
@@ -86,20 +82,19 @@ final class ActivationReexpansionTests: XCTestCase {
 
   func testInvalidLeafInActiveGroupIsSkippedAndKeepsTarget() throws {
     var catalog = ConfigurationCatalog()
-    let credentials = InMemoryCredentialStore()
     let group = try catalog.addGroup("组")
     let valid = try ActivationFixture.addPlainServer(
-      "a", to: group, in: &catalog, credentials: credentials)
+      "a", to: group, in: &catalog)
     let broken = try ActivationFixture.addPlainServer(
-      "b", to: group, in: &catalog, credentials: credentials)
-    try activate(group, in: catalog, credentials: credentials)
+      "b", to: group, in: &catalog)
+    try activate(group, in: catalog)
 
     var fields = try ActivationFixture.serverFields(of: broken, in: catalog)
     fields.encryptionMethod = "future-cipher"
     try catalog.updateServer(broken, with: fields)
 
     let configuration = try ActivationFixture.requireDeployed(
-      commit(catalog, credentials: credentials))
+      commit(catalog))
     XCTAssertEqual(configuration.targetID, group)
     XCTAssertEqual(configuration.document.servers.map(\.id), [valid.rawValue])
     XCTAssertEqual(
@@ -110,103 +105,88 @@ final class ActivationReexpansionTests: XCTestCase {
 
   func testEmptyingActiveGroupClearsTargetAndStops() throws {
     var catalog = ConfigurationCatalog()
-    let credentials = InMemoryCredentialStore()
     let group = try catalog.addGroup("组")
     let leaf = try ActivationFixture.addPlainServer(
-      "a", to: group, in: &catalog, credentials: credentials)
-    try activate(group, in: catalog, credentials: credentials)
+      "a", to: group, in: &catalog)
+    try activate(group, in: catalog)
 
     try catalog.remove(leaf)
 
-    let failure = try ActivationFixture.requireCleared(commit(catalog, credentials: credentials))
+    let failure = try ActivationFixture.requireCleared(commit(catalog))
     XCTAssertEqual(failure, .targetExpandsToNothing(group))
     XCTAssertNil(machine.activeTargetID)
   }
 
   func testUnprovidedPluginIntroducedIntoOnlyActiveGroupLeafClearsTarget() throws {
     var catalog = ConfigurationCatalog()
-    let credentials = InMemoryCredentialStore()
     let group = try catalog.addGroup("组")
     let leaf = try ActivationFixture.addPlainServer(
-      "a", to: group, in: &catalog, credentials: credentials)
-    try activate(group, in: catalog, credentials: credentials)
+      "a", to: group, in: &catalog)
+    try activate(group, in: catalog)
 
     var fields = try ActivationFixture.serverFields(of: leaf, in: catalog)
     fields.pluginProgram = "kcptun"
     try catalog.updateServer(leaf, with: fields)
 
-    let failure = try ActivationFixture.requireCleared(commit(catalog, credentials: credentials))
+    let failure = try ActivationFixture.requireCleared(commit(catalog))
     XCTAssertEqual(failure, .targetExpandsToNothing(group))
     XCTAssertNil(machine.activeTargetID)
   }
 
-  func testMissingCredentialInActiveSubtreeClearsTargetAndStops() throws {
+  func testEmptyPasswordInActiveSubtreeClearsTargetAndStops() throws {
     var catalog = ConfigurationCatalog()
-    let missingRef = CredentialReference(rawValue: "ref-missing")
-    let credentials = try ActivationFixture.makeCredentials([missingRef: "pw"])
-    let leaf = try catalog.addServer(
-      ActivationFixture.plainFields(remark: "a", passwordRef: missingRef))
-    try activate(leaf, in: catalog, credentials: credentials)
-
-    try credentials.delete(missingRef)
-
-    let failure = try ActivationFixture.requireCleared(commit(catalog, credentials: credentials))
-    XCTAssertEqual(failure, .invalidLeaf(node: leaf, reason: .credentialUnresolved(missingRef)))
+    let leaf = try catalog.addServer(ActivationFixture.plainFields(remark: "a"))
+    _ = try machine.activate(
+      leaf, in: catalog, plugins: ActivationFixture.plugins,
+      options: RuntimeDocumentOptions(listen: ActivationFixture.listen))
+    var fields = try ActivationFixture.serverFields(of: leaf, in: catalog)
+    fields.password = ""
+    try catalog.updateServer(leaf, with: fields)
+    let effect = machine.catalogDidCommit(
+      catalog, plugins: ActivationFixture.plugins,
+      options: RuntimeDocumentOptions(listen: ActivationFixture.listen))
+    let failure = try ActivationFixture.requireCleared(effect)
+    XCTAssertEqual(failure, .invalidLeaf(node: leaf, reason: .missingPassword))
     XCTAssertNil(machine.activeTargetID)
-  }
 
-  func testFailingCredentialReadInActiveSubtreeClearsTargetAndStops() throws {
-    var catalog = ConfigurationCatalog()
-    let failingRef = CredentialReference(rawValue: "ref-failing")
-    let credentials = try ActivationFixture.makeCredentials([failingRef: "pw"])
-    let leaf = try catalog.addServer(
-      ActivationFixture.plainFields(remark: "a", passwordRef: failingRef))
-    try activate(leaf, in: catalog, credentials: credentials)
-
-    let failure = try ActivationFixture.requireCleared(
-      commit(catalog, credentials: ActivationFixture.FailingCredentialStore()))
-    XCTAssertEqual(failure, .invalidLeaf(node: leaf, reason: .credentialReadFailed(failingRef)))
-    XCTAssertNil(machine.activeTargetID)
   }
 
   func testPriorTargetSurvivesFailedActivationAndStaysDeployableOnCommit() throws {
     var catalog = ConfigurationCatalog()
-    let credentials = InMemoryCredentialStore()
-    let valid = try ActivationFixture.addPlainServer("a", in: &catalog, credentials: credentials)
+    let valid = try ActivationFixture.addPlainServer("a", in: &catalog)
     let group = try catalog.addGroup("组")
     let broken = try ActivationFixture.addPlainServer(
-      "b", to: group, in: &catalog, credentials: credentials)
+      "b", to: group, in: &catalog)
     var brokenFields = try ActivationFixture.serverFields(of: broken, in: catalog)
     brokenFields.pluginProgram = "kcptun"
     try catalog.updateServer(broken, with: brokenFields)
-    try activate(valid, in: catalog, credentials: credentials)
+    try activate(valid, in: catalog)
 
     ActivationFixture.assertThrows(
       .invalidLeaf(node: broken, reason: .pluginNotProvided(program: "kcptun")),
       {
-        try activate(broken, in: catalog, credentials: credentials)
+        try activate(broken, in: catalog)
       })
 
     let configuration = try ActivationFixture.requireDeployed(
-      commit(catalog, credentials: credentials))
+      commit(catalog))
     XCTAssertEqual(configuration.targetID, valid, "无静默回退：失败后原目标仍是活动目标")
     XCTAssertEqual(machine.activeTargetID, valid)
   }
 
   func testRestoredTargetRevalidatesOnNextCommit() throws {
     var catalog = ConfigurationCatalog()
-    let credentials = InMemoryCredentialStore()
-    let leaf = try ActivationFixture.addPlainServer("a", in: &catalog, credentials: credentials)
+    let leaf = try ActivationFixture.addPlainServer("a", in: &catalog)
     let deletedID = NodeID(rawValue: "deleted")
 
     var restored = ActivationStateMachine(activeTargetID: leaf)
     let configuration = try ActivationFixture.requireDeployed(
-      ActivationFixture.commit(&restored, catalog, credentials: credentials))
+      ActivationFixture.commit(&restored, catalog))
     XCTAssertEqual(configuration.targetID, leaf, "恢复的有效目标在下次提交时重放派生（D5 同步）")
 
     var stale = ActivationStateMachine(activeTargetID: deletedID)
     let failure = try ActivationFixture.requireCleared(
-      ActivationFixture.commit(&stale, catalog, credentials: credentials))
+      ActivationFixture.commit(&stale, catalog))
     XCTAssertEqual(failure, .targetNotFound(deletedID), "恢复的失效目标在下次提交时清除并停止")
     XCTAssertNil(stale.activeTargetID)
   }

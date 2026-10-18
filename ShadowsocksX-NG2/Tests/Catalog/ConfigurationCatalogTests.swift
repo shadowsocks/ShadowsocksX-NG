@@ -43,10 +43,10 @@ final class ConfigurationCatalogTests: XCTestCase {
       address: "198.51.100.9",
       port: 443,
       encryptionMethod: "chacha20-ietf-poly1305",
-      passwordRef: .fresh(),
+      password: "password",
       remark: "a-改名",
       pluginProgram: nil,
-      pluginOptionsRef: nil
+      pluginOptions: nil
     )
     try catalog.updateServer(first, with: newFields)
     try catalog.renameGroup(group, to: "新名")
@@ -107,7 +107,7 @@ final class ConfigurationCatalogTests: XCTestCase {
     XCTAssertEqual(try catalog.children(of: group), [second])
     let entry = try XCTUnwrap(removed.first)
     guard case .server(let fields) = entry.kind else { return XCTFail("被删节点应是服务器叶子") }
-    XCTAssertNotEqual(fields.passwordRef.rawValue, "", "被删节点携带凭据引用，供调用方清理 Keychain")
+    XCTAssertNotEqual(fields.password, "", "被删节点携带凭据引用，供调用方清理 Keychain")
   }
 
   func testRemoveNonEmptyManualGroupIsRecursive() throws {

@@ -23,8 +23,7 @@ struct SubscriptionInformationWorkflowTests {
       #expect(failed.information == summary.information)
       #expect(failed.lastSucceededAt == succeededAt)
       let reloaded = makeCatalogWorkflow(
-        coordinator: CatalogCommitCoordinator(fileStore: store, runtime: FakeCatalogRuntime()),
-        credentials: credentials)
+        coordinator: CatalogCommitCoordinator(fileStore: store, runtime: FakeCatalogRuntime()))
       #expect(reloaded.subscriptions.first?.information == summary.information)
       #expect(reloaded.subscriptions.first?.lastSucceededAt == succeededAt)
     }
@@ -64,7 +63,7 @@ struct SubscriptionInformationWorkflowTests {
       let fetcher = InformationGateFetcher()
       let reloaded = makeCatalogWorkflow(
         coordinator: CatalogCommitCoordinator(fileStore: store, runtime: FakeCatalogRuntime()),
-        credentials: credentials, subscriptionFetcher: fetcher)
+        subscriptionFetcher: fetcher)
       let refresh = Task { await reloaded.refreshSubscription(first.id) }
       await fetcher.entered.wait()
       refresh.cancel()
@@ -91,8 +90,7 @@ struct SubscriptionInformationWorkflowTests {
     }
   }
 
-  @Test func durableDocumentContainsOnlyAllowlistedInformationAndCredentialReferences() async throws
-  {
+  @Test func encryptedDocumentHidesSecretsAndRetainsOnlyAllowlistedInformation() async throws {
     try await withWorkflow { workflow, store, credentials, fetcher in
       fetcher.setBehavior(
         .success(
@@ -112,15 +110,14 @@ struct SubscriptionInformationWorkflowTests {
       let first = try await workflow.createSubscription(
         urlString: "https://p.example.com/sub?secret=RAW-URL-TOKEN")
       #expect(first.information?.bytesUsed == UInt64.max)
-      let raw = try String(contentsOf: store.fileURL, encoding: .utf8)
+      let raw = try Data(contentsOf: store.fileURL)
       for secret in [
         "RAW-SERVER-PASSWORD", "RAW-PLUGIN-OPTIONS", "RAW-PROVIDER-TOKEN", "RAW-URL-TOKEN",
       ] {
-        #expect(!raw.contains(secret))
+        #expect(raw.range(of: Data(secret.utf8)) == nil)
       }
       let reloaded = makeCatalogWorkflow(
-        coordinator: CatalogCommitCoordinator(fileStore: store, runtime: FakeCatalogRuntime()),
-        credentials: credentials)
+        coordinator: CatalogCommitCoordinator(fileStore: store, runtime: FakeCatalogRuntime()))
       #expect(reloaded.subscriptions.first?.information?.bytesUsed == UInt64.max)
     }
   }
@@ -128,77 +125,15 @@ struct SubscriptionInformationWorkflowTests {
   @Test func oldDocumentWithoutInformationOrSuccessfulTimeLoadsWithoutGuessing() async throws {
     try await withWorkflow { workflow, store, credentials, _ in
       _ = try await workflow.createSubscription(urlString: "https://p.example.com/sub")
-      var document = try #require(
-        JSONSerialization.jsonObject(with: Data(contentsOf: store.fileURL)) as? [String: Any])
-      var records = try #require(document["subscriptions"] as? [[String: Any]])
-      records[0].removeValue(forKey: "information")
-      records[0].removeValue(forKey: "lastSucceededAt")
-      document["subscriptions"] = records
-      try JSONSerialization.data(withJSONObject: document).write(to: store.fileURL)
+      var document = try store.load()
+      document.subscriptions[0].information = nil
+      document.subscriptions[0].lastSucceededAt = nil
+      try store.save(document)
       let reloaded = makeCatalogWorkflow(
-        coordinator: CatalogCommitCoordinator(fileStore: store, runtime: FakeCatalogRuntime()),
-        credentials: credentials)
+        coordinator: CatalogCommitCoordinator(fileStore: store, runtime: FakeCatalogRuntime()))
       #expect(reloaded.subscriptions.count == 1)
       #expect(reloaded.subscriptions.first?.information == nil)
       #expect(reloaded.subscriptions.first?.lastSucceededAt == nil)
-    }
-  }
-
-  @Test func credentialFailureKeepsInformationAndSuccessfulTime() async throws {
-    try await withWorkflow { workflow, store, credentials, fetcher in
-      let first = try await workflow.createSubscription(urlString: "https://p.example.com/sub")
-      let before = credentials.storageSnapshot
-      let rejecting = RejectingInformationCredentials(base: credentials)
-      let reloaded = makeCatalogWorkflow(
-        coordinator: CatalogCommitCoordinator(fileStore: store, runtime: FakeCatalogRuntime()),
-        credentials: rejecting, subscriptionFetcher: fetcher)
-      fetcher.setBehavior(
-        .success(
-          Data(
-            #"""
-            {"version":1,
-            "servers":[{"server":"203.0.113.7",
-            "server_port":8388,
-            "method":"aes-256-gcm",
-            "password":"REJECT-THIS-PASSWORD"}],
-            "bytes_used":100}
-            """#
-            .utf8)))
-      await reloaded.refreshSubscription(first.id)
-      let failed = try #require(reloaded.subscriptions.first)
-      #expect(failed.information == first.information)
-      #expect(failed.lastSucceededAt == first.lastSucceededAt)
-      if case .failed(_, let failure) = failed.status {
-        #expect(failure == .commit(category: .credentials, rollback: .restored))
-      } else {
-        Issue.record("凭据失败应记失败态")
-      }
-      #expect(credentials.storageSnapshot == before)
-      #expect(try store.load().subscriptions.first?.information == first.information)
-    }
-  }
-
-  @Test func cancellationDuringCredentialWritesRollsBackWithoutPublishing() async throws {
-    try await withWorkflow { workflow, store, credentials, fetcher in
-      let first = try await workflow.createSubscription(urlString: "https://p.example.com/sub")
-      let before = credentials.storageSnapshot
-      let bytes = try Data(contentsOf: store.fileURL)
-      let reloaded = makeCatalogWorkflow(
-        coordinator: CatalogCommitCoordinator(fileStore: store, runtime: FakeCatalogRuntime()),
-        credentials: CancellingInformationCredentials(base: credentials),
-        subscriptionFetcher: fetcher)
-      fetcher.setBehavior(
-        .success(
-          Data(
-            #"""
-            {"version":1,"servers":[{"server":"203.0.113.7","server_port":8388,
-            "method":"aes-256-gcm","password":"CANCEL-DURING-SAVE"}],"bytes_used":100}
-            """#.utf8)))
-      let refresh = Task { await reloaded.refreshSubscription(first.id) }
-      await refresh.value
-      #expect(reloaded.subscriptions.first == first)
-      #expect(credentials.storageSnapshot == before)
-      #expect(try Data(contentsOf: store.fileURL) == bytes)
     }
   }
 
@@ -211,14 +146,14 @@ struct SubscriptionInformationWorkflowTests {
     let directory = FileManager.default.temporaryDirectory
       .appendingPathComponent("subscription-information-\(UUID().uuidString)", isDirectory: true)
     defer { try? FileManager.default.removeItem(at: directory) }
-    let store = CatalogFileStore(fileURL: directory.appendingPathComponent("catalog.json"))
+    let store = makeTestCatalogStore(fileURL: directory.appendingPathComponent("catalog.json"))
     let credentials = InMemoryCredentialStore()
     let fetcher = FakeSubscriptionFetcher(
       behavior: .success(
         Data(#"{"version":1,"servers":[],"bytes_used":25,"bytes_remaining":75}"#.utf8)))
     let workflow = makeCatalogWorkflow(
       coordinator: CatalogCommitCoordinator(fileStore: store, runtime: FakeCatalogRuntime()),
-      credentials: credentials, subscriptionFetcher: fetcher)
+      subscriptionFetcher: fetcher)
     try await body(workflow, store, credentials, fetcher)
   }
 }
@@ -231,43 +166,5 @@ private struct InformationGateFetcher: SubscriptionFetching {
     entered.release()
     await release.wait()
     return Data(#"{"version":1,"servers":[],"bytes_used":100}"#.utf8)
-  }
-}
-
-private struct RejectingInformationCredentials: CredentialStoring {
-  let base: InMemoryCredentialStore
-
-  func save(_ secret: String, for reference: CredentialReference) throws {
-    guard secret != "REJECT-THIS-PASSWORD" else {
-      throw CredentialStoreError.keychainStatus(errSecAuthFailed)
-    }
-    try base.save(secret, for: reference)
-  }
-
-  func secret(for reference: CredentialReference) throws -> String? {
-    try base.secret(for: reference)
-  }
-
-  func delete(_ reference: CredentialReference) throws {
-    try base.delete(reference)
-  }
-}
-
-private struct CancellingInformationCredentials: CredentialStoring {
-  let base: InMemoryCredentialStore
-
-  func save(_ secret: String, for reference: CredentialReference) throws {
-    try base.save(secret, for: reference)
-    if secret == "CANCEL-DURING-SAVE" {
-      withUnsafeCurrentTask { $0?.cancel() }
-    }
-  }
-
-  func secret(for reference: CredentialReference) throws -> String? {
-    try base.secret(for: reference)
-  }
-
-  func delete(_ reference: CredentialReference) throws {
-    try base.delete(reference)
   }
 }

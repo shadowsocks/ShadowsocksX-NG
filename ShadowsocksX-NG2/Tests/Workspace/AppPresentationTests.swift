@@ -26,16 +26,7 @@ final class AppPresentationTests: XCTestCase {
       .recordValidation(index: 2, field: .password),
       .recordValidation(index: 2, field: .identity),
       .duplicateIdentity,
-      .credential(category: .missing),
-      .credential(category: .read),
-      .credential(category: .write),
-      .commit(category: .persistence, rollback: .notNeeded),
-      .commit(category: .persistence, rollback: .restored),
-      .commit(category: .persistence, rollback: .incomplete),
-      .commit(category: .credentials, rollback: .notNeeded),
-      .commit(category: .credentials, rollback: .restored),
-      .commit(category: .credentials, rollback: .incomplete),
-      .legacy,
+      .commit,
       .unknown,
     ]
 
@@ -47,11 +38,6 @@ final class AppPresentationTests: XCTestCase {
       XCTAssertFalse(message.contains("reference"))
     }
 
-    XCTAssertTrue(
-      AppPresentation.message(
-        for: .commit(category: .credentials, rollback: .incomplete)
-      )
-      .contains("恢复不完整"))
   }
 
   func testRuntimeAndSettingsFactsUseCentralPresentation() {

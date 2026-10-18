@@ -27,10 +27,10 @@ final class DiagnosticReportTests: XCTestCase {
         address: address,
         port: 8388,
         encryptionMethod: "aes-256-gcm",
-        passwordRef: CredentialReference(rawValue: "pw-ref-1"),
+        password: password,
         remark: remark,
         pluginProgram: "v2ray-plugin",
-        pluginOptionsRef: CredentialReference(rawValue: "opts-ref-1")
+        pluginOptions: pluginOpts
       ),
       to: group)
     let subscriptionGroup = try catalog.addGroup(groupName + "-sub", source: .subscription)
@@ -39,7 +39,7 @@ final class DiagnosticReportTests: XCTestCase {
         address: address,
         port: 8389,
         encryptionMethod: "chacha20-ietf-poly1305",
-        passwordRef: CredentialReference(rawValue: "pw-ref-2"),
+        password: password,
         remark: remark
       ),
       source: .subscription,
@@ -205,7 +205,7 @@ final class DiagnosticReportTests: XCTestCase {
     _ = try catalog.addServer(
       ServerFields(
         address: address, port: 1, encryptionMethod: "aes-256-gcm",
-        passwordRef: .fresh()
+        password: password
       ),
       to: group)
     let counts = DiagnosticReportBuilder.counts(in: catalog)

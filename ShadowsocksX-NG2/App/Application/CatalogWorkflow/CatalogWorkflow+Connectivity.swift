@@ -16,16 +16,13 @@ extension CatalogWorkflow {
     let plugin = fields.pluginProgram.flatMap {
       dependencies.plugins.catalogSnapshot().entry(for: $0)
     }
-    let secrets = [fields.passwordRef, fields.pluginOptionsRef].compactMap { $0 }.map {
-      (try? dependencies.credentials.secret(for: $0)) ?? "unreadable"
-    }
     let encoder = JSONEncoder()
     encoder.outputFormatting = [.sortedKeys]
     let facts =
       [
         String(data: (try? encoder.encode(fields)) ?? Data(), encoding: .utf8) ?? "",
         String(describing: plugin),
-      ] + secrets
+      ]
     return ProxyACLDocument.digest((try? JSONEncoder().encode(facts)) ?? Data())
   }
 
@@ -40,7 +37,7 @@ extension CatalogWorkflow {
       throw ServerConnectivity.ConfigurationFailure.unsupported
     }
     let config = try derivation.activate(
-      id, in: catalog, credentials: dependencies.credentials,
+      id, in: catalog,
       plugins: dependencies.plugins,
       options: RuntimeDocumentOptions(listen: SslocalListenSettings()))
     guard let server = config.document.servers.first else { throw ServerFormLoadError.notFound }

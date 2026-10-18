@@ -4,67 +4,53 @@ import Testing
 @testable import ShadowsocksX_NG2
 
 struct EncryptedServerLibraryTests {
-  @Test func savedLibraryHidesServerMetadata() throws {
+  @Test func historicalJSONIsRejectedWithoutMigrationOrCleanup() throws {
+    let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+    defer { try? FileManager.default.removeItem(at: directory) }
+    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    let legacyURL = directory.appendingPathComponent("catalog.json")
+    let original = Data("historical-library".utf8)
+    try original.write(to: legacyURL)
+    let keys = TestLibraryKeys()
+    let store = CatalogFileStore(
+      fileURL: directory.appendingPathComponent("catalog.enc"),
+      library: ServerLibraryStorage(keys: keys))
+    #expect(throws: ServerLibraryError.unsupportedVersion) { try store.load() }
+    #expect(try Data(contentsOf: legacyURL) == original)
+    #expect(!FileManager.default.fileExists(atPath: store.fileURL.path))
+    #expect(keys.values.isEmpty)
+    _ = try store.reset()
+    #expect(try store.load().catalog.isEmpty)
+    #expect(try Data(contentsOf: legacyURL) == original)
+  }
+
+  @Test func completeRecordsSurviveRestartAndOnlyCiphertextIsWritten() throws {
     let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     defer { try? FileManager.default.removeItem(at: directory) }
     let url = directory.appendingPathComponent("catalog.enc")
-    let store = CatalogFileStore(
-      fileURL: url,
-      library: ServerLibraryStorage(
-        credentials: ServerLibraryCredentials(),
-        keys: TestLibraryKeys(), legacyCredentials: InMemoryCredentialStore()))
+    let keys = TestLibraryKeys()
+    let store = CatalogFileStore(fileURL: url, library: ServerLibraryStorage(keys: keys))
     _ = try store.load()
     var catalog = ConfigurationCatalog()
-    _ = try catalog.addGroup("PRIVATE-GROUP-NAME")
-    try store.save(CatalogDocument(catalog: catalog))
-    let data = try Data(contentsOf: url)
-    #expect(data.range(of: Data("PRIVATE-GROUP-NAME".utf8)) == nil)
-    #expect(try store.load().catalog == catalog)
-  }
-  @Test func migrationRestoresAllSecretsAfterRestartAndCleansOnlyLibraryCredentials() throws {
-    let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
-    defer { try? FileManager.default.removeItem(at: directory) }
-    let fixture = try CatalogFixtures.makeSubscriptionFixture(prefix: "private-subscription")
+    let group = try catalog.addGroup("PRIVATE-GROUP", source: .subscription)
+    let fields = ServerFields(
+      address: "private.example", port: 8388, encryptionMethod: "aes-256-gcm",
+      password: "PRIVATE-PASSWORD", remark: "PRIVATE-NAME",
+      pluginProgram: "v2ray-plugin", pluginOptions: "host=PRIVATE-PLUGIN")
+    _ = try catalog.addServer(fields, source: .subscription, to: group)
     let record = SubscriptionRecord(
-      id: NodeID(rawValue: "subscription"), groupID: fixture.groupID,
-      urlRef: CredentialReference.fresh(), status: .never)
-    let document = CatalogDocument(
-      catalog: fixture.catalog, subscriptions: [record],
-      favoriteIDs: [fixture.groupID])
-    let legacyCredentials = InMemoryCredentialStore()
-    let outside = CredentialReference.fresh()
-    try legacyCredentials.save("listener-secret", for: outside)
-    for reference in document.libraryCredentialReferences {
-      try legacyCredentials.save("sample-secret-" + reference.rawValue, for: reference)
+      id: .fresh(), groupID: group, url: "https://provider.example/sub?token=PRIVATE-TOKEN",
+      status: .never)
+    let document = CatalogDocument(catalog: catalog, subscriptions: [record], favoriteIDs: [group])
+    try store.save(document)
+    let first = try Data(contentsOf: url)
+    for secret in ["PRIVATE-", "private.example", "provider.example"] {
+      #expect(first.range(of: Data(secret.utf8)) == nil)
     }
-    let legacyURL = directory.appendingPathComponent("catalog.json")
-    try CatalogFileStore(fileURL: legacyURL).save(document)
-    let keys = TestLibraryKeys()
-    let credentials = ServerLibraryCredentials()
-    let url = directory.appendingPathComponent("catalog.enc")
-    let store = CatalogFileStore(
-      fileURL: url,
-      library: ServerLibraryStorage(
-        credentials: credentials, keys: keys, legacyCredentials: legacyCredentials))
-    #expect(try store.load() == document)
-    #expect(!FileManager.default.fileExists(atPath: legacyURL.path))
-    let data = try Data(contentsOf: url)
-    #expect(data.range(of: Data("sample-secret-".utf8)) == nil)
-    #expect(data.range(of: Data("private-subscription".utf8)) == nil)
-    let restartedCredentials = ServerLibraryCredentials()
-    let restarted = CatalogFileStore(
-      fileURL: url,
-      library: ServerLibraryStorage(
-        credentials: restartedCredentials, keys: keys, legacyCredentials: legacyCredentials))
+    let restarted = CatalogFileStore(fileURL: url, library: ServerLibraryStorage(keys: keys))
     #expect(try restarted.load() == document)
-    for reference in document.libraryCredentialReferences {
-      #expect(
-        try restartedCredentials.secret(for: reference) == "sample-secret-" + reference.rawValue)
-      #expect(try legacyCredentials.secret(for: reference) == nil)
-    }
-    #expect(try legacyCredentials.secret(for: outside) == "listener-secret")
     try restarted.save(document)
-    #expect(try Data(contentsOf: url) != data)
+    #expect(try Data(contentsOf: url) != first)
   }
 
   @Test(arguments: [0, 8, 9, 45, -1])
@@ -73,44 +59,30 @@ struct EncryptedServerLibraryTests {
     defer { try? FileManager.default.removeItem(at: directory) }
     let url = directory.appendingPathComponent("catalog.enc")
     let keys = TestLibraryKeys()
-    let storage = ServerLibraryStorage(
-      credentials: ServerLibraryCredentials(), keys: keys,
-      legacyCredentials: InMemoryCredentialStore())
-    let store = CatalogFileStore(fileURL: url, library: storage)
+    let store = CatalogFileStore(fileURL: url, library: ServerLibraryStorage(keys: keys))
     _ = try store.load()
     var data = try Data(contentsOf: url)
     data[offset == -1 ? data.count - 1 : offset] ^= 1
     try data.write(to: url)
-    try CatalogFileStore(fileURL: directory.appendingPathComponent("catalog.json"))
-      .save(CatalogDocument())
-    let restarted = CatalogFileStore(
-      fileURL: url,
-      library: ServerLibraryStorage(
-        credentials: ServerLibraryCredentials(), keys: keys,
-        legacyCredentials: InMemoryCredentialStore()))
+    try Data("old-library".utf8).write(to: directory.appendingPathComponent("catalog.json"))
+    let restarted = CatalogFileStore(fileURL: url, library: ServerLibraryStorage(keys: keys))
     #expect(throws: (any Error).self) { try restarted.load() }
     #expect(try Data(contentsOf: url) == data)
   }
 
-  @Test func missingLegacyCredentialKeepsOriginalFile() throws {
+  @Test func previousEncryptedEnvelopeIsUnsupportedAndPreserved() throws {
     let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     defer { try? FileManager.default.removeItem(at: directory) }
-    let legacyURL = directory.appendingPathComponent("catalog.json")
-    var catalog = ConfigurationCatalog()
-    _ = try catalog.addTestServer("missing-secret")
-    try CatalogFileStore(fileURL: legacyURL).save(CatalogDocument(catalog: catalog))
-    let original = try Data(contentsOf: legacyURL)
     let url = directory.appendingPathComponent("catalog.enc")
     let keys = TestLibraryKeys()
-    let store = CatalogFileStore(
-      fileURL: url,
-      library: ServerLibraryStorage(
-        credentials: ServerLibraryCredentials(), keys: keys,
-        legacyCredentials: InMemoryCredentialStore()))
-    #expect(throws: ServerLibraryError.missingCredential) { try store.load() }
-    #expect(try Data(contentsOf: legacyURL) == original)
-    #expect(!FileManager.default.fileExists(atPath: url.path))
-    #expect(keys.values.isEmpty)
+    let store = CatalogFileStore(fileURL: url, library: ServerLibraryStorage(keys: keys))
+    _ = try store.load()
+    var old = try Data(contentsOf: url)
+    old[8] = 1
+    try old.write(to: url)
+    let restarted = CatalogFileStore(fileURL: url, library: ServerLibraryStorage(keys: keys))
+    #expect(throws: ServerLibraryError.unsupportedVersion) { try restarted.load() }
+    #expect(try Data(contentsOf: url) == old)
   }
 
   @Test func unavailableOrWrongKeyDoesNotReplaceCiphertext() throws {
@@ -118,29 +90,17 @@ struct EncryptedServerLibraryTests {
     defer { try? FileManager.default.removeItem(at: directory) }
     let url = directory.appendingPathComponent("catalog.enc")
     let keys = TestLibraryKeys()
-    let store = CatalogFileStore(
-      fileURL: url,
-      library: ServerLibraryStorage(
-        credentials: ServerLibraryCredentials(), keys: keys,
-        legacyCredentials: InMemoryCredentialStore()))
+    let store = CatalogFileStore(fileURL: url, library: ServerLibraryStorage(keys: keys))
     _ = try store.load()
     let ciphertext = try Data(contentsOf: url)
     let restarted = CatalogFileStore(
-      fileURL: url,
-      library: ServerLibraryStorage(
-        credentials: ServerLibraryCredentials(), keys: TestLibraryKeys(),
-        legacyCredentials: InMemoryCredentialStore()))
+      fileURL: url, library: ServerLibraryStorage(keys: TestLibraryKeys()))
     #expect(throws: ServerLibraryError.keyUnavailable) { try restarted.load() }
     keys.values = keys.values.mapValues { _ in Data(repeating: 0, count: 32) }
-    let wrongKey = CatalogFileStore(
-      fileURL: url,
-      library: ServerLibraryStorage(
-        credentials: ServerLibraryCredentials(), keys: keys,
-        legacyCredentials: InMemoryCredentialStore()))
+    let wrongKey = CatalogFileStore(fileURL: url, library: ServerLibraryStorage(keys: keys))
     #expect(throws: ServerLibraryError.authenticationFailed) { try wrongKey.load() }
     #expect(try Data(contentsOf: url) == ciphertext)
   }
-
 }
 
 final class TestLibraryKeys: LibraryMasterKeyStoring {

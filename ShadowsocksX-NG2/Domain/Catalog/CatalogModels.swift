@@ -1,32 +1,32 @@
 import Foundation
 
-/// 服务器叶子字段。密码与插件参数只持凭据引用，秘密值随服务器库整体加密；
+/// 服务器叶子字段。密码与插件参数由记录持有，随服务器库整体加密；
 /// 插件程序引用原样保留，是否可用由激活校验判定。
 struct ServerFields: Codable, Equatable, Sendable {
   var address: String
   var port: Int
   var encryptionMethod: String
-  var passwordRef: CredentialReference
+  var password: String
   var remark: String
   var pluginProgram: String?
-  var pluginOptionsRef: CredentialReference?
+  var pluginOptions: String?
 
   init(
     address: String,
     port: Int,
     encryptionMethod: String,
-    passwordRef: CredentialReference,
+    password: String,
     remark: String = "",
     pluginProgram: String? = nil,
-    pluginOptionsRef: CredentialReference? = nil
+    pluginOptions: String? = nil
   ) {
     self.address = address
     self.port = port
     self.encryptionMethod = encryptionMethod
-    self.passwordRef = passwordRef
+    self.password = password
     self.remark = Self.name(remark, address: address, port: port)
     self.pluginProgram = pluginProgram
-    self.pluginOptionsRef = pluginOptionsRef
+    self.pluginOptions = pluginOptions
   }
 
   /// 导入与字段构造共用名称规则；非空名称原样保留，缺名时生成并保存端点名。
@@ -68,10 +68,6 @@ struct CatalogEntry: Codable, Equatable, Sendable {
   /// 节点自身资料、或分组的直接子节点集合与顺序最后一次变化的时刻；未知为 nil。
   var updatedAt: Date?
 
-  private enum CodingKeys: String, CodingKey {
-    case id, source, enabled, kind, createdAt, updatedAt
-  }
-
   init(id: NodeID, source: NodeSource, kind: Kind, createdAt: Date?, updatedAt: Date?) {
     self.id = id
     self.source = source
@@ -80,27 +76,6 @@ struct CatalogEntry: Codable, Equatable, Sendable {
     self.updatedAt = updatedAt
   }
 
-  /// Reads the removed `enabled` field from v1/v2 documents only for migration;
-  /// its value has no meaning in the current domain model. Node timestamps are
-  /// absent in v1–v4 documents and decode as nil (unknown, never backfilled).
-  init(from decoder: Decoder) throws {
-    let container = try decoder.container(keyedBy: CodingKeys.self)
-    id = try container.decode(NodeID.self, forKey: .id)
-    source = try container.decode(NodeSource.self, forKey: .source)
-    _ = try container.decodeIfPresent(Bool.self, forKey: .enabled)
-    kind = try container.decode(Kind.self, forKey: .kind)
-    createdAt = try container.decodeIfPresent(Date.self, forKey: .createdAt)
-    updatedAt = try container.decodeIfPresent(Date.self, forKey: .updatedAt)
-  }
-
-  func encode(to encoder: Encoder) throws {
-    var container = encoder.container(keyedBy: CodingKeys.self)
-    try container.encode(id, forKey: .id)
-    try container.encode(source, forKey: .source)
-    try container.encode(kind, forKey: .kind)
-    try container.encodeIfPresent(createdAt, forKey: .createdAt)
-    try container.encodeIfPresent(updatedAt, forKey: .updatedAt)
-  }
 }
 
 extension CatalogEntry {

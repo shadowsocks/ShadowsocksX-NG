@@ -37,12 +37,11 @@ struct ActivationStateMachine: Equatable, Sendable {
   mutating func activate(
     _ target: NodeID,
     in catalog: ConfigurationCatalog,
-    credentials: CredentialStoring,
     plugins: PluginExecutableResolving,
     options: RuntimeDocumentOptions
   ) throws -> RuntimeConfiguration {
     let outcome = derive(
-      target: target, in: catalog, credentials: credentials, plugins: plugins, options: options)
+      target: target, in: catalog, plugins: plugins, options: options)
     switch outcome {
     case .success(let configuration):
       activeTargetID = target
@@ -59,13 +58,12 @@ struct ActivationStateMachine: Equatable, Sendable {
   /// 跳过相同内容的运行时写入。
   mutating func catalogDidCommit(
     _ catalog: ConfigurationCatalog,
-    credentials: CredentialStoring,
     plugins: PluginExecutableResolving,
     options: RuntimeDocumentOptions
   ) -> ActivationEffect? {
     guard let target = activeTargetID else { return nil }
     let outcome = derive(
-      target: target, in: catalog, credentials: credentials, plugins: plugins, options: options)
+      target: target, in: catalog, plugins: plugins, options: options)
     switch outcome {
     case .success(let configuration):
       return .deployed(configuration)
@@ -83,7 +81,6 @@ struct ActivationStateMachine: Equatable, Sendable {
   private func derive(
     target: NodeID,
     in catalog: ConfigurationCatalog,
-    credentials: CredentialStoring,
     plugins: PluginExecutableResolving,
     options: RuntimeDocumentOptions
   ) -> Result<RuntimeConfiguration, ActivationFailure> {
@@ -101,7 +98,7 @@ struct ActivationStateMachine: Equatable, Sendable {
     var servers: [SslocalServerDocument] = []
     var skippedServers: [SkippedServer] = []
     for leafID in leaves {
-      switch deriveLeaf(leafID, in: catalog, credentials: credentials, plugins: plugins) {
+      switch deriveLeaf(leafID, in: catalog, plugins: plugins) {
       case .server(let server):
         servers.append(server)
       case .skippedCandidate(let skipped):
@@ -140,14 +137,13 @@ struct ActivationStateMachine: Equatable, Sendable {
   private func deriveLeaf(
     _ leafID: NodeID,
     in catalog: ConfigurationCatalog,
-    credentials: CredentialStoring,
     plugins: PluginExecutableResolving
   ) -> LeafDerivation {
     guard let entry = catalog.entry(for: leafID), case .server(let fields) = entry.kind else {
       preconditionFailure("展开结果只含服务器叶子")
     }
     let preparation = LeafPreparation.prepare(
-      fields, credentials: credentials, plugins: plugins)
+      fields, plugins: plugins)
     if let issue = preparation.issues.first {
       return .skippedCandidate(SkippedServer(id: leafID, reason: issue))
     }

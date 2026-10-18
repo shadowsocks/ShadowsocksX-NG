@@ -34,7 +34,6 @@ struct ServerLibraryRecoveryView: View {
     case .authenticationFailed: String(localized: "服务器库认证失败，文件或密钥不匹配。")
     case .unsupportedVersion: String(localized: "此版本无法读取服务器库格式。请使用兼容的应用版本。")
     case .malformedFile: String(localized: "服务器库文件损坏或格式无效。")
-    case .missingCredential: String(localized: "原配置缺少所需凭据，迁移未完成。")
     case .storage: String(localized: "服务器库读取或保存失败。请检查存储权限后重试。")
     }
   }

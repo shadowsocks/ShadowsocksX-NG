@@ -134,10 +134,9 @@ final class DiagnosticsWorkflowLifecycleTests: DiagnosticsWorkflowTestCase {
   func testCatalogWorkflowProvidesAggregateDiagnosticFactsOnly() async throws {
     let fileURL = workDir.appendingPathComponent("catalog.json")
     let coordinator = CatalogCommitCoordinator(
-      fileStore: CatalogFileStore(fileURL: fileURL), runtime: FakeCatalogRuntime())
+      fileStore: makeTestCatalogStore(fileURL: fileURL), runtime: FakeCatalogRuntime())
     let catalogWorkflow = makeCatalogWorkflow(
       coordinator: coordinator,
-      credentials: InMemoryCredentialStore(),
       plugins: ActivationFixture.TestManagedPlugins(pathsByProgram: [:]))
     // 带受管插件引用的服务器：程序在集内但可执行文件缺失 → 已知无效。
     let uri =

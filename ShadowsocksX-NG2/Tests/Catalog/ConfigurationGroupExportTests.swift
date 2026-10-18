@@ -138,8 +138,8 @@ final class ConfigurationGroupExportTests: XCTestCase {
     try catalog.addServer(
       ServerFields(
         address: "203.0.113.8", port: 8388, encryptionMethod: "aes-256-gcm",
-        passwordRef: passwordRef, remark: "activation-invalid", pluginProgram: "missing-plugin",
-        pluginOptionsRef: optionsRef),
+        password: "password", remark: "activation-invalid", pluginProgram: "missing-plugin",
+        pluginOptions: "obfs=http"),
       id: invalidServer, to: exportRoot)
     try install(catalog)
 
@@ -169,7 +169,7 @@ final class ConfigurationGroupExportTests: XCTestCase {
     try catalog.addServer(
       ServerFields(
         address: "203.0.113.9", port: 8388, encryptionMethod: "aes-256-gcm",
-        passwordRef: passwordRef, pluginOptionsRef: optionsRef),
+        password: "password", pluginOptions: "mode=websocket"),
       id: serverID, to: rootID)
     try install(catalog)
     let exporter = InMemoryConfigurationGroupFileExporter()
@@ -205,13 +205,12 @@ final class ConfigurationGroupExportTests: XCTestCase {
   private func makeWorkflow() -> CatalogWorkflow {
     makeCatalogWorkflow(
       coordinator: CatalogCommitCoordinator(
-        fileStore: CatalogFileStore(fileURL: catalogFileURL), runtime: FakeCatalogRuntime()),
-      credentials: credentials,
+        fileStore: makeTestCatalogStore(fileURL: catalogFileURL), runtime: FakeCatalogRuntime()),
       subscriptionFetcher: fetcher)
   }
 
   private func install(_ catalog: ConfigurationCatalog) throws {
-    try CatalogFileStore(fileURL: catalogFileURL).save(CatalogDocument(catalog: catalog))
+    try makeTestCatalogStore(fileURL: catalogFileURL).save(CatalogDocument(catalog: catalog))
     workflow = makeWorkflow()
   }
 
@@ -300,7 +299,13 @@ struct ConfigurationGroupSharingTests {
     let fixture = try Fixture()
     defer { fixture.cleanUp() }
     let snapshot = try fixture.workflow.configurationGroupShareDraft(for: fixture.root)
-    try fixture.credentials.delete(fixture.nestedPassword)
+    try fixture.workflow.commit { catalog in
+      guard case .server(var fields) = catalog.entry(for: fixture.nestedServer)?.kind else {
+        return
+      }
+      fields.password = ""
+      try catalog.updateServer(fixture.nestedServer, with: fields)
+    }
     #expect(
       throws: ConfigurationGroupExportFailure.invalidServer(fixture.nestedServer, .missingPassword)
     ) {
@@ -346,30 +351,30 @@ struct ConfigurationGroupSharingTests {
       try catalog.addServer(
         ServerFields(
           address: "203.0.113.1", port: 8388,
-          encryptionMethod: "aes-256-gcm", passwordRef: firstPassword, remark: "First"),
+          encryptionMethod: "aes-256-gcm", password: "first", remark: "First"),
         id: .fresh(), to: root)
       let nested = NodeID.fresh()
       try catalog.addGroup("嵌套", id: nested, to: root)
       try catalog.addServer(
         ServerFields(
           address: "2001:db8::2", port: 8389,
-          encryptionMethod: "aes-256-gcm", passwordRef: nestedPassword, remark: "嵌套服务器",
-          pluginProgram: "missing-plugin", pluginOptionsRef: options), id: nestedServer, to: nested)
+          encryptionMethod: "aes-256-gcm", password: "nested", remark: "嵌套服务器",
+          pluginProgram: "missing-plugin", pluginOptions: "mode=websocket;host=example.com"),
+        id: nestedServer, to: nested)
       try catalog.addServer(
         ServerFields(
           address: "203.0.113.3", port: 8390,
-          encryptionMethod: "aes-256-gcm", passwordRef: lastPassword, remark: "Last"),
+          encryptionMethod: "aes-256-gcm", password: "last", remark: "Last"),
         id: .fresh(), to: root)
       // 外部服务器不得混入所选子树。
       try catalog.addServer(
         ServerFields(
           address: "203.0.113.99", port: 8388,
-          encryptionMethod: "aes-256-gcm", passwordRef: firstPassword), id: .fresh())
-      let store = CatalogFileStore(fileURL: directory.appendingPathComponent("catalog.json"))
+          encryptionMethod: "aes-256-gcm", password: "first"), id: .fresh())
+      let store = makeTestCatalogStore(fileURL: directory.appendingPathComponent("catalog.json"))
       try store.save(CatalogDocument(catalog: catalog))
       workflow = makeCatalogWorkflow(
         coordinator: CatalogCommitCoordinator(fileStore: store, runtime: FakeCatalogRuntime()),
-        credentials: credentials,
         subscriptionFetcher: FakeSubscriptionFetcher(behavior: .success(Data())))
     }
 

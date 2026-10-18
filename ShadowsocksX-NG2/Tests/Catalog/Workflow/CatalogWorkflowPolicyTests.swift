@@ -34,10 +34,9 @@ final class CatalogWorkflowPolicyTests: XCTestCase {
   private func makeWorkflow() -> CatalogWorkflow {
     runtime.hasActiveTarget = true
     let coordinator = CatalogCommitCoordinator(
-      fileStore: CatalogFileStore(fileURL: fileURL), runtime: runtime)
+      fileStore: makeTestCatalogStore(fileURL: fileURL), runtime: runtime)
     return makeCatalogWorkflow(
       coordinator: coordinator,
-      credentials: credentials,
       plugins: NoManagedPluginProvider(),
       activator: activator)
   }
@@ -91,7 +90,7 @@ final class CatalogWorkflowPolicyTests: XCTestCase {
     XCTAssertTrue(workflow.canDelete(groupID), "手动分组可删（空组同理）")
 
     let fixture = try CatalogFixtures.makeSubscriptionFixture()
-    try CatalogFileStore(fileURL: fileURL).save(CatalogDocument(catalog: fixture.catalog))
+    try makeTestCatalogStore(fileURL: fileURL).save(CatalogDocument(catalog: fixture.catalog))
     workflow = makeWorkflow()
     XCTAssertFalse(workflow.canDelete(fixture.serverIDs[0]), "订阅成员结构只读")
     XCTAssertFalse(workflow.canDelete(fixture.groupID), "订阅分组结构只读")
@@ -114,7 +113,7 @@ final class CatalogWorkflowPolicyTests: XCTestCase {
     XCTAssertFalse(workflow.canMove(serverID, to: groupID), "已有父组不得同父重排")
 
     let fixture = try CatalogFixtures.makeSubscriptionFixture()
-    try CatalogFileStore(fileURL: fileURL).save(CatalogDocument(catalog: fixture.catalog))
+    try makeTestCatalogStore(fileURL: fileURL).save(CatalogDocument(catalog: fixture.catalog))
     workflow = makeWorkflow()
     XCTAssertFalse(workflow.canMove(fixture.serverIDs[0], to: nil), "订阅节点不可拖")
     XCTAssertFalse(workflow.canMove(serverID, to: fixture.groupID), "目标非手动组")
@@ -126,7 +125,7 @@ final class CatalogWorkflowPolicyTests: XCTestCase {
     XCTAssertEqual(workflow.dragPayload(for: serverID), serverID.rawValue)
 
     let fixture = try CatalogFixtures.makeSubscriptionFixture()
-    try CatalogFileStore(fileURL: fileURL).save(CatalogDocument(catalog: fixture.catalog))
+    try makeTestCatalogStore(fileURL: fileURL).save(CatalogDocument(catalog: fixture.catalog))
     workflow = makeWorkflow()
     XCTAssertNil(workflow.dragPayload(for: fixture.serverIDs[0]))
     XCTAssertNil(workflow.dragPayload(for: fixture.groupID))

@@ -147,10 +147,9 @@ extension CatalogTreeSnapshot {
 
 extension CatalogTreeSnapshot {
   /// 从已提交目录构建 projection（module 内部推导；测试同 target 可直接调用）。
-  /// 每个服务器叶子求值一次激活校验（与既有口径一致，读凭据存储）。
+  /// 每个服务器叶子求值一次激活校验（与运行时口径一致）。
   static func build(
     from catalog: ConfigurationCatalog,
-    credentials: CredentialStoring,
     plugins: PluginExecutableResolving
   ) -> CatalogTreeSnapshot {
     let plugins = plugins.catalogSnapshot()
@@ -184,7 +183,7 @@ extension CatalogTreeSnapshot {
           createdAt: entry.createdAt,
           updatedAt: entry.updatedAt,
           invalidReasons: LeafPreparation.invalidReasons(
-            fields, credentials: credentials, plugins: plugins),
+            fields, plugins: plugins),
           childCount: 0,
           subtreeNodeCount: 0,
           invalidDescendantCount: 0,
@@ -266,15 +265,6 @@ struct ServerEditDraft: Equatable {
   var pluginOptions: String?
 }
 
-/// 提交失败的结构化抛错：配置与凭据是一个逻辑变更，表单校验通过后提交
-/// 管线的任一步失败都已触碰（或可能触碰）凭据，凭据半边的恢复结果随错
-/// 报出。不含用户可见文案（文案归 presentation edge，从
-/// `underlying` 生成）；表单校验在建 journal 之前失败，保持裸 `ServerFormError`。
-struct CommitError: Error {
-  let underlying: any Error
-  let credentialRollback: CredentialRollbackOutcome
-}
-
 /// 插件选择器选中态：无、目录中的名称引用、未解析的导入引用。
 /// 托管或用户来源由有效目录解释，不参与选中值身份。
 /// Hashable 以直接充当 SwiftUI Picker 的选中值。
@@ -323,14 +313,6 @@ struct SubscriptionSummary: Identifiable, Equatable {
   var lastSucceededAt: Date?
 }
 
-/// Transient refresh result retained by the workflow. The durable status stores
-/// only `SubscriptionRefreshFailure` and a coarse rollback state; this value
-/// keeps the complete journal outcome available to the current UI/session.
-struct SubscriptionRefreshFailureResult: Equatable, Sendable {
-  let failure: SubscriptionRefreshFailure
-  let credentialRollback: CredentialRollbackOutcome?
-}
-
 /// 非持久化的刷新回执。每次操作有独立身份，失败事实不含秘密值。
 struct SubscriptionRefreshCompletion: Identifiable, Equatable {
   let id: UUID
@@ -344,14 +326,6 @@ struct SubscriptionRefreshCompletion: Identifiable, Equatable {
   }
 }
 
-/// Commit failure at the subscription workflow seam. The underlying storage
-/// error is intentionally reduced to a safe category, while the complete
-/// rollback outcome remains available in memory for the current operation.
-struct SubscriptionRefreshCommitError: Error, Equatable, Sendable {
-  let category: SubscriptionRefreshFailure.CommitCategory
-  let rollback: CredentialRollbackOutcome
-}
-
 extension SubscriptionRefreshFailure {
   /// Single workflow conversion point from transient refresh errors to durable
   /// safe facts. Presentation is intentionally not involved here.
@@ -361,22 +335,11 @@ extension SubscriptionRefreshFailure {
       return from(fetchError: error)
     case let error as SubscriptionParseError:
       return from(parseError: error)
-    case let error as CredentialStoreError:
-      let category: CredentialCategory
-      switch error {
-      case .keychainStatus(let status) where status == errSecItemNotFound:
-        category = .missing
-      default:
-        category = .read
-      }
-      return .credential(category: category)
     case let error as SubscriptionFormError:
       if case .invalidURL = error { return .invalidURL }
       return .unknown
-    case let error as SubscriptionRefreshCommitError:
-      return .commit(
-        category: error.category,
-        rollback: rollbackStatus(for: error.rollback))
+    case let error as SubscriptionRefreshFailure:
+      return error
     default:
       return .unknown
     }

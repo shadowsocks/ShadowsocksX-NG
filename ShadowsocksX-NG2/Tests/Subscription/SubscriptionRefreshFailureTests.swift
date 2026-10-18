@@ -27,13 +27,7 @@ final class SubscriptionRefreshFailureTests: XCTestCase {
       .recordValidation(index: 3, field: .password),
       .recordValidation(index: 3, field: .identity),
       .duplicateIdentity,
-      .credential(category: .missing),
-      .credential(category: .read),
-      .credential(category: .write),
-      .commit(category: .persistence, rollback: .notNeeded),
-      .commit(category: .credentials, rollback: .restored),
-      .commit(category: .persistence, rollback: .incomplete),
-      .legacy,
+      .commit,
       .unknown,
     ]
 
@@ -55,9 +49,7 @@ final class SubscriptionRefreshFailureTests: XCTestCase {
   }
 
   func testPartialRollbackIsCoarseAndContainsNoCredentialReferences() throws {
-    let failure = SubscriptionRefreshFailure.commit(
-      category: .persistence,
-      rollback: .incomplete)
+    let failure = SubscriptionRefreshFailure.commit
 
     let data = try JSONEncoder().encode(failure)
     let restored = try JSONDecoder().decode(SubscriptionRefreshFailure.self, from: data)
@@ -68,15 +60,4 @@ final class SubscriptionRefreshFailureTests: XCTestCase {
     XCTAssertFalse(json.contains("reference"))
   }
 
-  func testLegacyMigrationFailureHasNoStoredDetail() throws {
-    let data = Data(
-      #"{"failed":{"at":0,"reason":"https://provider.example/token"}}"#.utf8)
-
-    let status = try JSONDecoder().decode(SubscriptionRefreshStatus.self, from: data)
-
-    guard case .failed(_, let failure) = status else {
-      return XCTFail("旧失败字符串应迁移为 failed 状态")
-    }
-    XCTAssertEqual(failure, .legacy)
-  }
 }

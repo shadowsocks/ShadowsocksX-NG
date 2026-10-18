@@ -36,16 +36,15 @@ final class CatalogWorkflowTests: XCTestCase {
     // 计数即提交计数：提交后的运行时收敛由协调器异步调度。
     runtime.hasActiveTarget = true
     let coordinator = CatalogCommitCoordinator(
-      fileStore: CatalogFileStore(fileURL: fileURL), runtime: runtime)
+      fileStore: makeTestCatalogStore(fileURL: fileURL), runtime: runtime)
     return makeCatalogWorkflow(
       coordinator: coordinator,
-      credentials: credentials,
       plugins: NoManagedPluginProvider())
   }
 
   func makeSubscriptionCatalog() throws {
     let fixture = try CatalogFixtures.makeSubscriptionFixture()
-    try CatalogFileStore(fileURL: fileURL).save(CatalogDocument(catalog: fixture.catalog))
+    try makeTestCatalogStore(fileURL: fileURL).save(CatalogDocument(catalog: fixture.catalog))
     workflow = makeWorkflow()
   }
 
@@ -227,15 +226,15 @@ final class CatalogWorkflowTests: XCTestCase {
   func testRemoveServerCleansCredentials() async throws {
     // 已知凭据引用直建目录（模块投影不含引用；身份经文件夹具固定）。
     var catalog = ConfigurationCatalog()
-    let fields = ServerFields(
+    var fields = ServerFields(
       address: "203.0.113.7", port: 8388, encryptionMethod: "aes-256-gcm",
-      passwordRef: CredentialReference(rawValue: "ref-pw"), remark: "删除我",
+      password: "password", remark: "删除我",
       pluginProgram: "v2ray-plugin",
-      pluginOptionsRef: CredentialReference(rawValue: "ref-opts"))
-    try credentials.save("pw", for: fields.passwordRef)
-    try credentials.save("opts", for: try XCTUnwrap(fields.pluginOptionsRef))
+      pluginOptions: "options")
+    fields.password = "pw"
+    fields.pluginOptions = "opts"
     try catalog.addServer(fields)
-    try CatalogFileStore(fileURL: fileURL).save(CatalogDocument(catalog: catalog))
+    try makeTestCatalogStore(fileURL: fileURL).save(CatalogDocument(catalog: catalog))
     workflow = makeWorkflow()
 
     let id = try XCTUnwrap(workflow.tree.roots.first?.id)
@@ -243,9 +242,8 @@ final class CatalogWorkflowTests: XCTestCase {
 
     XCTAssertEqual(outcome.removedNodeIDs, [id], "删除返回 selection invalidation(story 18)")
     XCTAssertTrue(workflow.tree.isEmpty)
-    XCTAssertNil(try credentials.secret(for: fields.passwordRef), "密码秘密已清理")
-    XCTAssertNil(
-      try credentials.secret(for: try XCTUnwrap(fields.pluginOptionsRef)), "插件参数秘密已清理")
+    XCTAssertNil(try workflow.serverEditForm(for: id))
+    XCTAssertFalse(try makeTestCatalogStore(fileURL: fileURL).load().catalog.contains(id))
   }
 
   func testRemoveNonEmptyGroupRemovesWholeSubtree() async throws {
@@ -281,9 +279,9 @@ final class CatalogWorkflowTests: XCTestCase {
   func testShareFailsWhenCredentialMissing() async throws {
     var catalog = ConfigurationCatalog()
     var fields = CatalogFixtures.serverFields(remark: "无凭据")
-    fields.passwordRef = CredentialReference.fresh()
+    fields.password = ""
     try catalog.addServer(fields)
-    try CatalogFileStore(fileURL: fileURL).save(CatalogDocument(catalog: catalog))
+    try makeTestCatalogStore(fileURL: fileURL).save(CatalogDocument(catalog: catalog))
     workflow = makeWorkflow()
     let id = try XCTUnwrap(workflow.tree.roots.first?.id)
     await expectThrowsAsync { _ = try workflow.shareURI(for: id) }
@@ -321,19 +319,16 @@ final class CatalogWorkflowHermeticAssemblyTests: XCTestCase {
 
   func testWorkflowAssemblesFromFakesWithoutProductionSideEffects() async throws {
     let fileURL = workDir.appendingPathComponent("catalog.json")
-    let credentials = InMemoryCredentialStore()
     let runtime = FakeCatalogRuntime()
     let marker = InMemoryLegacyImportMarker()
     let dependencies = CatalogWorkflowDependencies(
       coordinator: CatalogCommitCoordinator(
-        fileStore: CatalogFileStore(fileURL: fileURL), runtime: runtime),
-      credentials: credentials,
+        fileStore: makeTestCatalogStore(fileURL: fileURL), runtime: runtime),
       plugins: NoManagedPluginProvider(),
       subscriptionFetcher: FakeSubscriptionFetcher(behavior: .success(Data())),
       legacyImportService: LegacyImportService(
         source: FixedLegacySnapshotProvider(snapshot: try makeLegacySnapshot()),
-        catalogStore: CatalogFileStore(fileURL: fileURL),
-        credentials: credentials,
+        catalogStore: makeTestCatalogStore(fileURL: fileURL),
         marker: marker),
       postLegacyImport: nil,
       activator: RejectingActivator())
@@ -356,9 +351,9 @@ final class CatalogWorkflowHermeticAssemblyTests: XCTestCase {
     let outcome = try await workflow.importLegacy()
     XCTAssertEqual(outcome.report.importedServerCount, 1)
     XCTAssertEqual(try marker.isCompleted(), true)
-    XCTAssertEqual(
-      credentials.storageSnapshot.values.contains("legacy-pw"), true,
-      "导入凭据写入注入的内存存储，而非生产 Keychain")
+    let importedID = try XCTUnwrap(
+      workflow.tree.node(withID: outcome.groupID)?.childNodes.first?.id)
+    XCTAssertEqual(try workflow.serverEditForm(for: importedID)?.password, "legacy-pw")
     XCTAssertEqual(runtime.convergeCount, 0, "导入不经提交管线触发运行时收敛")
   }
 

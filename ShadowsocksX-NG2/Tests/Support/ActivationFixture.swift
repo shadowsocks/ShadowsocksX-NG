@@ -2,7 +2,7 @@ import XCTest
 
 @testable import ShadowsocksX_NG2
 
-/// 激活缝测试共享夹具：受管插件/凭据存储替身、无插件叶子、
+/// 激活缝测试共享夹具：受管插件替身与完整记录、无插件叶子、
 /// 激活与重展开的便捷调用、原子失败断言。
 enum ActivationFixture {
   /// 受管插件测试集：只提供表内程序，值即写入文档的 bundle 内路径。
@@ -14,15 +14,6 @@ enum ActivationFixture {
     }
   }
 
-  /// 读取即失败的凭据存储（模拟 Keychain 读取错误）。
-  struct FailingCredentialStore: CredentialStoring {
-    func save(_ secret: String, for reference: CredentialReference) throws {}
-    func secret(for reference: CredentialReference) throws -> String? {
-      throw CredentialStoreError.keychainStatus(errSecAuthFailed)
-    }
-    func delete(_ reference: CredentialReference) throws {}
-  }
-
   static let plugins = TestManagedPlugins(pathsByProgram: [
     "v2ray-plugin": "/bundle/Helpers/Plugins/v2ray-plugin"
   ])
@@ -30,61 +21,35 @@ enum ActivationFixture {
   static let listen = SslocalListenSettings()
 
   /// 无插件叶子字段（插件语义单独覆盖）。
-  static func plainFields(
-    remark: String, passwordRef: CredentialReference = .fresh()
-  ) -> ServerFields {
+  static func plainFields(remark: String, password: String = "password") -> ServerFields {
     ServerFields(
-      address: "203.0.113.7",
-      port: 8388,
-      encryptionMethod: "aes-256-gcm",
-      passwordRef: passwordRef,
-      remark: remark,
-      pluginProgram: nil,
-      pluginOptionsRef: nil
-    )
+      address: "203.0.113.7", port: 8388, encryptionMethod: "aes-256-gcm",
+      password: password, remark: remark)
   }
 
-  /// 加入无插件叶子并把其密码存入凭据存储，返回节点身份。
   @discardableResult
   static func addPlainServer(
-    _ remark: String,
-    to parent: NodeID? = nil,
-    in catalog: inout ConfigurationCatalog,
-    credentials: InMemoryCredentialStore
+    _ remark: String, to parent: NodeID? = nil, in catalog: inout ConfigurationCatalog
   ) throws -> NodeID {
-    let passwordRef = CredentialReference(rawValue: "ref-pw-\(remark)")
-    try credentials.save("pw-\(remark)", for: passwordRef)
-    return try catalog.addServer(plainFields(remark: remark, passwordRef: passwordRef), to: parent)
-  }
-
-  static func makeCredentials(
-    _ secrets: [CredentialReference: String]
-  ) throws -> InMemoryCredentialStore {
-    let store = InMemoryCredentialStore()
-    for (reference, secret) in secrets {
-      try store.save(secret, for: reference)
-    }
-    return store
+    try catalog.addServer(plainFields(remark: remark, password: "pw-\(remark)"), to: parent)
   }
 
   static func activate(
     _ machine: inout ActivationStateMachine,
     _ target: NodeID,
-    in catalog: ConfigurationCatalog,
-    credentials: CredentialStoring
+    in catalog: ConfigurationCatalog
   ) throws -> RuntimeConfiguration {
     try machine.activate(
-      target, in: catalog, credentials: credentials, plugins: plugins,
+      target, in: catalog, plugins: plugins,
       options: RuntimeDocumentOptions(listen: listen))
   }
 
   static func commit(
     _ machine: inout ActivationStateMachine,
-    _ catalog: ConfigurationCatalog,
-    credentials: CredentialStoring
+    _ catalog: ConfigurationCatalog
   ) -> ActivationEffect? {
     machine.catalogDidCommit(
-      catalog, credentials: credentials, plugins: plugins,
+      catalog, plugins: plugins,
       options: RuntimeDocumentOptions(listen: listen))
   }
 

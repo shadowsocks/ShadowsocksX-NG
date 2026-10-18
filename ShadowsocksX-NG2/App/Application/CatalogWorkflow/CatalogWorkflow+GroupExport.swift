@@ -19,11 +19,6 @@ struct ConfigurationGroupShareDraft {
 }
 
 enum ConfigurationGroupExportFailure: Equatable, Error {
-  enum Credential: Equatable {
-    case password
-    case pluginOptions
-  }
-
   enum RecordProblem: Equatable {
     case invalidAddress
     case invalidPort
@@ -35,7 +30,6 @@ enum ConfigurationGroupExportFailure: Equatable, Error {
   case targetIsNotGroup
   case noServers
   case invalidServer(NodeID, RecordProblem)
-  case credentialUnavailable(NodeID, Credential)
   case pluginOptionsWithoutProgram(NodeID)
   case documentEncodingFailed
 }
@@ -51,7 +45,7 @@ extension CatalogWorkflow {
       throw ConfigurationGroupExportFailure.targetIsNotGroup
     }
     var builder = SIP008GroupExportDocumentBuilder(
-      catalog: catalog, credentials: dependencies.credentials)
+      catalog: catalog)
     let json = try builder.encode(rootID: groupID)
     let text = builder.uriListText
     let name = fields.name.replacingOccurrences(of: "/", with: " ")
@@ -76,7 +70,7 @@ extension CatalogWorkflow {
     }
 
     var document = SIP008GroupExportDocumentBuilder(
-      catalog: catalog, credentials: dependencies.credentials)
+      catalog: catalog)
     let data = try document.encode(rootID: groupID)
     return ConfigurationGroupExportDraft(
       data: data, suggestedFileName: "\(rootFields.name).json")
@@ -85,7 +79,6 @@ extension CatalogWorkflow {
 
 private struct SIP008GroupExportDocumentBuilder {
   private let catalog: ConfigurationCatalog
-  private let credentials: CredentialStoring
   private var servers: [SIP008ServerDTO] = []
   private var groups: [SIP008GroupDTO] = []
   private let identities = SIP008ExportIdentity()
@@ -100,9 +93,8 @@ private struct SIP008GroupExportDocumentBuilder {
     }.joined(separator: "\n")
   }
 
-  init(catalog: ConfigurationCatalog, credentials: CredentialStoring) {
+  init(catalog: ConfigurationCatalog) {
     self.catalog = catalog
-    self.credentials = credentials
   }
 
   mutating func encode(rootID: NodeID) throws -> Data {
@@ -159,20 +151,13 @@ private struct SIP008GroupExportDocumentBuilder {
       throw ConfigurationGroupExportFailure.invalidServer(entry.id, .missingEncryptionMethod)
     }
 
-    let password: String
-    do {
-      guard let value = try credentials.secret(for: fields.passwordRef), !value.isEmpty else {
-        throw ConfigurationGroupExportFailure.invalidServer(entry.id, .missingPassword)
-      }
-      password = value
-    } catch let failure as ConfigurationGroupExportFailure {
-      throw failure
-    } catch {
-      throw ConfigurationGroupExportFailure.credentialUnavailable(entry.id, .password)
+    guard !fields.password.isEmpty else {
+      throw ConfigurationGroupExportFailure.invalidServer(entry.id, .missingPassword)
     }
+    let password = fields.password
 
     let pluginProgram = fields.pluginProgram.flatMap { $0.isEmpty ? nil : $0 }
-    let pluginOptions = try resolvedPluginOptions(for: entry.id, fields: fields)
+    let pluginOptions = fields.pluginOptions.flatMap { $0.isEmpty ? nil : $0 }
     guard pluginProgram != nil || pluginOptions == nil else {
       throw ConfigurationGroupExportFailure.pluginOptionsWithoutProgram(entry.id)
     }
@@ -191,21 +176,6 @@ private struct SIP008GroupExportDocumentBuilder {
     return serverID
   }
 
-  private func resolvedPluginOptions(for id: NodeID, fields: ServerFields) throws -> String? {
-    guard let reference = fields.pluginOptionsRef else { return nil }
-    let value: String
-    do {
-      guard let secret = try credentials.secret(for: reference) else {
-        throw ConfigurationGroupExportFailure.credentialUnavailable(id, .pluginOptions)
-      }
-      value = secret
-    } catch let failure as ConfigurationGroupExportFailure {
-      throw failure
-    } catch {
-      throw ConfigurationGroupExportFailure.credentialUnavailable(id, .pluginOptions)
-    }
-    return value.isEmpty ? nil : value
-  }
 }
 
 private struct SIP008ExportIdentity {

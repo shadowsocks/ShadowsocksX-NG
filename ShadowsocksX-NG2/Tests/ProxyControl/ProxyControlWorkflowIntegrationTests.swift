@@ -45,8 +45,8 @@ final class ProxyControlWorkflowIntegrationTests: XCTestCase {
   func makeSeededCatalog() throws -> NodeID {
     var catalog = ConfigurationCatalog()
     let server = try ActivationFixture.addPlainServer(
-      "香港 01", in: &catalog, credentials: credentials)
-    try CatalogFileStore(fileURL: catalogFileURL).save(CatalogDocument(catalog: catalog))
+      "香港 01", in: &catalog)
+    try makeTestCatalogStore(fileURL: catalogFileURL).save(CatalogDocument(catalog: catalog))
     return server
   }
 
@@ -91,14 +91,13 @@ final class ProxyControlWorkflowIntegrationTests: XCTestCase {
       helperRefreshDelayNanoseconds: 0,
       sendSignal: { _, _ in 0 },
       processIsAlive: { $0 == 42 })
-    let fileStore = CatalogFileStore(fileURL: catalogFileURL)
+    let fileStore = makeTestCatalogStore(fileURL: catalogFileURL)
     let bootstrap = CatalogCommitCoordinator.bootstrap(fileStore: fileStore)
     let catalogWorkflow = makeCatalogWorkflow(
       coordinator: CatalogCommitCoordinator(
         fileStore: fileStore,
         runtime: ProxyRuntimeSyncAdapter(controller: controller),
         bootstrap: bootstrap),
-      credentials: credentials,
       plugins: ActivationFixture.plugins,
       activator: controller)
     let control = ProxyControlWorkflow(

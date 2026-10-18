@@ -56,9 +56,8 @@ struct PluginCatalogTests {
     try plugins.addPlugin(program: "custom-plugin", path: binary.path)
     let workflow = makeCatalogWorkflow(
       coordinator: CatalogCommitCoordinator(
-        fileStore: CatalogFileStore(fileURL: root.appendingPathComponent("catalog.json")),
-        runtime: FakeCatalogRuntime()),
-      credentials: InMemoryCredentialStore(), plugins: plugins)
+        fileStore: makeTestCatalogStore(fileURL: root.appendingPathComponent("catalog.json")),
+        runtime: FakeCatalogRuntime()), plugins: plugins)
     let id = try await workflow.createServer(
       ServerEditDraft(
         address: "127.0.0.1", port: 8388, encryptionMethod: "aes-256-gcm", password: "pw",
@@ -111,9 +110,8 @@ struct PluginCatalogTests {
     #expect(catalog.catalogSnapshot().mappingsUnreadable)
     let workflow = makeCatalogWorkflow(
       coordinator: CatalogCommitCoordinator(
-        fileStore: CatalogFileStore(fileURL: root.appendingPathComponent("catalog.json")),
-        runtime: FakeCatalogRuntime()),
-      credentials: InMemoryCredentialStore(), plugins: catalog)
+        fileStore: makeTestCatalogStore(fileURL: root.appendingPathComponent("catalog.json")),
+        runtime: FakeCatalogRuntime()), plugins: catalog)
     #expect(
       workflow.newFormPluginSection(selection: .named(program: "v2ray-plugin")).mappingsUnreadable)
 
@@ -211,12 +209,12 @@ struct PluginCatalogTests {
     try plugins.addPlugin(program: "tool", path: first.path)
     let credentials = InMemoryCredentialStore()
     var catalog = ConfigurationCatalog()
-    let id = try ActivationFixture.addPlainServer("Plugin", in: &catalog, credentials: credentials)
+    let id = try ActivationFixture.addPlainServer("Plugin", in: &catalog)
     var fields = try #require(catalog.entry(for: id)).serverFieldsForPluginTest
     fields.pluginProgram = "tool"
     try catalog.updateServer(id, with: fields)
     let catalogFile = runtime.directory.appendingPathComponent("catalog.json")
-    try CatalogFileStore(fileURL: catalogFile).save(CatalogDocument(catalog: catalog))
+    try makeTestCatalogStore(fileURL: catalogFile).save(CatalogDocument(catalog: catalog))
     let agent = ProxyRuntimeFixture.FakeLaunchAgent()
     let files = RuntimeFileStore(fileURL: runtime.contract)
     agent.onRegister = {
@@ -401,9 +399,8 @@ struct PluginFormCatalogTests {
     ])
     let workflow = makeCatalogWorkflow(
       coordinator: CatalogCommitCoordinator(
-        fileStore: CatalogFileStore(fileURL: root.appendingPathComponent("catalog.json")),
-        runtime: FakeCatalogRuntime()),
-      credentials: InMemoryCredentialStore(), plugins: snapshot)
+        fileStore: makeTestCatalogStore(fileURL: root.appendingPathComponent("catalog.json")),
+        runtime: FakeCatalogRuntime()), plugins: snapshot)
     let form = workflow.newFormPluginSection(selection: .named(program: "tool"))
     #expect(form.programs.first?.source == .user)
     #expect(form.programs.first?.availability == availability)
@@ -446,9 +443,8 @@ struct PluginFormCatalogTests {
     try plugins.addPlugin(program: "tool", path: managedBinary.path)
     let workflow = makeCatalogWorkflow(
       coordinator: CatalogCommitCoordinator(
-        fileStore: CatalogFileStore(fileURL: root.appendingPathComponent("catalog.json")),
-        runtime: FakeCatalogRuntime()),
-      credentials: InMemoryCredentialStore(), plugins: plugins)
+        fileStore: makeTestCatalogStore(fileURL: root.appendingPathComponent("catalog.json")),
+        runtime: FakeCatalogRuntime()), plugins: plugins)
     let id = try await workflow.createServer(
       ServerEditDraft(
         address: "127.0.0.1", port: 8388, encryptionMethod: "aes-256-gcm",

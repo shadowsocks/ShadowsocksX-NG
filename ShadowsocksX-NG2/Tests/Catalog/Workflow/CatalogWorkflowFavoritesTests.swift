@@ -38,10 +38,9 @@ struct CatalogWorkflowFavoritesTests {
     ])
     let workflow = makeCatalogWorkflow(
       coordinator: CatalogCommitCoordinator(fileStore: fixture.store, runtime: fixture.runtime),
-      credentials: fixture.credentials,
       legacyImportService: LegacyImportService(
         source: FixedLegacySnapshotProvider(snapshot: snapshot), catalogStore: fixture.store,
-        credentials: fixture.credentials, marker: InMemoryLegacyImportMarker()))
+        marker: InMemoryLegacyImportMarker()))
     let outcome = try await workflow.importLegacy()
     #expect(outcome.report.importedServerCount == 1)
     #expect(workflow.favoriteIDs == [group])
@@ -49,13 +48,14 @@ struct CatalogWorkflowFavoritesTests {
   }
 
   @Test(arguments: [1, 2, 3, 4, 5])
-  func oldDocumentsStartWithoutFavorites(version: Int) throws {
+  func historicalDocumentsAreRejected(version: Int) throws {
     let fixture = try FavoritesFixture()
     defer { fixture.cleanUp() }
-    let json = "{\"version\":\(version),\"rootChildren\":[],\"entries\":[]}"
-    try Data(json.utf8).write(to: fixture.store.fileURL)
-    #expect(try fixture.store.load().favoriteIDs.isEmpty)
-    #expect(fixture.reloaded().favorites.isEmpty)
+    let json =
+      "{\"version\":\(version),\"rootChildren\":[],\"entries\":[],\"subscriptions\":[],\"favoriteIDs\":[]}"
+    #expect(throws: CatalogFileStore.PersistenceError.self) {
+      try CatalogFileStore.decode(Data(json.utf8))
+    }
   }
 
   @Test func failedSavesKeepTheCommittedOrder() async throws {
@@ -65,7 +65,7 @@ struct CatalogWorkflowFavoritesTests {
     let second = try await fixture.workflow.createGroup(named: "Second", into: nil)
     try fixture.workflow.setFavorite(first, isFavorite: true)
     try fixture.workflow.setFavorite(second, isFavorite: true)
-    let originalData = try Data(contentsOf: fixture.store.fileURL)
+    let originalData = try CatalogFileStore.encode(fixture.store.load())
     let gate = fixture.store.fileURL.deletingLastPathComponent()
     let backup = fixture.directory.appendingPathComponent("backup")
     try FileManager.default.moveItem(at: gate, to: backup)
@@ -80,7 +80,7 @@ struct CatalogWorkflowFavoritesTests {
     #expect(fixture.workflow.favoriteIDs == [first, second])
     try FileManager.default.removeItem(at: gate)
     try FileManager.default.moveItem(at: backup, to: gate)
-    #expect(try Data(contentsOf: fixture.store.fileURL) == originalData)
+    #expect(try CatalogFileStore.encode(fixture.store.load()) == originalData)
     #expect(fixture.reloaded().favoriteIDs == [first, second])
   }
 
@@ -153,12 +153,11 @@ struct CatalogWorkflowFavoritesTests {
     var catalog = ConfigurationCatalog()
     try catalog.addGroup("Group", id: NodeID(rawValue: "group"))
     try fixture.store.save(CatalogDocument(catalog: catalog))
-    let raw = try JSONSerialization.jsonObject(with: Data(contentsOf: fixture.store.fileURL))
+    let raw = try JSONSerialization.jsonObject(with: CatalogFileStore.encode(fixture.store.load()))
     var payload = try #require(raw as? [String: Any])
     payload["favoriteIDs"] = ids
-    try JSONSerialization.data(withJSONObject: payload).write(to: fixture.store.fileURL)
-
-    #expect(throws: CatalogFileStore.PersistenceError.self) { try fixture.store.load() }
+    let invalid = try JSONSerialization.data(withJSONObject: payload)
+    #expect(throws: CatalogFileStore.PersistenceError.self) { try CatalogFileStore.decode(invalid) }
   }
 
   @Test func directoryEditsPreserveFavoritesAndRemovalCleansDescendants() async throws {
@@ -237,16 +236,16 @@ private struct FavoritesFixture {
     try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
     let gate = directory.appendingPathComponent("gate", isDirectory: true)
     try FileManager.default.createDirectory(at: gate, withIntermediateDirectories: true)
-    store = CatalogFileStore(fileURL: gate.appendingPathComponent("catalog.json"))
+    store = makeTestCatalogStore(fileURL: gate.appendingPathComponent("catalog.json"))
     workflow = makeCatalogWorkflow(
       coordinator: CatalogCommitCoordinator(fileStore: store, runtime: runtime),
-      credentials: credentials, plugins: NoManagedPluginProvider(), subscriptionFetcher: fetcher)
+      plugins: NoManagedPluginProvider(), subscriptionFetcher: fetcher)
   }
 
   func reloaded() -> CatalogWorkflow {
     makeCatalogWorkflow(
       coordinator: CatalogCommitCoordinator(fileStore: store, runtime: runtime),
-      credentials: credentials, plugins: NoManagedPluginProvider(), subscriptionFetcher: fetcher)
+      plugins: NoManagedPluginProvider(), subscriptionFetcher: fetcher)
   }
 
   func cleanUp() { try? FileManager.default.removeItem(at: directory) }

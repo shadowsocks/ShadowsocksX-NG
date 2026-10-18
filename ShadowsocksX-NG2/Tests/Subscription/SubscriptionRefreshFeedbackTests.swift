@@ -90,17 +90,17 @@ struct SubscriptionRefreshFeedbackTests {
       try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
       workflow = makeCatalogWorkflow(
         coordinator: CatalogCommitCoordinator(
-          fileStore: CatalogFileStore(fileURL: directory.appendingPathComponent("catalog.json")),
-          runtime: FakeCatalogRuntime()),
-        credentials: credentials, subscriptionFetcher: fetcher)
+          fileStore: makeTestCatalogStore(
+            fileURL: directory.appendingPathComponent("catalog.json")),
+          runtime: FakeCatalogRuntime()), subscriptionFetcher: fetcher)
     }
 
     func reload(fetcher override: SubscriptionFetching? = nil) -> CatalogWorkflow {
       makeCatalogWorkflow(
         coordinator: CatalogCommitCoordinator(
-          fileStore: CatalogFileStore(fileURL: directory.appendingPathComponent("catalog.json")),
-          runtime: FakeCatalogRuntime()),
-        credentials: credentials, subscriptionFetcher: override ?? fetcher)
+          fileStore: makeTestCatalogStore(
+            fileURL: directory.appendingPathComponent("catalog.json")),
+          runtime: FakeCatalogRuntime()), subscriptionFetcher: override ?? fetcher)
     }
 
     func removeFiles() { try? FileManager.default.removeItem(at: directory) }

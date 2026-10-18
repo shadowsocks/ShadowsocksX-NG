@@ -12,8 +12,7 @@ struct HomeTargetBrowserTests {
     defer { defaults.removePersistentDomain(forName: domain) }
     let fixture = try CatalogFixtures.makeSubscriptionFixture()
     let tree = CatalogTreeSnapshot.build(
-      from: fixture.catalog, credentials: InMemoryCredentialStore(),
-      plugins: NoManagedPluginProvider())
+      from: fixture.catalog, plugins: NoManagedPluginProvider())
     let browser = HomeTargetBrowser(defaults: defaults)
     #expect(browser.rows(in: tree, favorites: []).map(\.id) == [fixture.groupID])
 
@@ -40,8 +39,7 @@ struct HomeTargetBrowserTests {
     defer { defaults.removePersistentDomain(forName: domain) }
     let fixture = try CatalogFixtures.makeSubscriptionFixture()
     let tree = CatalogTreeSnapshot.build(
-      from: fixture.catalog, credentials: InMemoryCredentialStore(),
-      plugins: NoManagedPluginProvider())
+      from: fixture.catalog, plugins: NoManagedPluginProvider())
     let browser = HomeTargetBrowser(defaults: defaults)
     browser.enterHome(current: fixture.serverIDs[1], in: tree, favorites: [])
 
@@ -62,8 +60,7 @@ struct HomeTargetBrowserTests {
     defer { defaults.removePersistentDomain(forName: domain) }
     let fixture = try CatalogFixtures.makeSubscriptionFixture()
     let tree = CatalogTreeSnapshot.build(
-      from: fixture.catalog, credentials: InMemoryCredentialStore(),
-      plugins: NoManagedPluginProvider())
+      from: fixture.catalog, plugins: NoManagedPluginProvider())
     let favorites = [fixture.groupID, fixture.serverIDs[0]].compactMap { tree.node(withID: $0) }
     let browser = HomeTargetBrowser(defaults: defaults)
     browser.enterHome(current: fixture.serverIDs[1], in: tree, favorites: favorites)
@@ -92,8 +89,7 @@ struct HomeTargetBrowserTests {
     defer { defaults.removePersistentDomain(forName: domain) }
     let fixture = try CatalogFixtures.makeSubscriptionFixture()
     let tree = CatalogTreeSnapshot.build(
-      from: fixture.catalog, credentials: InMemoryCredentialStore(),
-      plugins: NoManagedPluginProvider())
+      from: fixture.catalog, plugins: NoManagedPluginProvider())
     let browser = HomeTargetBrowser(defaults: defaults)
     browser.enterHome(current: fixture.serverIDs[1], in: tree, favorites: [])
     let reduced = CatalogTreeSnapshot(roots: [])

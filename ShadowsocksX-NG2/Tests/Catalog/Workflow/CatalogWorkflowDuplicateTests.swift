@@ -10,13 +10,6 @@ struct CatalogWorkflowDuplicateTests {
     var catalog = source.catalog
     try catalog.addGroup("Empty", source: .subscription, to: source.nestedGroupID)
     let fixture = try DuplicateFixture(catalog: catalog)
-    for id in source.serverIDs {
-      guard case .server(let fields) = catalog.entry(for: id)?.kind else { continue }
-      try fixture.credentials.save("password", for: fields.passwordRef)
-      if let reference = fields.pluginOptionsRef {
-        try fixture.credentials.save("mode=websocket;host=example.com", for: reference)
-      }
-    }
     let workflow = fixture.workflow
     #expect(workflow.canDuplicate(source.groupID))
     #expect(!workflow.canDuplicate(source.nestedGroupID))
@@ -36,11 +29,11 @@ struct CatalogWorkflowDuplicateTests {
     }
     let server = try #require(nested.childNodes.first)
     #expect(
-      try workflow.serverDetailPluginOptions(for: server.id) == "mode=websocket;host=example.com")
+      try workflow.serverDetailPluginOptions(for: server.id) == "options")
     _ = try await workflow.remove(copy)
     #expect(
       try workflow.serverDetailPluginOptions(for: source.serverIDs[1])
-        == "mode=websocket;host=example.com")
+        == "options")
     await #expect(throws: CatalogError.subscriptionNodeImmutable(source.nestedGroupID)) {
       _ = try await workflow.duplicate(source.nestedGroupID, nameSuffix: "Copy")
     }
@@ -52,13 +45,12 @@ struct CatalogWorkflowDuplicateTests {
     let original = try catalog.addGroup("Group", to: parent)
     let fields = ServerFields(
       address: "203.0.113.7", port: 8388, encryptionMethod: "future-cipher",
-      passwordRef: .fresh(), remark: "Invalid", pluginProgram: nil, pluginOptionsRef: .fresh())
+      password: "password", remark: "Invalid", pluginProgram: nil,
+      pluginOptions: "unknown;flag;flag=")
     try catalog.addServer(fields, to: original)
     try catalog.addGroup("Empty", to: original)
     try catalog.addGroup("Group Copy", to: parent)
     let fixture = try DuplicateFixture(catalog: catalog)
-    try fixture.credentials.save("password", for: fields.passwordRef)
-    try fixture.credentials.save("unknown;flag;flag=", for: try #require(fields.pluginOptionsRef))
     let copy = try await fixture.workflow.duplicate(original, nameSuffix: "Copy")
     let node = try #require(fixture.workflow.tree.node(withID: copy))
     #expect(node.parentID == parent)
@@ -71,47 +63,21 @@ struct CatalogWorkflowDuplicateTests {
     #expect(try fixture.workflow.serverDetailPluginOptions(for: leaf.id) == "unknown;flag;flag=")
     let reloaded = makeCatalogWorkflow(
       coordinator: CatalogCommitCoordinator(
-        fileStore: CatalogFileStore(fileURL: fixture.fileURL), runtime: FakeCatalogRuntime()),
-      credentials: fixture.credentials)
+        fileStore: makeTestCatalogStore(fileURL: fixture.fileURL), runtime: FakeCatalogRuntime()))
     #expect(reloaded.tree.node(withID: copy)?.childNodes.map(\.name) == ["Invalid", "Empty"])
   }
 
-  @Test(arguments: ["missing", "read", "write", "persistence", "rollback"])
-  func failuresDoNotPublishPartialCopies(stage: String) async throws {
-    var catalog = ConfigurationCatalog()
-    let group = try catalog.addGroup("Group")
-    let fields = CatalogFixtures.serverFields(remark: "Server")
-    try catalog.addServer(fields, to: group)
-    let store = DuplicateCredentialStore()
-    try store.save("password", for: fields.passwordRef)
-    try store.save("options", for: try #require(fields.pluginOptionsRef))
-    let fixture = try DuplicateFixture(catalog: catalog, credentialStore: store)
-    let before = store.backing.storageSnapshot
-    switch stage {
-    case "missing": store.missing = fields.pluginOptionsRef
-    case "read": store.unreadable = fields.pluginOptionsRef
-    case "write", "rollback": store.savesRemaining = 1
-    default:
-      let gate = fixture.directory.appendingPathComponent("gate")
-      try FileManager.default.removeItem(at: gate)
-      try Data().write(to: gate)
+  @Test func persistenceFailureDoesNotPublishPartialCopy() async throws {
+    let fixture = try DuplicateFixture()
+    let original = try await fixture.workflow.createServer(fixture.draft, into: nil)
+    let gate = fixture.directory.appendingPathComponent("gate")
+    try FileManager.default.removeItem(at: gate)
+    try Data().write(to: gate)
+    await #expect(throws: (any Error).self) {
+      _ = try await fixture.workflow.duplicate(original, nameSuffix: "Copy")
     }
-    store.failDelete = stage == "rollback"
-    do {
-      _ = try await fixture.workflow.duplicate(group, nameSuffix: "Copy")
-      Issue.record("Expected the complete copy to fail")
-    } catch let error as CommitError {
-      if stage == "rollback" {
-        if case .partial = error.credentialRollback {
-        } else {
-          Issue.record("Incomplete rollback must be reported")
-        }
-      }
-    }
-    #expect(fixture.workflow.tree.roots.map(\.id) == [group])
-    if stage != "rollback" { #expect(store.backing.storageSnapshot == before) }
-    #expect(try store.backing.secret(for: fields.passwordRef) == "password")
-    #expect(try store.backing.secret(for: try #require(fields.pluginOptionsRef)) == "options")
+    #expect(fixture.workflow.tree.roots.map(\.id) == [original])
+    #expect(try fixture.workflow.serverEditForm(for: original)?.password == "password")
   }
 
   @Test func runtimeFailureRetainsCommittedCopy() async throws {
@@ -176,7 +142,6 @@ struct CatalogWorkflowDuplicateTests {
 private final class DuplicateFixture {
   let directory: URL
   let fileURL: URL
-  let credentials = InMemoryCredentialStore()
   let runtime = FakeCatalogRuntime()
   let workflow: CatalogWorkflow
   var draft: ServerEditDraft {
@@ -186,45 +151,16 @@ private final class DuplicateFixture {
   }
 
   init(
-    catalog: ConfigurationCatalog = ConfigurationCatalog(),
-    credentialStore: CredentialStoring? = nil
+    catalog: ConfigurationCatalog = ConfigurationCatalog()
   ) throws {
     directory = FileManager.default.temporaryDirectory
       .appendingPathComponent("duplicate-\(UUID().uuidString)")
     fileURL = directory.appendingPathComponent("gate/catalog.json")
-    try CatalogFileStore(fileURL: fileURL).save(CatalogDocument(catalog: catalog))
+    try makeTestCatalogStore(fileURL: fileURL).save(CatalogDocument(catalog: catalog))
     workflow = makeCatalogWorkflow(
       coordinator: CatalogCommitCoordinator(
-        fileStore: CatalogFileStore(fileURL: fileURL), runtime: runtime),
-      credentials: credentialStore ?? credentials)
+        fileStore: makeTestCatalogStore(fileURL: fileURL), runtime: runtime))
   }
 
   deinit { try? FileManager.default.removeItem(at: directory) }
-}
-
-private final class DuplicateCredentialStore: CredentialStoring {
-  let backing = InMemoryCredentialStore()
-  var missing: CredentialReference?
-  var unreadable: CredentialReference?
-  var savesRemaining: Int?
-  var failDelete = false
-
-  func secret(for reference: CredentialReference) throws -> String? {
-    if reference == unreadable { throw CredentialStoreError.secretNotUTF8 }
-    if reference == missing { return nil }
-    return try backing.secret(for: reference)
-  }
-
-  func save(_ secret: String, for reference: CredentialReference) throws {
-    if let remaining = savesRemaining {
-      guard remaining > 0 else { throw CredentialStoreError.secretNotUTF8 }
-      savesRemaining = remaining - 1
-    }
-    try backing.save(secret, for: reference)
-  }
-
-  func delete(_ reference: CredentialReference) throws {
-    if failDelete { throw CredentialStoreError.secretNotUTF8 }
-    try backing.delete(reference)
-  }
 }

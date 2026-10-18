@@ -38,7 +38,7 @@ struct CatalogWorkflowImportTests {
       #expect(try workflow.serverEditForm(for: first.id)?.remark == "香港 01")
       let second = try #require(root.childNodes.last)
       #expect(try workflow.serverEditForm(for: second.id)?.password == "pw2")
-      #expect(credentials.storageCount == 2)
+      #expect(credentials.storageCount == 0, "服务器秘密不写逐项凭据存储")
     }
   }
 
@@ -88,9 +88,8 @@ struct CatalogWorkflowImportTests {
       let form = try #require(try workflow.serverEditForm(for: node.id))
       #expect(form.plugin.selection == .none, "无插件程序名")
       #expect(form.plugin.optionsPresent, "插件参数保真存入")
-      #expect(
-        credentials.storageSnapshot.values.sorted() == ["mode=websocket", "pw3"],
-        "参数与密码都进凭据存储")
+      #expect(form.password == "pw3")
+      #expect(try workflow.serverDetailPluginOptions(for: node.id) == "mode=websocket")
     }
   }
 
@@ -212,7 +211,7 @@ struct CatalogWorkflowImportTests {
     }
   }
 
-  @Test func commitFailureRollsBackCredentials() async throws {
+  @Test func commitFailureDoesNotPublishImportedRecords() async throws {
     try await withGateBrokenWorkflow { workflow, credentials in
       let text = "ss://YWVzLTI1Ni1nY206cGFzc3dvcmQxMjM@203.0.113.7:8388#提交失败"
 
@@ -224,7 +223,6 @@ struct CatalogWorkflowImportTests {
         return
       }
       #expect(workflow.tree.roots.isEmpty, "目录提交失败不留节点")
-      #expect(credentials.storageCount == 0, "已写凭据按 journal 回滚")
     }
   }
 
@@ -258,7 +256,7 @@ struct CatalogWorkflowImportTests {
       fileStore: CatalogFileStore(
         fileURL: directory.appendingPathComponent("catalog.json")),
       runtime: FakeCatalogRuntime())
-    let workflow = makeCatalogWorkflow(coordinator: coordinator, credentials: credentials)
+    let workflow = makeCatalogWorkflow(coordinator: coordinator)
     try await body(workflow, credentials)
   }
 
@@ -274,9 +272,9 @@ struct CatalogWorkflowImportTests {
     try FileManager.default.createDirectory(at: gateDir, withIntermediateDirectories: true)
     let credentials = InMemoryCredentialStore()
     let coordinator = CatalogCommitCoordinator(
-      fileStore: CatalogFileStore(fileURL: gateDir.appendingPathComponent("catalog.json")),
+      fileStore: makeTestCatalogStore(fileURL: gateDir.appendingPathComponent("catalog.json")),
       runtime: FakeCatalogRuntime())
-    let workflow = makeCatalogWorkflow(coordinator: coordinator, credentials: credentials)
+    let workflow = makeCatalogWorkflow(coordinator: coordinator)
     try FileManager.default.removeItem(at: gateDir)
     try Data().write(to: gateDir)
     try await body(workflow, credentials)

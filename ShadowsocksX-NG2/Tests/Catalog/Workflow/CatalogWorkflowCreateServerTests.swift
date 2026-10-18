@@ -45,10 +45,9 @@ final class CatalogWorkflowCreateServerTests: XCTestCase {
 
   private func makeWorkflow() -> CatalogWorkflow {
     let coordinator = CatalogCommitCoordinator(
-      fileStore: CatalogFileStore(fileURL: fileURL), runtime: runtime)
+      fileStore: makeTestCatalogStore(fileURL: fileURL), runtime: runtime)
     return makeCatalogWorkflow(
       coordinator: coordinator,
-      credentials: credentials,
       plugins: NoManagedPluginProvider())
   }
 
@@ -83,7 +82,6 @@ final class CatalogWorkflowCreateServerTests: XCTestCase {
     }
 
     XCTAssertEqual(workflow.tree.node(withID: groupID)?.childCount, 0, "校验失败不进目录")
-    XCTAssertTrue(credentials.storageSnapshot.isEmpty, "表单校验在建 journal 前失败，不触碰凭据")
   }
 
   func testCreateServerPluginSelectionStoresProgramAndOptions() async throws {

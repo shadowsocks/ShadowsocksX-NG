@@ -16,7 +16,7 @@ extension ProxyRuntimeController {
     let catalog = catalogSnapshotReader.catalogSnapshot
     do {
       let configuration = try machine.activate(
-        target, in: catalog, credentials: serverCredentials, plugins: plugins,
+        target, in: catalog, plugins: plugins,
         options: settings.runtimeDocumentOptions)
       activeTargetID = target
       skippedServers = configuration.skippedServers

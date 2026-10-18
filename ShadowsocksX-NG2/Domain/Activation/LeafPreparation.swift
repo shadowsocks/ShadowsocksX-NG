@@ -15,7 +15,6 @@ struct LeafPreparation: Equatable, Sendable {
   /// 运行时装配入口：一次解析并给出全部阻塞原因与已解析事实。
   static func prepare(
     _ fields: ServerFields,
-    credentials: CredentialStoring,
     plugins: PluginExecutableResolving
   ) -> LeafPreparation {
     var issues: [LeafInvalidationReason] = []
@@ -23,7 +22,8 @@ struct LeafPreparation: Equatable, Sendable {
     appendPortIssue(fields.port, to: &issues)
     appendMethodIssue(fields.encryptionMethod, to: &issues)
 
-    let password = resolveCredential(fields.passwordRef, credentials: credentials, issues: &issues)
+    let password = fields.password.isEmpty ? nil : fields.password
+    if password == nil { issues.append(.missingPassword) }
     var plugin: ResolvedPlugin?
     var pluginOptions: String?
     if let program = fields.pluginProgram {
@@ -32,9 +32,7 @@ struct LeafPreparation: Equatable, Sendable {
       } else {
         issues.append(.pluginNotProvided(program: program))
       }
-      if let optionsRef = fields.pluginOptionsRef {
-        pluginOptions = resolveCredential(optionsRef, credentials: credentials, issues: &issues)
-      }
+      pluginOptions = fields.pluginOptions
     }
     return LeafPreparation(
       issues: issues, password: password, plugin: plugin, pluginOptions: pluginOptions)
@@ -43,29 +41,9 @@ struct LeafPreparation: Equatable, Sendable {
   /// validation-only 入口：目录树等只读呈现取全部阻塞原因，不组装运行时文档。
   static func invalidReasons(
     _ fields: ServerFields,
-    credentials: CredentialStoring,
     plugins: PluginExecutableResolving
   ) -> [LeafInvalidationReason] {
-    prepare(fields, credentials: credentials, plugins: plugins).issues
-  }
-
-  /// 凭据解析：无条目与读取失败分别点名（「凭据不可解析 → 停止并清理」）。
-  /// 成功返回秘密；失败写入 issues 并返回 nil。
-  private static func resolveCredential(
-    _ reference: CredentialReference,
-    credentials: CredentialStoring,
-    issues: inout [LeafInvalidationReason]
-  ) -> String? {
-    do {
-      guard let secret = try credentials.secret(for: reference), !secret.isEmpty else {
-        issues.append(.credentialUnresolved(reference))
-        return nil
-      }
-      return secret
-    } catch {
-      issues.append(.credentialReadFailed(reference))
-      return nil
-    }
+    prepare(fields, plugins: plugins).issues
   }
 
   private static func appendAddressIssue(

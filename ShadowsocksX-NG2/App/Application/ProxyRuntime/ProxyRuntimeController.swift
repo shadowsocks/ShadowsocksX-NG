@@ -50,7 +50,6 @@ final class ProxyRuntimeController {
   let activationFileStore: ActivationStateFileStore
   let runtimeFileStore: RuntimeFileStore
   let credentials: CredentialStoring
-  let serverCredentials: CredentialStoring
   let plugins: PluginExecutableResolving
   let refreshPluginSecurityFacts: @MainActor () -> Void
   let settingsStore: ProxySettingsStoring
@@ -122,7 +121,6 @@ final class ProxyRuntimeController {
       fileURL: ActivationStateFileStore.defaultFileURL()),
     runtimeFileStore: RuntimeFileStore = RuntimeFileStore(),
     credentials: CredentialStoring = KeychainCredentialStore(),
-    serverCredentials: CredentialStoring? = nil,
     plugins: PluginExecutableResolving = BundleManagedPluginProvider(),
     refreshPluginSecurityFacts: @escaping @MainActor () -> Void = {},
     settingsStore: ProxySettingsStoring = ProxySettingsFileStore(),
@@ -156,7 +154,6 @@ final class ProxyRuntimeController {
     self.activationFileStore = activationFileStore
     self.runtimeFileStore = runtimeFileStore
     self.credentials = credentials
-    self.serverCredentials = serverCredentials ?? credentials
     self.plugins = plugins
     self.refreshPluginSecurityFacts = refreshPluginSecurityFacts
     self.settingsStore = settingsStore

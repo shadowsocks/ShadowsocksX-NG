@@ -95,7 +95,7 @@ struct ServerNameWorkflowTests {
       let snapshot = try LegacySnapshot(propertyList: ["ServerProfiles": [profile]])
       let importer = LegacyImportService(
         source: FixedLegacySnapshotProvider(snapshot: snapshot), catalogStore: store,
-        credentials: credentials, marker: InMemoryLegacyImportMarker())
+        marker: InMemoryLegacyImportMarker())
       let result = try importer.importCurrentSnapshot()
       #expect(result.report.importedServerCount == 1)
       let catalog = try store.load().catalog
@@ -159,7 +159,7 @@ struct ServerNameWorkflowTests {
   }
 
   @Test
-  func subscriptionRefreshKeepsReusedSecretsAndRemovesUnusedPluginOptions() async throws {
+  func subscriptionRefreshReplacesSecretsAndClearsUnusedPluginOptions() async throws {
     let sample = ServerNameImportCase.all[0]
     let fetcher = FakeSubscriptionFetcher(
       behavior: .success(
@@ -169,7 +169,6 @@ struct ServerNameWorkflowTests {
       let subscription = try await workflow.createSubscription(
         urlString: "https://provider.example/s")
       let id = try #require(workflow.tree.node(withID: subscription.groupID)?.childNodes.first?.id)
-      #expect(credentials.storageCount == 3)
       fetcher.setBehavior(
         .success(
           try Self.document(
@@ -178,14 +177,13 @@ struct ServerNameWorkflowTests {
       let updated = try #require(try workflow.serverEditForm(for: id))
       #expect(updated.password == "new-password")
       #expect(updated.plugin.options == "mode=quic")
-      #expect(credentials.storageCount == 3)
       fetcher.setBehavior(.success(try Self.document(sample, password: "new-password")))
       await workflow.refreshSubscription(subscription.id)
       let cleared = try #require(try workflow.serverEditForm(for: id))
       #expect(cleared.password == "new-password")
       #expect(cleared.plugin.selection == .none)
-      #expect(credentials.storageCount == 2)
-      #expect(!credentials.storageSnapshot.values.contains("mode=quic"))
+      #expect(cleared.plugin.options.isEmpty)
+      #expect(!cleared.plugin.optionsPresent)
     }
   }
 
@@ -294,11 +292,11 @@ extension ServerNameWorkflowTests {
     let directory = FileManager.default.temporaryDirectory
       .appendingPathComponent("server-name-tests-\(UUID().uuidString)", isDirectory: true)
     defer { try? FileManager.default.removeItem(at: directory) }
-    let store = CatalogFileStore(fileURL: directory.appendingPathComponent("catalog.json"))
+    let store = makeTestCatalogStore(fileURL: directory.appendingPathComponent("catalog.json"))
     let credentials = InMemoryCredentialStore()
     let coordinator = CatalogCommitCoordinator(fileStore: store, runtime: FakeCatalogRuntime())
     let workflow = makeCatalogWorkflow(
-      coordinator: coordinator, credentials: credentials, subscriptionFetcher: fetcher)
+      coordinator: coordinator, subscriptionFetcher: fetcher)
     try await body(workflow, store, credentials)
   }
 }

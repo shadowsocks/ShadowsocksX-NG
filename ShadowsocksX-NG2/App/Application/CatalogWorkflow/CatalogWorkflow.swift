@@ -2,7 +2,7 @@ import Combine
 import Foundation
 
 /// 目录工作流 module（深化为 application module）：主窗口与
-/// 配置 UI 的唯一 UI-facing seam。隐藏配置目录、凭据存储、订阅快照、Legacy
+/// 配置 UI 的唯一 UI-facing seam。隐藏配置目录、秘密值、订阅快照、Legacy
 /// 导入细节、持久化协调与运行时收敛，向 UI 提供不含秘密值的树/详情/订阅
 /// projection、opaque 节点身份查询、typed command、typed error 与 structured
 /// outcome。选择、pane、sheet、alert 等窗口状态仍由 UI 持有；本类不生成
@@ -10,7 +10,7 @@ import Foundation
 ///
 /// 内部沿用既有深 module：`ConfigurationCatalog` 的结构约束、
 /// `ActivationStateMachine` 经 `CatalogCommitCoordinator` 的激活语义与目录
-/// 持久化/runtime sync 协调，以及既有凭据、订阅获取与 Legacy 导入缝。
+/// 持久化/runtime sync 协调，以及既有订阅获取与 Legacy 导入缝。
 /// 「目录已提交」与「运行时已收敛」是分离的观察面：提交在
 /// 持久化成功即完成，`runtimeSync` 单独呈现收敛阶段，失败不回滚目录。
 /// 实现 adapter 全部经组合根注入的 `CatalogWorkflowDependencies` 装配；
@@ -18,7 +18,6 @@ import Foundation
 @MainActor
 final class CatalogWorkflow: ObservableObject {
   @Published private(set) var libraryFailure: ServerLibraryFailure?
-  @Published private(set) var libraryCleanupFailed = false
 
   /// 目录树 projection（侧栏、级联、移动目的地、删除确认共用）。
   @Published private(set) var tree: CatalogTreeSnapshot
@@ -30,10 +29,9 @@ final class CatalogWorkflow: ObservableObject {
   /// 当前会话的刷新结果；不从持久化状态重建，供各入口共用结束时间。
   @Published private(set) var subscriptionRefreshCompletions:
     [NodeID: SubscriptionRefreshCompletion] = [:]
-  /// 最近一次订阅刷新失败的 transient projection。这里保留完整凭据回滚
-  /// outcome；持久化目录只保存安全的 typed failure facts。
-  @Published private(set) var subscriptionRefreshFailures:
-    [NodeID: SubscriptionRefreshFailureResult] = [:]
+  /// 最近一次订阅刷新失败的安全事实，包括无法持久化失败状态的情况。
+  @Published private(set) var subscriptionRefreshFailures: [NodeID: SubscriptionRefreshFailure] =
+    [:]
   /// 最近一次提交的运行时收敛阶段（与目录提交成功分离）。存储与
   /// 发布单点在提交协调器，此处只透传读面；需要实时更新的表面订阅
   /// `runtimeSyncChanges`（`.onReceive` 消费），不经本类 objectWillChange——
@@ -48,7 +46,7 @@ final class CatalogWorkflow: ObservableObject {
   @Published private(set) var legacyImportState = LegacyImportAvailability(
     snapshotFound: false, completed: false)
 
-  /// 组合根与测试装配的全部实现 adapter：coordinator、凭据、
+  /// 组合根与测试装配的全部实现 adapter：coordinator、
   /// 插件、订阅获取、Legacy 导入服务、导入后回调与激活缝只经此束持有，
   /// 不再作为 workflow 属性暴露。仅供组合根与测试构造；视图不得访问——
   /// 独立 target 拆分前由 architecture deletion check 守护残余可见性。
@@ -63,18 +61,16 @@ final class CatalogWorkflow: ObservableObject {
     self.dependencies = dependencies
     let coordinator = dependencies.coordinator
     libraryFailure = coordinator.loadError.map(ServerLibraryFailure.init)
-    libraryCleanupFailed = coordinator.fileStore.cleanupFailed
     favoriteIDs = coordinator.committedFavoriteIDs
     tree = .build(
       from: coordinator.committedCatalog,
-      credentials: dependencies.credentials, plugins: dependencies.plugins)
+      plugins: dependencies.plugins)
     subscriptions = Self.subscriptionSummaries(
-      coordinator.committedSubscriptions, catalog: coordinator.committedCatalog,
-      credentials: dependencies.credentials)
+      coordinator.committedSubscriptions, catalog: coordinator.committedCatalog)
     refreshLegacyImportState()
   }
 
-  /// Successful subscription commits, including unchanged references with new secrets.
+  /// Successful subscription commits, including credential-only record changes.
   private let subscriptionServerRefreshSubject = PassthroughSubject<Set<NodeID>, Never>()
 
   var subscriptionServerRefreshes: AnyPublisher<Set<NodeID>, Never> {
@@ -100,7 +96,6 @@ final class CatalogWorkflow: ObservableObject {
     do {
       try dependencies.coordinator.reload(allowingInteraction: true)
       libraryFailure = nil
-      libraryCleanupFailed = dependencies.coordinator.fileStore.cleanupFailed
       republishCommittedState()
     } catch { libraryFailure = ServerLibraryFailure(error) }
   }
@@ -110,7 +105,6 @@ final class CatalogWorkflow: ObservableObject {
     do {
       try dependencies.coordinator.resetLibrary()
       libraryFailure = nil
-      libraryCleanupFailed = dependencies.coordinator.fileStore.cleanupFailed
       republishCommittedState()
     } catch { libraryFailure = ServerLibraryFailure(error) }
   }
@@ -158,7 +152,7 @@ final class CatalogWorkflow: ObservableObject {
     tree.node(withID: id)?.invalidReasons ?? []
   }
 
-  /// Rendering reads metadata only, never credentials or form baselines.
+  /// Rendering returns metadata only, never credentials or form baselines.
   func serverFormPresentation(for id: NodeID) -> ServerFormPresentation? {
     guard let entry = dependencies.coordinator.committedCatalog.entry(for: id),
       case .server(let fields) = entry.kind
@@ -167,7 +161,7 @@ final class CatalogWorkflow: ObservableObject {
       isEditable: entry.source == .manual, plugin: pluginPresentation(for: fields))
   }
 
-  /// 已保存详情事实；普通渲染不读取密码或参数。
+  /// 已保存详情投影；普通渲染不向视图传递密码或参数。
   func serverDetailPresentation(for id: NodeID) -> ServerDetailPresentation? {
     guard let entry = dependencies.coordinator.committedCatalog.entry(for: id),
       case .server(let fields) = entry.kind
@@ -182,8 +176,7 @@ final class CatalogWorkflow: ObservableObject {
     guard let entry = dependencies.coordinator.committedCatalog.entry(for: id),
       case .server(let fields) = entry.kind
     else { throw ServerFormLoadError.notFound }
-    guard let reference = fields.pluginOptionsRef else { return "" }
-    return try requiredServerSecret(reference)
+    return fields.pluginOptions ?? ""
   }
 
   /// 服务器编辑面（显式命令）：解析密码与目录中的具名插件参数明文。
@@ -192,7 +185,7 @@ final class CatalogWorkflow: ObservableObject {
     guard let entry = dependencies.coordinator.committedCatalog.entry(for: id),
       case .server(let fields) = entry.kind
     else { return nil }
-    let password = try requiredServerSecret(fields.passwordRef)
+    let password = fields.password
     return ServerEditForm(
       address: fields.address,
       port: fields.port,
@@ -201,18 +194,6 @@ final class CatalogWorkflow: ObservableObject {
       remark: fields.remark,
       plugin: try loadedPluginState(for: fields),
       isEditable: entry.source == .manual)
-  }
-
-  /// An absent referenced secret is a load failure, never an empty saved baseline.
-  private func requiredServerSecret(_ reference: CredentialReference) throws -> String {
-    do {
-      guard let value = try dependencies.credentials.secret(for: reference) else {
-        throw ServerFormLoadError.credentialsUnavailable
-      }
-      return value
-    } catch {
-      throw ServerFormLoadError.credentialsUnavailable
-    }
   }
 
   /// 插件区状态：集内引用给可执行文件存在性事实与参数明文；集外引用
@@ -229,13 +210,13 @@ final class CatalogWorkflow: ObservableObject {
     }
     return pluginSection(
       selection: selection, snapshot: snapshot,
-      optionsPresent: fields.pluginOptionsRef != nil)
+      optionsPresent: fields.pluginOptions != nil)
   }
 
   private func loadedPluginState(for fields: ServerFields) throws -> PluginSectionState {
     var facts = pluginPresentation(for: fields)
-    if case .named = facts.selection, let reference = fields.pluginOptionsRef {
-      facts.options = try requiredServerSecret(reference)
+    if case .named = facts.selection, let options = fields.pluginOptions {
+      facts.options = options
     }
     return facts
   }
@@ -275,30 +256,16 @@ final class CatalogWorkflow: ObservableObject {
 
   // MARK: - 手动服务器/分组命令
 
-  /// 表单新建手动服务器：校验与提交语义与编辑对称——表单校验在建 journal
-  /// 前失败保持裸 `ServerFormError`；密码与可选插件参数和目录作为一个逻辑
-  /// 变更提交，持久化失败经 journal 回滚并以 `CommitError` 报出。新身份恒
-  /// 全新 UUID，不按内容去重（GLOSSARY.md 不变量）；返回新节点身份供选中。
+  /// 密码、插件参数与连接字段在同一工作副本中提交，失败不发布任何变更。
   @discardableResult
   func createServer(_ draft: ServerEditDraft, into parent: NodeID?) async throws -> NodeID {
     let draft = try prepareServerDraft(draft)
-    var journal = CredentialWriteJournal(credentials: dependencies.credentials)
-    do {
-      return try commit { [self] catalog in
-        let now = Date()
-        let passwordRef = CredentialReference.fresh()
-        try journal.save(draft.password, for: passwordRef)
-        var fields = ServerFields(
-          address: draft.address, port: draft.port, encryptionMethod: draft.encryptionMethod,
-          passwordRef: passwordRef,
-          remark: draft.remark)
-        try Self.applyPluginSelection(
-          draft.plugin, options: draft.pluginOptions, to: &fields,
-          credentials: dependencies.credentials, journal: &journal)
-        return try catalog.addServer(fields, to: parent, now: now)
-      }
-    } catch {
-      throw CommitError(underlying: error, credentialRollback: journal.rollback())
+    return try commit { catalog in
+      var fields = ServerFields(
+        address: draft.address, port: draft.port, encryptionMethod: draft.encryptionMethod,
+        password: draft.password, remark: draft.remark)
+      Self.applyPluginSelection(draft.plugin, options: draft.pluginOptions, to: &fields)
+      return try catalog.addServer(fields, to: parent, now: Date())
     }
   }
 
@@ -329,47 +296,33 @@ final class CatalogWorkflow: ObservableObject {
     }
   }
 
-  /// 删除条目（手动分组递归删整棵子树）：尽力清理被删节点的
-  /// Keychain 秘密；返回被删身份集合供 UI 清除失效选择。
+  /// 删除条目及其后代；凭据随记录一同删除。
   func remove(_ id: NodeID) async throws -> RemovalOutcome {
-    let removed: [CatalogEntry] = try commit { catalog in
+    let removed = try commit { catalog in
       try catalog.remove(id, now: Date())
-    }
-    for ref in Self.credentialRefs(of: removed) {
-      try? dependencies.credentials.delete(ref)
     }
     return RemovalOutcome(removedNodeIDs: Set(removed.map(\.id)))
   }
 
-  /// 服务器编辑提交：配置与凭据作为一个逻辑变更；凭据写入经
-  /// journal 记录原值，提交失败时全部恢复旧秘密，恢复结果经
-  /// `CommitError.credentialRollback` 报出。插件选择遵循目录工作流规则
-  /// 落盘（「无」整体清除、具名选择写程序名与参数、集外引用原样保留）。
+  /// 服务器字段与秘密作为完整值提交，未知插件参数原样保留。
   func updateServer(_ id: NodeID, draft: ServerEditDraft) async throws {
     let draft = try prepareServerDraft(draft)
-    var journal = CredentialWriteJournal(credentials: dependencies.credentials)
-    do {
-      try commit { [self] catalog in
-        guard let entry = catalog.entry(for: id), case .server(var fields) = entry.kind else {
-          throw CatalogError.notAServer(id)
-        }
-        try journal.save(draft.password, for: fields.passwordRef)
-        fields.address = draft.address
-        fields.port = draft.port
-        fields.encryptionMethod = draft.encryptionMethod
-        fields.remark = draft.remark
-        try Self.applyPluginSelection(
-          draft.plugin, options: draft.pluginOptions, to: &fields,
-          credentials: dependencies.credentials, journal: &journal)
-        try catalog.updateServer(id, with: fields, now: Date())
+    try commit { catalog in
+      guard let entry = catalog.entry(for: id), case .server(var fields) = entry.kind else {
+        throw CatalogError.notAServer(id)
       }
-      serverUpdateSubject.send([id])
-    } catch {
-      throw CommitError(underlying: error, credentialRollback: journal.rollback())
+      fields.password = draft.password
+      fields.address = draft.address
+      fields.port = draft.port
+      fields.encryptionMethod = draft.encryptionMethod
+      fields.remark = draft.remark
+      Self.applyPluginSelection(draft.plugin, options: draft.pluginOptions, to: &fields)
+      try catalog.updateServer(id, with: fields, now: Date())
     }
+    serverUpdateSubject.send([id])
   }
 
-  /// 新建与编辑共享的草稿准备：校验在凭据 journal 与目录提交之前完成。
+  /// 新建与编辑共享的草稿准备：校验在目录提交之前完成。
   /// 仅手动表单拒绝空名称；导入通过 ServerFields 的构造规则补名。
   private func prepareServerDraft(_ input: ServerEditDraft) throws -> ServerEditDraft {
     var draft = input
@@ -428,10 +381,9 @@ final class CatalogWorkflow: ObservableObject {
     favoriteIDs = coordinator.committedFavoriteIDs
     tree = .build(
       from: coordinator.committedCatalog,
-      credentials: dependencies.credentials, plugins: dependencies.plugins)
+      plugins: dependencies.plugins)
     subscriptions = Self.subscriptionSummaries(
-      coordinator.committedSubscriptions, catalog: coordinator.committedCatalog,
-      credentials: dependencies.credentials)
+      coordinator.committedSubscriptions, catalog: coordinator.committedCatalog)
   }
 
   // MARK: - module 内部发布缝（扩展文件经此更新只读投影，setter 保持 private）
@@ -456,7 +408,7 @@ final class CatalogWorkflow: ObservableObject {
   }
 
   func setSubscriptionRefreshFailure(
-    _ result: SubscriptionRefreshFailureResult?, for id: NodeID
+    _ result: SubscriptionRefreshFailure?, for id: NodeID
   ) {
     if let result {
       subscriptionRefreshFailures[id] = result

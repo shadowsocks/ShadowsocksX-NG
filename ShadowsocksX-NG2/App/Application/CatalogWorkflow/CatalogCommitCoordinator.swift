@@ -151,7 +151,7 @@ final class CatalogCommitCoordinator {
   }
 
   /// 普通目录变更的唯一提交管线。任一同步步骤失败则已提交状态不动并原样
-  /// 上抛（凭据等外部副作用由调用方回滚）；运行时收敛在持久化成功后异步开始。
+  /// 上抛；运行时收敛在持久化成功后异步开始。
   func commit<T>(
     _ mutate: (inout ConfigurationCatalog, inout [SubscriptionRecord]) throws -> T
   ) throws -> T {
@@ -183,13 +183,16 @@ final class CatalogCommitCoordinator {
     committedFavoriteIDs = favoriteIDs
   }
 
-  /// 仅订阅 URL 等库内凭据改变时立即持久化，不重展开未改变的服务器出口。
-  func commitCredentials() throws {
+  /// 仅修改订阅来源资料，不重展开未改变的服务器出口。
+  func commitSubscriptions(_ mutate: (inout [SubscriptionRecord]) throws -> Void) throws {
     if let loadError { throw loadError }
+    var subscriptions = committedSubscriptions
+    try mutate(&subscriptions)
     try fileStore.save(
       CatalogDocument(
-        catalog: committedCatalog, subscriptions: committedSubscriptions,
+        catalog: committedCatalog, subscriptions: subscriptions,
         favoriteIDs: committedFavoriteIDs))
+    committedSubscriptions = subscriptions
   }
 
   /// Legacy 导入等独立路径直接落盘后对齐已提交状态；不触发运行时收敛

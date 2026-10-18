@@ -37,10 +37,9 @@ final class CatalogWorkflowSubscriptionTests: XCTestCase {
     // 计数即提交计数：提交后的运行时收敛由协调器异步调度。
     runtime.hasActiveTarget = true
     let coordinator = CatalogCommitCoordinator(
-      fileStore: CatalogFileStore(fileURL: fileURL), runtime: runtime)
+      fileStore: makeTestCatalogStore(fileURL: fileURL), runtime: runtime)
     return makeCatalogWorkflow(
       coordinator: coordinator,
-      credentials: credentials,
       plugins: NoManagedPluginProvider(),
       subscriptionFetcher: override ?? fetcher!)
   }
@@ -226,7 +225,7 @@ final class CatalogWorkflowSubscriptionTests: XCTestCase {
   /// 订阅 URL 秘密的观察口：创建后恰有一个订阅 URL 凭据；删除后应为 nil。
   /// （凭据引用不进投影；经存储快照里的唯一 URL 值反查。）
   private func readURLSecret() -> String? {
-    credentials.storageSnapshot.values.first { $0.hasPrefix("https://") }
+    workflow.subscriptions.first.flatMap { try? workflow.subscriptionURL(for: $0.id) }
   }
 
   /// 建一个「创建 + 首刷成功（tree 文档，服务器 a/b）」的订阅。

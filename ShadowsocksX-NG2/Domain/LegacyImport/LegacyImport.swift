@@ -173,12 +173,11 @@ enum LegacyImportError: Error, Equatable {
 struct LegacyImportPlan {
   let groupID: NodeID
   let document: CatalogDocument
-  let credentials: [CredentialReference: String]
   let report: LegacyImportReport
 }
 
 /// Pure planning seam: translates one immutable Legacy snapshot into a new
-/// manual subtree and credential references. No preferences or active target
+/// manual subtree with credentials. No preferences or active target
 /// state enter the plan.
 struct LegacyImportPlanner {
   static func makePlan(
@@ -201,14 +200,12 @@ struct LegacyImportPlanner {
       document: CatalogDocument(
         catalog: catalog, subscriptions: existingDocument.subscriptions,
         favoriteIDs: existingDocument.favoriteIDs),
-      credentials: serverImport.credentials,
       report: report)
   }
 }
 
 extension LegacyImportPlanner {
   private struct ServerImportResult {
-    let credentials: [CredentialReference: String]
     let skippedRecords: [LegacySkippedRecord]
     let regeneratedIdentityCount: Int
     let importedServerCount: Int
@@ -234,7 +231,6 @@ extension LegacyImportPlanner {
     groupID: NodeID,
     now: Date
   ) throws -> ServerImportResult {
-    var credentials: [CredentialReference: String] = [:]
     var skippedRecords: [LegacySkippedRecord] = []
     var regeneratedIdentityCount = 0
     var importedServerCount = 0
@@ -245,9 +241,6 @@ extension LegacyImportPlanner {
       case .skipped(let skipped):
         skippedRecords.append(skipped)
       case .valid(let server):
-        let passwordRef = CredentialReference.fresh()
-        credentials[passwordRef] = server.password
-        let pluginOptionsRef = storedPluginOptions(of: profile, into: &credentials)
         let nodeID: NodeID
         if let reused = reusableLegacyID(
           of: profile, usedLegacyIDs: usedLegacyIDs, in: catalog)
@@ -261,17 +254,16 @@ extension LegacyImportPlanner {
           address: server.address,
           port: server.port,
           encryptionMethod: server.method,
-          passwordRef: passwordRef,
+          password: server.password,
           remark: profile.remark ?? "",
           pluginProgram: profile.plugin?.isEmpty == false ? profile.plugin : nil,
-          pluginOptionsRef: pluginOptionsRef)
+          pluginOptions: profile.pluginOptions.flatMap { $0.isEmpty ? nil : $0 })
         try catalog.addServer(fields, id: nodeID, to: groupID, now: now)
         importedServerCount += 1
       }
     }
 
     return ServerImportResult(
-      credentials: credentials,
       skippedRecords: skippedRecords,
       regeneratedIdentityCount: regeneratedIdentityCount,
       importedServerCount: importedServerCount)
@@ -313,16 +305,6 @@ extension LegacyImportPlanner {
     }
     return .valid(
       ValidatedServer(address: address, port: port, method: method, password: password))
-  }
-
-  /// 插件选项非空即写入凭据存储并返回其引用；否则 nil。
-  private static func storedPluginOptions(
-    of profile: LegacyServerSnapshot, into credentials: inout [CredentialReference: String]
-  ) -> CredentialReference? {
-    guard let pluginOptions = profile.pluginOptions, !pluginOptions.isEmpty else { return nil }
-    let reference = CredentialReference.fresh()
-    credentials[reference] = pluginOptions
-    return reference
   }
 
   /// 旧 UUID 可复用仅当合法、全表唯一且不与目录现有节点等价；否则 nil（发新身份）。

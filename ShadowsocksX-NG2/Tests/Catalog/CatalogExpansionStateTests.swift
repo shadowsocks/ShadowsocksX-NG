@@ -52,7 +52,7 @@ struct CatalogCreationExpansionTests {
     let selected = try catalog.addGroup("选中项", to: inner)
     let other = try catalog.addGroup("其他")
     let tree = CatalogTreeSnapshot.build(
-      from: catalog, credentials: InMemoryCredentialStore(), plugins: NoManagedPluginProvider())
+      from: catalog, plugins: NoManagedPluginProvider())
     let node = try #require(tree.node(withID: outer))
     let expansion = CatalogExpansionState()
     expansion.toggleCollapsed(other)
@@ -73,7 +73,7 @@ struct CatalogCreationExpansionTests {
     let created = try catalog.addGroup("新组", to: inner)
     let other = try catalog.addGroup("其他")
     let tree = CatalogTreeSnapshot.build(
-      from: catalog, credentials: InMemoryCredentialStore(), plugins: NoManagedPluginProvider())
+      from: catalog, plugins: NoManagedPluginProvider())
     let expansion = CatalogExpansionState()
     for id in [outer, inner, other] { expansion.toggleCollapsed(id) }
 
@@ -90,8 +90,8 @@ struct CatalogCreationExpansionTests {
     let credentials = InMemoryCredentialStore()
     let workflow = makeCatalogWorkflow(
       coordinator: CatalogCommitCoordinator(
-        fileStore: CatalogFileStore(fileURL: directory.appendingPathComponent("catalog.json")),
-        runtime: FakeCatalogRuntime()), credentials: credentials)
+        fileStore: makeTestCatalogStore(fileURL: directory.appendingPathComponent("catalog.json")),
+        runtime: FakeCatalogRuntime()))
     let parent = try await workflow.createGroup(named: "目标组", into: nil)
     _ = try await workflow.remove(parent)
 
@@ -106,7 +106,7 @@ struct CatalogCreationExpansionTests {
       }
       Issue.record("失效的父组应拒绝创建")
     } catch {
-      let underlying = (error as? CommitError)?.underlying ?? error
+      let underlying = error
       #expect(underlying as? CatalogError == .parentNotFound(parent))
     }
     #expect(workflow.tree.isEmpty)

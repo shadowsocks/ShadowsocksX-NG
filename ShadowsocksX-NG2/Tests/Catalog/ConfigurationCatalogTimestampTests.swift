@@ -113,7 +113,7 @@ final class ConfigurationCatalogTimestampTests: XCTestCase {
       address: "203.0.113.7",
       port: port,
       encryptionMethod: "aes-256-gcm",
-      passwordRef: CredentialReference(rawValue: "ref-\(remark)"),
+      password: "password",
       remark: remark
     )
   }

@@ -47,8 +47,7 @@ final class CatalogWorkflowPluginTests: XCTestCase {
   private func makeWorkflow() -> CatalogWorkflow {
     makeCatalogWorkflow(
       coordinator: CatalogCommitCoordinator(
-        fileStore: CatalogFileStore(fileURL: fileURL), runtime: FakeCatalogRuntime()),
-      credentials: credentials,
+        fileStore: makeTestCatalogStore(fileURL: fileURL), runtime: FakeCatalogRuntime()),
       plugins: BundleManagedPluginProvider(bundleURL: bundleRoot))
   }
 
@@ -59,19 +58,17 @@ final class CatalogWorkflowPluginTests: XCTestCase {
       address: "203.0.113.7",
       port: 8388,
       encryptionMethod: "aes-256-gcm",
-      passwordRef: CredentialReference(rawValue: "ref-pw"),
+      password: "password",
       remark: "带插件")
-    try credentials.save("pw", for: fields.passwordRef)
+    fields.password = "pw"
     if let program {
       fields.pluginProgram = program
       if let options {
-        let reference = CredentialReference(rawValue: "ref-opts")
-        try credentials.save(options, for: reference)
-        fields.pluginOptionsRef = reference
+        fields.pluginOptions = options
       }
     }
     try catalog.addServer(fields)
-    try CatalogFileStore(fileURL: fileURL).save(CatalogDocument(catalog: catalog))
+    try makeTestCatalogStore(fileURL: fileURL).save(CatalogDocument(catalog: catalog))
     workflow = makeWorkflow()
     return try XCTUnwrap(workflow.tree.roots.first?.id)
   }
@@ -154,10 +151,6 @@ final class CatalogWorkflowPluginTests: XCTestCase {
     XCTAssertEqual(plugin.selection, .named(program: pluginBinaryName), "程序引用保留")
     XCTAssertFalse(plugin.optionsPresent, "空参数即无参数引用")
     XCTAssertEqual(plugin.options, "")
-    // 秘密确实从凭据存储删除（引用固定为夹具常量）。
-    XCTAssertNil(
-      try credentials.secret(for: CredentialReference(rawValue: "ref-opts")),
-      "清空参数即删除钥匙串秘密")
   }
 
   func testSelectingNoneClearsProgramAndOptions() async throws {
@@ -166,7 +159,6 @@ final class CatalogWorkflowPluginTests: XCTestCase {
     let plugin = try XCTUnwrap(try workflow.serverEditForm(for: id)?.plugin)
     XCTAssertEqual(plugin.selection, .none)
     XCTAssertFalse(plugin.optionsPresent)
-    XCTAssertNil(try credentials.secret(for: CredentialReference(rawValue: "ref-opts")))
   }
 
   func testUnknownSelectionPreservesReferenceAndOptionsVerbatim() async throws {
@@ -178,8 +170,7 @@ final class CatalogWorkflowPluginTests: XCTestCase {
     XCTAssertEqual(form.address, "198.51.100.9", "连接字段照常更新")
     XCTAssertEqual(form.plugin.selection, .unknown(program: "obfs-local"), "集外引用原样保留")
     XCTAssertTrue(form.plugin.optionsPresent)
-    let ref = CredentialReference(rawValue: "ref-opts")
-    XCTAssertEqual(try credentials.secret(for: ref), "obfs=http", "参数秘密不动")
+    XCTAssertEqual(try workflow.serverDetailPluginOptions(for: id), "obfs=http", "参数秘密不动")
   }
 
   func testForgedUnmanagedSelectionIsRejected() async throws {

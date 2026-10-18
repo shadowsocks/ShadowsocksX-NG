@@ -276,7 +276,6 @@ private struct AppComposition {
       activationFileStore: dependencies.activationFileStore,
       runtimeFileStore: dependencies.runtimeFileStore,
       credentials: dependencies.credentials,
-      serverCredentials: dependencies.serverCredentials,
       plugins: plugins,
       refreshPluginSecurityFacts: { [weak plugins] in _ = plugins?.refreshSecurityFacts() },
       settingsStore: dependencies.settingsStore,
@@ -300,7 +299,6 @@ private struct AppComposition {
     return CatalogWorkflow(
       dependencies: CatalogWorkflowDependencies(
         coordinator: coordinator,
-        credentials: dependencies.serverCredentials,
         plugins: plugins,
         subscriptionFetcher: HTTPSSubscriptionFetcher(),
         legacyImportService: dependencies.legacyImportService,
@@ -316,7 +314,6 @@ private struct AppComposition {
 @MainActor
 private struct ApplicationDependencies {
   let credentials: CredentialStoring
-  let serverCredentials: ServerLibraryCredentials
   let catalogFileStore: CatalogFileStore
   let activationFileStore: ActivationStateFileStore
   let runtimeFileStore: RuntimeFileStore
@@ -338,17 +335,13 @@ private struct ApplicationDependencies {
     SilentLaunchStore.migrateLegacyFileIfPresent(
       at: SilentLaunchStore.legacyFileURL, into: .standard)
     let credentials = KeychainCredentialStore()
-    let serverCredentials = ServerLibraryCredentials()
-    let library = ServerLibraryStorage(
-      credentials: serverCredentials, keys: KeychainLibraryMasterKeyStore(),
-      legacyCredentials: credentials)
+    let library = ServerLibraryStorage(keys: KeychainLibraryMasterKeyStore())
     let catalogFileStore = CatalogFileStore(
       fileURL: CatalogFileStore.defaultFileURL(), library: library)
     let settingsStore = ProxySettingsFileStore()
     let restoredSettings = ProxySettingsFileStore.restored(store: settingsStore)
     return ApplicationDependencies(
       credentials: credentials,
-      serverCredentials: serverCredentials,
       catalogFileStore: catalogFileStore,
       activationFileStore: ActivationStateFileStore(
         fileURL: ActivationStateFileStore.defaultFileURL()),
@@ -356,7 +349,7 @@ private struct ApplicationDependencies {
       settingsStore: settingsStore,
       settingsRestore: restoredSettings,
       legacyImportService: LegacyImportService(
-        catalogStore: catalogFileStore, credentials: serverCredentials),
+        catalogStore: catalogFileStore),
       launchAgent: SMAppLaunchAgentService(),
       loginService: SMAppLaunchAtLoginService(),
       silentLaunchStore: SilentLaunchStore(),
