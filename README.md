@@ -13,6 +13,8 @@
 
 旧版工程源码已从本仓库移除，归档在 [shadowsocks/ShadowsocksX-NG](https://github.com/shadowsocks/ShadowsocksX-NG) 的 [`legacy-v1`](https://github.com/shadowsocks/ShadowsocksX-NG/tree/legacy-v1) 分支，仅供参考，不保证可构建；其功能说明与使用文档见 [legacy-v1 的 README](https://github.com/shadowsocks/ShadowsocksX-NG/blob/legacy-v1/README.md)。
 
+构建与统一验证入口见 [`ShadowsocksX-NG2/README.md` 的「开发、构建与测试」](ShadowsocksX-NG2/README.md#开发构建与测试)。
+
 ## 开发钩子
 
 新 clone 后，在仓库根目录启用 Git hooks：

@@ -79,6 +79,24 @@ ShadowsocksX-NG 的现代化重写版本。新工程的全部源码与构建配�
 
 ## 开发、构建与测试
 
+统一验证入口（从仓库根目录调用）：
+
+```bash
+task --exit-code --taskfile ShadowsocksX-NG2/Taskfile.dist.yml validate
+# 按指定顺序只运行所需关卡：
+task --exit-code --taskfile ShadowsocksX-NG2/Taskfile.dist.yml validate -- lint test
+```
+
+在本目录内可用 `task --exit-code validate`。从任意目录可用 `task --exit-code --taskfile /path/to/ShadowsocksX-NG/ShadowsocksX-NG2/Taskfile.dist.yml validate`。入口按 Taskfile 所在位置定位工程目录，内部调用发行 Taskfile 中的单项任务。
+
+默认按 `lint → test → test:smoke → build` 执行，也可按指定顺序选择子集，每关最多一次；任一关失败立即停止，后续关标记 `not_run`，进程返回非零。`--exit-code` 让 Task 透传关卡退出码；省略时 Task 仍返回非零，但可能使用自己的错误码。入口不自动重试，不修改测试并行设置，也不执行会修改源码的格式化。
+
+每次运行创建独立的 `.build/validation/<UTC时间>-<随机后缀>/`，开始与结束均输出结果绝对路径。`summary.txt` 保存各关状态、退出码与证据状态；每个已执行关卡在同名子目录下保留合并 stdout/stderr 的 `raw.log` 和 `status.txt`（`test:smoke` 对应 `test-smoke/`），Xcode 关卡显式保存 `result.xcresult`。控制台只显示进度和摘要，需要完整错误时直接读取对应日志。所有产物均在现有忽略目录内；`task clean` 会删除它们，需要长期留存时先复制出去。
+
+测试关通过本机 `xcrun xcresulttool get test-results summary` 和系统 `plutil` 尽力读取计数，无需新增脚本或工具依赖。`test-summary.json` 保存原始摘要，`test-summary.stderr.log` 保存 xcresulttool 错误，`count-reader.log` 保存计数读取错误。汇总展示通过、失败、跳过、预期失败及总数（Xcode 汇总口径，参数化测试的实际执行次数可能不同）。关卡与总体退出码由原命令决定，命令失败始终保留失败。结果包缺失或摘要不可读时显著标注 `evidence incomplete`（证据不完整）、计数未知，不改变命令结果，也不把缺失计数写成零。构建关不读取测试计数；未执行的关卡不等同于测试跳过。
+
+统一入口成功表示所选关卡的命令通过，仍需核对证据是否完整；hostless、真实进程 smoke、原生 UI 和真实系统代理的验收边界仍分别成立，发布打包门槛见下文。
+
 在本目录内，日常格式化、静态检查、工程生成、构建和测试优先使用 `Taskfile.dist.yml` 定义的任务：
 
 ```bash

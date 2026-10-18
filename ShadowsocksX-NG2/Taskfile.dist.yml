@@ -7,6 +7,103 @@ vars:
   DERIVED_DATA_DIR: "{{ .BUILD_DIR }}/derivedData"
 
 tasks:
+  validate:
+    desc: 'Run validation gates in order and retain logs/results; stop on first failure'
+    dir: '{{.TASKFILE_DIR}}'
+    silent: true
+    vars:
+      GATES: '{{default "lint test test:smoke build" .CLI_ARGS | trim}}'
+      RUN_DIR:
+        sh: |
+          mkdir -p {{.BUILD_DIR | shellQuote}}/validation
+          mktemp -d {{.BUILD_DIR | shellQuote}}/validation/$(date -u +%Y%m%dT%H%M%SZ)-XXXXXX
+    preconditions:
+      - sh: '{{if regexMatch "^(lint|test|test:smoke|build)( (lint|test|test:smoke|build))*$" .GATES}}true{{else}}false{{end}}'
+        msg: 'Choose validation gates: lint, test, test:smoke, build (space separated).'
+      - sh: '{{if eq (len (splitList " " .GATES)) (len (uniq (splitList " " .GATES)))}}true{{else}}false{{end}}'
+        msg: 'Choose each validation gate at most once.'
+    cmds:
+      - defer:
+          task: validate:summary
+          vars:
+            RUN_DIR: '{{.RUN_DIR}}'
+            GATES: '{{.GATES}}'
+            CODE: '{{default "0" .EXIT_CODE}}'
+      - "printf '%s\n' {{printf \"Validation results: %s\" .RUN_DIR | shellQuote}}"
+      - for: {var: GATES, split: ' '}
+        task: validate:gate
+        vars:
+          RUN_DIR: '{{.RUN_DIR}}'
+          GATE: '{{.ITEM}}'
+
+  validate:gate:
+    internal: true
+    dir: '{{.TASKFILE_DIR}}'
+    silent: true
+    vars:
+      GATE_DIR: '{{.RUN_DIR}}/{{.GATE | replace ":" "-"}}'
+    cmds:
+      - mkdir -p {{.GATE_DIR | shellQuote}}
+      - defer:
+          task: validate:result
+          vars:
+            GATE: '{{.GATE}}'
+            GATE_DIR: '{{.GATE_DIR}}'
+            CODE: '{{default "0" .EXIT_CODE}}'
+      - "printf '%s\n' {{printf \"[%s] running; log: %s/raw.log\" .GATE .GATE_DIR | shellQuote}}"
+      - >-
+        task --exit-code --taskfile {{.TASKFILE_DIR | shellQuote}}/Taskfile.dist.yml {{.GATE | shellQuote}}
+        RESULT_BUNDLE_PATH={{.GATE_DIR | shellQuote}}/result.xcresult
+        > {{.GATE_DIR | shellQuote}}/raw.log 2>&1
+
+  validate:result:
+    internal: true
+    silent: true
+    cmds:
+      - |
+        status=failed
+        if [ {{.CODE | shellQuote}} = 0 ]; then status=passed; fi
+        echo "[{{.GATE}}] $status; exit={{.CODE}}" > {{.GATE_DIR | shellQuote}}/status.txt
+      - cmd: |
+          {{if ne .GATE "lint"}}
+          if [ ! -d {{.GATE_DIR | shellQuote}}/result.xcresult ]; then
+            echo '[{{.GATE}}] evidence incomplete: result bundle missing; test counts unknown' >> {{.GATE_DIR | shellQuote}}/status.txt
+          {{if ne .GATE "build"}}
+          elif xcrun xcresulttool get test-results summary --path {{.GATE_DIR | shellQuote}}/result.xcresult > {{.GATE_DIR | shellQuote}}/test-summary.json 2> {{.GATE_DIR | shellQuote}}/test-summary.stderr.log; then
+            if passed=$(plutil -extract passedTests raw -expect integer {{.GATE_DIR | shellQuote}}/test-summary.json) &&
+               failed=$(plutil -extract failedTests raw -expect integer {{.GATE_DIR | shellQuote}}/test-summary.json) &&
+               skipped=$(plutil -extract skippedTests raw -expect integer {{.GATE_DIR | shellQuote}}/test-summary.json) &&
+               expected=$(plutil -extract expectedFailures raw -expect integer {{.GATE_DIR | shellQuote}}/test-summary.json) &&
+               total=$(plutil -extract totalTestCount raw -expect integer {{.GATE_DIR | shellQuote}}/test-summary.json); then
+              echo "[{{.GATE}}] tests: passed=$passed failed=$failed skipped=$skipped expectedFailures=$expected total=$total" >> {{.GATE_DIR | shellQuote}}/status.txt
+            else
+              printf '%s\n' "$passed" "$failed" "$skipped" "$expected" "$total" >> {{.GATE_DIR | shellQuote}}/count-reader.log
+              echo '[{{.GATE}}] evidence incomplete: invalid test summary; test counts unknown (see count-reader.log)' >> {{.GATE_DIR | shellQuote}}/status.txt
+            fi 2> {{.GATE_DIR | shellQuote}}/count-reader.log
+          else
+            echo '[{{.GATE}}] evidence incomplete: xcresulttool failed; test counts unknown (see test-summary.stderr.log)' >> {{.GATE_DIR | shellQuote}}/status.txt
+          {{end}}
+          fi
+          {{end}}
+      - cat {{.GATE_DIR | shellQuote}}/status.txt
+
+  validate:summary:
+    internal: true
+    silent: true
+    cmds:
+      - |
+        echo 'Validation command exit={{.CODE}}' > {{.RUN_DIR | shellQuote}}/summary.txt
+        echo 'Selected gates: {{.GATES}}' >> {{.RUN_DIR | shellQuote}}/summary.txt
+      - for: {var: GATES, split: ' '}
+        cmd: |
+          if [ -f {{.RUN_DIR | shellQuote}}/{{.ITEM | replace ":" "-"}}/status.txt ]; then
+            cat {{.RUN_DIR | shellQuote}}/{{.ITEM | replace ":" "-"}}/status.txt >> {{.RUN_DIR | shellQuote}}/summary.txt
+          else
+            echo '[{{.ITEM}}] not_run' >> {{.RUN_DIR | shellQuote}}/summary.txt
+          fi
+      - cat {{.RUN_DIR | shellQuote}}/summary.txt
+      - "printf '%s\n' {{printf \"Summary: %s/summary.txt\" .RUN_DIR | shellQuote}}"
+
   gen:prj:
     desc: 'Generate xcode project by xcodegen'
     cmds:
@@ -24,6 +121,7 @@ tasks:
         -configuration Debug
         -destination 'platform=macOS,arch=arm64'
         -derivedDataPath {{ .DERIVED_DATA_DIR }}
+        {{if .RESULT_BUNDLE_PATH}}-resultBundlePath {{.RESULT_BUNDLE_PATH | shellQuote}}{{end}}
         build
 
   build:release:
@@ -68,6 +166,7 @@ tasks:
         -scheme ShadowsocksX-NG2
         -destination 'platform=macOS,arch=arm64'
         -derivedDataPath {{ .DERIVED_DATA_DIR }}
+        {{if .RESULT_BUNDLE_PATH}}-resultBundlePath {{.RESULT_BUNDLE_PATH | shellQuote}}{{end}}
         test
 
   test:binaries:
@@ -92,6 +191,7 @@ tasks:
         -scheme ShadowsocksX-NG2Smoke
         -destination 'platform=macOS,arch=arm64'
         -derivedDataPath {{ .DERIVED_DATA_DIR }}
+        {{if .RESULT_BUNDLE_PATH}}-resultBundlePath {{.RESULT_BUNDLE_PATH | shellQuote}}{{end}}
         test
 
   clean:
