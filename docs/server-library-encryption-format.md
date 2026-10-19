@@ -8,7 +8,7 @@ This document describes the `catalog.enc` format at that commit. It supports mai
 
 ## 1. File and Protection Scope
 
-The default path is `~/Library/Application Support/ShadowsocksX-NG2/catalog.enc`. The file is binary:
+The default path is `~/Library/Application Support/ShadowsocksX-NG2/configuration/catalog.enc`. The file is binary:
 
 ```text
 complete file = plaintext header || nonce || ciphertext || tag

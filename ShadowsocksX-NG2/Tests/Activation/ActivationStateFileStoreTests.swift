@@ -73,7 +73,8 @@ final class ActivationStateFileStoreTests: XCTestCase {
 
   func testDefaultFileURLMatchesRuntimeDirectoryContract() {
     XCTAssertTrue(
-      ActivationStateFileStore.defaultFileURL().path.hasSuffix("ShadowsocksX-NG2/activation.json")
+      ActivationStateFileStore.defaultFileURL().path.hasSuffix(
+        "ShadowsocksX-NG2/configuration/activation.json")
     )
   }
 

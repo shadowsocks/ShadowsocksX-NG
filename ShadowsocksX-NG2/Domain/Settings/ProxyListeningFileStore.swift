@@ -54,7 +54,7 @@ struct ProxyListeningFileStore: ProxyListeningStoring {
       })
   }
 
-  static func defaultFileURL() -> URL { RuntimePaths.proxyListeningFileURL() }
+  static func defaultFileURL() -> URL { ApplicationSupportPaths.current.proxyListeningFileURL }
 
   func load() throws -> ProxyListeningConfiguration {
     try translatingErrors { try encrypted.load(at: fileURL, allowingInteraction: false) }

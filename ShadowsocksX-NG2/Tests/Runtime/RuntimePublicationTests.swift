@@ -247,3 +247,73 @@ extension RuntimePublicationTests {
     }
   }
 }
+
+extension RuntimePublicationTests {
+  @Test func defaultStorageSeparatesConfigurationRuntimeAndLogs() {
+    let configurationFiles = [
+      CatalogFileStore.defaultFileURL(), ProxyListeningFileStore.defaultFileURL(),
+      ActivationStateFileStore.defaultFileURL(), CustomRuleStore.defaultFileURL(),
+      PluginMappingFileStore().fileURL,
+    ]
+    for file in configurationFiles {
+      #expect(file.deletingLastPathComponent().lastPathComponent == "configuration")
+    }
+    #expect(ApplicationSupportPaths.current.runtime.directoryURL.lastPathComponent == "runtime")
+    #expect(
+      ApplicationSupportPaths.current.agentLogURL.deletingLastPathComponent().lastPathComponent
+        == "logs")
+  }
+}
+
+extension RuntimePublicationTests {
+  @Test func stoppingRuntimePreservesConfigurationLogsAndCoordinationFiles() throws {
+    let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+    defer { try? FileManager.default.removeItem(at: root) }
+    let paths = ApplicationSupportPaths(rootURL: root)
+    let preserved = [
+      paths.catalogFileURL, paths.proxyListeningFileURL, paths.customRulesFileURL,
+      paths.activationStateFileURL, paths.pluginMappingFileURL, paths.agentLogURL,
+      paths.configurationDirectoryURL.appendingPathComponent(".catalog.enc.tmp-in-flight"),
+      root.appendingPathComponent("catalog.enc"),
+    ]
+    let sentinel = Data("must survive stopping the runtime".utf8)
+    for file in preserved { try AtomicFileWriter.write(sentinel, to: file) }
+    let store = RuntimeFileStore(fileURL: paths.runtime.fileURL)
+    let document = ProxyRuntimeFixture.makeDocument().replacingACL(
+      .direct(at: paths.runtime.aclFileURL))
+    try store.write(document)
+    let first = try #require(RuntimePublication.load(at: store.supervisionFileURL))
+    try RuntimePublication.select(
+      first, configurationLink: store.fileURL, aclLink: store.aclFileURL)
+    try AtomicFileWriter.write(Data(), to: paths.runtime.agentLockURL)
+    try store.deleteRuntimeFiles()
+
+    for file in preserved { #expect(try Data(contentsOf: file) == sentinel) }
+    #expect(!FileManager.default.fileExists(atPath: store.fileURL.path))
+    #expect(!FileManager.default.fileExists(atPath: store.supervisionFileURL.path))
+    #expect(
+      try Set(FileManager.default.contentsOfDirectory(atPath: store.directoryURL.path))
+        == ["runtime-generation", "runtime.lock", "agent.lock"])
+    try store.write(document)
+    let next = try #require(RuntimePublication.load(at: store.supervisionFileURL))
+    #expect(next.generation > first.generation)
+  }
+}
+
+extension RuntimePublicationTests {
+  @Test func newLayoutDoesNotLoadOrModifyFlatConfiguration() throws {
+    let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+    defer { try? FileManager.default.removeItem(at: root) }
+    let paths = ApplicationSupportPaths(rootURL: root)
+    let oldURL = root.appendingPathComponent("catalog.enc")
+    let oldStore = makeTestCatalogStore(fileURL: oldURL)
+    var catalog = ConfigurationCatalog()
+    _ = try catalog.addTestServer("old-layout")
+    try oldStore.save(CatalogDocument(catalog: catalog))
+    let oldBytes = try Data(contentsOf: oldURL)
+    let newStore = makeTestCatalogStore(fileURL: paths.catalogFileURL)
+    #expect(try newStore.load().catalog == ConfigurationCatalog())
+    #expect(try Data(contentsOf: oldURL) == oldBytes)
+    #expect(try oldStore.load().catalog == catalog)
+  }
+}

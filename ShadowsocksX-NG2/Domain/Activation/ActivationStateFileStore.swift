@@ -1,7 +1,7 @@
 import Foundation
 
 /// 活动目标持久化：落盘 `~/Library/Application Support/
-/// ShadowsocksX-NG2/activation.json`，权限与原子替换基线同 catalog.json。
+/// ShadowsocksX-NG2/configuration/activation.json`，权限与原子替换基线同 catalog.enc。
 /// 只含目标身份，永不落秘密明文。损坏或版本未知按安全侧恢复为「无活动目标」
 /// （代理保持停止，由状态机重校验同步）；文件系统级错误仍抛出。
 struct ActivationStateFileStore {
@@ -19,9 +19,9 @@ struct ActivationStateFileStore {
 
   let fileURL: URL
 
-  /// 默认位置：`~/Library/Application Support/ShadowsocksX-NG2/activation.json`。
+  /// 默认位置：`~/Library/Application Support/ShadowsocksX-NG2/configuration/activation.json`。
   static func defaultFileURL() -> URL {
-    RuntimePaths.activationStateFileURL()
+    ApplicationSupportPaths.current.activationStateFileURL
   }
 
   /// 文件缺失/损坏/版本未知 → `nil`（安全侧：无活动目标）。

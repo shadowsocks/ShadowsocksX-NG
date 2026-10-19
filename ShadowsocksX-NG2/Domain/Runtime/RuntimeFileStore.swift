@@ -7,23 +7,24 @@ struct RuntimeFileStore {
     case rollbackFailed(detail: String)
   }
 
-  let fileURL: URL
+  private let paths: RuntimePaths
+  var fileURL: URL { paths.fileURL }
   private let fileWriter: (Data, URL) throws -> Void
 
   init(
-    fileURL: URL = RuntimePaths.runtimeFileURL(),
+    fileURL: URL = ApplicationSupportPaths.current.runtime.fileURL,
     fileWriter: @escaping (Data, URL) throws -> Void = { try AtomicFileWriter.write($0, to: $1) }
   ) {
-    self.fileURL = fileURL
+    paths = RuntimePaths(fileURL: fileURL)
     self.fileWriter = fileWriter
   }
 
-  var directoryURL: URL { fileURL.deletingLastPathComponent() }
-  var supervisionFileURL: URL { directoryURL.appendingPathComponent("agent-supervision.json") }
-  var failureFileURL: URL { directoryURL.appendingPathComponent("agent-deployment-failure.json") }
-  var pidFileURL: URL { directoryURL.appendingPathComponent("agent.pid") }
-  var aclFileURL: URL { directoryURL.appendingPathComponent("acl-active.ini") }
-  var runtimeStatusFileURL: URL { directoryURL.appendingPathComponent("agent-runtime-status.json") }
+  var directoryURL: URL { paths.directoryURL }
+  var supervisionFileURL: URL { paths.supervisionFileURL }
+  var failureFileURL: URL { paths.failureFileURL }
+  var pidFileURL: URL { paths.pidFileURL }
+  var aclFileURL: URL { paths.aclFileURL }
+  var runtimeStatusFileURL: URL { paths.runtimeStatusFileURL }
 
   func write(_ document: SslocalRuntimeDocument) throws {
     try write(PreparedRuntimeContract(document))
@@ -160,7 +161,7 @@ struct RuntimeFileStore {
 
   /// 代次高水位独立于部署文件持久保存。预留失败可留空号，溢出拒绝部署。
   private func reserveGeneration() throws -> UInt64 {
-    let url = directoryURL.appendingPathComponent("runtime-generation")
+    let url = paths.generationFileURL
     let current: UInt64
     if FileManager.default.fileExists(atPath: url.path) {
       guard let value = UInt64(try String(contentsOf: url, encoding: .utf8)) else {
@@ -274,7 +275,7 @@ struct RuntimeFileStore {
   }
 
   var hasUnconfirmedChild: Bool {
-    let url = directoryURL.appendingPathComponent("sslocal.pid")
+    let url = paths.childPIDFileURL
     guard FileManager.default.fileExists(atPath: url.path) else { return false }
     guard let data = try? String(contentsOf: url, encoding: .utf8), let pid = Int32(data), pid > 0
     else { return true }
@@ -286,12 +287,10 @@ struct RuntimeFileStore {
     try RuntimePublication.withLock(in: directoryURL) {
       guard !hasUnconfirmedChild else { throw POSIXError(.EBUSY) }
       let manager = FileManager.default
+      let removableNames = paths.removableFileNames
       for name in try manager.contentsOfDirectory(atPath: directoryURL.path) {
         if RuntimePublication.generation(of: name) != nil
-          || [
-            fileURL.lastPathComponent, "agent-supervision.json", "acl-active.ini", "agent.pid",
-            "agent-runtime-status.json", "agent-deployment-failure.json", "sslocal.pid",
-          ].contains(name)
+          || removableNames.contains(name)
           || name.hasPrefix("lan-auth-") || name == "acl-digests.json"
           || (name.hasPrefix("acl-") && name.hasSuffix(".ini"))
           || AtomicFileWriter.isResidueName(name)

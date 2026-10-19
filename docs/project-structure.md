@@ -29,7 +29,7 @@
   - `Plugin/` — 托管插件、用户插件映射与插件安全校验。
   - `Credentials/`、`LegacyImport/`、`Diagnostics/` — 主密钥存储与加密文件提交、旧版导入、诊断报告。
 
-  跨进程契约按**文件**编入其它 target：`Runtime/` 的 6 个文件同时编入 wrapper（`RuntimePaths`、`RuntimeSupervision`、`RuntimeLog` 等），`SystemProxy/` 全部 6 个文件编入特权 helper。`project.yml` 里这 12 条是显式路径，在 `Domain/` 内移动文件必须同步，漏改会让 `xcodegen generate` 以缺文件直接失败。布局守卫（`Tests/Architecture/SkeletonTests.swift` 的 `DomainLayoutTests`）断言根下无平铺 `.swift`、树下只有 `.swift`（非源码文件会被 XcodeGen 收进 Resources 阶段并封进签名后的 bundle）。
+  跨进程契约按**文件**编入其它 target：`Runtime/` 的 6 个文件和 `Settings/ApplicationSupportPaths.swift` 同时编入 wrapper（`RuntimePaths`、`RuntimeSupervision`、`RuntimeLog` 等），`SystemProxy/` 全部 6 个文件编入特权 helper。`project.yml` 里这 13 条是显式路径，在 `Domain/` 内移动文件必须同步，漏改会让 `xcodegen generate` 以缺文件直接失败。布局守卫（`Tests/Architecture/SkeletonTests.swift` 的 `DomainLayoutTests`）断言根下无平铺 `.swift`、树下只有 `.swift`（非源码文件会被 XcodeGen 收进 Resources 阶段并封进签名后的 bundle）。
 - `Tests/` — 单元测试 target，随 `ShadowsocksX-NG2` scheme 运行。目录即主题，根下不留平铺测试文件：
   - `Architecture/` — 跨切面工程约束守卫（分层与布局、平台效应 seam、开窗落点、清单完整性），扫源码或构建产物而不驱动行为。
   - `TestSupport/` — 测试等待与清理 helper 的故障回归用例。

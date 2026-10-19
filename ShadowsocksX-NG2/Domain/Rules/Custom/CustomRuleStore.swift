@@ -19,7 +19,7 @@ struct CustomRuleStore {
   }
 
   static func defaultFileURL() -> URL {
-    RuntimePaths.customRulesFileURL()
+    ApplicationSupportPaths.current.customRulesFileURL
   }
 
   /// 读取规则集合；文件不存在视为无自定义规则。

@@ -151,7 +151,7 @@ final class DiagnosticsWorkflow: ObservableObject {
     events: RuntimeEventStore = .shared,
     catalogFacts: @escaping @MainActor () -> DiagnosticCatalogFacts?,
     agentLogTail: @escaping () -> String? = {
-      AgentLogTail.readLastLines(of: RuntimePaths.agentLogURL())
+      AgentLogTail.readLastLines(of: ApplicationSupportPaths.current.agentLogURL)
     },
     fileFacts: @escaping @MainActor () -> [DiagnosticFileFacts] =
       DiagnosticsWorkflow.productionFileFacts,
@@ -267,15 +267,18 @@ final class DiagnosticsWorkflow: ObservableObject {
 
   private static func productionFileFacts() -> [DiagnosticFileFacts] {
     [
-      DiagnosticFileCollector.collect(label: "运行时目录", url: RuntimePaths.runtimeDirectory()),
       DiagnosticFileCollector.collect(
-        label: "catalog.json", url: CatalogFileStore.defaultFileURL()),
+        label: "运行时目录", url: ApplicationSupportPaths.current.runtime.directoryURL),
+      DiagnosticFileCollector.collect(
+        label: "catalog.enc", url: CatalogFileStore.defaultFileURL()),
       DiagnosticFileCollector.collect(
         label: "activation.json", url: ActivationStateFileStore.defaultFileURL()),
       DiagnosticFileCollector.collect(
-        label: "sslocal-active.json", url: RuntimePaths.runtimeFileURL()),
-      DiagnosticFileCollector.collect(label: "agent.pid", url: RuntimePaths.agentPIDFileURL()),
-      DiagnosticFileCollector.collect(label: "agent.log", url: RuntimePaths.agentLogURL()),
+        label: "sslocal-active.json", url: ApplicationSupportPaths.current.runtime.fileURL),
+      DiagnosticFileCollector.collect(
+        label: "agent.pid", url: ApplicationSupportPaths.current.runtime.pidFileURL),
+      DiagnosticFileCollector.collect(
+        label: "agent.log", url: ApplicationSupportPaths.current.agentLogURL),
     ]
   }
 

@@ -106,8 +106,7 @@ func spawnSslocal() -> Process? {
 func redirectStandardStreams(to logURL: URL) {
   let fileManager = FileManager.default
   let directory = logURL.deletingLastPathComponent()
-  try? fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
-  try? fileManager.setAttributes([.posixPermissions: 0o700], ofItemAtPath: directory.path)
+  try? AtomicFileWriter.prepareDirectory(at: directory)
   if fileManager.fileExists(atPath: logURL.path) {
     let attributes = try? fileManager.attributesOfItem(atPath: logURL.path)
     if let size = attributes?[.size] as? UInt64, size > 1_048_576 {

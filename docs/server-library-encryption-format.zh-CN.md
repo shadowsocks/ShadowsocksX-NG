@@ -8,7 +8,7 @@
 
 ## 1. 文件与保护范围
 
-默认路径为 `~/Library/Application Support/ShadowsocksX-NG2/catalog.enc`。文件是二进制，结构为：
+默认路径为 `~/Library/Application Support/ShadowsocksX-NG2/configuration/catalog.enc`。文件是二进制，结构为：
 
 ```text
 完整文件 = 明文文件头 || nonce || ciphertext || tag

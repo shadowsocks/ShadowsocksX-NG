@@ -3,7 +3,7 @@ import XCTest
 @testable import ShadowsocksX_NG2
 
 /// 静默启动偏好持久化（ADR 0017，UserDefaults 形态）：往返无损；键缺失与
-/// 外部错误类型按安全侧恢复「不静默」；初版文件形态走一次性迁移。
+/// 外部错误类型按安全侧恢复「不静默」。
 /// 套件实例 + teardown 移除持久域，不触碰生产 defaults（测试封闭性公约）。
 final class SilentLaunchStoreTests: XCTestCase {
   private var suiteName: String!
@@ -46,51 +46,4 @@ final class SilentLaunchStoreTests: XCTestCase {
     XCTAssertFalse(store.loadSilentLaunchEnabled())
   }
 
-  // MARK: 初版文件形态（ADR 0017）的一次性迁移
-
-  func testMigrateLegacyFileKeepsValueAndRemovesFile() throws {
-    let fileURL = try legacyFile(with: #"{"version": 1, "silentLaunchEnabled": true}"#)
-
-    SilentLaunchStore.migrateLegacyFileIfPresent(at: fileURL, into: defaults)
-
-    XCTAssertTrue(store.loadSilentLaunchEnabled())
-    XCTAssertFalse(FileManager.default.fileExists(atPath: fileURL.path))
-  }
-
-  func testMigrateLegacyFileWithForeignVersionWritesNothingButRemovesFile() throws {
-    let fileURL = try legacyFile(with: #"{"version": 99, "silentLaunchEnabled": true}"#)
-
-    SilentLaunchStore.migrateLegacyFileIfPresent(at: fileURL, into: defaults)
-
-    XCTAssertFalse(store.loadSilentLaunchEnabled(), "版本未知按安全侧：不静默")
-    XCTAssertFalse(FileManager.default.fileExists(atPath: fileURL.path))
-  }
-
-  func testMigrateLegacyCorruptFileWritesNothingButRemovesFile() throws {
-    let fileURL = try legacyFile(with: "{ not json {{{")
-
-    SilentLaunchStore.migrateLegacyFileIfPresent(at: fileURL, into: defaults)
-
-    XCTAssertFalse(store.loadSilentLaunchEnabled(), "损坏按安全侧：不静默")
-    XCTAssertFalse(FileManager.default.fileExists(atPath: fileURL.path))
-  }
-
-  func testMigrateWithoutLegacyFileIsNoOp() {
-    let fileURL = FileManager.default.temporaryDirectory
-      .appendingPathComponent("silent-launch-migrate-\(UUID().uuidString)")
-      .appendingPathComponent("absent.json")
-
-    SilentLaunchStore.migrateLegacyFileIfPresent(at: fileURL, into: defaults)
-
-    XCTAssertFalse(store.loadSilentLaunchEnabled())
-  }
-
-  private func legacyFile(with contents: String) throws -> URL {
-    let directory = FileManager.default.temporaryDirectory
-      .appendingPathComponent("silent-launch-migrate-\(UUID().uuidString)", isDirectory: true)
-    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-    let fileURL = directory.appendingPathComponent("silent-launch.json")
-    try contents.write(to: fileURL, atomically: true, encoding: .utf8)
-    return fileURL
-  }
 }

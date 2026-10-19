@@ -87,10 +87,9 @@ struct RuntimeSupervision: Codable, Equatable, Sendable {
 /// 锁内读取的最新发布引用；GUI 只能从该发布引用复用，不能复活已退休文件。
 enum RuntimePublication {
   static func withLock<T>(in directory: URL, _ body: () throws -> T) throws -> T {
-    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-    try FileManager.default.setAttributes([.posixPermissions: 0o700], ofItemAtPath: directory.path)
+    try AtomicFileWriter.prepareDirectory(at: directory)
     let descriptor = open(
-      directory.appendingPathComponent("runtime.lock").path,
+      RuntimePaths(directoryURL: directory).publicationLockURL.path,
       O_CREAT | O_RDWR | O_NOFOLLOW, 0o600)
     guard descriptor >= 0 else { throw POSIXError(.EIO) }
     defer { close(descriptor) }

@@ -331,10 +331,6 @@ private struct ApplicationDependencies {
     let listeningStore = ProxyListeningFileStore()
     let listening = ProxyListeningStartup.load(
       store: listeningStore, presentReset: ProxyListeningResetAlert.present)
-    // ADR 0017 初版文件形态的迁移（发布链从未包含，仅存量开发机）：文件不存在
-    // 即空操作，随每次启动调用无害。
-    SilentLaunchStore.migrateLegacyFileIfPresent(
-      at: SilentLaunchStore.legacyFileURL, into: .standard)
     let library = ServerLibraryStorage(keys: KeychainMasterKeyStore(namespace: "server-library"))
     let catalogFileStore = CatalogFileStore(
       fileURL: CatalogFileStore.defaultFileURL(), library: library)

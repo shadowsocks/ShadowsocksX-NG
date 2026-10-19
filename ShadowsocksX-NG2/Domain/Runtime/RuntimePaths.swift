@@ -1,74 +1,35 @@
 import Foundation
 
-/// App Support 目录全部文件的路径清单：GUI 配置与跨进程运行时契约共用同一
-/// 目录。运行时契约子集是 GUI 写、wrapper 读的固定
-/// 位置；GUI 配置文件 wrapper 不经手。目录 0700、文件 0600，由写入方与
-/// wrapper 共同维护。
-enum RuntimePaths {
-  static func runtimeDirectory() -> URL {
-    FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-      .appendingPathComponent("ShadowsocksX-NG2", isDirectory: true)
+/// GUI 发布与 Agent 监管共享的运行目录规则；所有受管引用保持在同一目录。
+struct RuntimePaths {
+  let fileURL: URL
+
+  init(directoryURL: URL) {
+    fileURL = directoryURL.appendingPathComponent("sslocal-active.json")
   }
 
-  /// Agent 切换的稳定配置链接；sslocal 启动与 SIGUSR1 重读均使用此路径。
-  static func runtimeFileURL() -> URL {
-    runtimeDirectory().appendingPathComponent("sslocal-active.json")
+  init(fileURL: URL) {
+    self.fileURL = fileURL
   }
 
-  /// ACL 稳定链接：sslocal 经配置 `acl` 键读取，由 Agent 切换到不可变变体。
-  static func aclFileURL() -> URL {
-    runtimeDirectory().appendingPathComponent("acl-active.ini")
-  }
+  var directoryURL: URL { fileURL.deletingLastPathComponent() }
+  var supervisionFileURL: URL { directoryURL.appendingPathComponent("agent-supervision.json") }
+  var failureFileURL: URL { directoryURL.appendingPathComponent("agent-deployment-failure.json") }
+  var pidFileURL: URL { directoryURL.appendingPathComponent("agent.pid") }
+  var childPIDFileURL: URL { directoryURL.appendingPathComponent("sslocal.pid") }
+  var aclFileURL: URL { directoryURL.appendingPathComponent("acl-active.ini") }
+  var runtimeStatusFileURL: URL { directoryURL.appendingPathComponent("agent-runtime-status.json") }
+  var generationFileURL: URL { directoryURL.appendingPathComponent("runtime-generation") }
+  var publicationLockURL: URL { directoryURL.appendingPathComponent("runtime.lock") }
+  var agentLockURL: URL { directoryURL.appendingPathComponent("agent.lock") }
 
-  /// wrapper 进程 pid 文件：SMAppService.Status 不暴露运行中 agent 的 pid，
-  /// wrapper 自写此文件供 GUI 判活（kill(pid, 0)）并投递 SIGUSR1。
-  static func agentPIDFileURL() -> URL {
-    runtimeDirectory().appendingPathComponent("agent.pid")
-  }
-
-  /// The wrapper's sslocal deployment receipt. ACL-backed receipts are written
-  /// after the child owns the configured TCP listeners; the GUI checks its
-  /// deployment identity and PID during direct-mode health checks.
-  static func agentRuntimeStatusURL() -> URL {
-    runtimeDirectory().appendingPathComponent("agent-runtime-status.json")
-  }
-
-  /// wrapper 与 sslocal 的收敛日志（stderr 重定向目标）。不支持滚动或诊断导出；
-  /// 不属于「运行时文件」，显式停止时不删除。
-  static func agentLogURL() -> URL {
-    runtimeDirectory().appendingPathComponent("agent.log")
-  }
-
-  // 旧版端点签名/所有权文件（system-proxy-endpoint-signature.json、
-  // system-proxy-ownership.json）就地遗留：不读取、不迁移、
-  // 不删除。
-
-  // MARK: - GUI 配置文件（GUI 私有读写，wrapper 不经手）
-
-  /// 服务器目录（CatalogFileStore）。
-  static func catalogFileURL() -> URL {
-    runtimeDirectory().appendingPathComponent("catalog.enc")
-  }
-
-  /// 本地与局域网代理监听配置（ProxyListeningFileStore）。
-  static func proxyListeningFileURL() -> URL {
-    runtimeDirectory().appendingPathComponent("proxy-listening.enc")
-  }
-
-  /// 自定义规则文档（CustomRuleStore）。
-  static func customRulesFileURL() -> URL {
-    runtimeDirectory().appendingPathComponent("custom-rules.json")
-  }
-
-  /// 活动目标（ActivationStateFileStore）。
-  static func activationStateFileURL() -> URL {
-    runtimeDirectory().appendingPathComponent("activation.json")
-  }
-
-  /// 静默启动偏好的 ADR 0017 初版文件形态，仅遗留迁移路径使用
-  /// （SilentLaunchStore.migrateLegacyFileIfPresent）。
-  static func silentLaunchLegacyFileURL() -> URL {
-    runtimeDirectory().appendingPathComponent("silent-launch.json")
+  /// 停止只清理部署产物；高水位和两把锁跨停止保留。
+  var removableFileNames: Set<String> {
+    Set(
+      [
+        fileURL, supervisionFileURL, failureFileURL, pidFileURL, childPIDFileURL,
+        aclFileURL, runtimeStatusFileURL,
+      ].map(\.lastPathComponent))
   }
 }
 

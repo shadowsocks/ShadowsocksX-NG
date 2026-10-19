@@ -37,3 +37,19 @@
 监听配置单独加密保存在 `proxy-listening.enc`，只包含本地与局域网监听相关值。代理模式、规则默认动作、代理服务开关、系统代理开关和附加系统代理例外以 `proxyControl.` 前缀的独立键保存在 UserDefaults；运行计算的内存快照不代表统一持久化文档。监听仍采用联合校验与原子文件保存；UserDefaults 偏好不提供同步落盘失败的报错与回滚。
 
 不迁移旧 `settings.json`：新监听文件与新增偏好缺值时使用默认值，需要重新设置现有开发配置；旧文件不读取、不删除，遗留 Keychain 条目不访问、不清理。已有语言、静默启动、测试 URL 等独立偏好及服务器资料保持原状。监听读取失败会阻断正常启动，包括静默启动，并显示只含“重置监听配置”的说明性 alert。用户确认后创建新监听主密钥并原子保存默认配置，默认关闭局域网监听。重置成功前保留原文件及已有后台代理和系统代理；成功后按默认配置与原有开关意图收敛。不迁移旧 `proxy-listening.json`，不读取或清理旧逐项 Keychain 凭据；发现旧文件时同样提示确认重置。设计见 [ADR-0034](adr/0034-separate-local-and-lan-listeners.md)、[ADR-0040](adr/0040-keep-settings-recovery-simple.md) 、[ADR-0041](adr/0041-separate-preferences-from-proxy-listening-configuration.md) 和 [ADR-0042](adr/0042-encrypt-proxy-listening-configuration.md)。
+
+## 应用支持目录
+
+文件根目录为 `~/Library/Application Support/ShadowsocksX-NG2/`，按生命周期分类：
+
+| 子目录 | 文件与用途 |
+| --- | --- |
+| `configuration/` | `catalog.enc`、`proxy-listening.enc`、`activation.json`、`custom-rules.json`、`plugins.json`，由 GUI 管理的持久资料 |
+| `runtime/` | 监管资料、运行回执、失败记录、PID、稳定链接，以及代次命名的配置、GUI 私有意图摘要、认证与 ACL 文件 |
+| `logs/` | `agent.log`，停止后台代理后保留 |
+
+`runtime-generation`、`runtime.lock`、`agent.lock` 位于 `runtime/`，停止服务仍保留。不能把停止操作实现为删除整个运行目录。目录权限为 `0700`，普通文件权限为 `0600`；运行配置和认证文件仍可能包含明文秘密。UserDefaults、Keychain、LaunchAgent plist 及 bundle 内规则与插件继续使用各自的位置。
+
+此次布局调整不提供自动迁移。旧根目录文件不读取、不移动、不删除，包括初版 `silent-launch.json`；已保存的 UserDefaults 偏好不变。开发环境切换前，退出 GUI 并停止旧 Agent 与 sslocal，确认进程退出后，将需要保留的上述五份 GUI 文件原样搬到 `configuration/`，不要搬移运行产物。密文文件中的密钥标识不变，同一用户的原 Keychain 主密钥可继续使用；不应只复制密文到另一台机器并假定能够解密。设置目录权限为 `0700`、文件权限为 `0600`，再启动新构建，由新路径重新派生运行产物。未搬移配置时，新目录按首次使用初始化；不会从旧根目录补读。新目录内旧格式文件的拒绝规则仍保留。
+
+路径规则集中在 `ApplicationSupportPaths` 与 `RuntimePaths`。Agent 的测试覆盖中，`SSXNG_CONTRACT_PATH` 优先于 `SSXNG_RUNTIME_DIR`，同一部署全部路径由该契约所在目录派生；仅设置运行目录时使用标准配置链接名。`SSXNG_LOG_PATH` 可独立指定日志位置。指定测试契约或运行目录且未指定日志时，日志留在被覆盖的运行目录，避免测试写入生产日志。

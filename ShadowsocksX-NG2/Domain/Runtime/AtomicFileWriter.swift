@@ -1,7 +1,7 @@
 import Foundation
 
 /// 敏感配置文件的原子写盘基线：目录 0700（含自愈）、临时文件
-/// 创建即 0600、写全校验后原子替换；任一步失败保留原文件。catalog.json、
+/// 创建即 0600、写全校验后原子替换；任一步失败保留原文件。catalog.enc、
 /// activation.json 与其他运行时文件共用同一物理安全基线。
 enum AtomicFileWriter {
   enum WriteError: Error, Equatable {
@@ -20,15 +20,17 @@ enum AtomicFileWriter {
     name.hasPrefix(".") && name.contains(".tmp-")
   }
 
+  /// 新建的父目录同样使用 0700；已有目标目录修复权限后才允许写入。
+  static func prepareDirectory(at directory: URL) throws {
+    try FileManager.default.createDirectory(
+      at: directory, withIntermediateDirectories: true, attributes: [.posixPermissions: 0o700])
+    try FileManager.default.setAttributes([.posixPermissions: 0o700], ofItemAtPath: directory.path)
+  }
+
   /// 把 `data` 原子写入 `fileURL`（含父目录创建与 0700 基线自愈）。
   static func write(_ data: Data, to fileURL: URL) throws {
-    let directory = fileURL.deletingLastPathComponent()
     do {
-      if !FileManager.default.fileExists(atPath: directory.path) {
-        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-      }
-      try FileManager.default.setAttributes(
-        [.posixPermissions: 0o700], ofItemAtPath: directory.path)
+      try prepareDirectory(at: fileURL.deletingLastPathComponent())
     } catch {
       throw WriteError.failure(detail: String(describing: error))
     }

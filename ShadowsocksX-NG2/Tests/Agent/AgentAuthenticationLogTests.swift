@@ -51,3 +51,44 @@ struct AgentAuthenticationLogTests {
     #expect(log.contains("ordinary event"))
   }
 }
+
+extension AgentAuthenticationLogTests {
+  @Test(arguments: [false, true])
+  func wrapperCreatesRuntimeIndependentlyOfLogs(contractOverride: Bool) throws {
+    let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+    defer { try? FileManager.default.removeItem(at: root) }
+    let paths = ApplicationSupportPaths(rootURL: root)
+    let process = Process()
+    process.executableURL = AppArtifact.bundleURL.appendingPathComponent(
+      "Contents/MacOS/ShadowsocksX-NG2Agent")
+    var environment = ProcessInfo.processInfo.environment.filter { !$0.key.hasPrefix("SSXNG_") }
+    if contractOverride {
+      environment["SSXNG_CONTRACT_PATH"] = paths.runtime.fileURL.path
+      environment["SSXNG_RUNTIME_DIR"] = root.appendingPathComponent("unused").path
+    } else {
+      environment["SSXNG_RUNTIME_DIR"] = paths.runtime.directoryURL.path
+    }
+    environment["SSXNG_LOG_PATH"] = paths.agentLogURL.path
+    process.environment = environment
+    try process.run()
+    defer {
+      if process.isRunning { kill(process.processIdentifier, SIGKILL) }
+      process.waitUntilExit()
+    }
+    let deadline = Date().addingTimeInterval(5)
+    while process.isRunning && Date() < deadline { Thread.sleep(forTimeInterval: 0.01) }
+    try #require(!process.isRunning)
+    #expect(process.terminationStatus == 0)
+    #expect(FileManager.default.fileExists(atPath: paths.runtime.agentLockURL.path))
+    #expect(!FileManager.default.fileExists(atPath: root.appendingPathComponent("unused").path))
+    #expect(try String(contentsOf: paths.agentLogURL, encoding: .utf8).contains("contract missing"))
+    for directory in [root, paths.runtime.directoryURL, paths.logsDirectoryURL] {
+      let attributes = try FileManager.default.attributesOfItem(atPath: directory.path)
+      #expect(attributes[.posixPermissions] as? Int == 0o700)
+    }
+    for file in [paths.runtime.agentLockURL, paths.agentLogURL] {
+      let attributes = try FileManager.default.attributesOfItem(atPath: file.path)
+      #expect(attributes[.posixPermissions] as? Int == 0o600)
+    }
+  }
+}

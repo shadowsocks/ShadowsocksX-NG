@@ -1,14 +1,15 @@
 import Foundation
 
 // Agent 只读取非秘密监管资料，独占稳定链接切换。配置和认证由 GUI 准备。
-redirectStandardStreams(
-  to: runtimeDirectoryOverride?.appendingPathComponent("agent.log") ?? RuntimePaths.agentLogURL())
+redirectStandardStreams(to: agentLogURL)
 
-let agentDirectory = contractURL.deletingLastPathComponent()
+// 日志与运行目录独立创建；不能依赖日志初始化建立生命周期锁的父目录。
+do {
+  try AtomicFileWriter.prepareDirectory(at: runtimePaths.directoryURL)
+} catch { exit(1) }
 // 生命周期锁防止两个 Agent 同时启动监听进程。锁随进程退出自动释放。
 let agentLock = open(
-  agentDirectory.appendingPathComponent("agent.lock").path,
-  O_CREAT | O_RDWR | O_NOFOLLOW, 0o600)
+  runtimePaths.agentLockURL.path, O_CREAT | O_RDWR | O_NOFOLLOW, 0o600)
 guard agentLock >= 0, flock(agentLock, LOCK_EX | LOCK_NB) == 0 else { exit(0) }
 
 try? AtomicFileWriter.write(Data("\(getpid())\n".utf8), to: pidFileURL)

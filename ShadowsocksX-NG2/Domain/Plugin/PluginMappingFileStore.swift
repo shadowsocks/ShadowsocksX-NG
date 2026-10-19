@@ -115,7 +115,7 @@ enum PluginMappingError: Error, Equatable {
 }
 
 struct PluginMappingFileStore: PluginMappingStoring {
-  var fileURL = RuntimePaths.runtimeDirectory().appendingPathComponent("plugins.json")
+  var fileURL = ApplicationSupportPaths.current.pluginMappingFileURL
 
   private struct Version: Decodable { let version: Int }
   private struct LegacyRecord: Decodable {
