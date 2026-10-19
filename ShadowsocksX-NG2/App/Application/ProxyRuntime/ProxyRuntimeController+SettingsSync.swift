@@ -37,7 +37,7 @@ extension ProxyRuntimeController {
       }
       // 无活动目标：已在以空列表监听则不重走健康门（目录提交不该让状态闪回
       // starting）；否则补齐空监听。
-      if state != .off, lastDocument?.servers.isEmpty == true {
+      if state != .off, runtimeObservation?.hasServers == false {
         return Self.syncOutcome(
           agentState: state, systemProxyState: systemProxyState, skippedServers: [])
       }
@@ -95,7 +95,7 @@ extension ProxyRuntimeController {
     flowGeneration += 1
     _ = await execute(.stop, document: nil)
     state = .off
-    lastDocument = nil
+    runtimeObservation = nil
     skippedServers = []
     lastActivationFailure = nil
     // 导入边界不触碰 SystemConfiguration（既有不变量），系统代理状态面同

@@ -34,10 +34,11 @@ extension ProxyRuntimeController {
     guard preparedContract == nil || preparedContract?.document == document else {
       return await reportRuntimeFileFailure(preserveProxyOnFailure: preserveProxyOnFailure)
     }
+    let facts = RuntimeDeploymentFacts(document)
     let generation = flowGeneration
     let preparation = runtimePreparationGeneration
     let expectedDigest =
-      requiresReceipt ? runtimeFileStore.receiptIdentity(for: document) : nil
+      requiresReceipt ? runtimeFileStore.receiptIdentity(for: document.intentSHA256) : nil
     guard !requiresReceipt || expectedDigest != nil else {
       return await reportRuntimeFileFailure(preserveProxyOnFailure: preserveProxyOnFailure)
     }
@@ -48,14 +49,14 @@ extension ProxyRuntimeController {
       guard generation == flowGeneration, preparation == runtimePreparationGeneration else {
         return false
       }
-      let attempt = await launchHealthAttempt(document, expectedDigest: expectedDigest)
+      let attempt = await launchHealthAttempt(facts, expectedDigest: expectedDigest)
       guard generation == flowGeneration, preparation == runtimePreparationGeneration else {
         return false
       }
       switch attempt {
       case .ready(let receipt):
         return await finishHealthyLaunch(
-          document,
+          facts,
           receipt: receipt,
           generation: (generation, preparation),
           convergeProxyOnSuccess: convergeProxyOnSuccess,
@@ -76,10 +77,10 @@ extension ProxyRuntimeController {
   }
 
   private func launchHealthAttempt(
-    _ document: SslocalRuntimeDocument,
+    _ document: RuntimeDeploymentFacts,
     expectedDigest: String?
   ) async -> LaunchHealthAttempt {
-    if runtimeFileStore.blocksDeployment(document) { return .agentLost }
+    if runtimeFileStore.blocksDeployment(document.intentSHA256) { return .agentLost }
     var receiptForHealth: RuntimeDeploymentReceipt?
     if let expectedDigest {
       guard let receipt = runtimeFileStore.readRuntimeReceipt(),
@@ -107,7 +108,7 @@ extension ProxyRuntimeController {
   }
 
   private func finishHealthyLaunch(
-    _ document: SslocalRuntimeDocument,
+    _ document: RuntimeDeploymentFacts,
     receipt: RuntimeDeploymentReceipt?,
     generation: (flow: Int, preparation: Int),
     convergeProxyOnSuccess: Bool,
@@ -176,7 +177,7 @@ extension ProxyRuntimeController {
   }
 
   private func unhealthyLocalEndpoint(
-    in document: SslocalRuntimeDocument
+    in document: RuntimeDeploymentFacts
   ) async -> LocalEndpointFailure? {
     for local in document.locals {
       let outcome = await probeAsync(
@@ -227,14 +228,14 @@ extension ProxyRuntimeController {
       systemProxyObserver.updateSystemProxyActions()
       guard settings.systemProxyEnabled, state != .starting,
         !systemProxyObserver.systemProxyStartupInProgress, settings.agentEnabled,
-        let document = lastDocument
+        let document = runtimeObservation
       else { continue }
       await inspectSystemProxyRuntimeHealth(document)
     }
   }
 
-  private func inspectSystemProxyRuntimeHealth(_ document: SslocalRuntimeDocument) async {
-    if runtimeFileStore.blocksDeployment(document) {
+  private func inspectSystemProxyRuntimeHealth(_ document: RuntimeDeploymentFacts) async {
+    if runtimeFileStore.blocksDeployment(document.intentSHA256) {
       state = .serviceFailed(.agent)
       await systemProxyObserver.suspendSystemProxy()
       return
@@ -242,8 +243,8 @@ extension ProxyRuntimeController {
     let generation = flowGeneration
     let outcome = await launchHealthAttempt(
       document,
-      expectedDigest: document.aclRuntime != nil
-        ? runtimeFileStore.receiptIdentity(for: document) : nil)
+      expectedDigest: document.aclSummary != nil
+        ? runtimeFileStore.receiptIdentity(for: document.intentSHA256) : nil)
     // await 恢复后重查意图与代际：agent 已被关闭或已有新 execute 时，
     // 失败呈现与系统代理挂起都归属新的意图状态，本任务不得再改写。
     guard !Task.isCancelled, generation == flowGeneration, settings.systemProxyEnabled,

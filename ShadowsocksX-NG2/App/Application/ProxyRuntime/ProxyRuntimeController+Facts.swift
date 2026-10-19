@@ -22,9 +22,9 @@ extension ProxyRuntimeController {
   /// Desired system proxy configuration：当前保存设置要求的代理值（ADR-0022）。
   /// 观察机经 init 闭包读取同一事实源。`nil` 只表示尚无运行时文档。
   var desiredSystemProxyConfiguration: SystemProxyConfiguration? {
-    guard let document = lastDocument else { return nil }
+    guard let document = runtimeObservation else { return nil }
     return proxyMode.systemProxyConfiguration(
-      for: document, exceptions: settings.proxyExceptionList)
+      for: document.listen, exceptions: settings.proxyExceptionList)
   }
 
   /// Stable app-facing projection for status-menu presentation. The menu does
@@ -59,17 +59,18 @@ extension ProxyRuntimeController {
     case .off, .starting, .launchFailed, .requiresApproval, .serviceFailed:
       isListening = false
     }
-    guard isListening, let lastDocument else { return nil }
-    return RuntimeListenFacts(document: lastDocument)
+    guard isListening, let runtimeObservation else { return nil }
+    return runtimeObservation.listen
   }
 
   /// PID of the sslocal child that owns the active runtime document. A process
   /// name alone is not sufficient to treat an occupied listener as replaceable.
   var effectiveRuntimeListenerProcessID: Int32? {
     guard effectiveRuntimeListenFacts != nil,
-      let lastDocument,
+      let runtimeObservation,
       let receipt = runtimeFileStore.readRuntimeReceipt(),
-      receipt.deploymentID == runtimeFileStore.receiptIdentity(for: lastDocument),
+      receipt.deploymentID
+        == runtimeFileStore.receiptIdentity(for: runtimeObservation.intentSHA256),
       processIsAlive(receipt.processID)
     else { return nil }
     return receipt.processID
@@ -78,7 +79,7 @@ extension ProxyRuntimeController {
   /// 运行时契约的脱敏摘要（数量与协议元数据）；契约缺失或无效返回 nil。
   /// 诊断导出不读契约内容，只携带此摘要。
   func runtimeDocumentSummary() -> String? {
-    runtimeFileStore.loadDocument().map { Redactor.documentSummary($0) }
+    runtimeFileStore.publishedSummary()
   }
 }
 

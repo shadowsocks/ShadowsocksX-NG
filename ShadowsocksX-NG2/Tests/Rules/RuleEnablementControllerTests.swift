@@ -82,7 +82,7 @@ final class RuleEnablementControllerTests: ProxyRuntimeControllerTests {
     let runtimeStore = RuntimeFileStore(fileURL: runtime.contract)
     let started = expectation(description: "first deployment awaiting receipt")
     let before = agent.registerCount
-    var firstDocument: SslocalRuntimeDocument?
+    var firstDocument: PublishedRuntimeConfiguration?
     agent.onRegister = { [agent] in
       guard let document = runtimeStore.loadDocument() else { return }
       if agent?.registerCount == before + 1 {
@@ -151,7 +151,7 @@ final class RuleEnablementControllerTests: ProxyRuntimeControllerTests {
               runtimeStore.loadDocument(), previous, "Stale stop must not delete the contract")
             loader.resume()
             await newMode.value
-            XCTAssertEqual(controller.lastDocument?.aclRuntime?.summary, "rule-proxy-default")
+            XCTAssertEqual(controller.runtimeObservation?.aclSummary, "rule-proxy-default")
             XCTAssertEqual(controller.state, .running)
           })
       })
@@ -179,7 +179,7 @@ final class RuleEnablementControllerTests: ProxyRuntimeControllerTests {
         await modeSwitch.value
         XCTAssertEqual(controller.proxyMode, .rule)
         XCTAssertTrue(controller.settings.systemProxyEnabled)
-        XCTAssertEqual(controller.lastDocument?.aclRuntime?.summary, "rule-proxy-default")
+        XCTAssertEqual(controller.runtimeObservation?.aclSummary, "rule-proxy-default")
         XCTAssertEqual(controller.state, .running)
       })
   }
@@ -357,8 +357,8 @@ extension RuleEnablementControllerTests {
       if agent?.registerCount == initialRegistrations + 1 {
         onDeployment()
         try? FileManager.default.removeItem(at: runtimeStore.runtimeStatusFileURL)
-      } else if let document = runtimeStore.loadDocument() {
-        try? runtimeStore.writeRuntimeReceipt(for: document, processID: 42)
+      } else {
+        try? runtimeStore.writePublishedRuntimeReceipt(processID: 42)
       }
     }
   }

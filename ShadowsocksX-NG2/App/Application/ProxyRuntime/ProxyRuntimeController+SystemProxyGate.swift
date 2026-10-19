@@ -3,10 +3,10 @@ import Foundation
 // MARK: - 防火墙呈现、wrapper 观测与系统代理出口事实
 
 extension ProxyRuntimeController {
-  func presentFirewallStatus(for document: SslocalRuntimeDocument) async {
+  func presentFirewallStatus(for document: RuntimeDeploymentFacts) async {
     let generation = flowGeneration
     let preparation = runtimePreparationGeneration
-    guard document.listen.listenerMode.exposesNetworkInterfaces else {
+    guard document.listen.lan.effectiveMode.exposesNetworkInterfaces else {
       state = .running
       return
     }

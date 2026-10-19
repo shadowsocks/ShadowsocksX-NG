@@ -18,7 +18,7 @@ ShadowsocksX-NG 的现代化重写版本。新工程的全部源码与构建配�
   - `Resources/` — `Info.plist`、`entitlements`（生成物）与 `Assets.xcassets`、`*.xcstrings`（入库）。
 
   分层边界由 `Tests/SkeletonTests.swift` 的正向圈定守卫断言：只扫描 `App/UI/`，视图层不得引用运行时控制器、工作流实现协作者或原始目录/凭据存储类型；新增运行时适配器放进 `Application/` 即自动落在扫描范围外，无需登记豁免。注意 `App/` 下任何非源码文件都会被 XcodeGen 收进 Resources 阶段并封进签名后的 bundle，因此文档不放 `App/`（`project.yml` 已排除 `**/*.md`）。分层与主题的组织方式、守卫为何取正面圈定、以及 XcodeGen 的上述约束见 [ADR-0029](../docs/adr/0029-source-layout-declares-layer-and-theme.md)。
-- `Agent/` — 代理运行时 wrapper（独立可执行文件，装入 `Contents/MacOS/`，由 LaunchAgent 常驻）：读 `sslocal-active.json` 契约，以绝对路径启动和监管 sslocal（SIGTERM 链式停止、SIGUSR1 热重载/结构重启、崩溃时非零退出交 KeepAlive 重放，spec #21 D2/D5/D7）。PAC HTTP endpoint 已随 issue #67 移除。
+- `Agent/` — 独立的后台监管可执行文件，装入 `Contents/MacOS/`，由 LaunchAgent 常驻。只读取非秘密 `agent-supervision.json`，切换稳定配置与 ACL 链接，启动和监管 sslocal；不解析 sslocal 配置或 LAN 凭据。发布与失败处理见 ADR-0037、ADR-0038，GUI 单向配置输出见 ADR-0043。
 - `LaunchAgent/` — `SMAppService.agent(plistName:)` 的注册清单，装入 `Contents/Library/LaunchAgents/`；`ProgramArguments` 用 bundle 相对路径，由 launchd 按注册 app 的 bundle 位置解析。
 - `Domain/` — 领域核心（配置目录树、凭据引用与持久化，spec #21 D3/D5），与 UI 无关。目录即主题，根下不留平铺文件，子目录口径取自 `GLOSSARY.md` 的章节划分：
   - `Catalog/` — 配置目录树、结构不变量错误、目录文件存储、节点与凭据身份，以及 `ss://` 编解码 `SsUri`。
@@ -31,7 +31,7 @@ ShadowsocksX-NG 的现代化重写版本。新工程的全部源码与构建配�
   - `Plugin/` — 托管插件、用户插件映射与插件安全校验。
   - `Credentials/`、`LegacyImport/`、`Diagnostics/` — 主密钥存储与加密文件提交、旧版导入、诊断报告。
 
-  跨进程契约按**文件**编入其它 target：`Runtime/` 的 10 个文件同时编入 wrapper（`RuntimePaths`、`SslocalRuntimeDocument`、`RuntimeLog` 等），`SystemProxy/` 全部 6 个文件编入特权 helper。`project.yml` 里这 16 条是显式路径，在 `Domain/` 内移动文件必须同步，漏改会让 `xcodegen generate` 以缺文件直接失败。布局守卫（`Tests/Architecture/SkeletonTests.swift` 的 `DomainLayoutTests`）断言根下无平铺 `.swift`、树下只有 `.swift`（非源码文件会被 XcodeGen 收进 Resources 阶段并封进签名后的 bundle）。
+  跨进程契约按**文件**编入其它 target：`Runtime/` 的 6 个文件同时编入 wrapper（`RuntimePaths`、`RuntimeSupervision`、`RuntimeLog` 等），`SystemProxy/` 全部 6 个文件编入特权 helper。`project.yml` 里这 12 条是显式路径，在 `Domain/` 内移动文件必须同步，漏改会让 `xcodegen generate` 以缺文件直接失败。布局守卫（`Tests/Architecture/SkeletonTests.swift` 的 `DomainLayoutTests`）断言根下无平铺 `.swift`、树下只有 `.swift`（非源码文件会被 XcodeGen 收进 Resources 阶段并封进签名后的 bundle）。
 - `Tests/` — 单元测试 target，随 `ShadowsocksX-NG2` scheme 运行。目录即主题，根下不留平铺测试文件：
   - `Architecture/` — 跨切面工程约束守卫（分层与布局、平台效应 seam、开窗落点、清单完整性），扫源码或构建产物而不驱动行为。
   - `TestSupport/` — 测试等待与清理 helper 的故障回归用例。

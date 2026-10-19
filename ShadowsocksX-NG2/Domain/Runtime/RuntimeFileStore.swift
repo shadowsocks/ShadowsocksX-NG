@@ -36,7 +36,6 @@ struct RuntimeFileStore {
       do {
         guard contract.document.isWellFormed else { throw POSIXError(.EINVAL) }
         let old = RuntimePublication.load(at: supervisionFileURL)
-        let previous = loadDocumentUnlocked(old)
         let generation = try reserveGeneration()
         let prefix = String(format: "%020llu", generation)
         func create(_ data: Data, kind: String, suffix: String) throws -> String {
@@ -68,11 +67,14 @@ struct RuntimeFileStore {
           }
         }
         let authentication = try prepareAuthentication(
-          contract.document, previous: previous,
-          old: old, create: { try create($0, kind: $1, suffix: $2) })
+          contract.document, old: old, create: { try create($0, kind: $1, suffix: $2) })
         let encoded = authentication.document
-        let configuration = try create(encoded.jsonData(), kind: "config", suffix: "sslocal.json")
-        _ = try create(Data(contract.sha256.utf8), kind: "config", suffix: "intent.json")
+        let configurationData = try encoded.jsonData()
+        let configuration = try create(configurationData, kind: "config", suffix: "sslocal.json")
+        let intent = PublishedRuntimeIntent(
+          sha256: contract.sha256, configurationSHA256: ProxyACLDocument.digest(configurationData),
+          summary: Redactor.documentSummary(contract.document))
+        _ = try create(JSONEncoder().encode(intent), kind: "config", suffix: "intent.json")
         let snapshot = RuntimeSupervision(
           version: 1, generation: generation, deploymentID: UUID().uuidString,
           configuration: configuration,
@@ -113,7 +115,7 @@ struct RuntimeFileStore {
 
   private func prepareAuthentication(
     _ document: SslocalRuntimeDocument,
-    previous: SslocalRuntimeDocument?, old: RuntimeSupervision?,
+    old: RuntimeSupervision?,
     create: (Data, String, String) throws -> String
   ) throws -> (document: SslocalRuntimeDocument, id: String?, files: [String]) {
     var authenticationID: String?
@@ -123,12 +125,19 @@ struct RuntimeFileStore {
       guard auth.directory == directoryURL.standardizedFileURL.path else {
         throw POSIXError(.EINVAL)
       }
-      if previous?.listen.authentication == auth, let oldID = old?.authenticationID {
+      let contents = try auth.fileContents()
+      let previousFiles = old?.authenticationFiles ?? []
+      let unchanged =
+        previousFiles.count == contents.count
+        && zip(previousFiles, contents).allSatisfy { name, content in
+          (try? Data(contentsOf: directoryURL.appendingPathComponent(name))) == content.1
+        }
+      if unchanged, let oldID = old?.authenticationID {
         authenticationID = oldID
         authenticationFiles = old?.authenticationFiles ?? []
       } else {
         authenticationID = UUID().uuidString
-        for (kind, data) in try auth.fileContents() {
+        for (kind, data) in contents {
           authenticationFiles.append(try create(data, "auth", "\(kind).json"))
         }
       }
@@ -165,47 +174,60 @@ struct RuntimeFileStore {
     return current + 1
   }
 
-  /// 仅 GUI 读取配置；归一化生成的认证路径以保持意图比较不依赖部署代次。
-  private func loadDocumentUnlocked(_ snapshot: RuntimeSupervision?) -> SslocalRuntimeDocument? {
-    guard let snapshot,
-      let data = try? Data(contentsOf: directoryURL.appendingPathComponent(snapshot.configuration)),
-      let document = try? JSONDecoder().decode(SslocalRuntimeDocument.self, from: data)
-    else { return nil }
-    let normalized = document.authenticatingLAN(document.listen.authentication)
-    return normalized.isWellFormed ? normalized : nil
+  /// 意图比较不解析输出正文；最终字节摘要保留原有磁盘漂移检查。
+  func contains(_ contract: PreparedRuntimeContract) -> Bool {
+    (try? RuntimePublication.withLock(in: directoryURL) {
+      guard let snapshot = RuntimePublication.load(at: supervisionFileURL),
+        let intent = publishedIntent(snapshot), intent.sha256 == contract.sha256,
+        let data = try? Data(
+          contentsOf: directoryURL.appendingPathComponent(snapshot.configuration))
+      else { return false }
+      return ProxyACLDocument.digest(data) == intent.configurationSHA256
+    }) ?? false
   }
 
-  func loadDocument() -> SslocalRuntimeDocument? {
+  func publishedSummary() -> String? {
     try? RuntimePublication.withLock(in: directoryURL) {
-      loadDocumentUnlocked(RuntimePublication.load(at: supervisionFileURL))
+      guard let snapshot = RuntimePublication.load(at: supervisionFileURL) else { return nil }
+      return publishedIntent(snapshot)?.summary
     }
   }
 
-  func readData() -> Data? { try? loadDocument()?.jsonData() }
+  private func publishedIntent(_ snapshot: RuntimeSupervision) -> PublishedRuntimeIntent? {
+    guard let data = try? Data(contentsOf: directoryURL.appendingPathComponent(snapshot.intentFile))
+    else { return nil }
+    return try? JSONDecoder().decode(PublishedRuntimeIntent.self, from: data)
+  }
 
   func receiptIdentity(for document: SslocalRuntimeDocument) -> String? {
+    receiptIdentity(for: document.intentSHA256)
+  }
+
+  func receiptIdentity(for intentSHA256: String?) -> String? {
     try? RuntimePublication.withLock(in: directoryURL) {
       let snapshot = RuntimePublication.metadata(at: supervisionFileURL)
       guard let snapshot,
-        let identity = try? String(
-          contentsOf: directoryURL.appendingPathComponent(snapshot.intentFile), encoding: .utf8),
-        identity == document.intentSHA256
+        let identity = publishedIntent(snapshot)?.sha256,
+        identity == intentSHA256
       else { return nil }
       return snapshot.deploymentID
     }
   }
 
   func blocksDeployment(_ document: SslocalRuntimeDocument) -> Bool {
+    blocksDeployment(document.intentSHA256)
+  }
+
+  func blocksDeployment(_ intentSHA256: String?) -> Bool {
     guard let failure = readFailure() else { return false }
     guard let snapshot = RuntimePublication.metadata(at: supervisionFileURL) else { return true }
     guard failure.deploymentID == snapshot.deploymentID else { return false }
     // GUI 私有身份本身丢失时也不自动重试，用户可显式重试修复派生资源。
     guard
-      let identity = try? String(
-        contentsOf: directoryURL.appendingPathComponent(snapshot.intentFile), encoding: .utf8),
+      let identity = publishedIntent(snapshot)?.sha256,
       identity.count == 64
     else { return true }
-    return identity == document.intentSHA256
+    return identity == intentSHA256
   }
 
   func readRuntimeReceipt() -> RuntimeDeploymentReceipt? {
@@ -277,4 +299,11 @@ struct RuntimeFileStore {
       }
     }
   }
+}
+
+/// GUI 私有发布事实。意图摘要不进入 Agent 监管资料、回执或诊断。
+struct PublishedRuntimeIntent: Codable {
+  let sha256: String
+  let configurationSHA256: String
+  let summary: String
 }

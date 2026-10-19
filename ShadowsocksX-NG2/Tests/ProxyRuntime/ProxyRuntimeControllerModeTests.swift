@@ -64,7 +64,7 @@ extension ProxyRuntimeControllerModeTests {
     XCTAssertEqual(controller.settings.preferredMode, ProxyModeKind.direct, "切换意图保留在内存")
     XCTAssertEqual(controller.controlPreferences.preferredMode, ProxyModeKind.direct, "切换意图保留在持久层")
     XCTAssertEqual(controller.settings.agentEnabled, false)
-    XCTAssertNil(controller.lastDocument)
+    XCTAssertNil(controller.runtimeObservation)
   }
 
   /// agent-off 落在 mode→rule 的派生窗口内：派生缝 preparationIsCurrent
@@ -99,7 +99,7 @@ extension ProxyRuntimeControllerModeTests {
 
     XCTAssertEqual(agent.registerCount, registrationsAfterStop, "派生被取代后不得部署")
     XCTAssertEqual(controller.state, .off)
-    XCTAssertNil(controller.lastDocument)
+    XCTAssertNil(controller.runtimeObservation)
     XCTAssertFalse(controller.settings.agentEnabled)
     XCTAssertEqual(controller.settings.preferredMode, ProxyModeKind.rule, "切换意图保留")
   }
@@ -132,7 +132,7 @@ extension ProxyRuntimeControllerModeTests {
     XCTAssertEqual(result, .superseded)
     XCTAssertEqual(controller.state, .off)
     XCTAssertEqual(agent.registerCount, registrationsAfterStop)
-    XCTAssertNil(controller.lastDocument)
+    XCTAssertNil(controller.runtimeObservation)
   }
 
   /// 防火墙轮询在 await 恢复后代际已推进（含取消本任务的 stop 路径）时，
@@ -245,8 +245,7 @@ final class CatalogRuntimeSnapshotIntegrationTests: XCTestCase {
   ) -> ProxyRuntimeController {
     let runtimeFileStore = RuntimeFileStore(fileURL: runtime.contract)
     agent.onRegister = { [runtimeFileStore] in
-      guard let document = runtimeFileStore.loadDocument() else { return }
-      try? runtimeFileStore.writeRuntimeReceipt(for: document, processID: 42)
+      try? runtimeFileStore.writePublishedRuntimeReceipt(processID: 42)
     }
     return ProxyRuntimeController(
       controlPreferences: makeTestProxyControlPreferences(),

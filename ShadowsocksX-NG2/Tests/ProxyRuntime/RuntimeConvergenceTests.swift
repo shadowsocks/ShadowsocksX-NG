@@ -6,6 +6,34 @@ import Testing
 /// 通过模式命令验证配置派生失败和无 ACL 变化路径，不调用恢复实现。
 @MainActor
 struct RuntimeConvergenceTests {
+  @Test(arguments: [false, true])
+  func modeAndRuleChangesUseLatestCommittedCatalog(savedRules: Bool) async throws {
+    let fixture = try Fixture(systemProxyEnabled: false)
+    defer { fixture.cleanUp() }
+    try await fixture.controller.activate(fixture.server)
+    if savedRules { await fixture.controller.setProxyMode(.rule) }
+    var catalog = fixture.catalogReader.catalogSnapshot
+    var fields = ActivationFixture.plainFields(remark: "更新资料", password: "updated-password")
+    fields.address = "198.51.100.9"
+    try catalog.updateServer(fixture.server, with: fields)
+    try makeTestCatalogStore(
+      fileURL: fixture.runtime.directory.appendingPathComponent("catalog.json")
+    )
+    .save(CatalogDocument(catalog: catalog))
+    fixture.catalogReader.catalogSnapshot = catalog
+
+    if savedRules {
+      await fixture.controller.convergeRuntime(.savedRules)
+    } else {
+      await fixture.controller.setProxyMode(.direct)
+    }
+
+    let output = try #require(fixture.runtimeStore.loadDocument())
+    #expect(output.servers.first?.server == "198.51.100.9")
+    #expect(output.servers.first?.password == "updated-password")
+    #expect(fixture.controller.state == .running)
+  }
+
   @Test func modeDerivationFailurePreservesNewIntentAndPublishedFiles() async throws {
     let fixture = try Fixture(
       systemProxyEnabled: true,
@@ -114,6 +142,12 @@ struct RuntimeConvergenceTests {
   }
 
   @MainActor
+  private final class CatalogReader: RuntimeCatalogSnapshotReading {
+    var catalogSnapshot: ConfigurationCatalog
+    init(_ catalog: ConfigurationCatalog) { catalogSnapshot = catalog }
+  }
+
+  @MainActor
   private struct Fixture {
     let runtime = ProxyRuntimeFixture.makeTemporaryRuntime()
     let agent = ProxyRuntimeFixture.FakeLaunchAgent()
@@ -124,6 +158,7 @@ struct RuntimeConvergenceTests {
     let runtimeStore: RuntimeFileStore
     let controller: ProxyRuntimeController
     let server: NodeID
+    let catalogReader: CatalogReader
 
     init(
       systemProxyEnabled: Bool,
@@ -134,24 +169,21 @@ struct RuntimeConvergenceTests {
       server = try ActivationFixture.addPlainServer("收敛测试", in: &catalog)
       let catalogURL = runtime.directory.appendingPathComponent("catalog.json")
       try makeTestCatalogStore(fileURL: catalogURL).save(CatalogDocument(catalog: catalog))
+      catalogReader = CatalogReader(catalog)
       runtimeStore = RuntimeFileStore(fileURL: runtime.contract)
       let store = runtimeStore
       let recorder = signals
       agent.onUnregister = { recorder.terminateWrapper() }
       agent.onRegister = {
         recorder.relaunchWrapper()
-        if let document = store.loadDocument() {
-          try? store.writeRuntimeReceipt(for: document, processID: 42)
-        }
+        try? store.writePublishedRuntimeReceipt(processID: 42)
       }
       recorder.reloadReceipt = {
-        if let document = store.loadDocument() {
-          try? store.writeRuntimeReceipt(for: document, processID: 42)
-        }
+        try? store.writePublishedRuntimeReceipt(processID: 42)
       }
       controller = ProxyRuntimeController(
         controlPreferences: makeTestProxyControlPreferences(),
-        catalogSnapshotReader: ProxyRuntimeFixture.catalogSnapshotReader(at: catalogURL),
+        catalogSnapshotReader: catalogReader,
         activationFileStore: ActivationStateFileStore(
           fileURL: runtime.directory.appendingPathComponent("activation.json")),
         runtimeFileStore: runtimeStore,

@@ -148,18 +148,19 @@ extension ProxyRuntimeController {
     let outcome = await execute(.stop, document: nil)
     guard outcome.succeeded else { return }
     state = .off
-    lastDocument = nil
+    runtimeObservation = nil
     skippedServers = []
     lastActivationFailure = nil
   }
 
   /// 无活动目标时 agent 仍提供本地监听：空服务器列表文档，
   /// SOCKS/HTTP 端点照常绑定；系统代理门禁会因缺少可用出口保持待应用。
-  func deployListeningWithoutTarget() async {
+  @discardableResult
+  func deployListeningWithoutTarget() async -> ConvergenceResult {
     let document = SslocalRuntimeDocument(
       servers: [],
       listen: settings.listen)
-    await deploy(document)
+    return await deploy(document)
   }
 
   /// 普通部署意图；配置派生、执行与失败呈现由运行状态收敛 module 拥有。
@@ -174,7 +175,8 @@ extension ProxyRuntimeController {
   /// 活动目标失效：清除并持久化 nil，点名原因独立呈现；agent
   /// 继续以空服务器列表监听；系统代理清理后保留意图，条件恢复后自动
   /// 收敛），不悄悄选择其他服务器。
-  func handleCleared(_ failure: ActivationFailure) async {
+  @discardableResult
+  func handleCleared(_ failure: ActivationFailure) async -> ConvergenceResult {
     RuntimeLog.emit(.activationFailed(reason: String(describing: failure)))
     do {
       try activationFileStore.save(activeTargetID: nil)
@@ -186,12 +188,14 @@ extension ProxyRuntimeController {
     skippedServers = []
     await systemProxyObserver.holdSystemProxyIntent()
     if settings.agentEnabled {
-      await deployListeningWithoutTarget()
+      return await deployListeningWithoutTarget()
     } else {
       // 会话内意图已被关闭的残余：按关闭语义收敛。
-      _ = await execute(.stop, document: nil)
+      let outcome = await execute(.stop, document: nil)
+      guard outcome.succeeded else { return .failed }
       state = .off
-      lastDocument = nil
+      runtimeObservation = nil
+      return .applied
     }
   }
 }
@@ -236,7 +240,7 @@ extension ProxyRuntimeController {
       intent: intent,
       agentStatus: agent.status,
       wrapper: wrapperState(),
-      contractOnDisk: runtimeFileStore.readData(), preparedContract: contract)
+      configurationIsCurrent: contract.map { runtimeFileStore.contains($0) } ?? false)
     if case .run = intent, actions.isEmpty {
       RuntimeLog.emit(.contractUnchanged)
     }

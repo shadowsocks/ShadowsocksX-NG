@@ -65,11 +65,11 @@ final class RuntimeFileStoreTests: XCTestCase {
 
   // MARK: 读取侧判定
 
-  func testLoadDocumentRoundTripsWrittenDocument() throws {
+  func testPublicationRecognizesWrittenIntent() throws {
     let document = ProxyRuntimeFixture.makeDocument()
     try store.write(document)
 
-    XCTAssertEqual(store.loadDocument(), document)
+    XCTAssertTrue(try store.contains(PreparedRuntimeContract(document)))
     XCTAssertEqual(store.readData(), try document.jsonData())
   }
 
@@ -152,13 +152,10 @@ final class RuntimeFileStoreTests: XCTestCase {
 
   func testValidatedRuntimeRequiresFixedTCPAndUDPModeForSOCKS() throws {
     let base = ProxyRuntimeFixture.makeDocument()
-    var object = try XCTUnwrap(
-      try JSONSerialization.jsonObject(with: base.jsonData()) as? [String: Any])
-    var locals = try XCTUnwrap(object["locals"] as? [[String: Any]])
-    locals[0]["mode"] = "tcp_only"
-    object["locals"] = locals
-    let data = try JSONSerialization.data(withJSONObject: object)
-
-    XCTAssertNil(SslocalRuntimeDocument.decodeValidated(data))
+    var document = base
+    document.locals[0] = SslocalLocalDocument(
+      inboundProtocol: "socks", localAddress: "127.0.0.1", localPort: base.socksPort,
+      mode: "tcp_only")
+    XCTAssertFalse(document.isWellFormed)
   }
 }

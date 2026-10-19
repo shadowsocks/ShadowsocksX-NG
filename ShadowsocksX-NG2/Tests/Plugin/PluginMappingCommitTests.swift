@@ -207,9 +207,7 @@ private final class PluginMappingCommitFixture {
     let files = files
     agent.onRegister = {
       try? Data("42".utf8).write(to: files.pidFileURL)
-      if let document = files.loadDocument() {
-        try? files.writeRuntimeReceipt(for: document, processID: 42)
-      }
+      try? files.writePublishedRuntimeReceipt(processID: 42)
     }
     let contractURL = files.fileURL
     let signals = signals
@@ -235,9 +233,7 @@ private final class PluginMappingCommitFixture {
         guard signal != 0 else { return 0 }
         signals.record()
         let store = RuntimeFileStore(fileURL: contractURL)
-        if let document = store.loadDocument() {
-          try? store.writeRuntimeReceipt(for: document, processID: 42)
-        }
+        try? store.writePublishedRuntimeReceipt(processID: 42)
         return 0
       }, processIsAlive: { $0 == 42 })
     workflow = makeCatalogWorkflow(

@@ -83,11 +83,17 @@ enum ProxyMode: Codable, Equatable, Hashable, Sendable {
     for document: SslocalRuntimeDocument,
     exceptions: [String] = []
   ) -> SystemProxyConfiguration {
+    systemProxyConfiguration(for: RuntimeListenFacts(document: document), exceptions: exceptions)
+  }
+
+  func systemProxyConfiguration(
+    for listen: RuntimeListenFacts, exceptions: [String] = []
+  ) -> SystemProxyConfiguration {
     let loopback = "127.0.0.1"
     return SystemProxyConfiguration(
-      socks: .init(host: loopback, port: document.socksPort),
-      http: .init(host: loopback, port: document.httpPort),
-      https: .init(host: loopback, port: document.httpPort),
+      socks: .init(host: loopback, port: listen.socksPort),
+      http: .init(host: loopback, port: listen.httpPort),
+      https: .init(host: loopback, port: listen.httpPort),
       excludeSimpleHostnames: true,
       exceptions: FixedLocalProxyRanges.systemProxyExceptions(including: exceptions))
   }

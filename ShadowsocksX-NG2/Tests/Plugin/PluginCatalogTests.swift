@@ -217,9 +217,7 @@ struct PluginCatalogTests {
     let agent = ProxyRuntimeFixture.FakeLaunchAgent()
     let files = RuntimeFileStore(fileURL: runtime.contract)
     agent.onRegister = {
-      if let document = files.loadDocument() {
-        try? files.writeRuntimeReceipt(for: document, processID: 42)
-      }
+      try? files.writePublishedRuntimeReceipt(processID: 42)
     }
     let probe = ProxyRuntimeFixture.BlockingProbe()
     let controller = ProxyRuntimeController(

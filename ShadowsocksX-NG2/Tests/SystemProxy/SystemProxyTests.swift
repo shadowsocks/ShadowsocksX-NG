@@ -37,18 +37,9 @@ final class SystemProxyTests: XCTestCase {
   }
 
   func testMissingHTTPInboundIsRejectedInsteadOfPointingAtAWildcardPort() throws {
-    var dictionary = try XCTUnwrap(
-      JSONSerialization.jsonObject(
-        with: SslocalRuntimeDocument(servers: [], listen: ProxyListeningConfiguration()).jsonData()
-      ) as? [String: Any])
-    dictionary["locals"] = [
-      [
-        "protocol": "socks", "local_address": "127.0.0.1",
-        "local_port": 11086, "mode": "tcp_and_udp",
-      ]
-    ]
-    let data = try JSONSerialization.data(withJSONObject: dictionary)
-    XCTAssertNil(SslocalRuntimeDocument.decodeValidated(data), "每组必须同时提供 SOCKS 与 HTTP")
+    var document = SslocalRuntimeDocument(servers: [], listen: ProxyListeningConfiguration())
+    document.locals.removeAll { $0.inboundProtocol == "http" }
+    XCTAssertFalse(document.isWellFormed, "每组必须同时提供 SOCKS 与 HTTP")
   }
 
   func testModeProjectionCarriesClosedTypedPolicyDefaults() {

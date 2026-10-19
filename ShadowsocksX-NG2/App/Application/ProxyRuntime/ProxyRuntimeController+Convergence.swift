@@ -47,7 +47,7 @@ extension ProxyRuntimeController {
   }
 
   /// 派生文档对当前运行时是否无事可做（GLOSSARY.md「有效值未变的提交不做
-  /// 运行时收敛」）：磁盘契约与派生字节逐位相同、agent 已注册且 wrapper
+  /// 运行时收敛」）：发布意图相同、输出字节未漂移、agent 已注册且 wrapper
   /// 存活、控制器处于健康运行态——计划层动作序列为空即幂等跳过。判定在
   /// 置 `starting` 之前进行，跳过路径不闪状态、不重走健康门；磁盘漂移或
   /// wrapper 失踪时动作序列自然非空，走完整 deploy 自愈。
@@ -64,7 +64,7 @@ extension ProxyRuntimeController {
       intent: .run(document),
       agentStatus: agent.status,
       wrapper: wrapperState(),
-      contractOnDisk: runtimeFileStore.readData(), preparedContract: preparedContract)
+      configurationIsCurrent: preparedContract.map { runtimeFileStore.contains($0) } ?? false)
     return actions.isEmpty
   }
 
@@ -134,78 +134,80 @@ extension ProxyRuntimeController {
   }
 
   private func convergeModeTransition() async -> ConvergenceResult {
-    var ticket = convergenceTicket()
-    guard settings.agentEnabled, state != .off,
-      let current = lastDocument ?? runtimeFileStore.loadDocument()
-    else {
-      systemProxyObserver.modeTransitionAwaitingRuntime()
-      return .unchanged
-    }
-    let next: SslocalRuntimeDocument
-    do {
-      next = try await runtimeDocument(current, for: proxyMode)
-    } catch RulePreparationError.superseded {
-      return .superseded
-    } catch {
-      RuntimeLog.emit(.runtimePersistFailed(detail: String(describing: error)))
-      ticket.preparation = runtimePreparationGeneration
-      state = .serviceFailed(.runtimeFile)
-      return .failed
-    }
-    // 派生会推进 preparation；仅该意图在派生前捕获了收敛票据。
-    ticket.preparation = runtimePreparationGeneration
-    let alreadyRunning: Bool
-    switch state {
-    case .running, .firewallBlocked: alreadyRunning = true
-    default: alreadyRunning = false
-    }
-    if next.aclRuntime == current.aclRuntime,
-      runtimeFileStore.readFailure() == nil,
-      alreadyRunning
-    {
-      // 保留原有特殊路径：无系统代理意图即结束；否则只检查健康，不部署或恢复。
-      guard settings.systemProxyEnabled else { return .unchanged }
-      state = .starting
-      return await presentLaunchHealth(next) ? .applied : .failed
-    }
-    let result = await apply(next, ticket: &ticket, policy: .modeTransition)
-    return result
+    await convergeChangedIntent(policy: .modeTransition)
   }
 
   private func convergeSavedRules() async -> ConvergenceResult {
-    guard proxyMode == .rule, settings.agentEnabled, state != .off,
-      let current = lastDocument ?? runtimeFileStore.loadDocument()
-    else { return .unchanged }
+    guard proxyMode == .rule else { return .unchanged }
     let revision = ruleDocuments.revision
-    let next: SslocalRuntimeDocument
-    do {
-      next = try await runtimeDocument(current, for: proxyMode)
-    } catch RulePreparationError.superseded {
-      return .superseded
-    } catch {
-      RuntimeLog.emit(.runtimePersistFailed(detail: String(describing: error)))
-      ruleApplicationFailure = .service(.runtimeFile)
-      return .failed
-    }
-    guard next.aclRuntime != current.aclRuntime || ruleApplicationFailure != nil else {
-      ruleApplicationFailure = nil
-      return .unchanged
-    }
-    modeChangeGeneration += 1
-    var ticket = convergenceTicket()
-    let result = await apply(next, ticket: &ticket, policy: .savedRules)
+    let result = await convergeChangedIntent(policy: .savedRules)
     switch result {
     case .applied, .unchanged:
       if revision == ruleDocuments.revision { ruleApplicationFailure = nil }
     case .superseded:
       break
     case .failed:
-      let failure = ProxyRuntimeFacts(state: state).failure ?? .service(.runtimeFile)
-      if convergenceIsCurrent(ticket), revision == ruleDocuments.revision {
-        ruleApplicationFailure = failure
+      if revision == ruleDocuments.revision {
+        ruleApplicationFailure = ProxyRuntimeFacts(state: state).failure ?? .service(.runtimeFile)
       }
     }
     return result
+  }
+
+  /// 模式与规则变更从同一份已保存资料重新展开，不以输出配置作为派生输入。
+  private func convergeChangedIntent(policy: DeploymentPolicy) async -> ConvergenceResult {
+    guard settings.agentEnabled, state != .off else {
+      if policy == .modeTransition { systemProxyObserver.modeTransitionAwaitingRuntime() }
+      return .unchanged
+    }
+    let source: SslocalRuntimeDocument
+    switch reexpand(in: catalogSnapshotReader.catalogSnapshot) {
+    case .deployed(let configuration): source = configuration.document
+    case .clearedAndStopped(let failure):
+      return await handleCleared(failure)
+    case nil: source = SslocalRuntimeDocument(servers: [], listen: settings.listen)
+    }
+    var ticket = convergenceTicket()
+    let next: SslocalRuntimeDocument
+    let contract: PreparedRuntimeContract
+    do {
+      next = try await runtimeDocument(source, for: proxyMode)
+      contract = try PreparedRuntimeContract(next)
+    } catch RulePreparationError.superseded {
+      return .superseded
+    } catch {
+      RuntimeLog.emit(.runtimePersistFailed(detail: String(describing: error)))
+      if policy == .savedRules {
+        ruleApplicationFailure = .service(.runtimeFile)
+      } else {
+        state = .serviceFailed(.runtimeFile)
+      }
+      return .failed
+    }
+    ticket.preparation = runtimePreparationGeneration
+    let alreadyRunning: Bool
+    switch state {
+    case .running, .firewallBlocked: alreadyRunning = true
+    default: alreadyRunning = false
+    }
+    let unchanged = runtimeFileStore.contains(contract)
+    if policy == .savedRules, unchanged, ruleApplicationFailure == nil,
+      runtimeFileStore.readFailure() == nil
+    {
+      return .unchanged
+    }
+    if policy == .modeTransition, unchanged,
+      runtimeFileStore.readFailure() == nil, alreadyRunning
+    {
+      guard settings.systemProxyEnabled else { return .unchanged }
+      state = .starting
+      return await presentLaunchHealth(next) ? .applied : .failed
+    }
+    if policy == .savedRules {
+      modeChangeGeneration += 1
+      ticket = convergenceTicket()
+    }
+    return await apply(next, ticket: &ticket, policy: policy)
   }
 
   /// 三种意图的执行差异只在 module 内选择，不能由调用者拼成任意组合。
@@ -233,7 +235,7 @@ extension ProxyRuntimeController {
       return .unchanged
     }
     guard convergenceIsCurrent(ticket) else { return .superseded }
-    lastDocument = document
+    runtimeObservation = RuntimeDeploymentFacts(document)
     state = .starting
     let execution = await execute(.run(document), document: document, preparedContract: contract)
     ticket.flow = execution.flow
@@ -259,7 +261,7 @@ extension ProxyRuntimeController {
       await failDeployment(ticket: &ticket)
       return .failed
     }
-    lastDocument = document
+    runtimeObservation = RuntimeDeploymentFacts(document)
     ruleApplicationFailure = nil
     switch policy {
     case .modeTransition: await systemProxyObserver.convergeSystemProxy(forceApply: true)

@@ -96,7 +96,7 @@ struct SeparateListenerTests {
     #expect(document.locals.count == 2)
     #expect(document.ipv6Only == nil)
     #expect(document.isWellFormed)
-    #expect(SslocalRuntimeDocument.decodeValidated(try document.jsonData()) != nil)
+    #expect(document.isWellFormed)
     #expect(
       PortOccupancyProbeRequest(endpoint: .socks, listen: RuntimeListenFacts(listen: restored))
         .bindAddress == "127.0.0.1")

@@ -13,9 +13,7 @@ struct ConnectivityFormalRuntimeTests {
     let store = SettingsWorkflowTests.InMemorySettingsStore()
     let fileStore = RuntimeFileStore(fileURL: runtime.contract)
     agent.onRegister = {
-      if let document = fileStore.loadDocument() {
-        try? fileStore.writeRuntimeReceipt(for: document, processID: 42)
-      }
+      try? fileStore.writePublishedRuntimeReceipt(processID: 42)
     }
     let controller = ProxyRuntimeController(
       controlPreferences: makeTestProxyControlPreferences(),

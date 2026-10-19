@@ -39,10 +39,9 @@ enum FixedLocalProxyRanges {
   }
 }
 
-/// A generated sslocal ACL and its runtime identity (ADR-0011). The contract
-/// carries only path/summary/sha256; `content` stays in memory for the GUI's
-/// variant-file write and is never serialized. Identity equality ignores content
-/// so a decoded (empty-content) document compares equal to its generated source.
+/// GUI 生成的 ACL 与变体身份。正文仅用于准备 ACL 文件；私有意图编码
+/// 只包含 path/summary/sha256，上游配置只包含稳定 ACL 路径。
+/// 身份相等性忽略正文，避免把大规则文本带入比较。
 struct ProxyACLDocument: Codable, Equatable, Sendable {
   let path: String
   let summary: String

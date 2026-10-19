@@ -140,13 +140,11 @@ class ProxyRuntimeControllerTests: XCTestCase {
     agent.onRegister = { [runtimeFileStore, signals] in
       // 重注册＝拉起新 wrapper 进程（注销时已随 LaunchAgent 置死）。
       signals?.relaunchWrapper()
-      guard let document = runtimeFileStore.loadDocument() else { return }
-      try? runtimeFileStore.writeRuntimeReceipt(for: document, processID: 42)
+      try? runtimeFileStore.writePublishedRuntimeReceipt(processID: 42)
     }
     // SIGUSR1 模拟 wrapper 热重载后刷新回执（真实 wrapper 会如此）。
     signals.reloadReceipt = { [runtimeFileStore] in
-      guard let document = runtimeFileStore.loadDocument() else { return }
-      try? runtimeFileStore.writeRuntimeReceipt(for: document, processID: 42)
+      try? runtimeFileStore.writePublishedRuntimeReceipt(processID: 42)
     }
     let restored =
       settingsRestore
@@ -249,7 +247,7 @@ final class ProxyRuntimeControllerCoreTests: ProxyRuntimeControllerTests {
     let runtimeStore = RuntimeFileStore(fileURL: runtime.contract)
     try runtimeStore.write(document)
     try runtimeStore.writeRuntimeReceipt(for: document, processID: 42)
-    controller.lastDocument = document
+    controller.runtimeObservation = RuntimeDeploymentFacts(document)
     controller.state = .running
 
     XCTAssertEqual(controller.effectiveRuntimeListenerProcessID, 42)

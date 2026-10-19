@@ -43,13 +43,10 @@ final class RuntimeDocumentTests: XCTestCase {
     XCTAssertEqual(locals[0]["mode"] as? String, "tcp_and_udp")
     XCTAssertEqual(locals[1]["local_port"] as? Int, 11087)
     XCTAssertEqual(locals[1]["protocol"] as? String, "http")
-    let listen = try XCTUnwrap(dictionary["x_shadowsocksx_ng_listen"] as? [String: Any])
-    XCTAssertEqual(listen["listener_mode"] as? String, "disabled")
-    XCTAssertEqual(listen["bind_address"] as? String, "127.0.0.1")
-    XCTAssertFalse(listen.keys.contains("advertised_address"))
-    XCTAssertFalse(dictionary.keys.contains("ipv6_only"))
-    XCTAssertFalse(listen.keys.contains("verbose"))
-    XCTAssertFalse(dictionary.keys.contains("timeout"))
+    XCTAssertNil(dictionary["x_shadowsocksx_ng_listen"])
+    XCTAssertNil(dictionary["x_shadowsocksx_ng_acl"])
+    XCTAssertNil(dictionary["ipv6_only"])
+    XCTAssertNil(dictionary["timeout"])
     let servers = try XCTUnwrap(dictionary["servers"] as? [[String: Any]])
     XCTAssertEqual(servers.count, 1)
     let server = servers[0]
@@ -97,49 +94,22 @@ final class RuntimeDocumentTests: XCTestCase {
       listen: ProxyListeningConfiguration())
 
     let dictionary = try encodedDictionary(document)
-    let listen = try XCTUnwrap(dictionary["x_shadowsocksx_ng_listen"] as? [String: Any])
     XCTAssertFalse(dictionary.keys.contains("timeout"))
-    XCTAssertFalse(listen.keys.contains("verbose"))
+    XCTAssertFalse(dictionary.keys.contains("verbose"))
   }
 
-  func testACLPathAndMetadataRoundTripAsUpstreamAndWrapperFields() throws {
+  func testACLIdentityStaysInMemoryAndOnlyPathIsEncoded() throws {
     let acl = ProxyACLDocument.direct(
       at: URL(fileURLWithPath: "/tmp/ssxng-tests/acl-active.ini"))
     let document = SslocalRuntimeDocument(
       servers: [], listen: ProxyListeningConfiguration(), acl: acl)
     let dictionary = try encodedDictionary(document)
-    let aclMetadata = try XCTUnwrap(
-      dictionary["x_shadowsocksx_ng_acl"] as? [String: Any])
-
-    XCTAssertEqual(dictionary["acl"] as? String, acl.path, "上游配置引用 ACL sidecar")
-    XCTAssertEqual(aclMetadata["path"] as? String, acl.path)
-    XCTAssertEqual(aclMetadata["sha256"] as? String, acl.sha256)
-    XCTAssertEqual(aclMetadata["summary"] as? String, "direct")
-    XCTAssertFalse(
-      aclMetadata.keys.contains("content"),
-      "契约只传 path/summary/sha256，不再内嵌 ACL 全文（ADR-0011）")
-    XCTAssertEqual(
-      SslocalRuntimeDocument.decodeValidated(try document.jsonData()), document)
+    XCTAssertEqual(dictionary["acl"] as? String, acl.path)
+    XCTAssertNil(dictionary["x_shadowsocksx_ng_acl"])
 
     let changedPath = document.replacingACL(
       .direct(at: URL(fileURLWithPath: "/tmp/ssxng-tests/other.acl")))
     XCTAssertNotEqual(document.listenFingerprint, changedPath.listenFingerprint)
-  }
-
-  func testDecodedACLIdentityMatchesGeneratedDocumentWithoutContent() throws {
-    let acl = ProxyACLDocument.direct(
-      at: URL(fileURLWithPath: "/tmp/ssxng-tests/acl-active.ini"))
-    let document = SslocalRuntimeDocument(
-      servers: [], listen: ProxyListeningConfiguration(), acl: acl)
-    let decoded = try XCTUnwrap(SslocalRuntimeDocument.decodeValidated(try document.jsonData()))
-
-    XCTAssertEqual(
-      decoded.aclRuntime, acl,
-      "解码后身份（path/summary/sha256）与生成文档相等，content 不参与")
-    XCTAssertEqual(decoded.aclRuntime?.content.isEmpty, true, "契约不携带 content")
-    XCTAssertEqual(
-      decoded.listenFingerprint, document.listenFingerprint,
-      "监听指纹只看 ACL 身份字段，content 不参与")
   }
 
   func testLocalhostModeDerivesBothSslocalInbounds() {
@@ -187,17 +157,6 @@ final class RuntimeDocumentTests: XCTestCase {
     XCTAssertNotEqual(
       dualStack.listenFingerprint, ipv6Only.listenFingerprint,
       "IPv6_ONLY 差异必须使 wrapper 重启 sslocal，即使两者都绑定 ::")
-  }
-
-  func testDecoderRejectsIPv6OnlyFlagThatDoesNotMatchListenerMode() throws {
-    let document = SslocalRuntimeDocument(
-      servers: [],
-      listen: ProxyListeningConfiguration(listenerMode: .allIPv6Interfaces))
-    var dictionary = try encodedDictionary(document)
-    dictionary["ipv6_only"] = false
-    let data = try JSONSerialization.data(withJSONObject: dictionary)
-
-    XCTAssertNil(SslocalRuntimeDocument.decodeValidated(data))
   }
 
   func testListenerModeBindingsAndProxyLoopbackAddresses() {

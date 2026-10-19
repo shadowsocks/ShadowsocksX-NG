@@ -68,8 +68,8 @@ struct SslocalLocalDocument: Codable, Equatable, Sendable {
   }
 }
 
-/// GUI 私有的派生元数据。上游忽略此扩展，Agent 不编译或解码此类型。
-struct RuntimeListenDocument: Codable, Equatable, Sendable {
+/// GUI 内存中的监听事实；不进入 sslocal 配置或 Agent 监管资料。
+struct RuntimeListenDocument: Encodable, Equatable, Sendable {
   let listenerMode: ListenerMode
   let bindAddress: String
   var lan = LANListeningFacts()
@@ -82,24 +82,16 @@ struct RuntimeListenDocument: Codable, Equatable, Sendable {
   }
 }
 
-/// sslocal 运行时文档：激活派生出的完整 JSON 契约文档。
-/// 密码与插件参数已在此解析为明文——只供运行时落盘，永不入日志。
-struct SslocalRuntimeDocument: Codable, Equatable, Sendable {
+/// GUI 派生的运行意图；上游 JSON 由独立输出表示生成。
+/// 密码与插件参数已在此解析为明文；私有意图编码不落盘，永不入日志。
+struct SslocalRuntimeDocument: Equatable, Sendable {
   let servers: [SslocalServerDocument]
   var locals: [SslocalLocalDocument]
   let ipv6Only: Bool?
   var listen: RuntimeListenDocument
-  /// 两个入站共用的稳定 ACL 路径；GUI 扩展保存变体身份，不编码 ACL 正文。
+  /// 两个入站共用的稳定 ACL 路径；变体身份只供 GUI 准备和发布。
   let aclFilePath: String?
   let aclRuntime: ProxyACLDocument?
-
-  enum CodingKeys: String, CodingKey {
-    case servers, locals
-    case ipv6Only = "ipv6_only"
-    case aclFilePath = "acl"
-    case aclRuntime = "x_shadowsocksx_ng_acl"
-    case listen = "x_shadowsocksx_ng_listen"
-  }
 
   init(
     servers: [SslocalServerDocument],
@@ -131,23 +123,27 @@ struct SslocalRuntimeDocument: Codable, Equatable, Sendable {
     aclRuntime = acl
   }
 
-  init(from decoder: Decoder) throws {
-    let container = try decoder.container(keyedBy: CodingKeys.self)
-    servers = try container.decode([SslocalServerDocument].self, forKey: .servers)
-    locals = try container.decode([SslocalLocalDocument].self, forKey: .locals)
-    ipv6Only = try container.decodeIfPresent(Bool.self, forKey: .ipv6Only)
-    listen = try container.decode(RuntimeListenDocument.self, forKey: .listen)
-    aclFilePath = try container.decodeIfPresent(String.self, forKey: .aclFilePath)
-    aclRuntime = try container.decodeIfPresent(ProxyACLDocument.self, forKey: .aclRuntime)
-  }
-
   func jsonData() throws -> Data {
-    try Self.jsonEncoder.encode(self)
+    try Self.jsonEncoder.encode(
+      SslocalConfigurationDocument(
+        servers: servers, locals: locals, ipv6Only: ipv6Only, aclFilePath: aclFilePath))
   }
 
   var intentSHA256: String? {
-    guard let data = try? jsonData() else { return nil }
-    return ProxyACLDocument.digest(data)
+    try? ProxyACLDocument.digest(intentData())
+  }
+
+  /// 私有意图编码只用于等价比较；不落盘，也不作为 sslocal 的输入。
+  fileprivate func intentData() throws -> Data {
+    struct Intent: Encodable {
+      let servers: [SslocalServerDocument]
+      let locals: [SslocalLocalDocument]
+      let ipv6Only: Bool?
+      let listen: RuntimeListenDocument
+      let acl: ProxyACLDocument?
+    }
+    return try Self.jsonEncoder.encode(
+      Intent(servers: servers, locals: locals, ipv6Only: ipv6Only, listen: listen, acl: aclRuntime))
   }
 
   func replacingACL(_ acl: ProxyACLDocument?) -> SslocalRuntimeDocument {
@@ -164,6 +160,20 @@ struct SslocalRuntimeDocument: Codable, Equatable, Sendable {
     encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
     return encoder
   }()
+}
+
+/// sslocal 的输出格式；GUI 运行意图中的监听事实和 ACL 身份不进入此文档。
+struct SslocalConfigurationDocument: Codable, Equatable, Sendable {
+  let servers: [SslocalServerDocument]
+  var locals: [SslocalLocalDocument]
+  let ipv6Only: Bool?
+  let aclFilePath: String?
+
+  enum CodingKeys: String, CodingKey {
+    case servers, locals
+    case ipv6Only = "ipv6_only"
+    case aclFilePath = "acl"
+  }
 }
 
 /// 上游 `servers[]` 条目。id 携带叶子身份，供上游稳定标识；显示名是目录
@@ -203,14 +213,6 @@ extension SslocalLocalDocument {
 }
 
 extension SslocalRuntimeDocument {
-  static func decodeValidated(_ data: Data) -> SslocalRuntimeDocument? {
-    guard
-      let document = try? JSONDecoder().decode(SslocalRuntimeDocument.self, from: data),
-      document.isWellFormed
-    else { return nil }
-    return document
-  }
-
   var listenFingerprint: SslocalListenFingerprint {
     SslocalListenFingerprint(
       locals: locals, ipv6Only: ipv6Only, acl: aclRuntime,
@@ -289,16 +291,14 @@ extension SslocalRuntimeDocument {
   }
 }
 
-/// GUI 准备的配置字节与私有意图摘要；Agent 回执使用独立随机部署身份。
+/// GUI 准备的运行意图与私有摘要；Agent 回执使用独立随机部署身份。
 struct PreparedRuntimeContract: Sendable {
   let document: SslocalRuntimeDocument
-  let data: Data
   let sha256: String
 
   init(_ document: SslocalRuntimeDocument) throws {
     self.document = document
-    data = try document.jsonData()
-    sha256 = ProxyACLDocument.digest(data)
+    sha256 = try ProxyACLDocument.digest(document.intentData())
   }
 }
 
@@ -307,5 +307,26 @@ extension Redactor {
   static func documentSummary(_ document: SslocalRuntimeDocument) -> String {
     let protocols = document.locals.map(\.inboundProtocol).joined(separator: ",")
     return "servers=\(document.servers.count) protocols=\(protocols) mode=\(document.socksMode)"
+  }
+}
+
+/// 控制器在准备完成后仅保留健康检查与界面所需事实，不缓存完整秘密文档。
+struct RuntimeDeploymentFacts: Equatable, Sendable {
+  let locals: [SslocalLocalDocument]
+  let listen: RuntimeListenFacts
+  let hasServers: Bool
+  let aclSummary: String?
+  let intentSHA256: String?
+
+  init(_ document: SslocalRuntimeDocument) {
+    locals = document.locals.map {
+      SslocalLocalDocument(
+        inboundProtocol: $0.inboundProtocol, localAddress: $0.localAddress,
+        localPort: $0.localPort, mode: $0.mode)
+    }
+    listen = RuntimeListenFacts(document: document)
+    hasServers = !document.servers.isEmpty
+    aclSummary = document.aclRuntime?.summary
+    intentSHA256 = document.intentSHA256
   }
 }

@@ -13,11 +13,64 @@ struct RuntimePublicationTests {
     #expect(
       (try? FileManager.default.destinationOfSymbolicLink(atPath: store.aclFileURL.path)) == nil)
     #expect(!FileManager.default.fileExists(atPath: runtime.contract.path))
-    #expect(store.loadDocument() == source)
+    #expect(try store.contains(PreparedRuntimeContract(source)))
   }
 }
 
 extension RuntimePublicationTests {
+  @Test func routingIntentChangesEvenWhenUpstreamJSONDoesNot() throws {
+    let runtime = ProxyRuntimeFixture.makeTemporaryRuntime()
+    defer { try? FileManager.default.removeItem(at: runtime.directory) }
+    let store = RuntimeFileStore(fileURL: runtime.contract)
+    let direct = ProxyRuntimeFixture.makeDocument().replacingACL(.direct(at: store.aclFileURL))
+    let global = direct.replacingACL(.global(at: store.aclFileURL))
+    try store.write(direct)
+
+    #expect(try direct.jsonData() == global.jsonData())
+    #expect(try store.contains(PreparedRuntimeContract(direct)))
+    #expect(try !store.contains(PreparedRuntimeContract(global)))
+    #expect(store.receiptIdentity(for: global) == nil)
+    #expect(store.publishedSummary()?.contains("servers=1") == true)
+  }
+
+  @Test func damagedOutputIsNotConsideredCurrentAndKeepsFailureIdentity() throws {
+    let runtime = ProxyRuntimeFixture.makeTemporaryRuntime()
+    defer { try? FileManager.default.removeItem(at: runtime.directory) }
+    let store = RuntimeFileStore(fileURL: runtime.contract)
+    let document = ProxyRuntimeFixture.makeDocument()
+    try store.write(document)
+    try store.recordFailure(reason: "test failure")
+    let snapshot = try #require(RuntimePublication.load(at: store.supervisionFileURL))
+    try AtomicFileWriter.write(
+      Data("damaged output".utf8),
+      to: runtime.directory.appendingPathComponent(snapshot.configuration))
+
+    #expect(try !store.contains(PreparedRuntimeContract(document)))
+    #expect(store.blocksDeployment(document))
+    #expect(store.receiptIdentity(for: document) == snapshot.deploymentID)
+    #expect(store.publishedSummary()?.contains("servers=1") == true)
+  }
+
+  @Test func publishedConfigurationContainsOnlyUpstreamFields() throws {
+    let runtime = ProxyRuntimeFixture.makeTemporaryRuntime()
+    defer { try? FileManager.default.removeItem(at: runtime.directory) }
+    let store = RuntimeFileStore(fileURL: runtime.contract)
+    var listen = ProxyListeningConfiguration(listenerMode: .allIPv4Interfaces)
+    listen.lan.authenticationEnabled = true
+    let document = SslocalRuntimeDocument(
+      servers: [], listen: listen, acl: .direct(at: store.aclFileURL)
+    ).authenticatingLAN(
+      .init(username: "user", password: "lan-secret", directory: runtime.directory.path))
+    try store.write(document)
+    let snapshot = try #require(RuntimePublication.load(at: store.supervisionFileURL))
+    let data = try Data(
+      contentsOf: runtime.directory.appendingPathComponent(snapshot.configuration))
+    let object = try #require(JSONSerialization.jsonObject(with: data) as? [String: Any])
+    #expect(Set(object.keys) == ["servers", "locals", "acl"])
+    #expect(data.range(of: Data("lan-secret".utf8)) == nil)
+    #expect(object["acl"] as? String == store.aclFileURL.path)
+  }
+
   @Test func supervisionContainsNoCredentialsAndAuthenticationUsesOpaqueIdentity() throws {
     let runtime = ProxyRuntimeFixture.makeTemporaryRuntime()
     defer { try? FileManager.default.removeItem(at: runtime.directory) }

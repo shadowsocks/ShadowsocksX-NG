@@ -61,8 +61,7 @@ final class ProxyControlWorkflowIntegrationTests: XCTestCase {
     agent.setStatus(agentStatus)
     let runtimeFileStore = RuntimeFileStore(fileURL: runtime.contract)
     agent.onRegister = { [runtimeFileStore] in
-      guard let document = runtimeFileStore.loadDocument() else { return }
-      try? runtimeFileStore.writeRuntimeReceipt(for: document, processID: 42)
+      try? runtimeFileStore.writePublishedRuntimeReceipt(processID: 42)
     }
     let controller = ProxyRuntimeController(
       controlPreferences: controlPreferences,
@@ -131,7 +130,7 @@ final class ProxyControlWorkflowIntegrationTests: XCTestCase {
   private func snapshotAgentListening(_ composition: Composition) -> Bool {
     guard
       let data = try? Data(contentsOf: runtime.contract),
-      let document = SslocalRuntimeDocument.decodeValidated(data)
+      let document = try? JSONDecoder().decode(SslocalConfigurationDocument.self, from: data)
     else { return false }
     return document.servers.isEmpty
   }

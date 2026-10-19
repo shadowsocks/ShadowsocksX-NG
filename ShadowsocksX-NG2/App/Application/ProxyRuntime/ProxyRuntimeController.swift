@@ -107,7 +107,7 @@ final class ProxyRuntimeController {
   /// 并发流代际：停止请求可使进行中的启动探测立即失效。
   var flowGeneration = 0
   var modeChangeGeneration = 0
-  var lastDocument: SslocalRuntimeDocument?
+  var runtimeObservation: RuntimeDeploymentFacts?
   var firewallObservationTask: Task<Void, Never>?
 
   var proxyMode: ProxyMode { didSet { factChanges.markChanged() } }

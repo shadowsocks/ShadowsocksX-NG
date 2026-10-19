@@ -21,7 +21,7 @@ struct RuntimeFileStoreTransactionTests {
       try failing.write(old.replacingACL(.global(at: store.aclFileURL)))
     }
     #expect(try Data(contentsOf: store.supervisionFileURL) == before)
-    #expect(store.loadDocument() == old)
+    #expect(try store.contains(PreparedRuntimeContract(old)))
     #expect(
       try FileManager.default.contentsOfDirectory(atPath: runtime.directory.path).sorted() == files)
   }
@@ -79,7 +79,7 @@ extension RuntimeFileStoreTransactionTests {
       if url == store.supervisionFileURL { throw POSIXError(.EIO) }
     }
     #expect(throws: (any Error).self) { try failing.write(ProxyRuntimeFixture.makeDocument()) }
-    #expect(store.loadDocument() == ProxyRuntimeFixture.makeDocument())
+    #expect(try store.contains(PreparedRuntimeContract(ProxyRuntimeFixture.makeDocument())))
     #expect(RuntimePublication.load(at: store.supervisionFileURL) != nil)
   }
 
@@ -120,7 +120,7 @@ extension RuntimeFileStoreTransactionTests {
     let current = try #require(RuntimePublication.load(at: publishedURL))
     #expect(current.generation > stale.generation)
     #expect(current.acl == stale.aclVariants["direct"])
-    #expect(store.loadDocument() == direct)
+    #expect(try store.contains(PreparedRuntimeContract(direct)))
   }
 }
 
