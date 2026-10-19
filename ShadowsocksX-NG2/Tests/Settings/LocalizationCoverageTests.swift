@@ -82,7 +82,7 @@ struct LocalizationCoverageTests {
   @Test func credentialFailurePreservesExternalDetail() {
     let detail = "OSStatus -25293: external detail 保留原文"
     let message = AppPresentation.message(
-      for: ProxySettingsStoreError.credentialFailure(detail: detail))
+      for: ProxyListeningStoreError.credentialFailure(detail: detail))
     #expect(message.hasSuffix(detail))
     #expect(message != detail)
   }

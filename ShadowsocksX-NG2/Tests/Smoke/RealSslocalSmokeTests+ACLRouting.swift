@@ -7,7 +7,7 @@ final class RealSslocalACLRoutingSmokeTests: RealSslocalSmokeTests {
   func testDirectACLRoutesSOCKSAndHTTPLocallyWithoutServers() throws {
     let echoServer = try LoopbackEchoServer()
     let selectedPorts = try grabThreeListenPorts(excluding: [echoServer.port])
-    let listen = SslocalListenSettings(
+    let listen = ProxyListeningConfiguration(
       socksPort: selectedPorts[0], httpPort: selectedPorts[1])
     let document = SslocalRuntimeDocument(
       servers: [],
@@ -54,7 +54,7 @@ final class RealSslocalACLRoutingSmokeTests: RealSslocalSmokeTests {
     let echoServer = try LoopbackEchoServer()
     let fakeSSServer = try ConnectionCountingServer()
     let selectedPorts = try grabThreeListenPorts(excluding: [echoServer.port, fakeSSServer.port])
-    let listen = SslocalListenSettings(
+    let listen = ProxyListeningConfiguration(
       socksPort: selectedPorts[0], httpPort: selectedPorts[1])
     let document = SslocalRuntimeDocument(
       servers: [
@@ -103,7 +103,7 @@ final class RealSslocalACLRoutingSmokeTests: RealSslocalSmokeTests {
     let echoServer = try LoopbackEchoServer()
     let fakeSSServer = try ConnectionCountingServer()
     let selectedPorts = try grabThreeListenPorts(excluding: [echoServer.port, fakeSSServer.port])
-    let listen = SslocalListenSettings(
+    let listen = ProxyListeningConfiguration(
       socksPort: selectedPorts[0], httpPort: selectedPorts[1])
     let chinaRules = [
       ProxyRule(
@@ -144,7 +144,7 @@ final class RealSslocalACLRoutingSmokeTests: RealSslocalSmokeTests {
     let echoServer = try LoopbackEchoServer()
     let fakeSSServer = try ConnectionCountingServer()
     let selectedPorts = try grabThreeListenPorts(excluding: [echoServer.port, fakeSSServer.port])
-    let listen = SslocalListenSettings(
+    let listen = ProxyListeningConfiguration(
       socksPort: selectedPorts[0], httpPort: selectedPorts[1])
     let document = SslocalRuntimeDocument(
       servers: [
@@ -186,7 +186,7 @@ final class RealSslocalACLRoutingSmokeTests: RealSslocalSmokeTests {
 
   /// CIDR 路由断言：命中 `127.0.0.1/32` 完成回显；未命中目标走代理。
   private func assertCIDRModeRouting(
-    listen: SslocalListenSettings, echoPort: Int, fakeSS: ConnectionCountingServer
+    listen: ProxyListeningConfiguration, echoPort: Int, fakeSS: ConnectionCountingServer
   ) throws {
     let beforeHit = fakeSS.connectionCount
     let payload = Array("cidr direct\n".utf8)
@@ -215,7 +215,7 @@ final class RealSslocalACLRoutingSmokeTests: RealSslocalSmokeTests {
 
 extension RealSslocalSmokeTests {
   func awaitGlobalInboundsReady(
-    listen: SslocalListenSettings, document: SslocalRuntimeDocument
+    listen: ProxyListeningConfiguration, document: SslocalRuntimeDocument
   ) throws {
     XCTAssertTrue(
       try waitForCondition(timeout: 15) {
@@ -236,7 +236,7 @@ extension RealSslocalSmokeTests {
   /// 规则模式路由断言：`.cn` 直连候选不触 SS 出口；未匹配公网目标经 SS 出口
   /// （SOCKS 与 HTTP 入站同样生效）。
   func assertRuleModeRouting(
-    listen: SslocalListenSettings, echoPort: Int, fakeSS: ConnectionCountingServer
+    listen: ProxyListeningConfiguration, echoPort: Int, fakeSS: ConnectionCountingServer
   ) throws {
     // .cn 域名候选直连：SOCKS CONNECT example.cn 不应触达 SS 出口。
     let beforeCN = fakeSS.connectionCount
@@ -262,7 +262,7 @@ extension RealSslocalSmokeTests {
   }
 
   func assertLocalTargetsBypass(
-    listen: SslocalListenSettings, echoPort: Int, fakeSS: ConnectionCountingServer
+    listen: ProxyListeningConfiguration, echoPort: Int, fakeSS: ConnectionCountingServer
   ) throws {
     let socksPayload = Array("socks local\n".utf8)
     XCTAssertEqual(
@@ -280,7 +280,7 @@ extension RealSslocalSmokeTests {
   }
 
   func assertPublicTargetsProxy(
-    listen: SslocalListenSettings, fakeSS: ConnectionCountingServer
+    listen: ProxyListeningConfiguration, fakeSS: ConnectionCountingServer
   ) throws {
     let publicSocksReply = performSocksConnectReply(
       socksPort: listen.socksPort, targetHost: "8.8.8.8", targetPort: 53)
@@ -302,7 +302,7 @@ extension RealSslocalSmokeTests {
   /// 主机名固定绕过与 IPv6 回环：本地 DNS 将主机名解析到 echo，
   /// 成功回显证明直连完成；IPv6 回环无监听时验证失败应答且不触达 SS。
   func assertHostnameAndIPv6Bypass(
-    listen: SslocalListenSettings, echoPort: Int, fakeSS: ConnectionCountingServer
+    listen: ProxyListeningConfiguration, echoPort: Int, fakeSS: ConnectionCountingServer
   ) throws {
     let afterPublic = fakeSS.connectionCount
     XCTAssertEqual(

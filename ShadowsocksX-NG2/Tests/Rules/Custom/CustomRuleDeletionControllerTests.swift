@@ -26,7 +26,8 @@ final class CustomRuleDeletionControllerTests: ProxyRuntimeControllerTests {
     let original = CustomRuleDocument(rules: rules, disabledIdentities: [rules[0].identity])
     try store.saveDocument(original)
     let controller = makeDeletionController(
-      store: store, settings: ProxySettings(listen: ActivationFixture.listen, agentEnabled: false))
+      store: store,
+      settings: ProxyRuntimeSettings(listen: ActivationFixture.listen, agentEnabled: false))
     let workflow = deletionWorkflow(controller)
     await workflow.refresh()
     workflow.select(Set(workflow.snapshot.rows.map(\.id)))
@@ -59,7 +60,7 @@ final class CustomRuleDeletionControllerTests: ProxyRuntimeControllerTests {
     try store.save(rules)
     let controller = makeDeletionController(
       store: store,
-      settings: ProxySettings(
+      settings: ProxyRuntimeSettings(
         listen: ActivationFixture.listen, preferredMode: .rule,
         ruleDefaultAction: .proxyWhenUnmatched, agentEnabled: true), proxyMode: .rule)
     try await controller.activate(seeded.server)
@@ -92,7 +93,7 @@ final class CustomRuleDeletionControllerTests: ProxyRuntimeControllerTests {
       try store.save([rule])
       let controller = makeDeletionController(
         store: store,
-        settings: ProxySettings(
+        settings: ProxyRuntimeSettings(
           listen: ActivationFixture.listen, preferredMode: mode.kind,
           ruleDefaultAction: .proxyWhenUnmatched, agentEnabled: true), proxyMode: mode)
       try await controller.activate(seeded.server)
@@ -118,7 +119,7 @@ final class CustomRuleDeletionControllerTests: ProxyRuntimeControllerTests {
     try store.saveDocument(CustomRuleDocument(rules: [rule], disabledIdentities: [orphan]))
     let controller = makeDeletionController(
       store: store,
-      settings: ProxySettings(
+      settings: ProxyRuntimeSettings(
         listen: ActivationFixture.listen, preferredMode: .rule,
         ruleDefaultAction: .proxyWhenUnmatched, agentEnabled: true), proxyMode: .rule)
     try await controller.activate(seeded.server)
@@ -158,7 +159,8 @@ final class CustomRuleDeletionControllerTests: ProxyRuntimeControllerTests {
     let original = CustomRuleDocument(rules: [rule], disabledIdentities: [rule.identity])
     try store.saveDocument(original)
     let controller = makeDeletionController(
-      store: store, settings: ProxySettings(listen: ActivationFixture.listen, agentEnabled: false))
+      store: store,
+      settings: ProxyRuntimeSettings(listen: ActivationFixture.listen, agentEnabled: false))
     let workflow = deletionWorkflow(controller)
     await workflow.refresh()
     workflow.select(Set(workflow.snapshot.rows.map(\.id)))
@@ -178,7 +180,7 @@ final class CustomRuleDeletionControllerTests: ProxyRuntimeControllerTests {
   }
 
   private func makeDeletionController(
-    store: CustomRuleStore, settings: ProxySettings, proxyMode: ProxyMode? = nil
+    store: CustomRuleStore, settings: ProxyRuntimeSettings, proxyMode: ProxyMode? = nil
   ) -> ProxyRuntimeController {
     makeControllerWithCustomRules(
       store: store, settings: settings, proxyMode: proxyMode,

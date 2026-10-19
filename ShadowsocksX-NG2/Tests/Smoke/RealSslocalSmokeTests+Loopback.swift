@@ -185,7 +185,8 @@ extension RealSslocalSmokeTests {
   }
 
   func assertDirectDomain(
-    _ host: String, listen: SslocalListenSettings, echoPort: Int, exit: ConnectionCountingServer
+    _ host: String, listen: ProxyListeningConfiguration, echoPort: Int,
+    exit: ConnectionCountingServer
   ) throws {
     let before = exit.connectionCount
     let payload = Array("direct domain\n".utf8)

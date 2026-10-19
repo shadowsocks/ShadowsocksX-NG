@@ -5,7 +5,7 @@ import Testing
 
 struct SeparateListenerTests {
   @Test func terminalCommandsTreatPasswordAsUsableSecretWithoutReshaping() {
-    var settings = SslocalListenSettings(listenerMode: .allIPv4Interfaces)
+    var settings = ProxyListeningConfiguration(listenerMode: .allIPv4Interfaces)
     settings.lan.authenticationEnabled = true
     settings.lan.username = "user"
     // 契约 = 可用秘密：空密码等不合规形状不再被本层拒绝，只做百分号编码。
@@ -20,7 +20,7 @@ struct SeparateListenerTests {
   }
 
   @Test func newFormatsPreserveEncodedLANCredentialsAndBracketIPv6() {
-    var settings = SslocalListenSettings(listenerMode: .allIPv4AndIPv6Interfaces)
+    var settings = ProxyListeningConfiguration(listenerMode: .allIPv4AndIPv6Interfaces)
     settings.lan.authenticationEnabled = true
     settings.lan.username = "u @"
     let commands = TerminalProxyEnvironmentCommands(
@@ -43,7 +43,8 @@ struct SeparateListenerTests {
 
   @Test func windowsFormatsSetFourSessionVariablesUsingLANPorts() {
     let commands = TerminalProxyEnvironmentCommands(
-      listen: RuntimeListenFacts(listen: SslocalListenSettings(listenerMode: .allIPv4Interfaces)),
+      listen: RuntimeListenFacts(
+        listen: ProxyListeningConfiguration(listenerMode: .allIPv4Interfaces)),
       commandAddress: TerminalCommandAddress(
         bsdName: "en0", address: "192.0.2.2", displayName: "Wi-Fi"))
     #expect(
@@ -60,7 +61,7 @@ struct SeparateListenerTests {
 
   @Test func nushellSetsFourSessionVariablesUsingLocalPorts() {
     let commands = TerminalProxyEnvironmentCommands(
-      listen: RuntimeListenFacts(listen: SslocalListenSettings()),
+      listen: RuntimeListenFacts(listen: ProxyListeningConfiguration()),
       commandAddress: TerminalCommandAddress(
         bsdName: "lo0", address: "127.0.0.1", displayName: "lo0"))
     #expect(
@@ -73,13 +74,14 @@ struct SeparateListenerTests {
   @Test func disabledIPv6ConfigurationRoundTripsWithoutAffectingEffectiveRuntime() throws {
     let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     defer { try? FileManager.default.removeItem(at: directory) }
-    let store = ProxySettingsFileStore(fileURL: directory.appendingPathComponent("settings.json"))
-    var listen = SslocalListenSettings()
+    let store = ProxyListeningFileStore(
+      fileURL: directory.appendingPathComponent("proxy-listening.json"))
+    var listen = ProxyListeningConfiguration()
     listen.lan.mode = .allIPv6Interfaces
     listen.lan.authenticationEnabled = true
     listen.lan.passwordReference = "saved-reference"
-    try store.save(ProxySettings(listen: listen))
-    let restored = try store.load().listen
+    try store.save(listen)
+    let restored = try store.load()
     #expect(!restored.lan.isEnabled)
     #expect(restored.lan.mode == .allIPv6Interfaces)
     #expect(restored.lan.passwordReference == "saved-reference")
@@ -94,7 +96,7 @@ struct SeparateListenerTests {
   }
 
   @Test func enablingLANPreservesLocalListeners() {
-    var listen = SslocalListenSettings()
+    var listen = ProxyListeningConfiguration()
     listen.listenerMode = .allIPv4Interfaces
     #expect(listen.locals.count == 4)
     #expect(listen.locals.first?.localAddress == "127.0.0.1")
@@ -102,22 +104,23 @@ struct SeparateListenerTests {
     #expect(listen.locals.last?.localPort == 11089)
   }
 
-  @Test func oldListenerPreferencesUseDefaultsWithoutResettingOtherPreferences() throws {
+  @Test func oldSettingsFileIsIgnoredAndPreserved() throws {
     let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     defer { try? FileManager.default.removeItem(at: directory) }
-    let url = directory.appendingPathComponent("settings.json")
-    try AtomicFileWriter.write(
-      Data(
-        #"{"socksPort":13001,"httpPort":13002,"listenerMode":"all_ipv4_interfaces","proxyExceptions":"example.com"}"#
-          .utf8), to: url)
-    let settings = try ProxySettingsFileStore(fileURL: url).load()
-    #expect(settings.listen.socksPort == 11086)
-    #expect(settings.listen.listenerMode == .disabled)
-    #expect(settings.proxyExceptions == "example.com")
+    let oldURL = directory.appendingPathComponent("settings.json")
+    let oldData = Data(
+      #"{"localListen":{"socksPort":13001,"httpPort":13002},"agentEnabled":true}"#.utf8)
+    try AtomicFileWriter.write(oldData, to: oldURL)
+    let newURL = directory.appendingPathComponent(
+      ProxyListeningFileStore.defaultFileURL().lastPathComponent)
+    let store = ProxyListeningFileStore(fileURL: newURL)
+    #expect(try store.load() == ProxyListeningConfiguration())
+    try store.save(ProxyListeningConfiguration())
+    #expect(try Data(contentsOf: oldURL) == oldData)
   }
 
   @Test func networkCommandUsesLANPorts() {
-    let listen = SslocalListenSettings(listenerMode: .allIPv4Interfaces)
+    let listen = ProxyListeningConfiguration(listenerMode: .allIPv4Interfaces)
     let commands = TerminalProxyEnvironmentCommands(
       listen: RuntimeListenFacts(listen: listen),
       commandAddress: TerminalCommandAddress(
@@ -127,7 +130,7 @@ struct SeparateListenerTests {
   }
 
   @Test func authenticationEncodesSpecialCharactersAndNeverReadsPasswordForLocalCommands() {
-    var settings = SslocalListenSettings(listenerMode: .allIPv4AndIPv6Interfaces)
+    var settings = ProxyListeningConfiguration(listenerMode: .allIPv4AndIPv6Interfaces)
     settings.lan.authenticationEnabled = true
     settings.lan.username = "u @"
     let facts = RuntimeListenFacts(listen: settings)
@@ -162,7 +165,7 @@ struct SeparateListenerTests {
   {
     let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     defer { try? FileManager.default.removeItem(at: directory) }
-    var settings = SslocalListenSettings(listenerMode: .allIPv6Interfaces)
+    var settings = ProxyListeningConfiguration(listenerMode: .allIPv6Interfaces)
     settings.lan.authenticationEnabled = true
     let base = SslocalRuntimeDocument(servers: [], listen: settings)
     #expect(!base.isWellFormed)
@@ -195,7 +198,7 @@ struct SeparateListenerTests {
   }
 
   @Test func disabledLANStillParticipatesInFourPortValidation() {
-    var settings = SslocalListenSettings()
+    var settings = ProxyListeningConfiguration()
     settings.lan.socksPort = 11086
     #expect(
       settings.portValidationErrors().contains(
@@ -208,7 +211,7 @@ struct SeparateListenerTests {
   }
 
   @Test func portProbeRequestsDistinguishLocalAndIPv6LANBindings() {
-    let settings = SslocalListenSettings(listenerMode: .allIPv6Interfaces)
+    let settings = ProxyListeningConfiguration(listenerMode: .allIPv6Interfaces)
     let facts = RuntimeListenFacts(listen: settings)
     let local = PortOccupancyProbeRequest(endpoint: .socks, listen: facts)
     let lan = PortOccupancyProbeRequest(endpoint: .lanSocks, listen: facts)

@@ -101,7 +101,7 @@ final class ControllerProxyRuntimeAdapter: ProxyRuntimeAdapting {
 /// HTTP 导出能力的唯一派生点：监听设置 → 可复制的 http/https 双导出行。
 /// 此导出行始终指向本地监听回环 127.0.0.1，与终端命令地址无关（ADR-0034）。
 extension HTTPExportCapability {
-  init(listen: SslocalListenSettings) {
+  init(listen: ProxyListeningConfiguration) {
     let endpoint = "http://127.0.0.1:\(listen.httpPort)"
     self.init(copyableLine: "export http_proxy=\(endpoint);export https_proxy=\(endpoint);")
   }

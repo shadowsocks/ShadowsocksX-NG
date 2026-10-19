@@ -4,9 +4,9 @@ import XCTest
 
 /// 设置主缝：偏好校验与绕过列表解析只通过公开领域入口断言，不依赖
 /// SwiftUI 视图实现。
-final class ProxySettingsTests: XCTestCase {
+final class ProxyRuntimeSettingsTests: XCTestCase {
   func testFactoryDefaultsAvoidLegacyPortsAndValidate() {
-    let settings = ProxySettings()
+    let settings = ProxyRuntimeSettings()
 
     XCTAssertEqual(settings.listen.socksPort, 11086)
     XCTAssertEqual(settings.listen.httpPort, 11087)
@@ -17,14 +17,14 @@ final class ProxySettingsTests: XCTestCase {
   }
 
   func testProxyExceptionsSplitCommaChineseCommaAndWhitespaceWithoutDuplicates() {
-    var settings = ProxySettings()
+    var settings = ProxyRuntimeSettings()
     settings.proxyExceptions = "localhost, 127.0.0.1、localhost\n::1"
 
     XCTAssertEqual(settings.proxyExceptionList, ["localhost", "127.0.0.1", "::1"])
   }
 
   func testListenerModeDoesNotAddAddressTextValidation() {
-    var settings = ProxySettings()
+    var settings = ProxyRuntimeSettings()
     settings.listen.listenerMode = .allIPv6Interfaces
     settings.listen.socksPort = settings.listen.httpPort
 

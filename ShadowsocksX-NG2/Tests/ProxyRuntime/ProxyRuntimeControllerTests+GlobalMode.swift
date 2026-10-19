@@ -12,11 +12,11 @@ final class ProxyRuntimeGlobalModeTests: ProxyRuntimeControllerTests {
 
   func testGlobalModeDeploysProxyAllACLAndProjectsSOCKSProxyWithFixedExceptions() async throws {
     let seeded = try makeSeededCatalog()
-    let settingsStore = InMemoryProxySettingsStore()
+    let listeningStore = InMemoryProxyListeningStore()
     let controller = makeController(
       probe: ProxyRuntimeFixture.FakeProbe.reachable(),
-      settingsStore: settingsStore,
-      settings: ProxySettings(
+      listeningStore: listeningStore,
+      settings: ProxyRuntimeSettings(
         listen: ActivationFixture.listen, agentEnabled: true, systemProxyEnabled: true))
     try await controller.activate(seeded.server)
     XCTAssertEqual(controller.systemProxyState, .applied)
@@ -27,7 +27,7 @@ final class ProxyRuntimeGlobalModeTests: ProxyRuntimeControllerTests {
 
     XCTAssertEqual(controller.proxyMode, .global)
     XCTAssertEqual(controller.settings.preferredMode, .global)
-    XCTAssertEqual(settingsStore.saved?.preferredMode, .global)
+    XCTAssertEqual(controller.controlPreferences.preferredMode, .global)
     XCTAssertEqual(controller.state, .running)
     XCTAssertEqual(
       agent.unregisterCount, unregisterCount + 1, "ACL 变化触发完整 agent 重启")
@@ -56,11 +56,11 @@ final class ProxyRuntimeGlobalModeTests: ProxyRuntimeControllerTests {
     // 目录先播种、控制器再创建：bootstrap 快照读取器持有已提交目录，但尚无
     // 活动目标——正是「全局模式 + 无可用出口」的起点。
     let seeded = try makeSeededCatalog()
-    let settingsStore = InMemoryProxySettingsStore()
+    let listeningStore = InMemoryProxyListeningStore()
     let controller = makeController(
       probe: ProxyRuntimeFixture.FakeProbe.reachable(),
-      settingsStore: settingsStore,
-      settings: ProxySettings(
+      listeningStore: listeningStore,
+      settings: ProxyRuntimeSettings(
         listen: ActivationFixture.listen, agentEnabled: true, systemProxyEnabled: true))
     await controller.resyncOnLaunch()
     XCTAssertEqual(controller.state, .running, "无活动目标时 agent 仍监听")
@@ -99,11 +99,11 @@ final class ProxyRuntimeGlobalModeTests: ProxyRuntimeControllerTests {
 
   func testFailedGlobalInstanceKeepsNewModeAndStopsService() async throws {
     let seeded = try makeSeededCatalog()
-    let settingsStore = InMemoryProxySettingsStore()
+    let listeningStore = InMemoryProxyListeningStore()
     let controller = makeController(
       probe: ProxyRuntimeFixture.FakeProbe.reachable(),
-      settingsStore: settingsStore,
-      settings: ProxySettings(
+      listeningStore: listeningStore,
+      settings: ProxyRuntimeSettings(
         listen: ActivationFixture.listen, agentEnabled: true, systemProxyEnabled: true),
       launchHealthTimeoutSeconds: 0.05)
     try await controller.activate(seeded.server)
@@ -122,7 +122,7 @@ final class ProxyRuntimeGlobalModeTests: ProxyRuntimeControllerTests {
 
     XCTAssertEqual(controller.proxyMode, .global)
     XCTAssertEqual(controller.settings.preferredMode, .global)
-    XCTAssertEqual(settingsStore.saved?.preferredMode, .global)
+    XCTAssertEqual(controller.controlPreferences.preferredMode, .global)
     XCTAssertEqual(runtimeStore.loadDocument()?.aclRuntime?.summary, "global")
     XCTAssertEqual(controller.state, .serviceFailed(.agent))
     XCTAssertNotNil(runtimeStore.readFailure())

@@ -12,7 +12,8 @@ final class CustomRuleEditingControllerTests: ProxyRuntimeControllerTests {
   func testEditorSaveWhileOffPersistsWithoutStartingRuntime() async throws {
     let (store, _) = try makeCustomRuleStore()
     let controller = makeControllerWithCustomRules(
-      store: store, settings: ProxySettings(listen: ActivationFixture.listen, agentEnabled: false))
+      store: store,
+      settings: ProxyRuntimeSettings(listen: ActivationFixture.listen, agentEnabled: false))
     let workflow = editingWorkflow(controller)
     await workflow.refresh()
     var draft = try XCTUnwrap(workflow.makeCustomRuleDraft())
@@ -32,7 +33,7 @@ final class CustomRuleEditingControllerTests: ProxyRuntimeControllerTests {
     let (store, _) = try makeCustomRuleStore()
     let controller = makeControllerWithCustomRules(
       store: store,
-      settings: ProxySettings(
+      settings: ProxyRuntimeSettings(
         listen: ActivationFixture.listen, preferredMode: .rule,
         ruleDefaultAction: .proxyWhenUnmatched, agentEnabled: true), proxyMode: .rule)
     try await controller.activate(seeded.server)
@@ -68,7 +69,7 @@ final class CustomRuleEditingControllerTests: ProxyRuntimeControllerTests {
     try store.save([existing])
     let controller = makeControllerWithCustomRules(
       store: store,
-      settings: ProxySettings(
+      settings: ProxyRuntimeSettings(
         listen: ActivationFixture.listen, preferredMode: .rule,
         ruleDefaultAction: .proxyWhenUnmatched, agentEnabled: true), proxyMode: .rule)
     try await controller.activate(seeded.server)

@@ -9,7 +9,7 @@ final class ProxyPortSemanticsTests: XCTestCase {
   // MARK: 出厂默认（与 Legacy 隔离，任何路径不静默改端口）
 
   func testFactoryDefaultsAvoidLegacyPortsAndValidateClean() {
-    let settings = SslocalListenSettings()
+    let settings = ProxyListeningConfiguration()
 
     XCTAssertEqual(settings.socksPort, 11086)
     XCTAssertEqual(settings.httpPort, 11087)
@@ -19,7 +19,7 @@ final class ProxyPortSemanticsTests: XCTestCase {
   // MARK: 配置校验与点名错误
 
   func testOutOfRangePortsAreRejectedNamingEndpointAndPort() {
-    var settings = SslocalListenSettings()
+    var settings = ProxyListeningConfiguration()
     settings.socksPort = 0
     settings.httpPort = 65536
 
@@ -32,7 +32,7 @@ final class ProxyPortSemanticsTests: XCTestCase {
   }
 
   func testDuplicateConfiguredPortsAreRejectedNamingBothEndpoints() {
-    let settings = SslocalListenSettings(
+    let settings = ProxyListeningConfiguration(
       socksPort: 1086,
       httpPort: 1086)
 
@@ -74,7 +74,7 @@ final class ProxyPortSemanticsTests: XCTestCase {
   }
 
   func testSuggestedPortForEndpointExcludesOtherConfiguredValues() {
-    let settings = SslocalListenSettings(
+    let settings = ProxyListeningConfiguration(
       socksPort: 40000, httpPort: 40001)
     var probed: [Int] = []
     let suggested = settings.suggestedPort(for: .http) { port in
@@ -110,7 +110,7 @@ final class ProxyPortSemanticsTests: XCTestCase {
     // 特权端口：非 root 进程 bind 失败（EACCES）≠ 占用，也不得冒充空闲。
     let request = PortOccupancyProbeRequest(
       endpoint: .socks,
-      listen: RuntimeListenFacts(listen: SslocalListenSettings()),
+      listen: RuntimeListenFacts(listen: ProxyListeningConfiguration()),
       port: 80)
     let outcome = SystemPortOccupancyProbe().occupancy(for: request)
 

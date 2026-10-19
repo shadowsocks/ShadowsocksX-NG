@@ -23,7 +23,7 @@ final class CatalogWorkflowRollbackTests: XCTestCase {
     // 目录文件置于 gate 子目录:破坏持久化时把 gate 目录替换为同名文件,
     // 临时文件创建必失败(比替换目标更确定的失败注入)。
     fileURL = workDir.appendingPathComponent("gate/catalog.json")
-    settingsURL = workDir.appendingPathComponent("settings.json")
+    settingsURL = workDir.appendingPathComponent("proxy-listening.json")
     activationURL = workDir.appendingPathComponent("activation.json")
     runtime = FakeCatalogRuntime()
   }
@@ -197,13 +197,13 @@ final class CatalogWorkflowRollbackTests: XCTestCase {
   // MARK: - Legacy 导入不驱动运行时，不自动重复
 
   func testLegacyImportCommitsGroupWithoutRuntimeSyncOrRepeat() async throws {
-    var existingSettings = ProxySettings()
+    var existingSettings = ProxyRuntimeSettings()
     existingSettings.listen.socksPort = 2086
     existingSettings.listen.httpPort = 2087
     existingSettings.preferredMode = .global
-    let settingsStore = ProxySettingsFileStore(
+    let listeningStore = ProxyListeningFileStore(
       fileURL: settingsURL)
-    try settingsStore.save(existingSettings)
+    try listeningStore.save(existingSettings.listen)
     let existingTarget = NodeID(rawValue: "existing-target")
     let activationStore = ActivationStateFileStore(fileURL: activationURL)
     try activationStore.save(activeTargetID: existingTarget)
@@ -238,7 +238,7 @@ final class CatalogWorkflowRollbackTests: XCTestCase {
     XCTAssertEqual(postCalls, 1, "导入后的运行时边界只经注入闭包（独立于普通提交）")
     XCTAssertEqual(workflow.legacyImportState.completed, true, "成功导入写完成标记")
     XCTAssertNotNil(workflow.tree.node(withID: outcome.groupID), "返回新建分组身份供选中")
-    XCTAssertEqual(try settingsStore.load(), existingSettings, "工作流导入不得写入 2.0 偏好")
+    XCTAssertEqual(try listeningStore.load(), existingSettings.listen, "工作流导入不得写入 2.0 偏好")
     XCTAssertEqual(
       try activationStore.loadActiveTargetID(), existingTarget,
       "工作流导入不得写入或清除活动目标")

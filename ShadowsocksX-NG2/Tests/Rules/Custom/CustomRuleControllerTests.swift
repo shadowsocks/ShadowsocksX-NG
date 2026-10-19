@@ -16,7 +16,7 @@ extension ProxyRuntimeControllerTests {
   func makeControllerWithCustomRules(
     store: CustomRuleStore,
     probe: EndpointProbing = ProxyRuntimeFixture.FakeProbe.reachable(),
-    settings: ProxySettings? = nil,
+    settings: ProxyRuntimeSettings? = nil,
     proxyMode: ProxyMode? = nil,
     launchHealthTimeoutSeconds: TimeInterval = 0.05,
     launchHealthRetryDelay: @escaping () async throws -> Void = {
@@ -29,9 +29,9 @@ extension ProxyRuntimeControllerTests {
   ) -> ProxyRuntimeController {
     makeController(
       probe: probe,
-      settingsStore: InMemoryProxySettingsStore(),
+      listeningStore: InMemoryProxyListeningStore(),
       settings: settings
-        ?? ProxySettings(listen: ActivationFixture.listen, agentEnabled: true),
+        ?? ProxyRuntimeSettings(listen: ActivationFixture.listen, agentEnabled: true),
       proxyMode: proxyMode,
       launchHealthTimeoutSeconds: launchHealthTimeoutSeconds,
       launchHealthRetryDelay: launchHealthRetryDelay,
@@ -56,7 +56,7 @@ final class CustomRuleControllerTests: ProxyRuntimeControllerTests {
   func testUpdateCustomRulesRecompilesACLAndRestarts() async throws {
     let seeded = try makeSeededCatalog()
     let (store, _) = try makeCustomRuleStore()
-    let settings = ProxySettings(
+    let settings = ProxyRuntimeSettings(
       listen: ActivationFixture.listen,
       preferredMode: .rule,
       ruleDefaultAction: .proxyWhenUnmatched,
@@ -87,7 +87,7 @@ final class CustomRuleControllerTests: ProxyRuntimeControllerTests {
   func testOppositeActionsPersistAndReorderingDoesNotRedeploy() async throws {
     let seeded = try makeSeededCatalog()
     let (store, _) = try makeCustomRuleStore()
-    let settings = ProxySettings(
+    let settings = ProxyRuntimeSettings(
       listen: ActivationFixture.listen, preferredMode: .rule,
       ruleDefaultAction: .directWhenUnmatched, agentEnabled: true)
     let controller = makeControllerWithCustomRules(
@@ -136,7 +136,7 @@ final class CustomRuleControllerTests: ProxyRuntimeControllerTests {
     let existing = CustomRule(
       action: .direct, match: try RuleMatch(domainSuffix: "kept.example"))
     try store.save([existing])
-    let settings = ProxySettings(
+    let settings = ProxyRuntimeSettings(
       listen: ActivationFixture.listen,
       preferredMode: .rule,
       ruleDefaultAction: .proxyWhenUnmatched,
@@ -166,7 +166,7 @@ final class CustomRuleControllerTests: ProxyRuntimeControllerTests {
     let existing = CustomRule(
       action: .direct, match: try RuleMatch(domainSuffix: "kept.example"))
     try store.save([existing])
-    let settings = ProxySettings(
+    let settings = ProxyRuntimeSettings(
       listen: ActivationFixture.listen,
       preferredMode: .rule,
       ruleDefaultAction: .proxyWhenUnmatched,
@@ -206,7 +206,7 @@ final class CustomRuleControllerTests: ProxyRuntimeControllerTests {
   func testGlobalModePersistsCustomRulesWithoutACLRestart() async throws {
     let seeded = try makeSeededCatalog()
     let (store, _) = try makeCustomRuleStore()
-    let settings = ProxySettings(
+    let settings = ProxyRuntimeSettings(
       listen: ActivationFixture.listen,
       preferredMode: .global,
       agentEnabled: true)

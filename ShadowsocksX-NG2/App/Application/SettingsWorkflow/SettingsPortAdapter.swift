@@ -6,14 +6,15 @@ import Foundation
 /// 运行时控制器的主 actor 状态，本缝随之主 actor 绑定。
 @MainActor
 protocol SettingsCommitting: AnyObject {
-  var committedSettings: ProxySettings { get }
+  var committedSettings: ProxyRuntimeSettings { get }
   var runtimeListenFacts: RuntimeListenFacts? { get }
   var runtimeListenerProcessID: Int32? { get }
-  func updateSettings(_ proposed: ProxySettings) async throws
+  func updateListening(_ proposed: ProxyListeningConfiguration) async throws
+  func updateProxyExceptions(_ value: String) async
 }
 
 extension ProxyRuntimeController: SettingsCommitting {
-  var committedSettings: ProxySettings { settings }
+  var committedSettings: ProxyRuntimeSettings { settings }
   var runtimeListenFacts: RuntimeListenFacts? { effectiveRuntimeListenFacts }
   var runtimeListenerProcessID: Int32? { effectiveRuntimeListenerProcessID }
 

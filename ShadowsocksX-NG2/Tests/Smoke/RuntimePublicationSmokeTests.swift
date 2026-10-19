@@ -8,7 +8,7 @@ final class RuntimePublicationSmokeTests: RealSslocalSmokeTests {
     let firstExit = try ConnectionCountingServer()
     let secondExit = try ConnectionCountingServer()
     let ports = try grabThreeListenPorts(excluding: [firstExit.port, secondExit.port])
-    let listen = SslocalListenSettings(socksPort: ports[0], httpPort: ports[1])
+    let listen = ProxyListeningConfiguration(socksPort: ports[0], httpPort: ports[1])
     func document(_ port: Int) -> SslocalRuntimeDocument {
       SslocalRuntimeDocument(
         servers: [
@@ -44,7 +44,7 @@ final class RuntimePublicationSmokeTests: RealSslocalSmokeTests {
     let echo = try LoopbackEchoServer()
     let proxy = try ConnectionCountingServer()
     let ports = try grabThreeListenPorts(excluding: [echo.port, proxy.port])
-    let listen = SslocalListenSettings(socksPort: ports[0], httpPort: ports[1])
+    let listen = ProxyListeningConfiguration(socksPort: ports[0], httpPort: ports[1])
     let large = ProxyACLDocument(
       path: aclFileURL.path, summary: "rule-proxy-default",
       content: "[proxy_all]\n[bypass_list]\n"
@@ -95,7 +95,7 @@ final class RuntimePublicationSmokeTests: RealSslocalSmokeTests {
     let ports = try grabThreeListenPorts(excluding: [])
     let document = SslocalRuntimeDocument(
       servers: [],
-      listen: SslocalListenSettings(socksPort: ports[0], httpPort: ports[1]),
+      listen: ProxyListeningConfiguration(socksPort: ports[0], httpPort: ports[1]),
       acl: .direct(at: aclFileURL))
     let wrapper = try launchWrapper(document)
     try assertReceiptOwnsListeners(document: document)

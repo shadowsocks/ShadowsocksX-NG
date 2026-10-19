@@ -101,8 +101,7 @@ final class OfflineRulesWorkflowTests: XCTestCase {
   func testExternalSettingsChangesNeverSupplyAFallbackOrAlterThreeStateResults() async throws {
     let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     defer { try? FileManager.default.removeItem(at: directory) }
-    let settings = ProxySettingsFileStore(
-      fileURL: directory.appendingPathComponent("settings.json"))
+    let preferences = makeTestProxyControlPreferences()
     let rules = [
       CustomRule(action: .proxy, match: try RuleMatch(domainExact: "proxy.example")),
       CustomRule(action: .direct, match: try RuleMatch(domainExact: "direct.example")),
@@ -113,10 +112,10 @@ final class OfflineRulesWorkflowTests: XCTestCase {
     for mode in [ProxyModeKind.rule, .global, .direct] {
       for defaultAction in RuleDefaultAction.allCases {
         for enabled in [false, true] {
-          try settings.save(
-            ProxySettings(
-              preferredMode: mode, ruleDefaultAction: defaultAction,
-              agentEnabled: enabled, systemProxyEnabled: enabled))
+          preferences.preferredMode = mode
+          preferences.ruleDefaultAction = defaultAction
+          preferences.agentEnabled = enabled
+          preferences.systemProxyEnabled = enabled
           workflow.query(RulesQuery(search: "hidden", source: .fixed))
           for (target, outcome) in [
             ("proxy.example", OfflineRuleMatcher.Outcome.proxy),

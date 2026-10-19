@@ -24,7 +24,7 @@ final class FakeProxyRuntime: ProxyRuntimeAdapting {
   var httpExportCapability = HTTPExportCapability(
     copyableLine:
       "export http_proxy=http://127.0.0.1:11087;export https_proxy=http://127.0.0.1:11087;")
-  var listenFacts = RuntimeListenFacts(listen: SslocalListenSettings())
+  var listenFacts = RuntimeListenFacts(listen: ProxyListeningConfiguration())
 
   private let changeSubject = PassthroughSubject<Void, Never>()
   var changes: AnyPublisher<Void, Never> { changeSubject.eraseToAnyPublisher() }

@@ -161,7 +161,7 @@ class DiagnosticsWorkflowTestCase: XCTestCase {
 final class FakeRuntimeFacts: ProxyRuntimeDiagnosticFacts {
   var proxyState: DiagnosticProxyState = .off
   var hasActiveTarget = false
-  var listen = SslocalListenSettings()
+  var listen = ProxyListeningConfiguration()
   var contractSummary: String?
   var customRuleSummary: CustomRuleSummary?
 }

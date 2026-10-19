@@ -1,8 +1,7 @@
 import Foundation
 
 /// 静默启动偏好持久化（ADR 0017）：存于应用标准 defaults 域（键
-/// `silentLaunch`）的 GUI 呈现层独占偏好，与 settings.json 有意分离——代理
-/// 控制器按内存快照整写 settings.json，任何旁路字段都会被下一次整写覆盖。
+/// `silentLaunch`）的 GUI 呈现偏好，与代理控制偏好和监听配置分别管理。
 /// 键缺失或外部错误类型按安全侧默认「不静默」（启动照常呈现主窗口）。
 /// ADR 0017 初版为独立 JSON 文件，发布链从未包含该形态，仅存量开发机文件
 /// 需一次性迁移（`migrateLegacyFileIfPresent`）。

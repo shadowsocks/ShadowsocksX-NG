@@ -30,7 +30,7 @@ final class ProxyRuntimeController {
   typealias SystemProxyControlState = SystemProxyApplicationFacts
 
   var state: AgentRunState = .off { didSet { factChanges.markChanged() } }
-  var settings: ProxySettings { didSet { factChanges.markChanged() } }
+  var settings: ProxyRuntimeSettings { didSet { factChanges.markChanged() } }
   /// 当前活动目标（菜单栏状态摘要与级联只读呈现用）。machine 是
   /// 非通道值的普通结构体，代理关闭路径的激活动作不会触碰 state，菜单的
   /// 「目标」行依赖此属性独立触发事实通道保持实时。
@@ -52,7 +52,8 @@ final class ProxyRuntimeController {
   let credentials: CredentialStoring
   let plugins: PluginExecutableResolving
   let refreshPluginSecurityFacts: @MainActor () -> Void
-  let settingsStore: ProxySettingsStoring
+  let controlPreferences: ProxyControlPreferences
+  let listeningStore: ProxyListeningStoring
   /// 自定义规则持久化：规则模式 ACL 合并的用户入口。
   var isUpdatingRules = false
   var ruleApplicationTask: Task<Void, Never>?
@@ -116,6 +117,7 @@ final class ProxyRuntimeController {
   var ruleDefaultAction: RuleDefaultAction { settings.ruleDefaultAction }
 
   init(
+    controlPreferences: ProxyControlPreferences = ProxyControlPreferences(),
     catalogSnapshotReader: RuntimeCatalogSnapshotReading,
     activationFileStore: ActivationStateFileStore = ActivationStateFileStore(
       fileURL: ActivationStateFileStore.defaultFileURL()),
@@ -123,11 +125,11 @@ final class ProxyRuntimeController {
     credentials: CredentialStoring = KeychainCredentialStore(),
     plugins: PluginExecutableResolving = BundleManagedPluginProvider(),
     refreshPluginSecurityFacts: @escaping @MainActor () -> Void = {},
-    settingsStore: ProxySettingsStoring = ProxySettingsFileStore(),
+    listeningStore: ProxyListeningStoring = ProxyListeningFileStore(),
     customRuleStore: CustomRuleStore = CustomRuleStore(),
     appBundle: Bundle = .main,
     ruleSnapshots: BuiltinRuleSnapshots? = nil,
-    settingsRestore: RestoredProxySettings? = nil,
+    settingsRestore: RestoredProxyRuntimeSettings? = nil,
     agent: LaunchAgentControlling = SMAppLaunchAgentService(),
     probe: EndpointProbing = SystemEndpointProbe(),
     systemProxy: SystemProxyControlling = XPCSystemProxyController(),
@@ -156,13 +158,18 @@ final class ProxyRuntimeController {
     self.credentials = credentials
     self.plugins = plugins
     self.refreshPluginSecurityFacts = refreshPluginSecurityFacts
-    self.settingsStore = settingsStore
+    self.controlPreferences = controlPreferences
+    self.listeningStore = listeningStore
     self.customRuleStore = customRuleStore
     self.ruleDocuments = RuleDocumentSession(store: customRuleStore)
     self.ruleSnapshots = ruleSnapshots ?? BuiltinRuleSnapshots(bundle: appBundle)
     self.appBundle = appBundle
     let restoredSettings =
-      settingsRestore ?? RestoredProxySettings(settings: ProxySettings(), unreadableError: nil)
+      settingsRestore
+      ?? RestoredProxyRuntimeSettings(
+        settings: ProxyRuntimeSettings(
+          listen: ProxyListeningConfiguration(), preferences: controlPreferences),
+        unreadableError: nil)
     settings = restoredSettings.settings
     settingsUnreadable = restoredSettings.unreadableError != nil
     self.agent = agent

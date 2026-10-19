@@ -156,7 +156,7 @@ struct LANListeningWorkflowTests {
     let saved = committing.committedSettings
     var edited = try workflow.beginLANListeningEditing()
     edited.password = "replacement"
-    committing.updateError = ProxySettingsStoreError.ioFailure(detail: "disk full")
+    committing.updateError = ProxyListeningStoreError.ioFailure(detail: "disk full")
     #expect(
       await workflow.saveLANListening(edited)
         == .commitFailed(.store(.ioFailure(detail: "disk full"))))

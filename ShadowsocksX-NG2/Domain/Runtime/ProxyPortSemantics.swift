@@ -41,7 +41,7 @@ enum PortSuggestion {
   }
 }
 
-extension SslocalListenSettings {
+extension ProxyListeningConfiguration {
   /// 端点的配置端口。
   func configuredPort(for endpoint: ProxyEndpointKind) -> Int {
     switch endpoint {

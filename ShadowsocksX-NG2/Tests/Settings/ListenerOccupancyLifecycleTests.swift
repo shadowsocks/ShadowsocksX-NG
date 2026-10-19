@@ -96,7 +96,7 @@ struct ListenerOccupancyLifecycleTests {
   }
 
   @Test(arguments: LANSaveChange.allCases)
-  func changedLANSaveContextRejectsAndRefreshesWithoutWritingCredentials(change: LANSaveChange)
+  func changedLANSaveContextOnlyRejectsListeningChanges(change: LANSaveChange)
     async throws
   {
     let committing = FakeSettingsCommitter()
@@ -115,6 +115,16 @@ struct ListenerOccupancyLifecycleTests {
     case .unrelatedSetting: committing.committedSettings.proxyExceptions = "example.com"
     }
     probe.releaseGatedCalls()
+
+    if case .unrelatedSetting = change {
+      #expect(await submission.value == .persisted)
+      #expect(!workflow.isCommitting)
+      #expect(committing.committedSettings.proxyExceptions == "example.com")
+      #expect(committing.committedSettings.listen.lan.isEnabled)
+      #expect(committing.updateCalls.count == 1)
+      #expect(credentials.storageCount == 1)
+      return
+    }
 
     #expect(await submission.value == .rejected(.superseded))
     #expect(!workflow.isCommitting)

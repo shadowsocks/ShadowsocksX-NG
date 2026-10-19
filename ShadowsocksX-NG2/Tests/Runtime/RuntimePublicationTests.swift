@@ -22,7 +22,7 @@ extension RuntimePublicationTests {
     let runtime = ProxyRuntimeFixture.makeTemporaryRuntime()
     defer { try? FileManager.default.removeItem(at: runtime.directory) }
     let store = RuntimeFileStore(fileURL: runtime.contract)
-    var listen = SslocalListenSettings(listenerMode: .allIPv4Interfaces)
+    var listen = ProxyListeningConfiguration(listenerMode: .allIPv4Interfaces)
     listen.lan.authenticationEnabled = true
     listen.lan.username = "sample-lan-user"
     listen.lan.passwordReference = "sample-keychain-reference"

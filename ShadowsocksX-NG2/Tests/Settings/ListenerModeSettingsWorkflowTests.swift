@@ -118,7 +118,7 @@ extension SettingsWorkflowInterfaceTests {
 
   func testListenerModePersistenceFailurePreservesCommittedSettings() async {
     let original = committing.committedSettings
-    committing.updateError = ProxySettingsStoreError.ioFailure(detail: "disk full")
+    committing.updateError = ProxyListeningStoreError.ioFailure(detail: "disk full")
     let workflow = makeWorkflow()
 
     let outcome = await saveMode(workflow, .allIPv6Interfaces)

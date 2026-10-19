@@ -41,7 +41,7 @@ extension ProxyRuntimeController {
   }
 
   /// Agent 开关：先持久化意图（显式关闭在 GUI 重启后仍生效），
-  /// 再收敛运行时。持久化失败保留现状并点名，不静默偏离持久化事实。意图已
+  /// 再收敛运行时。UserDefaults 不提供同步落盘失败信号。意图已
   /// 开启时的开启命令仅在未达健康态时重收敛——它是启动失败/重置后的显式
   /// 重试入口；健康运行中不做无谓的注销重拉。关闭时级联：系统代理意图仍
   /// 开启则一并持久化为关闭，该 on→off 迁移触发清理，清理后才停止本地监听；
@@ -72,10 +72,8 @@ extension ProxyRuntimeController {
       }
       return
     }
-    var next = settings
-    next.agentEnabled = enabled
-    guard persistSettings(next) else { return }
-    settings = next
+    controlPreferences.agentEnabled = enabled
+    settings.agentEnabled = enabled
     if enabled {
       await convergeAgent()
       if settings.systemProxyEnabled { systemProxyObserver.startEnabledSystemProxyObservation() }
@@ -91,19 +89,11 @@ extension ProxyRuntimeController {
   }
 
   /// 关闭 agent 时的系统代理级联：意图仍开启则一并持久化为
-  /// 关闭并请求清理（返回清理结果）；级联持久化失败时迁移未被记录，不清理，
-  /// 意图与系统设置原样，返回 nil。
+  /// 关闭并请求清理（返回清理结果），不依赖监听文件保存。
   private func cascadeSystemProxyOffForAgentOff() async -> SystemProxyControlState? {
     guard settings.systemProxyEnabled else { return nil }
-    var cascade = settings
-    cascade.systemProxyEnabled = false
-    do {
-      try settingsStore.save(cascade)
-    } catch {
-      RuntimeLog.emit(.runtimePersistFailed(detail: String(describing: error)))
-      return nil
-    }
-    settings = cascade
+    controlPreferences.systemProxyEnabled = false
+    settings.systemProxyEnabled = false
     // 持久化的 on→off 迁移才触发清理；先清后停本地监听。
     return await systemProxyObserver.clearAndStopSystemProxyObservation()
   }
@@ -113,10 +103,8 @@ extension ProxyRuntimeController {
   /// 变化直至安静，失败也不后台重试），不影响 agent 注册与本地监听。
   func setSystemProxyEnabled(_ enabled: Bool) async {
     guard enabled != settings.systemProxyEnabled else { return }
-    var next = settings
-    next.systemProxyEnabled = enabled
-    guard persistSettings(next) else { return }
-    settings = next
+    controlPreferences.systemProxyEnabled = enabled
+    settings.systemProxyEnabled = enabled
     if enabled {
       await systemProxyObserver.enableSystemProxyIntent()
     } else {

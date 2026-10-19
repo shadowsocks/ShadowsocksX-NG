@@ -98,7 +98,7 @@ struct DiagnosticSnapshot: Sendable {
   var systemSummary: String?
   var proxyState = DiagnosticProxyState.off
   var hasActiveTarget = false
-  var listen: SslocalListenSettings?
+  var listen: ProxyListeningConfiguration?
   /// `Redactor.documentSummary` 产出的契约脱敏摘要（数量与模式）。
   var runtimeDocumentSummary: String?
   /// 自定义规则安全摘要：数量 + 内容版本，无原始域名。
@@ -266,7 +266,7 @@ enum DiagnosticReportBuilder {
   }
 
   /// 本地端点只以端口事实呈现。
-  private static func listenDescription(_ listen: SslocalListenSettings) -> String {
+  private static func listenDescription(_ listen: ProxyListeningConfiguration) -> String {
     var parts = ["SOCKS5 端口 \(listen.socksPort)"]
     parts.append("HTTP 端口 \(listen.httpPort)")
     return parts.joined(separator: "；")

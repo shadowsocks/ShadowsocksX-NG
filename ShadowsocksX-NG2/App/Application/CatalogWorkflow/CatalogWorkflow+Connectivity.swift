@@ -39,7 +39,7 @@ extension CatalogWorkflow {
     let config = try derivation.activate(
       id, in: catalog,
       plugins: dependencies.plugins,
-      options: RuntimeDocumentOptions(listen: SslocalListenSettings()))
+      options: RuntimeDocumentOptions(listen: ProxyListeningConfiguration()))
     guard let server = config.document.servers.first else { throw ServerFormLoadError.notFound }
     return server
   }

@@ -65,7 +65,7 @@ final class SystemProxyHelperContractTests: XCTestCase {
     XCTAssertEqual(failure, .failure(.commitFailed("busy")))
 
     let genericFailure = SystemProxyHelperEngine.response(
-      request: .failure(ProxySettingsStoreError.corrupt(detail: "bad")),
+      request: .failure(ProxyListeningStoreError.corrupt(detail: "bad")),
       perform: { _ in .cleared })
     XCTAssertEqual(
       genericFailure, .failure(.helperUnavailable("corrupt(detail: \"bad\")")),

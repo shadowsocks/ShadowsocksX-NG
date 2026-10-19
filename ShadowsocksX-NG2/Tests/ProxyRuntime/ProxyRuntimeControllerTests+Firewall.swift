@@ -11,7 +11,7 @@ final class ProxyRuntimeFirewallTests: ProxyRuntimeControllerTests {
   func testLocalhostModeNeverQueriesApplicationFirewall() async throws {
     let seeded = try makeSeededCatalog()
     let firewall = ProxyRuntimeFixture.FakeFirewallChecker(.blocked)
-    var listen = SslocalListenSettings()
+    var listen = ProxyListeningConfiguration()
     listen.lan.mode = .allIPv6Interfaces
     let controller = makeController(
       probe: ProxyRuntimeFixture.FakeProbe.reachable(), listen: listen, firewallChecker: firewall)
@@ -28,7 +28,7 @@ final class ProxyRuntimeFirewallTests: ProxyRuntimeControllerTests {
   func testAllIPv4InterfacesBlockedByFirewallPresentsTargetedRepair() async throws {
     let seeded = try makeSeededCatalog()
     let firewall = ProxyRuntimeFixture.FakeFirewallChecker(.blocked)
-    let listen = SslocalListenSettings(
+    let listen = ProxyListeningConfiguration(
       listenerMode: .allIPv4Interfaces,
       socksPort: 1086,
       httpPort: 1087)
@@ -56,7 +56,7 @@ final class ProxyRuntimeFirewallTests: ProxyRuntimeControllerTests {
   func testAllInterfaceModeDetectsFirewallRefusalAfterInitialHealthyPresentation() async throws {
     let seeded = try makeSeededCatalog()
     let firewall = ProxyRuntimeFixture.FakeFirewallChecker(outcomes: [.permitted, .blocked])
-    let listen = SslocalListenSettings(listenerMode: .allIPv4Interfaces)
+    let listen = ProxyListeningConfiguration(listenerMode: .allIPv4Interfaces)
     let controller = makeController(
       probe: ProxyRuntimeFixture.FakeProbe.reachable(),
       listen: listen,

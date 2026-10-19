@@ -199,7 +199,7 @@ extension ProxyControlWorkflowIntegrationTests {
     _ = try makeSeededCatalog()
     let composition = makeProxies(
       probe: ProxyRuntimeFixture.FakeProbe.reachable(),
-      settings: ProxySettings(
+      settings: ProxyRuntimeSettings(
         listen: ActivationFixture.listen, agentEnabled: true, systemProxyEnabled: true),
       proxyMode: .direct)
     let before = systemProxy.applied.count
@@ -224,7 +224,7 @@ extension ProxyControlWorkflowIntegrationTests {
     _ = try makeSeededCatalog()
     let composition = makeProxies(
       probe: ProxyRuntimeFixture.FakeProbe.refusing(),
-      settings: ProxySettings(
+      settings: ProxyRuntimeSettings(
         listen: ActivationFixture.listen, agentEnabled: true, systemProxyEnabled: true))
     await composition.control.resyncOnLaunch()
     XCTAssertEqual(systemProxy.clearCount, 1)

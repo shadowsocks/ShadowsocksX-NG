@@ -12,11 +12,11 @@ final class ProxyRuntimeResyncAndSettingsTests: ProxyRuntimeControllerTests {
 
   func testResyncWithRegisteredAgentAndMatchingContractSkipsRewrite() async throws {
     let seeded = try makeSeededCatalog()
-    let settingsStore = InMemoryProxySettingsStore()
-    let enabledSettings = ProxySettings(listen: ActivationFixture.listen, agentEnabled: true)
+    let listeningStore = InMemoryProxyListeningStore()
+    let enabledSettings = ProxyRuntimeSettings(listen: ActivationFixture.listen, agentEnabled: true)
     let controller = makeController(
       probe: ProxyRuntimeFixture.FakeProbe.reachable(), agentStatus: .notRegistered,
-      settingsStore: settingsStore, settings: enabledSettings)
+      listeningStore: listeningStore, settings: enabledSettings)
     try await controller.activate(seeded.server)
     await controller.setAgentEnabled(true)
     XCTAssertTrue(agent.registerCount >= 1)
@@ -29,7 +29,7 @@ final class ProxyRuntimeResyncAndSettingsTests: ProxyRuntimeControllerTests {
     try Data("\(ProcessInfo.processInfo.processIdentifier)".utf8).write(to: runtime.pidFile)
     let restarted = makeController(
       probe: ProxyRuntimeFixture.FakeProbe.reachable(), agentStatus: .registered,
-      settingsStore: settingsStore, settings: enabledSettings)
+      listeningStore: listeningStore, settings: enabledSettings)
 
     await restarted.resyncOnLaunch()
 
@@ -47,13 +47,13 @@ final class ProxyRuntimeResyncAndSettingsTests: ProxyRuntimeControllerTests {
 
   func testLegacyImportBoundaryStopsRuntimeWithoutRestoringSystemProxy() async throws {
     let seeded = try makeSeededCatalog()
-    let settingsStore = InMemoryProxySettingsStore()
-    var importedSettings = ProxySettings()
+    let listeningStore = InMemoryProxyListeningStore()
+    var importedSettings = ProxyRuntimeSettings()
     importedSettings.preferredMode = .global
-    settingsStore.saved = importedSettings
+    listeningStore.saved = importedSettings.listen
     let controller = makeController(
       probe: ProxyRuntimeFixture.FakeProbe.reachable(),
-      settingsStore: settingsStore,
+      listeningStore: listeningStore,
       systemProxy: systemProxy)
 
     try await controller.activate(seeded.server)
@@ -63,7 +63,8 @@ final class ProxyRuntimeResyncAndSettingsTests: ProxyRuntimeControllerTests {
     await controller.legacyImportDidCommit()
 
     XCTAssertEqual(controller.state, .off)
-    XCTAssertEqual(controller.settings, importedSettings)
+    XCTAssertEqual(controller.settings.listen, importedSettings.listen)
+    XCTAssertTrue(controller.settings.agentEnabled, "导入不改变控制偏好")
     XCTAssertEqual(controller.activeTargetID, seeded.server)
     XCTAssertEqual(systemProxy.clearCount, 0, "Legacy 导入不能写入或清理系统代理")
     XCTAssertTrue(systemProxy.applied.isEmpty, "导入边界不应重新应用系统代理")
@@ -71,11 +72,11 @@ final class ProxyRuntimeResyncAndSettingsTests: ProxyRuntimeControllerTests {
 
   func testUpdatingSettingsPersistsAndReactivatesTheRuntimeContract() async throws {
     let seeded = try makeSeededCatalog()
-    let settingsStore = InMemoryProxySettingsStore()
+    let listeningStore = InMemoryProxyListeningStore()
     let controller = makeController(
       probe: ProxyRuntimeFixture.FakeProbe.reachable(),
-      settingsStore: settingsStore,
-      settings: ProxySettings(
+      listeningStore: listeningStore,
+      settings: ProxyRuntimeSettings(
         listen: ActivationFixture.listen, agentEnabled: true, systemProxyEnabled: true))
 
     try await controller.activate(seeded.server)
@@ -84,11 +85,12 @@ final class ProxyRuntimeResyncAndSettingsTests: ProxyRuntimeControllerTests {
     var next = controller.settings
     next.listen.httpPort = 2088
     next.proxyExceptions = "localhost, 127.0.0.1"
-    try await controller.updateSettings(next)
+    try await controller.updateListening(next.listen)
+    await controller.updateProxyExceptions(next.proxyExceptions)
 
     let document = try XCTUnwrap(RuntimeFileStore(fileURL: runtime.contract).loadDocument())
     XCTAssertEqual(controller.settings, next)
-    XCTAssertEqual(settingsStore.saved, next)
+    XCTAssertEqual(listeningStore.saved, next.listen)
     XCTAssertEqual(document.httpPort, 2088)
     XCTAssertEqual(
       systemProxy.applied.last?.exceptions,

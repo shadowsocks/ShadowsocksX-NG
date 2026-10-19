@@ -97,7 +97,7 @@ final class AgentLifecycleStaleListenerTests: AgentLifecycleTests {
     let staleSocksListener = try TCPListenerFixture()
     let staleHTTPListener = try TCPListenerFixture()
     let runtimeStore = RuntimeFileStore(fileURL: contractURL)
-    let listen = SslocalListenSettings(
+    let listen = ProxyListeningConfiguration(
       socksPort: staleSocksListener.port,
       httpPort: staleHTTPListener.port)
     let directDocument = SslocalRuntimeDocument(servers: [], listen: listen)

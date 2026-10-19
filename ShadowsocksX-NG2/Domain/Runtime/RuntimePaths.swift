@@ -50,9 +50,9 @@ enum RuntimePaths {
     runtimeDirectory().appendingPathComponent("catalog.enc")
   }
 
-  /// 代理偏好（ProxySettingsFileStore）。
-  static func settingsFileURL() -> URL {
-    runtimeDirectory().appendingPathComponent("settings.json")
+  /// 本地与局域网代理监听配置（ProxyListeningFileStore）。
+  static func proxyListeningFileURL() -> URL {
+    runtimeDirectory().appendingPathComponent("proxy-listening.json")
   }
 
   /// 自定义规则文档（CustomRuleStore）。

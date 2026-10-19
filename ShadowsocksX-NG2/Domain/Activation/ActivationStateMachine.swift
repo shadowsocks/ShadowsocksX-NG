@@ -8,10 +8,10 @@ enum ActivationEffect: Equatable, Sendable {
 
 /// 派生运行时文档的监听与行为设置；聚合状态机接口的传参。
 struct RuntimeDocumentOptions: Equatable, Sendable {
-  var listen: SslocalListenSettings
+  var listen: ProxyListeningConfiguration
 }
 
-extension ProxySettings {
+extension ProxyRuntimeSettings {
   /// 激活派生所用的监听配置。
   var runtimeDocumentOptions: RuntimeDocumentOptions {
     RuntimeDocumentOptions(listen: listen)

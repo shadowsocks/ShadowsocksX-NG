@@ -18,7 +18,7 @@ enum ActivationFixture {
     "v2ray-plugin": "/bundle/Helpers/Plugins/v2ray-plugin"
   ])
 
-  static let listen = SslocalListenSettings()
+  static let listen = ProxyListeningConfiguration()
 
   /// 无插件叶子字段（插件语义单独覆盖）。
   static func plainFields(remark: String, password: String = "password") -> ServerFields {

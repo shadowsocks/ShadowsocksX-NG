@@ -112,11 +112,12 @@ struct CatalogWorkflowLibraryTests {
       fileStore: makeTestCatalogStore(fileURL: url))
     let agent = ProxyRuntimeFixture.FakeLaunchAgent(initialStatus: .registered)
     let controller = ProxyRuntimeController(
+      controlPreferences: makeTestProxyControlPreferences(),
       catalogSnapshotReader: bootstrap.catalogSnapshotReader, activationFileStore: activation,
       runtimeFileStore: RuntimeFileStore(fileURL: runtimeURL),
       credentials: InMemoryCredentialStore(),
-      settingsRestore: RestoredProxySettings(
-        settings: ProxySettings(agentEnabled: true), unreadableError: nil),
+      settingsRestore: RestoredProxyRuntimeSettings(
+        settings: ProxyRuntimeSettings(agentEnabled: true), unreadableError: nil),
       agent: agent)
     await controller.resyncOnLaunch()
     await controller.convergeAgent()

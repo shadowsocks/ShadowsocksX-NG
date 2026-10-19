@@ -278,7 +278,7 @@ private struct AppComposition {
       credentials: dependencies.credentials,
       plugins: plugins,
       refreshPluginSecurityFacts: { [weak plugins] in _ = plugins?.refreshSecurityFacts() },
-      settingsStore: dependencies.settingsStore,
+      listeningStore: dependencies.listeningStore,
       settingsRestore: dependencies.settingsRestore,
       agent: dependencies.launchAgent,
       systemProxyNetworkChangeMonitor: SystemProxyNetworkChangeMonitor())
@@ -317,8 +317,8 @@ private struct ApplicationDependencies {
   let catalogFileStore: CatalogFileStore
   let activationFileStore: ActivationStateFileStore
   let runtimeFileStore: RuntimeFileStore
-  let settingsStore: ProxySettingsFileStore
-  let settingsRestore: RestoredProxySettings
+  let listeningStore: ProxyListeningFileStore
+  let settingsRestore: RestoredProxyRuntimeSettings
   let legacyImportService: LegacyImportService
   let launchAgent: LaunchAgentControlling
   let loginService: LaunchAtLoginControlling
@@ -338,15 +338,19 @@ private struct ApplicationDependencies {
     let library = ServerLibraryStorage(keys: KeychainLibraryMasterKeyStore())
     let catalogFileStore = CatalogFileStore(
       fileURL: CatalogFileStore.defaultFileURL(), library: library)
-    let settingsStore = ProxySettingsFileStore()
-    let restoredSettings = ProxySettingsFileStore.restored(store: settingsStore)
+    let listeningStore = ProxyListeningFileStore()
+    let listening = ProxyListeningFileStore.restored(store: listeningStore)
+    let restoredSettings = RestoredProxyRuntimeSettings(
+      settings: ProxyRuntimeSettings(
+        listen: listening.configuration, preferences: ProxyControlPreferences()),
+      unreadableError: listening.unreadableError)
     return ApplicationDependencies(
       credentials: credentials,
       catalogFileStore: catalogFileStore,
       activationFileStore: ActivationStateFileStore(
         fileURL: ActivationStateFileStore.defaultFileURL()),
       runtimeFileStore: RuntimeFileStore(),
-      settingsStore: settingsStore,
+      listeningStore: listeningStore,
       settingsRestore: restoredSettings,
       legacyImportService: LegacyImportService(
         catalogStore: catalogFileStore),

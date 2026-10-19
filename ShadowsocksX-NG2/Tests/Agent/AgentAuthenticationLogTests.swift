@@ -9,7 +9,7 @@ struct AgentAuthenticationLogTests {
     let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     defer { try? FileManager.default.removeItem(at: directory) }
     let contract = directory.appendingPathComponent("sslocal-active.json")
-    var listen = SslocalListenSettings()
+    var listen = ProxyListeningConfiguration()
     listen.socksPort = Int.random(in: 30_000...60_000)
     listen.httpPort = listen.socksPort + 1
     try RuntimeFileStore(fileURL: contract).write(

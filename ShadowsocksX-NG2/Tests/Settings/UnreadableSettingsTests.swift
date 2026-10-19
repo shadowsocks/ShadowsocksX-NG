@@ -17,7 +17,7 @@ struct UnreadableSettingsTests {
 
   private func makeFixture(
     agentStatus: LaunchAgentStatus,
-    settingsRestore: RestoredProxySettings
+    settingsRestore: RestoredProxyRuntimeSettings
   ) throws -> Fixture {
     let runtime = ProxyRuntimeFixture.makeTemporaryRuntime()
     let catalogFileURL = runtime.directory.appendingPathComponent("catalog.json")
@@ -36,6 +36,7 @@ struct UnreadableSettingsTests {
       fileStore: makeTestCatalogStore(fileURL: catalogFileURL)
     ).catalogSnapshotReader
     let controller = ProxyRuntimeController(
+      controlPreferences: makeTestProxyControlPreferences(),
       catalogSnapshotReader: catalogSnapshotReader,
       activationFileStore: ActivationStateFileStore(fileURL: activationFileURL),
       runtimeFileStore: RuntimeFileStore(fileURL: runtime.contract),
@@ -58,8 +59,8 @@ struct UnreadableSettingsTests {
   func enableWithUnreadableSettingsRefusesDeploymentAndNamesReason() async throws {
     let fixture = try makeFixture(
       agentStatus: .notRegistered,
-      settingsRestore: RestoredProxySettings(
-        settings: ProxySettings(),
+      settingsRestore: RestoredProxyRuntimeSettings(
+        settings: ProxyRuntimeSettings(),
         unreadableError: .invalid([
           .duplicatePort(endpoint: .socks, otherEndpoint: .http, port: 1086)
         ])))
@@ -84,8 +85,8 @@ struct UnreadableSettingsTests {
   func resyncWithUnreadableSettingsStopsRunningAgentInsteadOfRedeploying() async throws {
     let fixture = try makeFixture(
       agentStatus: .registered,
-      settingsRestore: RestoredProxySettings(
-        settings: ProxySettings(agentEnabled: true),
+      settingsRestore: RestoredProxyRuntimeSettings(
+        settings: ProxyRuntimeSettings(agentEnabled: true),
         unreadableError: .corrupt(detail: "test")))
     defer { try? FileManager.default.removeItem(at: fixture.runtime.directory) }
 

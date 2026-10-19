@@ -193,20 +193,18 @@ final class SettingsWorkflowInterfaceTests: XCTestCase {
     XCTAssertNil(workflow.lastFailure)
   }
 
-  func testProxyExceptionsPersistenceFailurePreservesCommittedSnapshot() async {
+  func testProxyExceptionsIgnoreListeningPersistenceFailure() async {
     let original = committedSettingsForItemSaveTests()
     committing.committedSettings = original
-    committing.updateError = ProxySettingsStoreError.ioFailure(detail: "disk full")
+    committing.updateError = ProxyListeningStoreError.ioFailure(detail: "disk full")
     let workflow = makeWorkflow()
 
     let outcome = await workflow.saveProxyExceptions("localhost")
 
-    XCTAssertEqual(
-      outcome,
-      .commitFailed(.store(.ioFailure(detail: "disk full"))))
-    XCTAssertEqual(workflow.lastFailure, .store(.ioFailure(detail: "disk full")))
-    XCTAssertEqual(committing.committedSettings, original)
-    XCTAssertTrue(committing.updateCalls.isEmpty)
+    XCTAssertEqual(outcome, .persisted)
+    XCTAssertEqual(committing.committedSettings.proxyExceptions, "localhost")
+    XCTAssertEqual(committing.committedSettings.listen, original.listen)
+    XCTAssertNil(workflow.lastFailure)
     XCTAssertFalse(workflow.isCommitting)
   }
 
@@ -258,8 +256,8 @@ final class SettingsWorkflowInterfaceTests: XCTestCase {
       workflow.portFieldState(for: .socks, editorDraft: laterDraft).occupancy, .free)
   }
 
-  func committedSettingsForItemSaveTests() -> ProxySettings {
-    var settings = ProxySettings()
+  func committedSettingsForItemSaveTests() -> ProxyRuntimeSettings {
+    var settings = ProxyRuntimeSettings()
     settings.listen.listenerMode = .allIPv6Interfaces
     settings.listen.socksPort = 12_086
     settings.listen.httpPort = 12_087

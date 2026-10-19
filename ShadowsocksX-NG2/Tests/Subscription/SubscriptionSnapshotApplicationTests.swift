@@ -162,7 +162,7 @@ final class SubscriptionSnapshotApplicationTests: XCTestCase {
 
     let effect = machine.catalogDidCommit(
       catalog, plugins: NoManagedPluginProvider(),
-      options: RuntimeDocumentOptions(listen: SslocalListenSettings()))
+      options: RuntimeDocumentOptions(listen: ProxyListeningConfiguration()))
     guard case .deployed(let configuration) = try XCTUnwrap(effect) else {
       return XCTFail("身份未变的活动目标应部署而非清除")
     }
@@ -174,7 +174,7 @@ final class SubscriptionSnapshotApplicationTests: XCTestCase {
     _ = try catalog.applySubscriptionSnapshot(empty, into: groupID)
     let cleared = machine.catalogDidCommit(
       catalog, plugins: NoManagedPluginProvider(),
-      options: RuntimeDocumentOptions(listen: SslocalListenSettings()))
+      options: RuntimeDocumentOptions(listen: ProxyListeningConfiguration()))
     guard case .clearedAndStopped = try XCTUnwrap(cleared) else {
       return XCTFail("目标随远端删除消失后应清除并停止")
     }

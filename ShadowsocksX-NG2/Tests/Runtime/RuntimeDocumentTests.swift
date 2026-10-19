@@ -25,7 +25,7 @@ final class RuntimeDocumentTests: XCTestCase {
           plugin: plugin,
           pluginOpts: pluginOpts
         )
-      ], listen: SslocalListenSettings()
+      ], listen: ProxyListeningConfiguration()
     )
   }
 
@@ -81,7 +81,7 @@ final class RuntimeDocumentTests: XCTestCase {
   // MARK: 监听设置透传
 
   func testListenSettingsUseTCPAndUDPForSOCKSAndTCPOnlyForHTTP() {
-    let listen = SslocalListenSettings()
+    let listen = ProxyListeningConfiguration()
 
     XCTAssertEqual(listen.mode, "tcp_and_udp")
     XCTAssertEqual(listen.locals.map(\.mode), ["tcp_and_udp", "tcp_only"])
@@ -94,7 +94,7 @@ final class RuntimeDocumentTests: XCTestCase {
           id: "server-1", server: "example.com", serverPort: 8388,
           password: "pw", method: "aes-256-gcm", plugin: nil, pluginOpts: nil)
       ],
-      listen: SslocalListenSettings())
+      listen: ProxyListeningConfiguration())
 
     let dictionary = try encodedDictionary(document)
     let listen = try XCTUnwrap(dictionary["x_shadowsocksx_ng_listen"] as? [String: Any])
@@ -106,7 +106,7 @@ final class RuntimeDocumentTests: XCTestCase {
     let acl = ProxyACLDocument.direct(
       at: URL(fileURLWithPath: "/tmp/ssxng-tests/acl-active.ini"))
     let document = SslocalRuntimeDocument(
-      servers: [], listen: SslocalListenSettings(), acl: acl)
+      servers: [], listen: ProxyListeningConfiguration(), acl: acl)
     let dictionary = try encodedDictionary(document)
     let aclMetadata = try XCTUnwrap(
       dictionary["x_shadowsocksx_ng_acl"] as? [String: Any])
@@ -130,7 +130,7 @@ final class RuntimeDocumentTests: XCTestCase {
     let acl = ProxyACLDocument.direct(
       at: URL(fileURLWithPath: "/tmp/ssxng-tests/acl-active.ini"))
     let document = SslocalRuntimeDocument(
-      servers: [], listen: SslocalListenSettings(), acl: acl)
+      servers: [], listen: ProxyListeningConfiguration(), acl: acl)
     let decoded = try XCTUnwrap(SslocalRuntimeDocument.decodeValidated(try document.jsonData()))
 
     XCTAssertEqual(
@@ -143,7 +143,7 @@ final class RuntimeDocumentTests: XCTestCase {
   }
 
   func testLocalhostModeDerivesBothSslocalInbounds() {
-    let listen = SslocalListenSettings(
+    let listen = ProxyListeningConfiguration(
       listenerMode: .disabled,
       socksPort: 1086,
       httpPort: 1087)
@@ -162,7 +162,7 @@ final class RuntimeDocumentTests: XCTestCase {
   }
 
   func testAllIPv4ModeUsesWildcardBindings() {
-    let listen = SslocalListenSettings(
+    let listen = ProxyListeningConfiguration(
       listenerMode: .allIPv4Interfaces,
       socksPort: 1086,
       httpPort: 1087)
@@ -172,7 +172,7 @@ final class RuntimeDocumentTests: XCTestCase {
   }
 
   func testDualStackModeSetsIPv6OnlyFalseAndChangesListenerFingerprint() throws {
-    var listen = SslocalListenSettings()
+    var listen = ProxyListeningConfiguration()
     listen.listenerMode = .allIPv4AndIPv6Interfaces
     let dualStack = SslocalRuntimeDocument(servers: [], listen: listen)
     let dictionary = try encodedDictionary(dualStack)
@@ -192,7 +192,7 @@ final class RuntimeDocumentTests: XCTestCase {
   func testDecoderRejectsIPv6OnlyFlagThatDoesNotMatchListenerMode() throws {
     let document = SslocalRuntimeDocument(
       servers: [],
-      listen: SslocalListenSettings(listenerMode: .allIPv6Interfaces))
+      listen: ProxyListeningConfiguration(listenerMode: .allIPv6Interfaces))
     var dictionary = try encodedDictionary(document)
     dictionary["ipv6_only"] = false
     let data = try JSONSerialization.data(withJSONObject: dictionary)
@@ -211,13 +211,13 @@ final class RuntimeDocumentTests: XCTestCase {
       ])
     for mode in ListenerMode.allCases {
       let document = SslocalRuntimeDocument(
-        servers: [], listen: SslocalListenSettings(listenerMode: mode))
+        servers: [], listen: ProxyListeningConfiguration(listenerMode: mode))
       XCTAssertEqual(document.socksLocal?.probeHost, "127.0.0.1")
     }
   }
 
   func testHTTPInboundIsAlwaysPresentAlongsideSOCKS() {
-    let listen = SslocalListenSettings(
+    let listen = ProxyListeningConfiguration(
       listenerMode: .disabled, socksPort: 2086, httpPort: 2087)
 
     XCTAssertEqual(listen.locals.map(\.inboundProtocol), ["socks", "http"])

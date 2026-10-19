@@ -44,7 +44,7 @@ enum LANListenerMode: String, Codable, CaseIterable, Equatable, Sendable {
   var displayName: String { bindingMode.displayName }
 }
 
-struct SslocalListenSettings: Equatable, Sendable {
+struct ProxyListeningConfiguration: Equatable, Sendable {
   static let defaultSocksPort = 11086
   static let defaultHTTPPort = 11087
 
@@ -109,7 +109,7 @@ struct RuntimeListenFacts: Equatable, Sendable {
   let httpPort: Int
   var lan = LANListeningSettings()
 
-  init(listen: SslocalListenSettings) {
+  init(listen: ProxyListeningConfiguration) {
     self.init(
       listenerMode: .disabled,
       socksPort: listen.socksPort,
@@ -133,7 +133,7 @@ struct RuntimeListenFacts: Equatable, Sendable {
     self.init(
       listenerMode: .disabled,
       socksPort: socks?.localPort ?? 0,
-      httpPort: http?.localPort ?? SslocalListenSettings.defaultHTTPPort)
+      httpPort: http?.localPort ?? ProxyListeningConfiguration.defaultHTTPPort)
     lan = document.listen.lan
   }
 

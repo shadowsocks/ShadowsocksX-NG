@@ -59,7 +59,7 @@ final class ListenerOccupancy: ObservableObject {
     self.probe = probe
   }
 
-  func listenSettings(for draft: SettingsPortDraft) -> SslocalListenSettings {
+  func listenSettings(for draft: SettingsPortDraft) -> ProxyListeningConfiguration {
     var listen = committing.committedSettings.listen
     switch draft.group {
     case .local:

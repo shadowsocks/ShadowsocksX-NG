@@ -224,17 +224,18 @@ struct PluginCatalogTests {
     }
     let probe = ProxyRuntimeFixture.BlockingProbe()
     let controller = ProxyRuntimeController(
+      controlPreferences: makeTestProxyControlPreferences(),
       catalogSnapshotReader: ProxyRuntimeFixture.catalogSnapshotReader(at: catalogFile),
       activationFileStore: ActivationStateFileStore(
         fileURL: runtime.directory.appendingPathComponent("activation.json")),
       runtimeFileStore: files, credentials: credentials, plugins: plugins,
-      settingsStore: InMemoryProxySettingsStore(),
+      listeningStore: InMemoryProxyListeningStore(),
       customRuleStore: CustomRuleStore(
         fileURL: runtime.directory.appendingPathComponent("rules.json")),
       appBundle: AppArtifact.bundle,
       ruleSnapshots: BuiltinRuleSnapshots(loader: ProxyRuntimeFixture.controlFlowRuleSnapshot),
-      settingsRestore: RestoredProxySettings(
-        settings: ProxySettings(listen: ActivationFixture.listen, agentEnabled: true),
+      settingsRestore: RestoredProxyRuntimeSettings(
+        settings: ProxyRuntimeSettings(listen: ActivationFixture.listen, agentEnabled: true),
         unreadableError: nil),
       agent: agent, probe: probe, systemProxy: ProxyRuntimeFixture.FakeSystemProxy(),
       systemProxyHelper: ProxyRuntimeFixture.FakeSystemProxyHelperService(),

@@ -13,8 +13,8 @@ final class SystemProxyTests: XCTestCase {
 
     let expected = SystemProxyConfiguration(
       socks: .init(host: "127.0.0.1", port: 2086),
-      http: .init(host: "127.0.0.1", port: SslocalListenSettings.defaultHTTPPort),
-      https: .init(host: "127.0.0.1", port: SslocalListenSettings.defaultHTTPPort),
+      http: .init(host: "127.0.0.1", port: ProxyListeningConfiguration.defaultHTTPPort),
+      https: .init(host: "127.0.0.1", port: ProxyListeningConfiguration.defaultHTTPPort),
       exceptions: FixedLocalProxyRanges.systemProxyExceptions)
     XCTAssertEqual(
       ProxyMode.rule.systemProxyConfiguration(for: document),
@@ -27,7 +27,7 @@ final class SystemProxyTests: XCTestCase {
 
   func testIPv6LANModeKeepsSystemProxyOnLocalIPv4Loopback() {
     let document = SslocalRuntimeDocument(
-      servers: [], listen: SslocalListenSettings(listenerMode: .allIPv6Interfaces))
+      servers: [], listen: ProxyListeningConfiguration(listenerMode: .allIPv6Interfaces))
 
     let configuration = ProxyMode.rule.systemProxyConfiguration(for: document)
 
@@ -39,7 +39,7 @@ final class SystemProxyTests: XCTestCase {
   func testMissingHTTPInboundIsRejectedInsteadOfPointingAtAWildcardPort() throws {
     var dictionary = try XCTUnwrap(
       JSONSerialization.jsonObject(
-        with: SslocalRuntimeDocument(servers: [], listen: SslocalListenSettings()).jsonData()
+        with: SslocalRuntimeDocument(servers: [], listen: ProxyListeningConfiguration()).jsonData()
       ) as? [String: Any])
     dictionary["locals"] = [
       [

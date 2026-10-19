@@ -215,16 +215,17 @@ private final class PluginMappingCommitFixture {
     let contractURL = files.fileURL
     let signals = signals
     controller = ProxyRuntimeController(
+      controlPreferences: makeTestProxyControlPreferences(),
       catalogSnapshotReader: bootstrap.catalogSnapshotReader,
       activationFileStore: ActivationStateFileStore(
         fileURL: directory.appendingPathComponent("activation.json")),
       runtimeFileStore: files, credentials: credentials, plugins: plugins,
-      settingsStore: InMemoryProxySettingsStore(),
+      listeningStore: InMemoryProxyListeningStore(),
       customRuleStore: CustomRuleStore(fileURL: directory.appendingPathComponent("rules.json")),
       appBundle: AppArtifact.bundle,
       ruleSnapshots: BuiltinRuleSnapshots(loader: ProxyRuntimeFixture.controlFlowRuleSnapshot),
-      settingsRestore: RestoredProxySettings(
-        settings: ProxySettings(listen: ActivationFixture.listen, agentEnabled: true),
+      settingsRestore: RestoredProxyRuntimeSettings(
+        settings: ProxyRuntimeSettings(listen: ActivationFixture.listen, agentEnabled: true),
         unreadableError: nil),
       agent: agent, probe: probe, systemProxy: ProxyRuntimeFixture.FakeSystemProxy(),
       systemProxyHelper: ProxyRuntimeFixture.FakeSystemProxyHelperService(),

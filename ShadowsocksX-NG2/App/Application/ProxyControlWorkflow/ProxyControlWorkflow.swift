@@ -54,7 +54,7 @@ struct ProxyActiveTargetFacts: Equatable, Sendable {
 /// 代理控制的统一 UI-facing snapshot：一次 workflow
 /// observation 产出的整体安全投影，所有字段来自同一时间点。agent 意图/运行
 /// 状态与系统代理意图/实际应用是四个独立事实，两个开关互不代替；不含控制
-/// 器内部状态枚举、`ProxySettings`、完整目录树、凭据、原始 URL、原始日志或
+/// 器内部状态枚举、`ProxyRuntimeSettings`、完整目录树、凭据、原始 URL、原始日志或
 /// 本地化文案；失败保持 typed facts，成句呈现由 App presentation edge 负责。
 struct ProxyControlSnapshot: Equatable, Sendable {
   /// Agent 运行事实：状态类别、「在跑」投影与 typed 失败。

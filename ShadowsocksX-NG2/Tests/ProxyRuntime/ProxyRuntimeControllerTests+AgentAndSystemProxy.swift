@@ -14,7 +14,7 @@ final class ProxyRuntimeAgentAndSystemProxyTests: ProxyRuntimeControllerTests {
     _ = try makeSeededCatalog()
     let controller = makeController(
       probe: ProxyRuntimeFixture.FakeProbe.reachable(),
-      settings: ProxySettings(listen: ActivationFixture.listen, agentEnabled: false))
+      settings: ProxyRuntimeSettings(listen: ActivationFixture.listen, agentEnabled: false))
 
     await controller.setAgentEnabled(true)
 
@@ -33,7 +33,7 @@ final class ProxyRuntimeAgentAndSystemProxyTests: ProxyRuntimeControllerTests {
     _ = try makeSeededCatalog()
     let controller = makeController(
       probe: ProxyRuntimeFixture.FakeProbe.reachable(),
-      settings: ProxySettings(listen: ActivationFixture.listen, agentEnabled: false))
+      settings: ProxyRuntimeSettings(listen: ActivationFixture.listen, agentEnabled: false))
 
     await controller.resyncOnLaunch()
 
@@ -52,14 +52,14 @@ final class ProxyRuntimeAgentAndSystemProxyTests: ProxyRuntimeControllerTests {
   /// 快照 + 注册态残留）后仍收敛到关闭。
   func testExplicitAgentOffPersistsAcrossGUIRestart() async throws {
     let seeded = try makeSeededCatalog()
-    let settingsStore = InMemoryProxySettingsStore()
+    let listeningStore = InMemoryProxyListeningStore()
     let controller = makeController(
-      probe: ProxyRuntimeFixture.FakeProbe.reachable(), settingsStore: settingsStore,
-      settings: ProxySettings(listen: ActivationFixture.listen, agentEnabled: true))
+      probe: ProxyRuntimeFixture.FakeProbe.reachable(), listeningStore: listeningStore,
+      settings: ProxyRuntimeSettings(listen: ActivationFixture.listen, agentEnabled: true))
     try await controller.activate(seeded.server)
     await controller.setAgentEnabled(true)
     await controller.setAgentEnabled(false)
-    XCTAssertEqual(settingsStore.saved?.agentEnabled, false, "关闭选择已持久化")
+    XCTAssertEqual(controller.controlPreferences.agentEnabled, false, "关闭选择已持久化")
 
     // GUI 重启：agent 注册态残留、运行时文件残留，恢复快照携带关闭意图。
     agent.setStatus(.registered)
@@ -68,9 +68,10 @@ final class ProxyRuntimeAgentAndSystemProxyTests: ProxyRuntimeControllerTests {
     let restarted = makeController(
       probe: ProxyRuntimeFixture.FakeProbe.reachable(),
       agentStatus: .registered,
-      settingsStore: settingsStore,
-      settingsRestore: RestoredProxySettings(
-        settings: try XCTUnwrap(settingsStore.load()), unreadableError: nil))
+      listeningStore: listeningStore,
+      settingsRestore: RestoredProxyRuntimeSettings(
+        settings: ProxyRuntimeSettings(
+          listen: ActivationFixture.listen, preferences: controlPreferences), unreadableError: nil))
 
     await restarted.resyncOnLaunch()
 
@@ -96,7 +97,7 @@ final class ProxyRuntimeAgentAndSystemProxyTests: ProxyRuntimeControllerTests {
           http: .init(host: "127.0.0.1", port: ActivationFixture.listen.httpPort),
           https: .init(host: "127.0.0.1", port: ActivationFixture.listen.httpPort),
           exceptions: FixedLocalProxyRanges.systemProxyExceptions(
-            including: ProxySettings().proxyExceptionList))
+            including: ProxyRuntimeSettings().proxyExceptionList))
       ],
       "系统代理只在本地端点健康且存在可用出口后写入")
   }
@@ -161,20 +162,21 @@ final class ProxyRuntimeAgentAndSystemProxyTests: ProxyRuntimeControllerTests {
   /// 系统代理意图持久化：GUI 重启后从恢复快照读回。
   func testSystemProxyIntentPersistsAcrossGUIRestart() async throws {
     let seeded = try makeSeededCatalog()
-    let settingsStore = InMemoryProxySettingsStore()
+    let listeningStore = InMemoryProxyListeningStore()
     let controller = makeController(
-      probe: ProxyRuntimeFixture.FakeProbe.reachable(), settingsStore: settingsStore)
+      probe: ProxyRuntimeFixture.FakeProbe.reachable(), listeningStore: listeningStore)
     try await controller.activate(seeded.server)
     await controller.setAgentEnabled(true)
     await controller.setSystemProxyEnabled(true)
-    XCTAssertEqual(settingsStore.saved?.systemProxyEnabled, true)
+    XCTAssertEqual(controller.controlPreferences.systemProxyEnabled, true)
 
     let restarted = makeController(
       probe: ProxyRuntimeFixture.FakeProbe.reachable(),
       agentStatus: .registered,
-      settingsStore: settingsStore,
-      settingsRestore: RestoredProxySettings(
-        settings: try XCTUnwrap(settingsStore.load()), unreadableError: nil))
+      listeningStore: listeningStore,
+      settingsRestore: RestoredProxyRuntimeSettings(
+        settings: ProxyRuntimeSettings(
+          listen: ActivationFixture.listen, preferences: controlPreferences), unreadableError: nil))
     XCTAssertTrue(restarted.systemProxyIntentEnabled)
 
     await restarted.resyncOnLaunch()
@@ -204,14 +206,14 @@ final class ProxyRuntimeAgentAndSystemProxyTests: ProxyRuntimeControllerTests {
 extension ProxyRuntimeAgentAndSystemProxyTests {
   func testAgentOffClearsSystemProxyBeforeStoppingListeningAndCascadesIntentOff() async throws {
     let seeded = try makeSeededCatalog()
-    let settingsStore = InMemoryProxySettingsStore()
+    let listeningStore = InMemoryProxyListeningStore()
     let eventLog = ProxyRuntimeEventLog()
     agent.eventLog = eventLog
     systemProxy.eventLog = eventLog
     let controller = makeController(
       probe: ProxyRuntimeFixture.FakeProbe.reachable(),
-      settingsStore: settingsStore,
-      settings: ProxySettings(
+      listeningStore: listeningStore,
+      settings: ProxyRuntimeSettings(
         listen: ActivationFixture.listen, agentEnabled: true, systemProxyEnabled: true))
     try await controller.activate(seeded.server)
     await controller.setAgentEnabled(true)
@@ -224,8 +226,8 @@ extension ProxyRuntimeAgentAndSystemProxyTests {
       ["register", "apply", "clear", "unregister"],
       "先清理系统设置，再停止 agent 监听")
     XCTAssertEqual(controller.systemProxyState, .idle, "级联后意图关闭且清理完成")
-    XCTAssertEqual(settingsStore.saved?.agentEnabled, false)
-    XCTAssertEqual(settingsStore.saved?.systemProxyEnabled, false, "级联关闭一并持久化")
+    XCTAssertEqual(controller.controlPreferences.agentEnabled, false)
+    XCTAssertEqual(controller.controlPreferences.systemProxyEnabled, false, "级联关闭一并持久化")
 
     // 重启 agent 不恢复系统代理意图。
     await controller.setAgentEnabled(true)
@@ -249,38 +251,25 @@ extension ProxyRuntimeAgentAndSystemProxyTests {
     XCTAssertEqual(controller.systemProxyState, .idle)
   }
 
-  /// 级联持久化失败：迁移未被记录则不清理，系统设置
-  /// 原样，意图保持待应用；agent 按用户要求停止。
-  func testAgentOffCascadePersistenceFailureLeavesSettingsAndStopsAgent() async throws {
-    // agent 关闭意图照常持久化；级联写（systemProxyEnabled=false）失败。
-    final class CascadeFailingSettingsStore: ProxySettingsStoring {
-      var saved: ProxySettings?
-      func load() throws -> ProxySettings { saved ?? ProxySettings() }
-      func save(_ settings: ProxySettings) throws {
-        if !settings.systemProxyEnabled {
-          throw ProxySettingsStoreError.corrupt(detail: "disk full")
-        }
-        saved = settings
-      }
-    }
+  /// 关闭级联独立于监听文件，仍先清理系统代理再停止服务。
+  func testAgentOffCascadeIgnoresListeningFileFailure() async throws {
     let seeded = try makeSeededCatalog()
-    let settingsStore = CascadeFailingSettingsStore()
+    let listeningStore = InMemoryProxyListeningStore()
+    listeningStore.saveError = ProxyListeningStoreError.ioFailure(detail: "disk full")
     let controller = makeController(
-      probe: ProxyRuntimeFixture.FakeProbe.reachable(),
-      settingsStore: settingsStore,
-      settings: ProxySettings(
+      probe: ProxyRuntimeFixture.FakeProbe.reachable(), listeningStore: listeningStore,
+      settings: ProxyRuntimeSettings(
         listen: ActivationFixture.listen, agentEnabled: true, systemProxyEnabled: true))
     try await controller.activate(seeded.server)
-    await controller.setAgentEnabled(true)
-    XCTAssertEqual(controller.systemProxyState, .applied)
 
     await controller.setAgentEnabled(false)
 
-    XCTAssertEqual(controller.state, .off, "agent 按用户要求停止")
-    XCTAssertEqual(systemProxy.clearCount, 0, "未持久化的迁移不触发清理")
-    XCTAssertEqual(settingsStore.saved?.systemProxyEnabled, true, "意图保持开启")
-    XCTAssertEqual(controller.settings.systemProxyEnabled, true)
-    XCTAssertEqual(controller.systemProxyState, .pending, "意图开启但 agent 已停止")
+    XCTAssertEqual(controller.state, .off)
+    XCTAssertGreaterThan(systemProxy.clearCount, 0)
+    XCTAssertFalse(controlPreferences.agentEnabled)
+    XCTAssertFalse(controlPreferences.systemProxyEnabled)
+    XCTAssertEqual(controller.systemProxyState, .idle)
+    XCTAssertNil(listeningStore.saved)
   }
 
   /// 特权 helper 待批准：意图保持待应用、系统设置不变，
@@ -326,11 +315,11 @@ extension ProxyRuntimeAgentAndSystemProxyTests {
     let secondSystemProxy = ProxyRuntimeFixture.FakeSystemProxy()
     systemProxyHelper.setStatus(.notRegistered)
     systemProxyHelper.setRegisterError(
-      ProxySettingsStoreError.corrupt(detail: "SMError"))
+      ProxyListeningStoreError.corrupt(detail: "SMError"))
     systemProxyHelper.statusAfterRegister = .notRegistered
     let second = makeController(
       probe: ProxyRuntimeFixture.FakeProbe.reachable(),
-      settings: ProxySettings(
+      settings: ProxyRuntimeSettings(
         listen: ActivationFixture.listen, agentEnabled: true, systemProxyEnabled: true),
       systemProxy: secondSystemProxy)
     try await second.activate(seeded.server)
@@ -412,7 +401,7 @@ extension ProxyRuntimeAgentAndSystemProxyTests {
     try Data("\(ProcessInfo.processInfo.processIdentifier)".utf8).write(to: runtime.pidFile)
     let controller = makeController(
       probe: ProxyRuntimeFixture.FakeProbe.reachable(),
-      settings: ProxySettings(
+      settings: ProxyRuntimeSettings(
         listen: ActivationFixture.listen, agentEnabled: true, systemProxyEnabled: true))
     try await controller.activate(seeded.server)
     await controller.setAgentEnabled(true)
@@ -487,7 +476,7 @@ extension ProxyRuntimeAgentAndSystemProxyTests {
     defer { RuntimeLog.setSink(nil) }
     let controller = makeController(
       probe: ProxyRuntimeFixture.FakeProbe.reachable(),
-      settings: ProxySettings(
+      settings: ProxyRuntimeSettings(
         listen: ActivationFixture.listen, agentEnabled: true, systemProxyEnabled: true))
     try await controller.activate(seeded.server)
     await controller.setAgentEnabled(true)

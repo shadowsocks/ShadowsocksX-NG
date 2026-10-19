@@ -108,7 +108,7 @@ enum ProxyRuntimeFixture {
     let httpPort: Int
     if let localPort {
       socksPort = localPort
-      httpPort = SslocalListenSettings.defaultHTTPPort
+      httpPort = ProxyListeningConfiguration.defaultHTTPPort
     } else {
       socksPort = defaultListenPorts.socks
       httpPort = defaultListenPorts.http
@@ -125,7 +125,7 @@ enum ProxyRuntimeFixture {
           pluginOpts: pluginOpts
         )
       ],
-      listen: SslocalListenSettings(
+      listen: ProxyListeningConfiguration(
         listenerMode: listenerMode,
         socksPort: socksPort,
         httpPort: httpPort))
@@ -320,17 +320,32 @@ enum ProxyRuntimeFixture {
   }
 }
 
-final class InMemoryProxySettingsStore: ProxySettingsStoring {
-  var saved: ProxySettings?
-  var saveError: Error?
+/// 每个夹具使用独立 defaults 域，最后一个引用释放时清理持久值。
+private final class TestProxyUserDefaults: UserDefaults, @unchecked Sendable {
+  private let domain: String
 
-  func load() throws -> ProxySettings {
-    saved ?? ProxySettings()
+  init() {
+    domain = "ng2-proxy-control-tests-\(UUID().uuidString)"
+    super.init(suiteName: domain)!
   }
 
-  func save(_ settings: ProxySettings) throws {
+  deinit { removePersistentDomain(forName: domain) }
+}
+
+func makeTestProxyControlPreferences() -> ProxyControlPreferences {
+  ProxyControlPreferences(defaults: TestProxyUserDefaults())
+}
+
+final class InMemoryProxyListeningStore: ProxyListeningStoring {
+  var saved: ProxyListeningConfiguration?
+  var saveError: Error?
+
+  func load() throws -> ProxyListeningConfiguration { saved ?? ProxyListeningConfiguration() }
+
+  func save(_ configuration: ProxyListeningConfiguration) throws {
     if let saveError { throw saveError }
-    saved = settings
+    try configuration.enforcePersistenceConstraints()
+    saved = configuration
   }
 }
 

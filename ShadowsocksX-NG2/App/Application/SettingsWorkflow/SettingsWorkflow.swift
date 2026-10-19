@@ -5,7 +5,7 @@ import Foundation
 /// The module exposes validation, occupancy facts, shared commit state, and typed
 /// commands; editor-local drafts and presentation state remain in the UI.
 ///
-/// Proxy setting writes use `SettingsCommitting`; the independent test URL
+/// Listening writes and system-proxy exceptions use `SettingsCommitting`; the test URL
 /// preference uses UserDefaults. Runtime convergence stays behind the commit seam.
 @MainActor
 final class SettingsWorkflow: ObservableObject {
@@ -116,9 +116,9 @@ final class SettingsWorkflow: ObservableObject {
       return .rejected(rejection)
     }
 
-    var proposed = committing.committedSettings
-    proposed.listen.socksPort = editorDraft.socksPort
-    proposed.listen.httpPort = editorDraft.httpPort
+    var proposed = committing.committedSettings.listen
+    proposed.socksPort = editorDraft.socksPort
+    proposed.httpPort = editorDraft.httpPort
     return await commitPortSettings(proposed, fieldGroup: editorDraft.group)
   }
 
@@ -133,22 +133,14 @@ final class SettingsWorkflow: ObservableObject {
       return .persisted
     }
 
-    var proposed = committing.committedSettings
-    proposed.proxyExceptions = value
     isCommitting = true
     lastFailure = nil
-    do {
-      try await committing.updateSettings(proposed)
-      isCommitting = false
-      lastFailure = nil
-      return .persisted
-    } catch {
-      isCommitting = false
-      return commitFailure(for: error)
-    }
+    await committing.updateProxyExceptions(value)
+    isCommitting = false
+    return .persisted
   }
 
-  func listenSettings(for editorDraft: SettingsPortDraft) -> SslocalListenSettings {
+  func listenSettings(for editorDraft: SettingsPortDraft) -> ProxyListeningConfiguration {
     listenerOccupancy.listenSettings(for: editorDraft)
   }
 
@@ -167,25 +159,25 @@ final class SettingsWorkflow: ObservableObject {
   func finishCommit() { isCommitting = false }
 
   func commitPortSettings(
-    _ proposed: ProxySettings, fieldGroup: SettingsListeningGroup? = nil
+    _ proposed: ProxyListeningConfiguration, fieldGroup: SettingsListeningGroup? = nil
   ) async -> SettingsCommandOutcome {
     guard startCommit() else { return .rejected(.inProgress) }
     defer { finishCommit() }
-    return await persistSettings(proposed, fieldGroup: fieldGroup)
+    return await persistListening(proposed, fieldGroup: fieldGroup)
   }
 
   /// 调用方持有共享提交锁；持久化结果与运行状态分别报告。
   /// store 的 `.invalid` 按编辑组归位成字段 issue；其余失败保持持久化形状。
-  func persistSettings(
-    _ proposed: ProxySettings, fieldGroup: SettingsListeningGroup? = nil
+  func persistListening(
+    _ proposed: ProxyListeningConfiguration, fieldGroup: SettingsListeningGroup? = nil
   ) async -> SettingsCommandOutcome {
     do {
-      try await committing.updateSettings(proposed)
+      try await committing.updateListening(proposed)
       lastFailure = nil
       return .persisted
     } catch {
       if let fieldGroup,
-        let error = error as? ProxySettingsStoreError,
+        let error = error as? ProxyListeningStoreError,
         case .invalid(let portErrors) = error
       {
         return .rejected(
@@ -202,7 +194,7 @@ final class SettingsWorkflow: ObservableObject {
   }
 
   private static func workflowFailure(for error: Error) -> SettingsWorkflowFailure {
-    if let error = error as? ProxySettingsStoreError {
+    if let error = error as? ProxyListeningStoreError {
       return .store(error)
     }
     return .unknown

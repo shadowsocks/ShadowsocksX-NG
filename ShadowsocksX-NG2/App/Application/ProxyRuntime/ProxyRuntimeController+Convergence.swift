@@ -68,19 +68,6 @@ extension ProxyRuntimeController {
     return actions.isEmpty
   }
 
-  /// 统一的设置持久化 epilogue：保存失败不静默偏离持久化事实——记录日志、
-  /// 呈现 `serviceFailed(.persistence)`，调用方放弃本次收敛。
-  func persistSettings(_ proposed: ProxySettings) -> Bool {
-    do {
-      try settingsStore.save(proposed)
-      return true
-    } catch {
-      RuntimeLog.emit(.runtimePersistFailed(detail: String(describing: error)))
-      state = .serviceFailed(.persistence)
-      return false
-    }
-  }
-
   /// reexpand 三-case 开关的收敛主体（显式收敛、设置保存、启动重同步共用）：
   /// deployed → 部署派生文档；目标失效 → 清除并按意图收敛；无目标 → 空监听。
   /// 幂等跳过由 apply 层的 plan 空判定承担；目录重校验（跳过名单、目标失效

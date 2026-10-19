@@ -29,7 +29,7 @@ final class RealSslocalRuleSemanticsSmokeTests: RealSslocalSmokeTests {
     ]
     for reversed in [false, true] {
       let ports = try grabThreeListenPorts(excluding: [echo.port, exit.port])
-      let listen = SslocalListenSettings(socksPort: ports[0], httpPort: ports[1])
+      let listen = ProxyListeningConfiguration(socksPort: ports[0], httpPort: ports[1])
       let bypass = bypass + [reversed ? "::ffff:127.0.0.1/128" : "127.0.0.1/32"]
       let lines =
         [defaultHeader, "[bypass_list]"]
@@ -69,7 +69,8 @@ final class RealSslocalRuleSemanticsSmokeTests: RealSslocalSmokeTests {
   }
 
   private func assertDomainRuleSemantics(
-    listen: SslocalListenSettings, exit: ConnectionCountingServer, port: Int, unmatchedProxies: Bool
+    listen: ProxyListeningConfiguration, exit: ConnectionCountingServer, port: Int,
+    unmatchedProxies: Bool
   ) throws {
     for host in [
       "overlap.invalid", "a.overlap.invalid", "a.partial.invalid",

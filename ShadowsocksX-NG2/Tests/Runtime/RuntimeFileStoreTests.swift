@@ -88,7 +88,7 @@ final class RuntimeFileStoreTests: XCTestCase {
     XCTAssertThrowsError(
       try store.write(
         SslocalRuntimeDocument(
-          servers: [], listen: SslocalListenSettings(socksPort: 0))))
+          servers: [], listen: ProxyListeningConfiguration(socksPort: 0))))
     XCTAssertNil(store.loadDocument())
   }
 
@@ -113,7 +113,7 @@ final class RuntimeFileStoreTests: XCTestCase {
     ) -> SslocalRuntimeDocument {
       SslocalRuntimeDocument(
         servers: servers,
-        listen: SslocalListenSettings(
+        listen: ProxyListeningConfiguration(
           socksPort: localPort))
     }
     func server(

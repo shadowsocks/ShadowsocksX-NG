@@ -211,7 +211,7 @@ final class RealSslocalListenerSmokeTests: RealSslocalSmokeTests {
           plugin: nil,
           pluginOpts: nil)
       ],
-      listen: SslocalListenSettings(
+      listen: ProxyListeningConfiguration(
         socksPort: socksPort, httpPort: httpPort))
     let wrapper = try launchWrapper(document)
 
@@ -252,7 +252,7 @@ final class RealSslocalListenerSmokeTests: RealSslocalSmokeTests {
     let selectedPorts = Array(ports)
     let document = SslocalRuntimeDocument(
       servers: [],
-      listen: SslocalListenSettings(
+      listen: ProxyListeningConfiguration(
         socksPort: selectedPorts[0], httpPort: selectedPorts[1]))
     XCTAssertTrue(document.isWellFormed, "空服务器列表契约有效")
     let wrapper = try launchWrapper(document)

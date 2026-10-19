@@ -19,18 +19,19 @@ struct ConnectivityFormalRuntimeTests {
       }
     }
     let controller = ProxyRuntimeController(
+      controlPreferences: makeTestProxyControlPreferences(),
       catalogSnapshotReader: ProxyRuntimeFixture.catalogSnapshotReader(
         at: runtime.directory.appendingPathComponent("catalog.json")),
       activationFileStore: ActivationStateFileStore(
         fileURL: runtime.directory.appendingPathComponent("activation.json")),
       runtimeFileStore: fileStore, credentials: credentials, plugins: ActivationFixture.plugins,
-      settingsStore: store,
+      listeningStore: store,
       customRuleStore: CustomRuleStore(
         fileURL: runtime.directory.appendingPathComponent("rules.json")),
       appBundle: AppArtifact.bundle,
       ruleSnapshots: BuiltinRuleSnapshots(loader: ProxyRuntimeFixture.controlFlowRuleSnapshot),
-      settingsRestore: RestoredProxySettings(
-        settings: ProxySettings(listen: ActivationFixture.listen), unreadableError: nil),
+      settingsRestore: RestoredProxyRuntimeSettings(
+        settings: ProxyRuntimeSettings(listen: ActivationFixture.listen), unreadableError: nil),
       agent: agent,
       probe: ProxyRuntimeFixture.FakeProbe.reachable(), systemProxy: systemProxy,
       systemProxyHelper: ProxyRuntimeFixture.FakeSystemProxyHelperService(),

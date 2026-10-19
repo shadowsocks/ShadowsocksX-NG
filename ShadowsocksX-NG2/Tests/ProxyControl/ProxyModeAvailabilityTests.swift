@@ -12,23 +12,23 @@ final class ProxyModeAvailabilityTests: XCTestCase {
   }
 
   func testDirectModeUsesLocalSOCKSAndIncludesFixedBypasses() {
-    let document = SslocalRuntimeDocument(servers: [], listen: SslocalListenSettings())
+    let document = SslocalRuntimeDocument(servers: [], listen: ProxyListeningConfiguration())
 
     let configuration = ProxyMode.direct.systemProxyConfiguration(for: document)
 
     XCTAssertEqual(
       configuration.socks,
-      .init(host: "127.0.0.1", port: SslocalListenSettings.defaultSocksPort))
+      .init(host: "127.0.0.1", port: ProxyListeningConfiguration.defaultSocksPort))
     XCTAssertEqual(
       configuration.http,
-      .init(host: "127.0.0.1", port: SslocalListenSettings.defaultHTTPPort))
+      .init(host: "127.0.0.1", port: ProxyListeningConfiguration.defaultHTTPPort))
     XCTAssertEqual(
       configuration.exceptions,
       FixedLocalProxyRanges.systemProxyExceptions)
   }
 
   func testIPv6LANModeKeepsLocalSystemProxyEndpoints() {
-    let listen = SslocalListenSettings(listenerMode: .allIPv6Interfaces)
+    let listen = ProxyListeningConfiguration(listenerMode: .allIPv6Interfaces)
     let document = SslocalRuntimeDocument(servers: [], listen: listen)
 
     let configuration = ProxyMode.direct.systemProxyConfiguration(for: document)
@@ -40,16 +40,16 @@ final class ProxyModeAvailabilityTests: XCTestCase {
   /// 全局模式：系统 SOCKS/HTTP 投影 + 固定本地例外，与直连共用
   /// 同一安全范围；公网路由由 ACL 决定，不由系统例外决定。
   func testGlobalModeUsesLocalSOCKSAndIncludesFixedBypasses() {
-    let document = SslocalRuntimeDocument(servers: [], listen: SslocalListenSettings())
+    let document = SslocalRuntimeDocument(servers: [], listen: ProxyListeningConfiguration())
 
     let configuration = ProxyMode.global.systemProxyConfiguration(for: document)
 
     XCTAssertEqual(
       configuration.socks,
-      .init(host: "127.0.0.1", port: SslocalListenSettings.defaultSocksPort))
+      .init(host: "127.0.0.1", port: ProxyListeningConfiguration.defaultSocksPort))
     XCTAssertEqual(
       configuration.http,
-      .init(host: "127.0.0.1", port: SslocalListenSettings.defaultHTTPPort))
+      .init(host: "127.0.0.1", port: ProxyListeningConfiguration.defaultHTTPPort))
     XCTAssertEqual(
       configuration.exceptions,
       FixedLocalProxyRanges.systemProxyExceptions)

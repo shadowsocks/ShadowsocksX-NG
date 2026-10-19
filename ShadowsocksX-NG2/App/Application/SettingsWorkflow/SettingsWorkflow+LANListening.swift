@@ -8,7 +8,7 @@ extension SettingsWorkflow {
     let password: String
     if let raw = lan.passwordReference {
       guard let saved = try credentials.secret(for: CredentialReference(rawValue: raw)) else {
-        throw ProxySettingsStoreError.credentialFailure(detail: String(localized: "局域网身份验证密码不可读"))
+        throw ProxyListeningStoreError.credentialFailure(detail: String(localized: "局域网身份验证密码不可读"))
       }
       password = saved
     } else {
@@ -39,31 +39,30 @@ extension SettingsWorkflow {
     guard startCommit() else { return .rejected(.inProgress) }
     defer { finishCommit() }
     guard draft.ports.group == .lan else { return .rejected(.superseded) }
-    let base = committing.committedSettings
-    var proposed = base
-    proposed.listen = listenSettings(for: draft.ports)
+    let base = committing.committedSettings.listen
+    var proposed = listenSettings(for: draft.ports)
     if let rejection = await listenerOccupancy.recheck(draft.ports) { return .rejected(rejection) }
-    guard base == committing.committedSettings else {
+    guard base == committing.committedSettings.listen else {
       listenerOccupancy.refresh(draft.ports)
       return .rejected(.superseded)
     }
-    proposed.listen.lan.udpRelayEnabled = draft.udpRelayEnabled
-    proposed.listen.lan.authenticationEnabled = draft.authenticationEnabled
-    proposed.listen.lan.username = draft.username
+    proposed.lan.udpRelayEnabled = draft.udpRelayEnabled
+    proposed.lan.authenticationEnabled = draft.authenticationEnabled
+    proposed.lan.username = draft.username
     return await saveLANCredentials(
       proposed, password: draft.password,
-      oldReference: base.listen.lan.passwordReference)
+      oldReference: base.lan.passwordReference)
   }
 
   private func saveLANCredentials(
-    _ settings: ProxySettings, password: String,
+    _ settings: ProxyListeningConfiguration, password: String,
     oldReference: String?
   ) async -> SettingsCommandOutcome {
     var proposed = settings
     if let old = oldReference {
       do {
         if try credentials.secret(for: CredentialReference(rawValue: old)) == password {
-          return await persistSettings(proposed, fieldGroup: .lan)
+          return await persistListening(proposed, fieldGroup: .lan)
         }
       } catch {
         return .commitFailed(
@@ -71,9 +70,9 @@ extension SettingsWorkflow {
       }
     }
     // 身份验证启用时，新写入 keychain 的秘密必须可直接用于运行时认证文件。
-    if proposed.listen.lan.authenticationEnabled,
+    if proposed.lan.authenticationEnabled,
       !RuntimeListenerAuthentication.validPassword(password)
-        || !RuntimeListenerAuthentication.validUsername(proposed.listen.lan.username)
+        || !RuntimeListenerAuthentication.validUsername(proposed.lan.username)
     {
       return .commitFailed(
         .store(.credentialFailure(detail: String(localized: "用户名或密码无效"))))
@@ -82,8 +81,8 @@ extension SettingsWorkflow {
     var journal = CredentialWriteJournal(credentials: credentials)
     do {
       try journal.save(password, for: reference)
-      proposed.listen.lan.passwordReference = reference.rawValue
-      let outcome = await persistSettings(proposed, fieldGroup: .lan)
+      proposed.lan.passwordReference = reference.rawValue
+      let outcome = await persistListening(proposed, fieldGroup: .lan)
       if case .persisted = outcome {
         if let old = oldReference {
           try? credentials.delete(CredentialReference(rawValue: old))

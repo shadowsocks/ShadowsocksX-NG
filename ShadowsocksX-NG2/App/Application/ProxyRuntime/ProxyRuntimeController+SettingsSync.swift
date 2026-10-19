@@ -68,16 +68,21 @@ extension ProxyRuntimeController {
     }
   }
 
-  /// Persists a fully validated settings snapshot and, when the agent is
-  /// running, re-derives the same runtime path with the new snapshot. Runtime
-  /// status remains observable through the controller's status stream.
-  func updateSettings(_ proposed: ProxySettings) async throws {
-    let catalog = catalogSnapshotReader.catalogSnapshot
-    try settingsStore.save(proposed)
-    settings = proposed
+  /// 保存监听配置后更新内存并收敛；文件失败不发布新值。
+  func updateListening(_ proposed: ProxyListeningConfiguration) async throws {
+    try listeningStore.save(proposed)
+    settings.listen = proposed
     settingsUnreadable = false
     guard state != .off else { return }
-    await convergeToReexpanded(catalog)
+    await convergeToReexpanded(catalogSnapshotReader.catalogSnapshot)
+  }
+
+  /// 系统代理例外是独立偏好；更新后沿用当前运行配置派生与系统代理应用路径。
+  func updateProxyExceptions(_ value: String) async {
+    controlPreferences.proxyExceptions = value
+    settings.proxyExceptions = value
+    guard state != .off else { return }
+    await convergeToReexpanded(catalogSnapshotReader.catalogSnapshot)
   }
 
   /// Applies the post-import 2.0 runtime boundary without touching
@@ -95,10 +100,9 @@ extension ProxyRuntimeController {
     // 导入边界不触碰 SystemConfiguration（既有不变量），系统代理状态面同
     // 样不动：它呈现的是系统设置的真实作用，不由导入改写。
 
-    if let restored = try? settingsStore.load() {
-      settings = restored
+    if let restored = try? listeningStore.load() {
+      settings.listen = restored
       settingsUnreadable = false
-      proxyMode = Self.makeProxyMode(from: restored)
     }
     let persistedTarget = try? activationFileStore.loadActiveTargetID()
     machine = ActivationStateMachine(activeTargetID: persistedTarget ?? nil)

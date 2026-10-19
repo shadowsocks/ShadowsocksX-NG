@@ -42,12 +42,12 @@ func waitForPortEditorOccupancy(
 /// 不触碰真实偏好文件、钥匙串或运行时。
 @MainActor
 final class FakeSettingsCommitter: SettingsCommitting {
-  var committedSettings: ProxySettings = ProxySettings()
+  var committedSettings: ProxyRuntimeSettings = ProxyRuntimeSettings()
   var runtimeListenFacts: RuntimeListenFacts?
   var runtimeListenerProcessID: Int32?
   var updateError: Error?
   var updateGate: AsyncGate?
-  private(set) var updateCalls: [ProxySettings] = []
+  private(set) var updateCalls: [ProxyRuntimeSettings] = []
 
   var isProxyRunning: Bool {
     get { runtimeListenFacts != nil }
@@ -56,19 +56,26 @@ final class FakeSettingsCommitter: SettingsCommitting {
     }
   }
 
-  func updateSettings(_ proposed: ProxySettings) async throws {
+  func updateListening(_ proposed: ProxyListeningConfiguration) async throws {
     if let updateError { throw updateError }
     try proposed.enforcePersistenceConstraints()
     if let updateGate { await updateGate.wait() }
-    updateCalls.append(proposed)
-    committedSettings = proposed
+    committedSettings.listen = proposed
+    updateCalls.append(committedSettings)
+  }
+
+  func updateProxyExceptions(_ value: String) async {
+    if let updateGate { await updateGate.wait() }
+    committedSettings.proxyExceptions = value
+    updateCalls.append(committedSettings)
   }
 
   func updateListenerMode(_ mode: ListenerMode) async throws {
-    var proposed = committedSettings
-    proposed.listen.listenerMode = mode
-    try await updateSettings(proposed)
+    var proposed = committedSettings.listen
+    proposed.listenerMode = mode
+    try await updateListening(proposed)
   }
+
 }
 
 /// 可重复使用的异步门闩，用于证明 workflow 在提交等待期间拒绝第二次命令。

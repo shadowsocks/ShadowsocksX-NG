@@ -8,6 +8,7 @@ import XCTest
 /// 触真实 SMAppService/launchd/SystemConfiguration）。
 @MainActor
 class ProxyRuntimeControllerTests: XCTestCase {
+  var controlPreferences: ProxyControlPreferences!
   var runtime: ProxyRuntimeFixture.TemporaryRuntime!
   var catalogFileURL: URL!
   var activationFileURL: URL!
@@ -75,6 +76,7 @@ class ProxyRuntimeControllerTests: XCTestCase {
 
   override func setUp() async throws {
     try await super.setUp()
+    controlPreferences = makeTestProxyControlPreferences()
     runtime = ProxyRuntimeFixture.makeTemporaryRuntime()
     catalogFileURL = runtime.directory.appendingPathComponent("catalog.json")
     activationFileURL = runtime.directory.appendingPathComponent("activation.json")
@@ -110,10 +112,10 @@ class ProxyRuntimeControllerTests: XCTestCase {
   func makeController(
     probe: EndpointProbing,
     agentStatus: LaunchAgentStatus = .notRegistered,
-    listen: SslocalListenSettings = ActivationFixture.listen,
-    settingsStore: ProxySettingsStoring? = nil,
-    settings: ProxySettings? = nil,
-    settingsRestore: RestoredProxySettings? = nil,
+    listen: ProxyListeningConfiguration = ActivationFixture.listen,
+    listeningStore: ProxyListeningStoring? = nil,
+    settings: ProxyRuntimeSettings? = nil,
+    settingsRestore: RestoredProxyRuntimeSettings? = nil,
     proxyMode: ProxyMode? = .rule,
     systemProxy: SystemProxyControlling? = nil,
     networkChangeMonitor: SystemProxyNetworkChangeMonitoring? = nil,
@@ -149,17 +151,24 @@ class ProxyRuntimeControllerTests: XCTestCase {
     }
     let restored =
       settingsRestore
-      ?? RestoredProxySettings(
-        // 控制器行为用例默认「用户已打开 Agent」；出厂默认 off 由 ProxySettingsTests 锁定。
-        settings: settings ?? ProxySettings(listen: listen, agentEnabled: true),
+      ?? RestoredProxyRuntimeSettings(
+        // 控制器行为用例默认「用户已打开 Agent」；出厂默认 off 由 ProxyRuntimeSettingsTests 锁定。
+        settings: settings ?? ProxyRuntimeSettings(listen: listen, agentEnabled: true),
         unreadableError: nil)
+    // Fixture snapshots represent previously saved intent, matching production bootstrap.
+    controlPreferences.preferredMode = restored.settings.preferredMode
+    controlPreferences.ruleDefaultAction = restored.settings.ruleDefaultAction
+    controlPreferences.agentEnabled = restored.settings.agentEnabled
+    controlPreferences.systemProxyEnabled = restored.settings.systemProxyEnabled
+    controlPreferences.proxyExceptions = restored.settings.proxyExceptions
     return ProxyRuntimeController(
+      controlPreferences: controlPreferences,
       catalogSnapshotReader: ProxyRuntimeFixture.catalogSnapshotReader(at: catalogFileURL),
       activationFileStore: ActivationStateFileStore(fileURL: activationFileURL),
       runtimeFileStore: runtimeFileStore,
       credentials: credentials,
       plugins: ActivationFixture.plugins,
-      settingsStore: settingsStore ?? InMemoryProxySettingsStore(),
+      listeningStore: listeningStore ?? InMemoryProxyListeningStore(),
       customRuleStore: customRuleStore
         ?? CustomRuleStore(fileURL: runtime.directory.appendingPathComponent("custom-rules.json")),
       appBundle: AppArtifact.bundle,
@@ -196,7 +205,7 @@ final class ProxyRuntimeControllerCoreTests: ProxyRuntimeControllerTests {
     let seeded = try makeSeededCatalog()
     let controller = makeController(
       probe: ProxyRuntimeFixture.FakeProbe.reachable(),
-      settings: ProxySettings(listen: ActivationFixture.listen, agentEnabled: false))
+      settings: ProxyRuntimeSettings(listen: ActivationFixture.listen, agentEnabled: false))
     var observed: NodeID?
     let cancellable = controller.factChanges.changes.sink { @MainActor _ in
       observed = controller.activeTargetID
@@ -261,7 +270,7 @@ final class ProxyRuntimeControllerCoreTests: ProxyRuntimeControllerTests {
     let seeded = try makeSeededCatalog()
     let controller = makeController(
       probe: ProxyRuntimeFixture.FakeProbe.reachable(),
-      settings: ProxySettings(
+      settings: ProxyRuntimeSettings(
         listen: ActivationFixture.listen,
         preferredMode: .global,
         agentEnabled: true,
@@ -278,7 +287,7 @@ final class ProxyRuntimeControllerCoreTests: ProxyRuntimeControllerTests {
           http: .init(host: "127.0.0.1", port: 11087),
           https: .init(host: "127.0.0.1", port: 11087),
           exceptions: FixedLocalProxyRanges.systemProxyExceptions(
-            including: ProxySettings().proxyExceptionList))
+            including: ProxyRuntimeSettings().proxyExceptionList))
       ])
 
     await controller.setProxyMode(.rule)
@@ -291,7 +300,7 @@ final class ProxyRuntimeControllerCoreTests: ProxyRuntimeControllerTests {
         http: .init(host: "127.0.0.1", port: 11087),
         https: .init(host: "127.0.0.1", port: 11087),
         exceptions: FixedLocalProxyRanges.systemProxyExceptions(
-          including: ProxySettings().proxyExceptionList)))
+          including: ProxyRuntimeSettings().proxyExceptionList)))
 
     await controller.setAgentEnabled(false)
     XCTAssertEqual(controller.state, .off)

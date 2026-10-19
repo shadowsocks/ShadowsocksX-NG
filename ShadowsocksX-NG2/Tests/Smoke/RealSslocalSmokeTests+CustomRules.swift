@@ -10,7 +10,7 @@ final class RealSslocalCustomRuleSmokeTests: RealSslocalSmokeTests {
     let echoServer = try LoopbackEchoServer()
     let fakeSSServer = try ConnectionCountingServer()
     let selectedPorts = try grabThreeListenPorts(excluding: [echoServer.port, fakeSSServer.port])
-    let listen = SslocalListenSettings(
+    let listen = ProxyListeningConfiguration(
       socksPort: selectedPorts[0], httpPort: selectedPorts[1])
     let customRules = [
       ProxyRule(
@@ -51,7 +51,7 @@ final class RealSslocalCustomRuleSmokeTests: RealSslocalSmokeTests {
   }
 
   private func assertCustomCIDRBypass(
-    servers: [SslocalServerDocument], listen: SslocalListenSettings,
+    servers: [SslocalServerDocument], listen: ProxyListeningConfiguration,
     echo: LoopbackEchoServer, exit: ConnectionCountingServer
   ) throws {
     let cidrDocument = SslocalRuntimeDocument(
@@ -74,7 +74,7 @@ final class RealSslocalCustomRuleSmokeTests: RealSslocalSmokeTests {
 
   /// 后缀与完整域名使用互不覆盖的夹具，分别证明直连完成。
   private func assertCustomDirectRulesBypass(
-    listen: SslocalListenSettings, echoPort: Int, fakeSS: ConnectionCountingServer
+    listen: ProxyListeningConfiguration, echoPort: Int, fakeSS: ConnectionCountingServer
   ) throws {
     let beforeDirect = fakeSS.connectionCount
     for host in ["sub.direct.example", "exact.other.example"] {
@@ -85,7 +85,7 @@ final class RealSslocalCustomRuleSmokeTests: RealSslocalSmokeTests {
 
   /// 未匹配目标默认代理；HTTP 入站应用同一自定义规则 ACL。
   private func assertCustomUnmatchedProxies(
-    listen: SslocalListenSettings, echoPort: Int, fakeSS: ConnectionCountingServer
+    listen: ProxyListeningConfiguration, echoPort: Int, fakeSS: ConnectionCountingServer
   ) throws {
     let beforeHit = fakeSS.connectionCount
     _ = performSocksConnectReply(
@@ -123,7 +123,7 @@ final class RealSslocalCustomRuleSmokeTests: RealSslocalSmokeTests {
     let echoServer = try LoopbackEchoServer()
     let fakeSSServer = try ConnectionCountingServer()
     let selectedPorts = try grabThreeListenPorts(excluding: [echoServer.port, fakeSSServer.port])
-    let listen = SslocalListenSettings(
+    let listen = ProxyListeningConfiguration(
       socksPort: selectedPorts[0], httpPort: selectedPorts[1])
     let customRules = [
       ProxyRule(
@@ -159,7 +159,7 @@ final class RealSslocalCustomRuleSmokeTests: RealSslocalSmokeTests {
 
   /// 自定义代理候选命中 SS；未匹配直连；HTTP 入站共用 ACL。
   private func assertCustomProxyCandidatesHitSS(
-    listen: SslocalListenSettings, echoPort: Int, fakeSS: ConnectionCountingServer
+    listen: ProxyListeningConfiguration, echoPort: Int, fakeSS: ConnectionCountingServer
   ) throws {
     let beforeHit = fakeSS.connectionCount
     _ = performSocksConnectReply(

@@ -5,12 +5,12 @@ import Testing
 
 @MainActor
 struct ConnectivitySettingsTests {
-  @Test func customURLPersistsWithoutCredentialsOrProxySettingsCommit() async throws {
+  @Test func customURLPersistsWithoutCredentialsOrProxyRuntimeSettingsCommit() async throws {
     let suite = "ConnectivitySettingsTests.\(UUID().uuidString)"
     let defaults = try #require(UserDefaults(suiteName: suite))
     defer { defaults.removePersistentDomain(forName: suite) }
     let committer = FakeSettingsCommitter()
-    committer.updateError = ProxySettingsStoreError.ioFailure(detail: "must not commit")
+    committer.updateError = ProxyListeningStoreError.ioFailure(detail: "must not commit")
     let credentials = UnavailableConnectivityCredentials()
     let workflow = SettingsWorkflow(
       committing: committer, credentials: credentials, connectivityDefaults: defaults)
@@ -19,7 +19,7 @@ struct ConnectivitySettingsTests {
     let url = "http://example.com/probe?token=public"
     #expect(await workflow.saveConnectivityURL(url))
     #expect(workflow.beginConnectivityURLEditing() == url)
-    #expect(committer.committedSettings == ProxySettings())
+    #expect(committer.committedSettings == ProxyRuntimeSettings())
     #expect(published.map(\.absoluteString) == [url])
     let reopened = SettingsWorkflow(
       committing: committer, credentials: credentials, connectivityDefaults: defaults)
@@ -61,24 +61,24 @@ struct ConnectivitySettingsTests {
     #expect(published.count == 2)
   }
 
-  @Test func oldCredentialReferenceIsIgnoredWithoutLosingOtherSettings() throws {
+  @Test func oldCredentialReferenceIsIgnoredWithoutAccessingKeychain() throws {
     let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
     defer { try? FileManager.default.removeItem(at: directory) }
-    let file = directory.appendingPathComponent("settings.json")
+    let file = directory.appendingPathComponent("proxy-listening.json")
     try Data(
       #"{"connectivityURLReference":{"obsolete":true},"preferredMode":"global"}"#.utf8
     ).write(to: file)
-    let store = ProxySettingsFileStore(fileURL: file)
+    let store = ProxyListeningFileStore(fileURL: file)
     let settings = try store.load()
-    #expect(settings.preferredMode == .global)
+    #expect(settings == ProxyListeningConfiguration())
     try store.save(settings)
     #expect(try !String(contentsOf: file, encoding: .utf8).contains("connectivityURLReference"))
     let suite = "ConnectivitySettingsTests.\(UUID().uuidString)"
     let defaults = try #require(UserDefaults(suiteName: suite))
     defer { defaults.removePersistentDomain(forName: suite) }
     let committer = FakeSettingsCommitter()
-    committer.committedSettings = settings
+    committer.committedSettings.listen = settings
     let workflow = SettingsWorkflow(
       committing: committer, credentials: UnavailableConnectivityCredentials(),
       connectivityDefaults: defaults)

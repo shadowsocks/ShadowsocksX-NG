@@ -6,10 +6,7 @@ import Testing
 /// 通过模式命令验证配置派生失败和无 ACL 变化路径，不调用恢复实现。
 @MainActor
 struct RuntimeConvergenceTests {
-  @Test(arguments: [false, true])
-  func modeDerivationFailurePreservesNewIntentAndPublishedFiles(
-    restorePersistenceFails: Bool
-  ) async throws {
+  @Test func modeDerivationFailurePreservesNewIntentAndPublishedFiles() async throws {
     let fixture = try Fixture(
       systemProxyEnabled: true,
       snapshots: BuiltinRuleSnapshots(loader: { _ in throw RuleSnapshotError.missing }))
@@ -17,7 +14,6 @@ struct RuntimeConvergenceTests {
     try await fixture.controller.activate(fixture.server)
     let previous = try #require(fixture.runtimeStore.loadDocument())
     let appliedCount = fixture.proxy.applied.count
-    fixture.settings.rejectGlobalMode = restorePersistenceFails
 
     await fixture.controller.setProxyMode(.rule)
 
@@ -27,7 +23,7 @@ struct RuntimeConvergenceTests {
     #expect(
       fixture.controller.state
         == .serviceFailed(.runtimeFile))
-    #expect(fixture.settings.saved?.preferredMode == .rule)
+    #expect(fixture.controller.controlPreferences.preferredMode == .rule)
     #expect(fixture.controller.systemProxyState == .applied)
     #expect(fixture.proxy.applied.count == appliedCount)
     #expect(fixture.proxy.clearCount == 0)
@@ -107,7 +103,7 @@ struct RuntimeConvergenceTests {
     // 全局模式仍保存规则默认动作，但它不改变全局 ACL。
     await fixture.controller.setRuleDefaultAction(.directWhenUnmatched)
 
-    #expect(fixture.settings.saved?.ruleDefaultAction == .directWhenUnmatched)
+    #expect(fixture.controller.controlPreferences.ruleDefaultAction == .directWhenUnmatched)
     #expect(fixture.controller.proxyMode == .global)
     #expect(fixture.controller.state == .running)
     #expect(try Data(contentsOf: fixture.runtimeStore.fileURL) == bytes)
@@ -123,7 +119,7 @@ struct RuntimeConvergenceTests {
     let agent = ProxyRuntimeFixture.FakeLaunchAgent()
     let probe = ProxyRuntimeFixture.FakeProbe.reachable()
     let proxy = ProxyRuntimeFixture.FakeSystemProxy()
-    let settings = ModeRestoreSettingsStore()
+    let settings = InMemoryProxyListeningStore()
     let signals = ProxyRuntimeControllerTests.SignalRecorder()
     let runtimeStore: RuntimeFileStore
     let controller: ProxyRuntimeController
@@ -155,16 +151,17 @@ struct RuntimeConvergenceTests {
         }
       }
       controller = ProxyRuntimeController(
+        controlPreferences: makeTestProxyControlPreferences(),
         catalogSnapshotReader: ProxyRuntimeFixture.catalogSnapshotReader(at: catalogURL),
         activationFileStore: ActivationStateFileStore(
           fileURL: runtime.directory.appendingPathComponent("activation.json")),
         runtimeFileStore: runtimeStore, credentials: credentials,
-        plugins: ActivationFixture.plugins, settingsStore: settings,
+        plugins: ActivationFixture.plugins, listeningStore: settings,
         customRuleStore: CustomRuleStore(
           fileURL: runtime.directory.appendingPathComponent("rules.json")),
         appBundle: AppArtifact.bundle, ruleSnapshots: snapshots,
-        settingsRestore: RestoredProxySettings(
-          settings: ProxySettings(
+        settingsRestore: RestoredProxyRuntimeSettings(
+          settings: ProxyRuntimeSettings(
             listen: ActivationFixture.listen, preferredMode: .global,
             agentEnabled: true, systemProxyEnabled: systemProxyEnabled),
           unreadableError: nil),
@@ -181,15 +178,17 @@ struct RuntimeConvergenceTests {
 
     func reopeningController() -> ProxyRuntimeController {
       ProxyRuntimeController(
+        controlPreferences: makeTestProxyControlPreferences(),
         catalogSnapshotReader: controller.catalogSnapshotReader,
         activationFileStore: controller.activationFileStore,
         runtimeFileStore: runtimeStore, credentials: InMemoryCredentialStore(),
-        plugins: ActivationFixture.plugins, settingsStore: settings,
+        plugins: ActivationFixture.plugins, listeningStore: settings,
         customRuleStore: CustomRuleStore(
           fileURL: runtime.directory.appendingPathComponent("rules.json")),
         appBundle: AppArtifact.bundle,
         ruleSnapshots: BuiltinRuleSnapshots(loader: ProxyRuntimeFixture.controlFlowRuleSnapshot),
-        settingsRestore: RestoredProxySettings(settings: controller.settings, unreadableError: nil),
+        settingsRestore: RestoredProxyRuntimeSettings(
+          settings: controller.settings, unreadableError: nil),
         agent: agent, probe: probe, systemProxy: proxy,
         systemProxyHelper: ProxyRuntimeFixture.FakeSystemProxyHelperService(),
         firewallChecker: ProxyRuntimeFixture.FakeFirewallChecker(),
@@ -205,20 +204,5 @@ struct RuntimeConvergenceTests {
       controller.cancelFirewallObservation()
       try? FileManager.default.removeItem(at: runtime.directory)
     }
-  }
-}
-
-private final class ModeRestoreSettingsStore: ProxySettingsStoring {
-  private let store = InMemoryProxySettingsStore()
-  var rejectGlobalMode = false
-  var saved: ProxySettings? { store.saved }
-
-  func load() throws -> ProxySettings { try store.load() }
-
-  func save(_ settings: ProxySettings) throws {
-    if rejectGlobalMode && settings.preferredMode == .global {
-      throw ProxySettingsStoreError.ioFailure(detail: "restore fixture failure")
-    }
-    try store.save(settings)
   }
 }

@@ -8,6 +8,7 @@ import XCTest
 /// SystemConfiguration（这些替身测试不构成真实系统写入验证）。
 @MainActor
 final class ProxyControlWorkflowIntegrationTests: XCTestCase {
+  var controlPreferences: ProxyControlPreferences!
   private var runtime: ProxyRuntimeFixture.TemporaryRuntime!
   private var catalogFileURL: URL!
   private var activationFileURL: URL!
@@ -19,6 +20,7 @@ final class ProxyControlWorkflowIntegrationTests: XCTestCase {
 
   override func setUp() async throws {
     try await super.setUp()
+    controlPreferences = makeTestProxyControlPreferences()
     runtime = ProxyRuntimeFixture.makeTemporaryRuntime()
     catalogFileURL = runtime.directory.appendingPathComponent("catalog.json")
     activationFileURL = runtime.directory.appendingPathComponent("activation.json")
@@ -53,8 +55,8 @@ final class ProxyControlWorkflowIntegrationTests: XCTestCase {
   func makeProxies(
     probe: EndpointProbing,
     agentStatus: LaunchAgentStatus = .notRegistered,
-    settingsStore: ProxySettingsStoring? = nil,
-    settings: ProxySettings? = nil,
+    listeningStore: ProxyListeningStoring? = nil,
+    settings: ProxyRuntimeSettings? = nil,
     proxyMode: ProxyMode = .rule
   ) -> Composition {
     agent.setStatus(agentStatus)
@@ -64,17 +66,18 @@ final class ProxyControlWorkflowIntegrationTests: XCTestCase {
       try? runtimeFileStore.writeRuntimeReceipt(for: document, processID: 42)
     }
     let controller = ProxyRuntimeController(
+      controlPreferences: controlPreferences,
       catalogSnapshotReader: ProxyRuntimeFixture.catalogSnapshotReader(at: catalogFileURL),
       activationFileStore: ActivationStateFileStore(fileURL: activationFileURL),
       runtimeFileStore: runtimeFileStore,
       credentials: credentials,
       plugins: ActivationFixture.plugins,
-      settingsStore: settingsStore ?? InMemoryProxySettingsStore(),
+      listeningStore: listeningStore ?? InMemoryProxyListeningStore(),
       appBundle: AppArtifact.bundle,
       // Keep real ACL compilation; corpus coverage belongs to the packaged-rule tests.
       ruleSnapshots: BuiltinRuleSnapshots(loader: ProxyRuntimeFixture.controlFlowRuleSnapshot),
-      settingsRestore: RestoredProxySettings(
-        settings: settings ?? ProxySettings(listen: ActivationFixture.listen),
+      settingsRestore: RestoredProxyRuntimeSettings(
+        settings: settings ?? ProxyRuntimeSettings(listen: ActivationFixture.listen),
         unreadableError: nil),
       agent: agent, probe: probe,
       systemProxy: systemProxy,
@@ -114,7 +117,7 @@ final class ProxyControlWorkflowIntegrationTests: XCTestCase {
     _ = try makeSeededCatalog()
     let composition = makeProxies(
       probe: ProxyRuntimeFixture.FakeProbe.reachable(),
-      settings: ProxySettings(listen: ActivationFixture.listen, agentEnabled: false))
+      settings: ProxyRuntimeSettings(listen: ActivationFixture.listen, agentEnabled: false))
 
     let snapshot = await composition.control.setAgentEnabled(true)
 
@@ -210,7 +213,7 @@ final class ProxyControlWorkflowIntegrationTests: XCTestCase {
     let server = try makeSeededCatalog()
     let composition = makeProxies(
       probe: ProxyRuntimeFixture.FakeProbe.reachable(),
-      settings: ProxySettings(
+      settings: ProxyRuntimeSettings(
         listen: ActivationFixture.listen, agentEnabled: true, systemProxyEnabled: true))
     _ = try await composition.catalog.activate(server)
     _ = await composition.control.setAgentEnabled(true)
@@ -229,51 +232,50 @@ final class ProxyControlWorkflowIntegrationTests: XCTestCase {
 
   func testModeSwitchWhileOffPersistsAndSnapshotConvergesWithoutRuntimeTouch() async throws {
     _ = try makeSeededCatalog()
-    let settingsStore = InMemoryProxySettingsStore()
+    let listeningStore = InMemoryProxyListeningStore()
     let composition = makeProxies(
       probe: ProxyRuntimeFixture.FakeProbe.reachable(),
-      settingsStore: settingsStore,
-      settings: ProxySettings(listen: ActivationFixture.listen, agentEnabled: false))
+      listeningStore: listeningStore,
+      settings: ProxyRuntimeSettings(listen: ActivationFixture.listen, agentEnabled: false))
 
     let snapshot = await composition.control.setProxyMode(.global)
 
     XCTAssertEqual(snapshot.proxyMode, .global)
     XCTAssertEqual(snapshot.runtime, ProxyRuntimeFacts(status: .off, isOn: false))
-    XCTAssertEqual(settingsStore.saved?.preferredMode, .global, "模式先持久化")
+    XCTAssertEqual(composition.controller.controlPreferences.preferredMode, .global, "模式先持久化")
     XCTAssertTrue(systemProxy.applied.isEmpty, "agent 未运行时不触碰系统代理")
     XCTAssertEqual(systemProxy.clearCount, 0)
   }
 
-  func testModePersistenceFailureKeepsOldModeAndSurfacesServiceFact() async throws {
+  func testModeChoiceIgnoresListeningFileFailure() async throws {
     _ = try makeSeededCatalog()
-    let settingsStore = InMemoryProxySettingsStore()
-    settingsStore.saveError = ProxySettingsStoreError.ioFailure(detail: "disk unavailable")
+    let listeningStore = InMemoryProxyListeningStore()
+    listeningStore.saveError = ProxyListeningStoreError.ioFailure(detail: "disk unavailable")
     let composition = makeProxies(
-      probe: ProxyRuntimeFixture.FakeProbe.reachable(),
-      settingsStore: settingsStore,
-      settings: ProxySettings(listen: ActivationFixture.listen, agentEnabled: false))
+      probe: ProxyRuntimeFixture.FakeProbe.reachable(), listeningStore: listeningStore,
+      settings: ProxyRuntimeSettings(listen: ActivationFixture.listen, agentEnabled: false))
 
     let snapshot = await composition.control.setProxyMode(.global)
 
-    XCTAssertEqual(snapshot.proxyMode, .rule, "持久化失败保留旧模式")
-    XCTAssertEqual(
-      snapshot.runtime.failure, .service(.persistence), "失败以既有 typed fact 呈现")
-    XCTAssertNil(settingsStore.saved, "失败不落半程设置")
+    XCTAssertEqual(snapshot.proxyMode, .global)
+    XCTAssertEqual(controlPreferences.preferredMode, .global)
+    XCTAssertEqual(snapshot.runtime, ProxyRuntimeFacts(status: .off, isOn: false))
+    XCTAssertNil(listeningStore.saved)
   }
 
   func testSameModeCommandIsNoopWithoutSettingsOrSystemProxyWrites() async throws {
     _ = try makeSeededCatalog()
-    let settingsStore = InMemoryProxySettingsStore()
+    let listeningStore = InMemoryProxyListeningStore()
     let composition = makeProxies(
       probe: ProxyRuntimeFixture.FakeProbe.reachable(),
-      settingsStore: settingsStore,
-      settings: ProxySettings(listen: ActivationFixture.listen, agentEnabled: false))
+      listeningStore: listeningStore,
+      settings: ProxyRuntimeSettings(listen: ActivationFixture.listen, agentEnabled: false))
     let before = composition.control.snapshot
 
     let after = await composition.control.setProxyMode(.rule)
 
     XCTAssertEqual(after, before, "同模式命令无副作用，snapshot 不动")
-    XCTAssertNil(settingsStore.saved)
+    XCTAssertNil(listeningStore.saved)
     XCTAssertTrue(systemProxy.applied.isEmpty)
     XCTAssertEqual(systemProxy.clearCount, 0)
   }

@@ -21,7 +21,7 @@ final class LegacyImportTests: XCTestCase {
     try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
     catalogURL = directory.appendingPathComponent("catalog.json")
     activationURL = directory.appendingPathComponent("activation.json")
-    settingsURL = directory.appendingPathComponent("settings.json")
+    settingsURL = directory.appendingPathComponent("proxy-listening.json")
     credentials = InMemoryCredentialStore()
     marker = TestLegacyImportMarker()
     provider = FixedLegacySnapshotProvider(snapshot: try Self.makeSnapshot())
@@ -69,13 +69,13 @@ final class LegacyImportTests: XCTestCase {
   }
 
   func testImportIgnoresLegacyPreferencesAndActiveTarget() throws {
-    var existingSettings = ProxySettings()
+    var existingSettings = ProxyRuntimeSettings()
     existingSettings.listen.socksPort = 2086
     existingSettings.listen.httpPort = 2087
     existingSettings.preferredMode = .global
-    let settingsStore = ProxySettingsFileStore(
+    let listeningStore = ProxyListeningFileStore(
       fileURL: settingsURL)
-    try settingsStore.save(existingSettings)
+    try listeningStore.save(existingSettings.listen)
 
     let existingTarget = NodeID(rawValue: "existing-target")
     let activationStore = ActivationStateFileStore(fileURL: activationURL)
@@ -83,7 +83,7 @@ final class LegacyImportTests: XCTestCase {
 
     _ = try makeService().importCurrentSnapshot()
 
-    XCTAssertEqual(try settingsStore.load(), existingSettings)
+    XCTAssertEqual(try listeningStore.load(), existingSettings.listen)
     XCTAssertEqual(try activationStore.loadActiveTargetID(), existingTarget)
   }
 

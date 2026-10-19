@@ -100,7 +100,7 @@ enum SettingsCommandRejection: Equatable, Sendable {
 
 /// Settings workflow 的持久化/提交失败；workflow 不提前渲染句子。
 enum SettingsWorkflowFailure: Error, Equatable, Sendable {
-  case store(ProxySettingsStoreError)
+  case store(ProxyListeningStoreError)
   case unknown
 }
 

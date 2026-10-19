@@ -46,8 +46,8 @@ extension AppPresentation {
       return reason(error)
     case let error as PortSettingError:
       return port(error)
-    case let error as ProxySettingsStoreError:
-      return settingsStore(error)
+    case let error as ProxyListeningStoreError:
+      return listeningStore(error)
     case let error as LegacyImportError:
       return legacyImport(error)
     case let error as SystemProxyError:
@@ -125,7 +125,7 @@ extension AppPresentation {
 
   static func message(for failure: SettingsWorkflowFailure) -> String {
     switch failure {
-    case .store(let error): return settingsStore(error)
+    case .store(let error): return listeningStore(error)
     case .unknown: return unknownError
     }
   }
@@ -259,7 +259,7 @@ extension AppPresentation {
     }
   }
 
-  private static func settingsStore(_ error: ProxySettingsStoreError) -> String {
+  private static func listeningStore(_ error: ProxyListeningStoreError) -> String {
     switch error {
     case .corrupt: return String(localized: "偏好文件损坏")
     case .invalid(let errors): return errors.map(port).joined(separator: "；")

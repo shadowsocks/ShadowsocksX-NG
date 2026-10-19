@@ -181,30 +181,6 @@ final class BuiltinRuleCatalogTests: XCTestCase {
     XCTAssertEqual(RuleDefaultAction.allCases, [.proxyWhenUnmatched, .directWhenUnmatched])
   }
 
-  func testRuleDefaultActionPersistsAcrossSettingsRoundTrip() throws {
-    let dir = FileManager.default.temporaryDirectory
-      .appendingPathComponent("ssxng-settings-\(UUID().uuidString)", isDirectory: true)
-    try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
-    defer { try? FileManager.default.removeItem(at: dir) }
-
-    let store = ProxySettingsFileStore(
-      fileURL: dir.appendingPathComponent("settings.json"))
-
-    var settings = ProxySettings()
-    settings.preferredMode = .rule
-    settings.ruleDefaultAction = .proxyWhenUnmatched
-    try store.save(settings)
-    XCTAssertEqual(try store.load().preferredMode, ProxyModeKind.rule)
-    XCTAssertEqual(try store.load().ruleDefaultAction, RuleDefaultAction.proxyWhenUnmatched)
-
-    settings.ruleDefaultAction = .directWhenUnmatched
-    try store.save(settings)
-    XCTAssertEqual(try store.load().ruleDefaultAction, RuleDefaultAction.directWhenUnmatched)
-
-    // 缺省字段解析为出厂「未匹配时代理」。
-    try Data("{}".utf8).write(to: dir.appendingPathComponent("settings.json"))
-    XCTAssertEqual(try store.load().ruleDefaultAction, RuleDefaultAction.proxyWhenUnmatched)
-  }
 }
 
 /// 测试用内存凭据存储：不触 Keychain。

@@ -66,7 +66,7 @@ final class StatusCardModelTests: XCTestCase {
         ],
         selected: TerminalCommandAddress(bsdName: "lo0", address: "127.0.0.1", displayName: "lo0")),
       terminalProxyEnvironmentCommands: TerminalProxyEnvironmentCommands(
-        listen: RuntimeListenFacts(listen: SslocalListenSettings()),
+        listen: RuntimeListenFacts(listen: ProxyListeningConfiguration()),
         commandAddress: TerminalCommandAddress(
           bsdName: "lo0", address: "127.0.0.1", displayName: "lo0")))
   }

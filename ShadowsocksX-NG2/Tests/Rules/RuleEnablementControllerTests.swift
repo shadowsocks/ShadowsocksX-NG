@@ -9,7 +9,7 @@ final class RuleEnablementControllerTests: ProxyRuntimeControllerTests {
 
   private func makeRuleEnablementController(
     store: CustomRuleStore,
-    settings: ProxySettings,
+    settings: ProxyRuntimeSettings,
     proxyMode: ProxyMode? = nil,
     launchHealthTimeoutSeconds: TimeInterval = 0.05,
     ruleSnapshots: BuiltinRuleSnapshots? = nil,
@@ -37,7 +37,7 @@ final class RuleEnablementControllerTests: ProxyRuntimeControllerTests {
     defer { applicationGate.resume() }
     let controller = makeRuleEnablementController(
       store: store,
-      settings: ProxySettings(
+      settings: ProxyRuntimeSettings(
         listen: ActivationFixture.listen, preferredMode: .rule, agentEnabled: true),
       proxyMode: .rule, ruleApplicationDelay: { try await applicationGate.wait() })
     try await controller.activate(seeded.server)
@@ -74,7 +74,7 @@ final class RuleEnablementControllerTests: ProxyRuntimeControllerTests {
     defer { healthGate.resume() }
     let controller = makeRuleEnablementController(
       store: store,
-      settings: ProxySettings(
+      settings: ProxyRuntimeSettings(
         listen: ActivationFixture.listen, preferredMode: .rule, agentEnabled: true),
       proxyMode: .rule, launchHealthTimeoutSeconds: 0.3,
       launchHealthRetryDelay: { try await healthGate.wait() })
@@ -125,7 +125,7 @@ final class RuleEnablementControllerTests: ProxyRuntimeControllerTests {
     defer { loader.resume() }
     let controller = makeRuleEnablementController(
       store: store,
-      settings: ProxySettings(
+      settings: ProxyRuntimeSettings(
         listen: ActivationFixture.listen, preferredMode: .global, agentEnabled: true),
       proxyMode: .global, ruleSnapshots: BuiltinRuleSnapshots(loader: { loader.load($0) }))
     try await controller.activate(seeded.server)
@@ -165,7 +165,7 @@ final class RuleEnablementControllerTests: ProxyRuntimeControllerTests {
     defer { loader.resume() }
     let controller = makeRuleEnablementController(
       store: store,
-      settings: ProxySettings(
+      settings: ProxyRuntimeSettings(
         listen: ActivationFixture.listen, preferredMode: .global, agentEnabled: true),
       proxyMode: .global, ruleSnapshots: BuiltinRuleSnapshots(loader: { loader.load($0) }))
     try await controller.activate(seeded.server)
@@ -191,7 +191,7 @@ final class RuleEnablementControllerTests: ProxyRuntimeControllerTests {
     let loader = PausedRuntimeRuleSource(started: started)
     defer { loader.resume() }
     let snapshots = BuiltinRuleSnapshots(loader: { loader.load($0) })
-    let settings = ProxySettings(
+    let settings = ProxyRuntimeSettings(
       listen: ActivationFixture.listen, preferredMode: .global, agentEnabled: true)
     let controller = makeRuleEnablementController(
       store: store, settings: settings, proxyMode: .global, ruleSnapshots: snapshots)
@@ -238,7 +238,7 @@ final class RuleEnablementControllerTests: ProxyRuntimeControllerTests {
     defer { loader.resume() }
     let controller = makeRuleEnablementController(
       store: store,
-      settings: ProxySettings(
+      settings: ProxyRuntimeSettings(
         listen: ActivationFixture.listen, preferredMode: .global, agentEnabled: true),
       proxyMode: .global, ruleSnapshots: BuiltinRuleSnapshots(loader: { loader.load($0) }))
     try await controller.activate(seeded.server)
@@ -260,7 +260,8 @@ final class RuleEnablementControllerTests: ProxyRuntimeControllerTests {
   func testOffSaveUsesOwnedDocumentAndNewSessionRejectsCorruption() async throws {
     let (store, _) = try makeCustomRuleStore()
     let controller = makeRuleEnablementController(
-      store: store, settings: ProxySettings(listen: ActivationFixture.listen, agentEnabled: false))
+      store: store,
+      settings: ProxyRuntimeSettings(listen: ActivationFixture.listen, agentEnabled: false))
     let identity = ProxyRule(action: .proxy, match: try RuleMatch(domainExact: "saved.example"))
     let outcome = await controller.updateRuleDocument(
       CustomRuleDocument(rules: [], disabledIdentities: [identity]))
@@ -271,7 +272,8 @@ final class RuleEnablementControllerTests: ProxyRuntimeControllerTests {
     let broken = Data("broken".utf8)
     try broken.write(to: store.fileURL)
     let newSession = makeRuleEnablementController(
-      store: store, settings: ProxySettings(listen: ActivationFixture.listen, agentEnabled: false))
+      store: store,
+      settings: ProxyRuntimeSettings(listen: ActivationFixture.listen, agentEnabled: false))
     let rejected = await newSession.updateRuleDocument(CustomRuleDocument(rules: []))
     XCTAssertEqual(rejected, .persistenceFailed)
     XCTAssertEqual(try Data(contentsOf: store.fileURL), broken)
@@ -294,7 +296,7 @@ extension RuleEnablementControllerTests {
     let (store, _) = try makeCustomRuleStore()
     let rule = CustomRule(action: .direct, match: try RuleMatch(domainExact: "kept.example"))
     try store.save([rule])
-    let settings = ProxySettings(
+    let settings = ProxyRuntimeSettings(
       listen: ActivationFixture.listen, preferredMode: .rule,
       ruleDefaultAction: .proxyWhenUnmatched, agentEnabled: true)
     let deploymentWaiting = expectation(description: "deployment health retry paused")
@@ -366,7 +368,7 @@ extension RuleEnablementControllerTests {
     let (store, _) = try makeCustomRuleStore()
     let rule = CustomRule(action: .direct, match: try RuleMatch(domainExact: "kept.example"))
     try store.save([rule])
-    let settings = ProxySettings(
+    let settings = ProxyRuntimeSettings(
       listen: ActivationFixture.listen, preferredMode: .rule,
       ruleDefaultAction: .proxyWhenUnmatched, agentEnabled: true)
     let controller = makeRuleEnablementController(

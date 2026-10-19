@@ -37,11 +37,11 @@ extension ProxyRuntimeControllerModeTests {
     let seeded = try makeSeededCatalog()
     let probe = ProxyRuntimeFixture.BlockingProbe()
     let started = expectation(description: "mode transition health probe paused")
-    let settingsStore = InMemoryProxySettingsStore()
+    let listeningStore = InMemoryProxyListeningStore()
     let controller = makeController(
       probe: probe,
-      settingsStore: settingsStore,
-      settings: ProxySettings(
+      listeningStore: listeningStore,
+      settings: ProxyRuntimeSettings(
         listen: ActivationFixture.listen, preferredMode: .global,
         agentEnabled: true, systemProxyEnabled: true),
       proxyMode: .global)
@@ -62,8 +62,8 @@ extension ProxyRuntimeControllerModeTests {
     XCTAssertEqual(controller.state, .off)
     XCTAssertFalse(controller.settings.agentEnabled)
     XCTAssertEqual(controller.settings.preferredMode, ProxyModeKind.direct, "切换意图保留在内存")
-    XCTAssertEqual(settingsStore.saved?.preferredMode, ProxyModeKind.direct, "切换意图保留在持久层")
-    XCTAssertEqual(settingsStore.saved?.agentEnabled, false)
+    XCTAssertEqual(controller.controlPreferences.preferredMode, ProxyModeKind.direct, "切换意图保留在持久层")
+    XCTAssertEqual(controller.settings.agentEnabled, false)
     XCTAssertNil(controller.lastDocument)
   }
 
@@ -83,7 +83,7 @@ extension ProxyRuntimeControllerModeTests {
     })
     let controller = makeController(
       probe: ProxyRuntimeFixture.FakeProbe.reachable(),
-      settings: ProxySettings(
+      settings: ProxyRuntimeSettings(
         listen: ActivationFixture.listen, preferredMode: .global, agentEnabled: true),
       proxyMode: .global,
       ruleSnapshots: loader)
@@ -112,7 +112,7 @@ extension ProxyRuntimeControllerModeTests {
     let started = expectation(description: "deployment health probe paused")
     let controller = makeController(
       probe: probe,
-      settings: ProxySettings(
+      settings: ProxyRuntimeSettings(
         listen: ActivationFixture.listen, preferredMode: .global, agentEnabled: true),
       proxyMode: .global)
     try await controller.activate(seeded.server)
@@ -144,7 +144,7 @@ extension ProxyRuntimeControllerModeTests {
       outcomes: [.permitted, .blocked], blockOnCall: 2, started: started)
     let controller = makeController(
       probe: ProxyRuntimeFixture.FakeProbe.reachable(),
-      listen: SslocalListenSettings(listenerMode: .allIPv4Interfaces),
+      listen: ProxyListeningConfiguration(listenerMode: .allIPv4Interfaces),
       firewallChecker: checker)
     try await controller.activate(seeded.server)
     XCTAssertEqual(controller.state, .running, "首次防火墙检查通过后进入运行态并武装轮询")
@@ -190,7 +190,7 @@ final class CatalogRuntimeSnapshotIntegrationTests: XCTestCase {
     let bootstrap = CatalogCommitCoordinator.bootstrap(fileStore: fileStore)
     let controller = makeController(
       catalogSnapshotReader: bootstrap.catalogSnapshotReader,
-      settings: ProxySettings(listen: ActivationFixture.listen, agentEnabled: false))
+      settings: ProxyRuntimeSettings(listen: ActivationFixture.listen, agentEnabled: false))
     let coordinator = CatalogCommitCoordinator(
       fileStore: fileStore,
       runtime: ProxyRuntimeSyncAdapter(controller: controller),
@@ -241,7 +241,7 @@ final class CatalogRuntimeSnapshotIntegrationTests: XCTestCase {
 
   private func makeController(
     catalogSnapshotReader: RuntimeCatalogSnapshotReading,
-    settings: ProxySettings? = nil,
+    settings: ProxyRuntimeSettings? = nil,
     probe: EndpointProbing = SystemEndpointProbe()
   ) -> ProxyRuntimeController {
     let runtimeFileStore = RuntimeFileStore(fileURL: runtime.contract)
@@ -250,16 +250,17 @@ final class CatalogRuntimeSnapshotIntegrationTests: XCTestCase {
       try? runtimeFileStore.writeRuntimeReceipt(for: document, processID: 42)
     }
     return ProxyRuntimeController(
+      controlPreferences: makeTestProxyControlPreferences(),
       catalogSnapshotReader: catalogSnapshotReader,
       activationFileStore: ActivationStateFileStore(fileURL: activationFileURL),
       runtimeFileStore: runtimeFileStore,
       credentials: credentials,
       plugins: ActivationFixture.plugins,
-      settingsStore: InMemoryProxySettingsStore(),
+      listeningStore: InMemoryProxyListeningStore(),
       appBundle: AppArtifact.bundle,
       ruleSnapshots: BuiltinRuleSnapshots(loader: ProxyRuntimeFixture.controlFlowRuleSnapshot),
-      settingsRestore: RestoredProxySettings(
-        settings: settings ?? ProxySettings(listen: ActivationFixture.listen),
+      settingsRestore: RestoredProxyRuntimeSettings(
+        settings: settings ?? ProxyRuntimeSettings(listen: ActivationFixture.listen),
         unreadableError: nil),
       agent: agent,
       probe: probe,

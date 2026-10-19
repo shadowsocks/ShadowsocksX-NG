@@ -9,47 +9,47 @@ final class ProxyRuntimeModeCommandTests: ProxyRuntimeControllerTests {
   }
 
   func testSetProxyModePersistsTheChoiceAndARestoreRestoresIt() async throws {
-    let settingsStore = InMemoryProxySettingsStore()
+    let listeningStore = InMemoryProxyListeningStore()
     let controller = makeController(
-      probe: ProxyRuntimeFixture.FakeProbe.reachable(), settingsStore: settingsStore)
+      probe: ProxyRuntimeFixture.FakeProbe.reachable(), listeningStore: listeningStore)
 
     await controller.setProxyMode(.global)
 
     XCTAssertEqual(controller.proxyMode, .global)
     XCTAssertEqual(controller.settings.preferredMode, .global)
-    XCTAssertEqual(settingsStore.saved?.preferredMode, .global, "模式选择随快照持久化")
+    XCTAssertEqual(controller.controlPreferences.preferredMode, .global, "模式选择随快照持久化")
 
     // GUI 重启路径：恢复出的控制器不注入显式模式，从持久快照读回。
     let restored = makeController(
       probe: ProxyRuntimeFixture.FakeProbe.reachable(),
-      settingsRestore: RestoredProxySettings(
-        settings: try XCTUnwrap(settingsStore.load()), unreadableError: nil),
+      settingsRestore: RestoredProxyRuntimeSettings(
+        settings: ProxyRuntimeSettings(
+          listen: ActivationFixture.listen, preferences: controlPreferences), unreadableError: nil),
       proxyMode: nil)
     XCTAssertEqual(restored.proxyMode, .global)
   }
 
-  func testSetProxyModePersistenceFailureKeepsPreviousModeAndNamesReason() async throws {
-    let settingsStore = InMemoryProxySettingsStore()
-    settingsStore.saveError = FakeSettingsSaveError.system
+  func testModeChoiceDoesNotDependOnListeningFileWrites() async throws {
+    let listeningStore = InMemoryProxyListeningStore()
+    listeningStore.saveError = FakeSettingsSaveError.system
     let controller = makeController(
-      probe: ProxyRuntimeFixture.FakeProbe.reachable(), settingsStore: settingsStore)
+      probe: ProxyRuntimeFixture.FakeProbe.reachable(), listeningStore: listeningStore,
+      settings: ProxyRuntimeSettings(listen: ActivationFixture.listen, agentEnabled: false))
 
     await controller.setProxyMode(.global)
 
-    XCTAssertEqual(controller.proxyMode, .rule, "持久化失败保留旧模式")
-    XCTAssertEqual(controller.settings.preferredMode, .rule)
-    guard case .serviceFailed(.persistence) = controller.state else {
-      XCTFail("应点名持久化失败，实际 \(controller.state)")
-      return
-    }
+    XCTAssertEqual(controller.proxyMode, .global)
+    XCTAssertEqual(controller.settings.preferredMode, .global)
+    XCTAssertEqual(controller.state, .off)
+    XCTAssertNil(listeningStore.saved)
   }
 
   func testDirectModeDeploysACLWithoutServerAndProjectsSOCKSProxy() async throws {
-    let settingsStore = InMemoryProxySettingsStore()
+    let listeningStore = InMemoryProxyListeningStore()
     let controller = makeController(
       probe: ProxyRuntimeFixture.FakeProbe.reachable(),
-      settingsStore: settingsStore,
-      settings: ProxySettings(
+      listeningStore: listeningStore,
+      settings: ProxyRuntimeSettings(
         listen: ActivationFixture.listen, agentEnabled: true, systemProxyEnabled: true))
 
     await controller.resyncOnLaunch()
@@ -61,7 +61,7 @@ final class ProxyRuntimeModeCommandTests: ProxyRuntimeControllerTests {
 
     XCTAssertEqual(controller.proxyMode, .direct)
     XCTAssertEqual(controller.settings.preferredMode, .direct)
-    XCTAssertEqual(settingsStore.saved?.preferredMode, .direct)
+    XCTAssertEqual(controller.controlPreferences.preferredMode, .direct)
     XCTAssertEqual(controller.state, .running)
     XCTAssertEqual(agent.unregisterCount, unregisterCount + 1, "ACL 变化触发完整 agent 重启")
     let runtimeStore = RuntimeFileStore(fileURL: runtime.contract)
@@ -92,19 +92,20 @@ final class ProxyRuntimeModeCommandTests: ProxyRuntimeControllerTests {
 
     let restored = makeController(
       probe: ProxyRuntimeFixture.FakeProbe.reachable(),
-      settingsRestore: RestoredProxySettings(
-        settings: try XCTUnwrap(settingsStore.load()), unreadableError: nil),
+      settingsRestore: RestoredProxyRuntimeSettings(
+        settings: ProxyRuntimeSettings(
+          listen: ActivationFixture.listen, preferences: controlPreferences), unreadableError: nil),
       proxyMode: nil)
     XCTAssertEqual(restored.proxyMode, .direct, "模式选择从持久快照恢复")
   }
 
   func testFailedDirectInstanceKeepsNewModeAndStopsService() async throws {
     let seeded = try makeSeededCatalog()
-    let settingsStore = InMemoryProxySettingsStore()
+    let listeningStore = InMemoryProxyListeningStore()
     let controller = makeController(
       probe: ProxyRuntimeFixture.FakeProbe.reachable(),
-      settingsStore: settingsStore,
-      settings: ProxySettings(
+      listeningStore: listeningStore,
+      settings: ProxyRuntimeSettings(
         listen: ActivationFixture.listen, agentEnabled: true, systemProxyEnabled: true),
       launchHealthTimeoutSeconds: 0.05)
     try await controller.activate(seeded.server)
@@ -129,7 +130,7 @@ final class ProxyRuntimeModeCommandTests: ProxyRuntimeControllerTests {
     XCTAssertTrue(observedStates.contains(.starting), "重启期间呈现短暂不可用状态")
     XCTAssertEqual(controller.proxyMode, .direct)
     XCTAssertEqual(controller.settings.preferredMode, .direct)
-    XCTAssertEqual(settingsStore.saved?.preferredMode, .direct)
+    XCTAssertEqual(controller.controlPreferences.preferredMode, .direct)
     XCTAssertEqual(runtimeStore.loadDocument()?.aclRuntime?.summary, "direct")
     XCTAssertEqual(controller.state, .serviceFailed(.agent))
     XCTAssertTrue(controller.agentIntentEnabled)
@@ -139,31 +140,30 @@ final class ProxyRuntimeModeCommandTests: ProxyRuntimeControllerTests {
     XCTAssertGreaterThan(systemProxy.clearCount, 0)
   }
 
-  /// Agent 开关持久化失败：保留现状并点名，不静默偏离持久化
-  /// 事实（否则重启后意图被覆盖）。
-  func testAgentTogglePersistenceFailureKeepsStateAndNamesReason() async throws {
-    let settingsStore = InMemoryProxySettingsStore()
-    settingsStore.saveError = FakeSettingsSaveError.system
+  func testAgentToggleIgnoresListeningFileFailure() async throws {
+    let listeningStore = InMemoryProxyListeningStore()
+    listeningStore.saveError = FakeSettingsSaveError.system
     let controller = makeController(
-      probe: ProxyRuntimeFixture.FakeProbe.reachable(),
-      settingsStore: settingsStore,
-      settings: ProxySettings(listen: ActivationFixture.listen, agentEnabled: false))
+      probe: ProxyRuntimeFixture.FakeProbe.reachable(), listeningStore: listeningStore,
+      settings: ProxyRuntimeSettings(listen: ActivationFixture.listen, agentEnabled: false))
 
     await controller.setAgentEnabled(true)
 
-    XCTAssertEqual(controller.state, .serviceFailed(.persistence))
-    XCTAssertFalse(controller.agentIntentEnabled, "持久化失败不改变内存意图")
-    XCTAssertEqual(agent.registerCount, 0, "意图未落地前不收敛运行时")
+    XCTAssertTrue(controller.agentIntentEnabled)
+    XCTAssertTrue(controlPreferences.agentEnabled)
+    XCTAssertEqual(controller.state, .running)
+    XCTAssertEqual(agent.registerCount, 1)
+    XCTAssertNil(listeningStore.saved)
   }
 
   func testDirectReceiptIsRecheckedAfterReachableStaleListenerProbes() async throws {
     let seeded = try makeSeededCatalog()
-    let settingsStore = InMemoryProxySettingsStore()
+    let listeningStore = InMemoryProxyListeningStore()
     let processLiveness = ProcessLivenessRecorder()
     let controller = makeController(
       probe: ProxyRuntimeFixture.FakeProbe.reachable(),
-      settingsStore: settingsStore,
-      settings: ProxySettings(
+      listeningStore: listeningStore,
+      settings: ProxyRuntimeSettings(
         listen: ActivationFixture.listen, agentEnabled: true, systemProxyEnabled: true),
       processIsAlive: { processLiveness.isAlive($0) })
     try await controller.activate(seeded.server)

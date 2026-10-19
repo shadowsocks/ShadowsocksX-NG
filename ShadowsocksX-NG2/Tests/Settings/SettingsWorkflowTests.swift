@@ -11,7 +11,7 @@ final class SettingsWorkflowTests: XCTestCase {
   private var credentials: InMemoryCredentialStore!
   private var agent: ProxyRuntimeFixture.FakeLaunchAgent!
   private var systemProxy: ProxyRuntimeFixture.FakeSystemProxy!
-  private var settingsStore: InMemorySettingsStore!
+  private var listeningStore: InMemorySettingsStore!
 
   override func setUp() async throws {
     try await super.setUp()
@@ -21,7 +21,7 @@ final class SettingsWorkflowTests: XCTestCase {
     credentials = InMemoryCredentialStore()
     agent = ProxyRuntimeFixture.FakeLaunchAgent()
     systemProxy = ProxyRuntimeFixture.FakeSystemProxy()
-    settingsStore = InMemorySettingsStore()
+    listeningStore = InMemorySettingsStore()
   }
 
   override func tearDown() async throws {
@@ -39,7 +39,7 @@ final class SettingsWorkflowTests: XCTestCase {
 
     XCTAssertEqual(outcome, .persisted)
     XCTAssertEqual(pair.controller.settings.listen.listenerMode, .allIPv4AndIPv6Interfaces)
-    XCTAssertEqual(settingsStore.saved?.listen.listenerMode, .allIPv4AndIPv6Interfaces)
+    XCTAssertEqual(listeningStore.saved?.listenerMode, .allIPv4AndIPv6Interfaces)
     XCTAssertEqual(pair.controller.state, .off)
     XCTAssertEqual(agent.registerCount, 0)
   }
@@ -54,15 +54,16 @@ final class SettingsWorkflowTests: XCTestCase {
       try? runtimeFileStore.writeRuntimeReceipt(for: document, processID: 42)
     }
     let controller = ProxyRuntimeController(
+      controlPreferences: makeTestProxyControlPreferences(),
       catalogSnapshotReader: catalogSnapshotReader,
       activationFileStore: ActivationStateFileStore(fileURL: activationFileURL),
       runtimeFileStore: runtimeFileStore,
       credentials: credentials,
       plugins: ActivationFixture.plugins,
-      settingsStore: settingsStore,
+      listeningStore: listeningStore,
       appBundle: AppArtifact.bundle,
-      settingsRestore: RestoredProxySettings(
-        settings: ProxySettings(listen: ActivationFixture.listen), unreadableError: nil),
+      settingsRestore: RestoredProxyRuntimeSettings(
+        settings: ProxyRuntimeSettings(listen: ActivationFixture.listen), unreadableError: nil),
       agent: agent,
       probe: ProxyRuntimeFixture.FakeProbe.reachable(),
       systemProxy: systemProxy,
@@ -77,14 +78,14 @@ final class SettingsWorkflowTests: XCTestCase {
     return (controller, workflow)
   }
 
-  final class InMemorySettingsStore: ProxySettingsStoring {
-    var saved: ProxySettings?
+  final class InMemorySettingsStore: ProxyListeningStoring {
+    var saved: ProxyListeningConfiguration?
 
-    func load() throws -> ProxySettings {
-      saved ?? ProxySettings()
+    func load() throws -> ProxyListeningConfiguration {
+      saved ?? ProxyListeningConfiguration()
     }
 
-    func save(_ settings: ProxySettings) throws {
+    func save(_ settings: ProxyListeningConfiguration) throws {
       saved = settings
     }
   }

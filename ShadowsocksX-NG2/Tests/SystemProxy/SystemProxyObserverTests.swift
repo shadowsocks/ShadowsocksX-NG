@@ -152,7 +152,7 @@ final class SystemProxyObserverTests: XCTestCase {
       isExitAvailable: { true },
       desiredConfiguration: {
         ProxyMode.direct.systemProxyConfiguration(
-          for: SslocalRuntimeDocument(servers: [], listen: SslocalListenSettings()),
+          for: SslocalRuntimeDocument(servers: [], listen: ProxyListeningConfiguration()),
           exceptions: [])
       },
       systemProxyHealthObservationLoop: {})

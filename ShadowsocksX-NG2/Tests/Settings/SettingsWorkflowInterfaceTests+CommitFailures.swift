@@ -7,7 +7,7 @@ extension SettingsWorkflowInterfaceTests {
   func testPortSettingsPersistenceFailurePreservesCommittedSnapshot() async {
     let original = committedSettingsForItemSaveTests()
     committing.committedSettings = original
-    committing.updateError = ProxySettingsStoreError.ioFailure(detail: "disk full")
+    committing.updateError = ProxyListeningStoreError.ioFailure(detail: "disk full")
     let workflow = makeWorkflow()
     let edited = SettingsPortDraft(socksPort: 12_096, httpPort: 12_097)
     workflow.refreshPortEditorOccupancy(for: edited)

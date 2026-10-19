@@ -2,8 +2,7 @@ import SwiftUI
 
 /// 静默启动偏好（ADR 0017）：启动时不呈现主窗口，直接以菜单栏形态后台运行。
 /// 默认关；切换即持久化，当次会话无影响，下次启动生效。代理运行时恢复与
-/// 登录项注册都不依赖它。持久化走 defaults 域而非 settings.json：代理控制器
-/// 按内存快照整写该文件，旁路字段会被下一次整写覆盖。
+/// 登录项注册都不依赖它。持久化走应用 defaults 域，与监听文件分别管理。
 @MainActor
 final class SilentLaunchController: ObservableObject {
   @Published private(set) var isEnabled: Bool

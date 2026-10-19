@@ -26,7 +26,7 @@ ShadowsocksX-NG 的现代化重写版本。新工程的全部源码与构建配�
   - `Rules/` — 代理模式、规则身份与匹配、内置规则快照、规则集合/浏览/分析、离线规则测试；`Rules/Custom/` 为用户自定义规则的编辑草稿、校验与存储。
   - `Runtime/` — 代理运行服务：运行时文档与监听设置、ACL 与部署收据、路径、原子写入、文件存储、日志与事件、端点/端口/socket 探针。
   - `Activation/` — 激活候选校验、激活状态机与 `RuntimeConfiguration`。
-  - `Settings/` — 用户设置的持久化：代理设置、监听设置、静默启动。
+  - `Settings/` — 代理监听配置文件、独立代理控制偏好、运行计算的内存快照与静默启动偏好。
   - `SystemProxy/` — 系统代理 typed 配置、property list 映射、计划器与特权 helper 的 XPC 契约/请求引擎。
   - `Plugin/` — 托管插件、用户插件映射与插件安全校验。
   - `Credentials/`、`LegacyImport/`、`Diagnostics/` — 凭据存储与写入日志、旧版导入、诊断报告。
@@ -198,4 +198,6 @@ Python 是唯一的上游转换实现；Swift 只加载、校验并消费快照�
 
 局域网 SOCKS 的 UDP 中继和 SOCKS/HTTP 共用的身份验证独立设置。密码保存在 Keychain，运行时派生当前用户专用的认证文件；上游认证失败日志中的密码会隐藏。设置只检查 TCP 占用，不设置独立 UDP 端口。首页命令按选择地址使用本地或局域网端口，局域网身份验证开启时加入编码后的凭据；tooltip 显示完整命令。
 
-未发布的旧监听配置不迁移，新监听使用默认值；其他偏好与服务器资料保留。设计见 [ADR-0034](../docs/adr/0034-separate-local-and-lan-listeners.md)。
+监听配置单独保存在 `proxy-listening.json`，只包含本地与局域网监听相关值。代理模式、规则默认动作、代理服务开关、系统代理开关和附加系统代理例外以 `proxyControl.` 前缀的独立键保存在 UserDefaults；运行计算的内存快照不代表统一持久化文档。监听仍采用联合校验与原子文件保存；UserDefaults 偏好不提供同步落盘失败的报错与回滚。
+
+不迁移旧 `settings.json`：新监听文件与新增偏好缺值时使用默认值，需要重新设置现有开发配置；旧文件不读取、不删除，遗留 Keychain 条目不访问、不清理。已有语言、静默启动、测试 URL 等独立偏好及服务器资料保持原状。极端监听文件损坏接受人工恢复，不建设应用内修复流程。设计见 [ADR-0034](../docs/adr/0034-separate-local-and-lan-listeners.md)、[ADR-0040](../docs/adr/0040-keep-settings-recovery-simple.md) 和 [ADR-0041](../docs/adr/0041-separate-preferences-from-proxy-listening-configuration.md)。

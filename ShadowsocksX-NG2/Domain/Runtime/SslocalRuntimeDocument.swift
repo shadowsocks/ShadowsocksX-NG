@@ -103,7 +103,7 @@ struct SslocalRuntimeDocument: Codable, Equatable, Sendable {
 
   init(
     servers: [SslocalServerDocument],
-    listen: SslocalListenSettings,
+    listen: ProxyListeningConfiguration,
     acl: ProxyACLDocument? = nil
   ) {
     self.servers = servers
@@ -252,7 +252,7 @@ extension SslocalRuntimeDocument {
           && $0.socks5AuthConfigPath == nil && $0.httpAuthConfigPath == nil
       })
     else { return false }
-    var expected = SslocalListenSettings()
+    var expected = ProxyListeningConfiguration()
     expected.local.socksPort = socksPort
     expected.local.httpPort = httpPort
     expected.lan = listen.lan

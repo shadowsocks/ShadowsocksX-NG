@@ -34,7 +34,7 @@ final class RealSslocalPluginSmokeTests: RealSslocalSmokeTests {
           plugin: pluginURL.path,
           pluginOpts: "mode=websocket")
       ],
-      listen: SslocalListenSettings(
+      listen: ProxyListeningConfiguration(
         socksPort: socksPort, httpPort: httpPort))
     let wrapper = try launchWrapper(document)
     let store = RuntimeFileStore(fileURL: contractURL)

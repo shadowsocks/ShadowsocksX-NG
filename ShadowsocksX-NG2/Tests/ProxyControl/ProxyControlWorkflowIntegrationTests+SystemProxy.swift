@@ -86,7 +86,7 @@ extension ProxyControlWorkflowIntegrationTests {
     _ = try makeSeededCatalog()
     let composition = makeProxies(
       probe: ProxyRuntimeFixture.FakeProbe.reachable(),
-      settings: ProxySettings(listen: ActivationFixture.listen, agentEnabled: false))
+      settings: ProxyRuntimeSettings(listen: ActivationFixture.listen, agentEnabled: false))
     _ = await composition.control.setAgentEnabled(true)
 
     let snapshot = await composition.control.setSystemProxyEnabled(true)
@@ -120,12 +120,12 @@ extension ProxyControlWorkflowIntegrationTests {
 
   func testHTTPExportCapabilityDerivesSafeCopyableLineForLoopback() {
     XCTAssertEqual(
-      HTTPExportCapability(listen: SslocalListenSettings()).copyableLine,
+      HTTPExportCapability(listen: ProxyListeningConfiguration()).copyableLine,
       "export http_proxy=http://127.0.0.1:11087;export https_proxy=http://127.0.0.1:11087;")
   }
 
   func testHTTPExportCapabilityUsesLoopbackAddressForAllIPv4Interfaces() {
-    var listen = SslocalListenSettings()
+    var listen = ProxyListeningConfiguration()
     listen.listenerMode = .allIPv4Interfaces
     listen.httpPort = 8080
     XCTAssertEqual(
@@ -134,7 +134,7 @@ extension ProxyControlWorkflowIntegrationTests {
   }
 
   func testHTTPExportCapabilityUsesIPv4LoopbackForDualStackMode() {
-    var listen = SslocalListenSettings()
+    var listen = ProxyListeningConfiguration()
     listen.listenerMode = .allIPv4AndIPv6Interfaces
     listen.httpPort = 8080
 
@@ -144,7 +144,7 @@ extension ProxyControlWorkflowIntegrationTests {
   }
 
   func testHTTPExportCapabilityBracketsIPv6LoopbackOnlyForIPv6OnlyMode() {
-    var listen = SslocalListenSettings()
+    var listen = ProxyListeningConfiguration()
     listen.listenerMode = .allIPv6Interfaces
     listen.httpPort = 8080
     XCTAssertEqual(

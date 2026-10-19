@@ -10,7 +10,7 @@ final class RealSslocalGFWListSmokeTests: RealSslocalSmokeTests {
     let echoServer = try LoopbackEchoServer()
     let fakeSSServer = try ConnectionCountingServer()
     let selectedPorts = try grabThreeListenPorts(excluding: [echoServer.port, fakeSSServer.port])
-    let listen = SslocalListenSettings(
+    let listen = ProxyListeningConfiguration(
       socksPort: selectedPorts[0], httpPort: selectedPorts[1])
     let gfwRules = [
       ProxyRule(
@@ -53,7 +53,7 @@ final class RealSslocalGFWListSmokeTests: RealSslocalSmokeTests {
     let echoServer = try LoopbackEchoServer()
     let fakeSSServer = try ConnectionCountingServer()
     let selectedPorts = try grabThreeListenPorts(excluding: [echoServer.port, fakeSSServer.port])
-    let listen = SslocalListenSettings(
+    let listen = ProxyListeningConfiguration(
       socksPort: selectedPorts[0], httpPort: selectedPorts[1])
     let acl = priorityProbeACL()
     let document = SslocalRuntimeDocument(
@@ -120,7 +120,7 @@ final class RealSslocalGFWListSmokeTests: RealSslocalSmokeTests {
 
   /// 域名：proxy_list 的 `||example.com` 覆盖 bypass_list 的 `||sub.example.com`。
   private func assertDomainPriorityBeatsBypassList(
-    listen: SslocalListenSettings, fakeSS: ConnectionCountingServer
+    listen: ProxyListeningConfiguration, fakeSS: ConnectionCountingServer
   ) throws {
     let beforeDomain = fakeSS.connectionCount
     _ = performSocksConnectReply(
@@ -133,7 +133,7 @@ final class RealSslocalGFWListSmokeTests: RealSslocalSmokeTests {
   /// IP：bypass_list 的 `127.0.0.1/32` 覆盖 proxy_list 的 `127.0.0.0/8`；
   /// 同 CIDR 内未单列直连的 IP 仍走 proxy_list。
   private func assertIPPriorityBeatsProxyList(
-    listen: SslocalListenSettings, echoPort: Int, fakeSS: ConnectionCountingServer
+    listen: ProxyListeningConfiguration, echoPort: Int, fakeSS: ConnectionCountingServer
   ) throws {
     let beforeIP = fakeSS.connectionCount
     let payload = Array("priority direct\n".utf8)
@@ -156,7 +156,7 @@ final class RealSslocalGFWListSmokeTests: RealSslocalSmokeTests {
   /// GFWList「未匹配时直连」路由断言：命中代理候选走 SS；未匹配域名与 IP
   /// 字面目标不触达 SS（bypass_all 默认直连）。
   func assertGFWListDirectDefaultRouting(
-    listen: SslocalListenSettings, echoPort: Int, fakeSS: ConnectionCountingServer
+    listen: ProxyListeningConfiguration, echoPort: Int, fakeSS: ConnectionCountingServer
   ) throws {
     let beforeHit = fakeSS.connectionCount
     _ = performSocksConnectReply(

@@ -47,7 +47,7 @@ extension ProxyRuntimeController {
 
   /// 诊断只读面：当前监听设置；监听地址在导出中只以回环/非回环
   /// 两态呈现。
-  var listenSettings: SslocalListenSettings { settings.listen }
+  var listenSettings: ProxyListeningConfiguration { settings.listen }
 
   /// 当前已部署 runtime 的完整监听身份。已停止或启动失败时没有有效的
   /// runtime 例外，不能拿最后一次设置快照冒充仍在监听。
@@ -98,7 +98,7 @@ extension ProxyRuntimeController.AgentRunState {
 extension ProxyRuntimeController: Activating {}
 
 extension ProxyRuntimeController {
-  static func makeProxyMode(from settings: ProxySettings) -> ProxyMode {
+  static func makeProxyMode(from settings: ProxyRuntimeSettings) -> ProxyMode {
     ProxyMode.availableModes.first { $0.kind == settings.preferredMode } ?? .rule
   }
 }

@@ -234,7 +234,7 @@ final class AgentLifecycleCoreTests: AgentLifecycleTests {
     // 可解码但本地端口无效：wrapper 校验拒绝，不给 sslocal 反复失败的机会。
     // 空 `servers` 是合法契约——无活动目标时也可部署本地监听。
     try SslocalRuntimeDocument(
-      servers: [], listen: SslocalListenSettings(socksPort: 0)
+      servers: [], listen: ProxyListeningConfiguration(socksPort: 0)
     ).jsonData().write(to: contractURL)
     let wrapper = try launchWrapper(behavior: "run")
 
@@ -247,7 +247,7 @@ final class AgentLifecycleCoreTests: AgentLifecycleTests {
   /// 空服务器契约是合法部署：wrapper 接受并照常拉起 sslocal，
   /// 由本地入站提供无目标的本地监听。
   func testEmptyServerContractIsValidAndRunsSslocal() throws {
-    try writeContract(SslocalRuntimeDocument(servers: [], listen: SslocalListenSettings()))
+    try writeContract(SslocalRuntimeDocument(servers: [], listen: ProxyListeningConfiguration()))
     let wrapper = try launchWrapper(behavior: "run")
 
     XCTAssertTrue(

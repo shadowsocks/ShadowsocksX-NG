@@ -1,7 +1,7 @@
 import Foundation
 
 extension ProxyRuntimeController {
-  /// The choice persists with the settings snapshot. ACL-backed modes (direct
+  /// The choice persists in UserDefaults independently of listening configuration. ACL-backed modes (direct
   /// and global) also deploy and verify the ACL runtime even when system proxy
   /// is off, because manually connected SOCKS and HTTP clients use the same ACL.
   func setProxyMode(_ mode: ProxyMode) async {
@@ -20,11 +20,10 @@ extension ProxyRuntimeController {
     _ mode: ProxyMode,
     ruleDefaultAction: RuleDefaultAction
   ) async {
-    var next = settings
-    next.preferredMode = mode.kind
-    next.ruleDefaultAction = ruleDefaultAction
-    guard persistSettings(next) else { return }
-    settings = next
+    controlPreferences.preferredMode = mode.kind
+    controlPreferences.ruleDefaultAction = ruleDefaultAction
+    settings.preferredMode = mode.kind
+    settings.ruleDefaultAction = ruleDefaultAction
     proxyMode = mode
     modeChangeGeneration += 1
     await convergeRuntime(.modeTransition)
