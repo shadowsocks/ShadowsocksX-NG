@@ -6,7 +6,7 @@ Status: Accepted (2026-10-05)
 
 边界由 `Tests/SkeletonTests.swift` 的守卫断言，且一律**正面圈定**而非禁令加豁免登记：视图层的守卫只扫 `App/UI/`（不得引用运行时控制器、工作流实现协作者、原始目录/凭据存储类型），`Domain/` 的守卫只断言根下无平铺 `.swift`、树下只有 `.swift`。把文件放进 `Application/`、`PlatformEffects/` 或某个主题目录，即自动落在扫描范围之外，无需登记豁免；新增主题目录也不需要改断言。
 
-各目录的划分与各自职责由 `ShadowsocksX-NG2/README.md` 的工程结构一节维护——本 ADR 只固定组织原则，不维护清单。
+各目录的划分与各自职责由 [工程结构文档](../project-structure.md)维护——本 ADR 只固定组织原则，不维护清单。
 
 ## Considered options
 
@@ -24,4 +24,4 @@ XcodeGen 带来两条**在代码里不可见**的约束：
 
 跨进程契约按**文件**引用而非按目录：wrapper 与 system proxy helper 两个 target 各自显式列出所需的 `Domain/` 文件，因为它们只该拿到跨进程契约，而不是整个领域层。代价是目录内移动文件必须同步 `project.yml`；漏改时 xcodegen 以 `missing source directory` 直接失败，不静默。
 
-在目录内移动文件因此是低代价操作：模块名、类型名与 import 均不变，`task format` 与 lint 基线不变，版本历史可继续追溯。这条约定分散记录在 `project.yml` 的分层注释、`ShadowsocksX-NG2/README.md` 的工程结构一节与本 ADR；新增主题目录时只需同步前两处（`DomainLayoutTests` 失败信息里列举的目录名会过期，断言本身不会失败）。
+在目录内移动文件因此是低代价操作：模块名、类型名与 import 均不变，`task format` 与 lint 基线不变，版本历史可继续追溯。这条约定分散记录在 `project.yml` 的分层注释、[工程结构文档](../project-structure.md)与本 ADR；新增主题目录时只需同步前两处（`DomainLayoutTests` 失败信息里列举的目录名会过期，断言本身不会失败）。
