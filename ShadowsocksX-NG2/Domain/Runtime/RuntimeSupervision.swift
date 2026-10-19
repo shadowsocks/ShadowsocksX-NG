@@ -28,6 +28,8 @@ struct RuntimeSupervision: Codable, Equatable, Sendable {
   let generation: UInt64
   let deploymentID: String
   let configuration: String
+  /// GUI 私有意图摘要的同代文件；Agent 只保留引用，不读取正文。
+  let intentMetadata: String
   let locals: [Endpoint]
   let ipv6Only: Bool?
   let authenticationID: String?
@@ -35,13 +37,8 @@ struct RuntimeSupervision: Codable, Equatable, Sendable {
   let acl: ACL?
   let aclVariants: [String: ACL]
 
-  /// GUI 私有意图摘要的同代文件；Agent 只保留引用，不读取正文。
-  var intentFile: String {
-    configuration.replacingOccurrences(of: "-sslocal.json", with: "-intent.json")
-  }
-
   var retainedFiles: Set<String> {
-    Set([configuration, intentFile] + authenticationFiles + aclVariants.values.map(\.file))
+    Set([configuration, intentMetadata] + authenticationFiles + aclVariants.values.map(\.file))
       .union(acl.map { [$0.file] } ?? [])
   }
 
@@ -51,9 +48,11 @@ struct RuntimeSupervision: Codable, Equatable, Sendable {
   }
 
   var hasValidStructure: Bool {
-    guard version == 1, generation > 0, UUID(uuidString: deploymentID) != nil,
-      configuration.hasPrefix("config-"), configuration.hasSuffix("-sslocal.json"),
+    guard version == 2, generation > 0, UUID(uuidString: deploymentID) != nil,
+      configuration.hasPrefix("config-"), intentMetadata.hasPrefix("config-"),
       RuntimePublication.generation(of: configuration) == generation,
+      RuntimePublication.generation(of: intentMetadata) == generation,
+      configuration != intentMetadata,
       authenticationFiles.allSatisfy({ $0.hasPrefix("auth-") && $0.hasSuffix(".json") }),
       aclVariants.values.allSatisfy({ $0.file.hasPrefix("acl-") && $0.file.hasSuffix(".ini") }),
       authenticationID.map({ UUID(uuidString: $0) != nil }) ?? true,

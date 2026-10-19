@@ -44,7 +44,7 @@ extension RuntimeFileStore {
       let data = try? Data(contentsOf: directoryURL.appendingPathComponent(snapshot.configuration)),
       let configuration = try? JSONDecoder().decode(SslocalConfigurationDocument.self, from: data),
       let intentData = try? Data(
-        contentsOf: directoryURL.appendingPathComponent(snapshot.intentFile)),
+        contentsOf: directoryURL.appendingPathComponent(snapshot.intentMetadata)),
       let intent = try? JSONDecoder().decode(PublishedRuntimeIntent.self, from: intentData)
     else { return nil }
     return PublishedRuntimeConfiguration(

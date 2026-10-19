@@ -97,7 +97,7 @@ struct RuntimeConvergenceTests {
     let name =
       resource == "configuration"
       ? snapshot.configuration
-      : resource == "intent" ? snapshot.intentFile : try #require(snapshot.acl?.file)
+      : resource == "intent" ? snapshot.intentMetadata : try #require(snapshot.acl?.file)
     try FileManager.default.removeItem(at: fixture.runtime.directory.appendingPathComponent(name))
     let count = fixture.agent.registerCount
     let restarted = fixture.reopeningController()

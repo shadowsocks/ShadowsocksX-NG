@@ -74,10 +74,11 @@ struct RuntimeFileStore {
         let intent = PublishedRuntimeIntent(
           sha256: contract.sha256, configurationSHA256: ProxyACLDocument.digest(configurationData),
           summary: Redactor.documentSummary(contract.document))
-        _ = try create(JSONEncoder().encode(intent), kind: "config", suffix: "intent.json")
+        let intentMetadata = try create(
+          JSONEncoder().encode(intent), kind: "config", suffix: "intent.json")
         let snapshot = RuntimeSupervision(
-          version: 1, generation: generation, deploymentID: UUID().uuidString,
-          configuration: configuration,
+          version: 2, generation: generation, deploymentID: UUID().uuidString,
+          configuration: configuration, intentMetadata: intentMetadata,
           locals: encoded.locals.map {
             .init(
               inboundProtocol: $0.inboundProtocol, localAddress: $0.localAddress,
@@ -194,7 +195,8 @@ struct RuntimeFileStore {
   }
 
   private func publishedIntent(_ snapshot: RuntimeSupervision) -> PublishedRuntimeIntent? {
-    guard let data = try? Data(contentsOf: directoryURL.appendingPathComponent(snapshot.intentFile))
+    guard
+      let data = try? Data(contentsOf: directoryURL.appendingPathComponent(snapshot.intentMetadata))
     else { return nil }
     return try? JSONDecoder().decode(PublishedRuntimeIntent.self, from: data)
   }

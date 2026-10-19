@@ -18,6 +18,99 @@ struct RuntimePublicationTests {
 }
 
 extension RuntimePublicationTests {
+  @Test func opaqueConfigurationUsesExplicitMetadataThroughSelectionAndRetirement() throws {
+    let runtime = ProxyRuntimeFixture.makeTemporaryRuntime()
+    defer { try? FileManager.default.removeItem(at: runtime.directory) }
+    let store = RuntimeFileStore(fileURL: runtime.contract)
+    let document = ProxyRuntimeFixture.makeDocument()
+    try store.write(document)
+    let original = try #require(RuntimePublication.load(at: store.supervisionFileURL))
+    let bytes = try Data(contentsOf: store.supervisionFileURL)
+    var object = try #require(JSONSerialization.jsonObject(with: bytes) as? [String: Any])
+    let prefix = String(format: "config-%020llu-", original.generation)
+    let configuration = prefix + "payload.bin"
+    let metadata = prefix + "gui-metadata.dat"
+    try FileManager.default.moveItem(
+      at: runtime.directory.appendingPathComponent(original.intentMetadata),
+      to: runtime.directory.appendingPathComponent(metadata))
+    let payload = Data([0x00, 0xff, 0x80, 0x01])
+    try AtomicFileWriter.write(payload, to: runtime.directory.appendingPathComponent(configuration))
+    object["configuration"] = configuration
+    object["intentMetadata"] = metadata
+    try AtomicFileWriter.write(
+      JSONSerialization.data(withJSONObject: object), to: store.supervisionFileURL)
+
+    let selected = try #require(RuntimePublication.load(at: store.supervisionFileURL))
+    #expect(store.publishedSummary()?.contains("servers=1") == true)
+    try RuntimePublication.select(
+      selected, configurationLink: runtime.contract, aclLink: store.aclFileURL)
+    #expect(try Data(contentsOf: runtime.contract) == payload)
+    try store.write(document)
+    let next = try #require(RuntimePublication.load(at: store.supervisionFileURL))
+    try RuntimePublication.retire(
+      before: next, publishedAt: store.supervisionFileURL, protecting: selected.retainedFiles)
+    for name in [configuration, metadata] {
+      #expect(
+        FileManager.default.fileExists(atPath: runtime.directory.appendingPathComponent(name).path))
+    }
+    try RuntimePublication.select(
+      next, configurationLink: runtime.contract, aclLink: store.aclFileURL)
+    try RuntimePublication.retire(
+      before: next, publishedAt: store.supervisionFileURL, protecting: [])
+    for name in [configuration, metadata] {
+      #expect(
+        !FileManager.default.fileExists(atPath: runtime.directory.appendingPathComponent(name).path)
+      )
+    }
+    #expect(try store.contains(PreparedRuntimeContract(document)))
+  }
+
+  @Test func metadataReferenceIsRequiredAndMustBeDistinctAndFromTheSameGeneration() throws {
+    let runtime = ProxyRuntimeFixture.makeTemporaryRuntime()
+    defer { try? FileManager.default.removeItem(at: runtime.directory) }
+    let store = RuntimeFileStore(fileURL: runtime.contract)
+    try store.write(ProxyRuntimeFixture.makeDocument())
+    let snapshot = try #require(RuntimePublication.load(at: store.supervisionFileURL))
+    let bytes = try Data(contentsOf: store.supervisionFileURL)
+    let invalidReferences: [String?] = [
+      nil, "../outside.json", snapshot.configuration,
+      String(format: "config-%020llu-intent.json", snapshot.generation - 1),
+      String(format: "config-%020llu-intent.json", snapshot.generation + 1),
+      String(format: "auth-%020llu-intent.json", snapshot.generation),
+    ]
+    for reference in invalidReferences {
+      var object = try #require(JSONSerialization.jsonObject(with: bytes) as? [String: Any])
+      object["intentMetadata"] = reference
+      try AtomicFileWriter.write(
+        JSONSerialization.data(withJSONObject: object), to: store.supervisionFileURL)
+      #expect(RuntimePublication.metadata(at: store.supervisionFileURL) == nil)
+    }
+  }
+
+  @Test func missingOrSymlinkedMetadataPreventsDeploymentSelection() throws {
+    let runtime = ProxyRuntimeFixture.makeTemporaryRuntime()
+    defer { try? FileManager.default.removeItem(at: runtime.directory) }
+    let store = RuntimeFileStore(fileURL: runtime.contract)
+    try store.write(ProxyRuntimeFixture.makeDocument())
+    let snapshot = try #require(RuntimePublication.load(at: store.supervisionFileURL))
+    let metadataURL = runtime.directory.appendingPathComponent(snapshot.intentMetadata)
+    try FileManager.default.removeItem(at: metadataURL)
+    #expect(RuntimePublication.load(at: store.supervisionFileURL) == nil)
+    #expect(throws: (any Error).self) {
+      try RuntimePublication.select(
+        snapshot, configurationLink: runtime.contract, aclLink: store.aclFileURL)
+    }
+    try FileManager.default.createSymbolicLink(
+      at: metadataURL,
+      withDestinationURL: runtime.directory.appendingPathComponent(snapshot.configuration))
+    #expect(RuntimePublication.load(at: store.supervisionFileURL) == nil)
+    #expect(throws: (any Error).self) {
+      try RuntimePublication.select(
+        snapshot, configurationLink: runtime.contract, aclLink: store.aclFileURL)
+    }
+    #expect(!FileManager.default.fileExists(atPath: runtime.contract.path))
+  }
+
   @Test func routingIntentChangesEvenWhenUpstreamJSONDoesNot() throws {
     let runtime = ProxyRuntimeFixture.makeTemporaryRuntime()
     defer { try? FileManager.default.removeItem(at: runtime.directory) }
@@ -123,7 +216,9 @@ extension RuntimePublicationTests {
     let store = RuntimeFileStore(fileURL: runtime.contract)
     try store.write(ProxyRuntimeFixture.makeDocument())
     let bytes = try Data(contentsOf: store.supervisionFileURL)
-    for (key, value) in [("version", 99 as Any), ("configuration", "../outside.json" as Any)] {
+    for (key, value) in [
+      ("version", 1 as Any), ("version", 99 as Any), ("configuration", "../outside.json" as Any),
+    ] {
       var object = try #require(JSONSerialization.jsonObject(with: bytes) as? [String: Any])
       object[key] = value
       try AtomicFileWriter.write(
