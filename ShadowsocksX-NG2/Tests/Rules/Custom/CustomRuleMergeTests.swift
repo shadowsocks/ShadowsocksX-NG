@@ -11,11 +11,11 @@ final class CustomRuleMergeTests: XCTestCase {
     CustomRule(action: action, match: match)
   }
 
-  func testACLIdentityDoesNotDependOnRuleOrderOrDuplicates() {
-    let first = ProxyRule(action: .direct, match: .domainSuffix("z.example"))
+  func testACLIdentityDoesNotDependOnRuleOrderOrDuplicates() throws {
+    let first = ProxyRule(action: .direct, match: try RuleMatch(domainSuffix: "z.example"))
     let equivalent = ProxyRule(
-      action: .direct, match: .domainSuffix("z.example"))
-    let second = ProxyRule(action: .proxy, match: .domainExact("a.example"))
+      action: .direct, match: try RuleMatch(domainSuffix: "z.example"))
+    let second = ProxyRule(action: .proxy, match: try RuleMatch(domainExact: "a.example"))
     let url = URL(fileURLWithPath: "/tmp/rules-order.acl")
     for action in RuleDefaultAction.allCases {
       let expected = ProxyACLDocument.rule(at: url, defaultAction: action, rules: [first, second])
@@ -155,11 +155,10 @@ final class CustomRuleMergeTests: XCTestCase {
       Array(acl.content.split(separator: "\n").map(String.init).dropFirst(2)),
       FixedLocalProxyRanges.aclBypassRules)
     // 自定义规则集合本身不参与全局编译（调用方不传入）。
-    XCTAssertTrue(customRules.allSatisfy { $0.source.kind == .custom })
   }
 
   /// 直连模式 ACL 不加载自定义规则。
-  func testDirectACLDoesNotLoadCustomRules() {
+  func testDirectACLDoesNotLoadCustomRules() throws {
     let acl = ProxyACLDocument.direct(
       at: URL(fileURLWithPath: "/tmp/ssxng-test/sslocal-active.acl"))
     XCTAssertFalse(acl.content.contains("[proxy_list]"))

@@ -29,8 +29,9 @@ final class RuleEnablementControllerTests: ProxyRuntimeControllerTests {
   func testRapidRuleSavesCoalesceIntoOneLatestACLDeployment() async throws {
     let seeded = try makeSeededCatalog()
     let (store, _) = try makeCustomRuleStore()
-    let first = CustomRule(action: .direct, match: .domainExact("first-save.example"))
-    let latest = CustomRule(action: .direct, match: .domainExact("latest-save.example"))
+    let first = CustomRule(action: .direct, match: try RuleMatch(domainExact: "first-save.example"))
+    let latest = CustomRule(
+      action: .direct, match: try RuleMatch(domainExact: "latest-save.example"))
     let applicationStarted = expectation(description: "rule application paused")
     let applicationGate = RuleRuntimeDelayGate(started: applicationStarted)
     defer { applicationGate.resume() }
@@ -65,8 +66,9 @@ final class RuleEnablementControllerTests: ProxyRuntimeControllerTests {
   func testSaveDuringDeploymentIsAcceptedAndLatestDocumentConvergesAfterIt() async throws {
     let seeded = try makeSeededCatalog()
     let (store, _) = try makeCustomRuleStore()
-    let first = CustomRule(action: .direct, match: .domainExact("in-flight.example"))
-    let latest = CustomRule(action: .direct, match: .domainExact("after-flight.example"))
+    let first = CustomRule(action: .direct, match: try RuleMatch(domainExact: "in-flight.example"))
+    let latest = CustomRule(
+      action: .direct, match: try RuleMatch(domainExact: "after-flight.example"))
     let healthWaiting = expectation(description: "health retry paused")
     let healthGate = RuleRuntimeDelayGate(started: healthWaiting)
     defer { healthGate.resume() }
@@ -199,7 +201,7 @@ final class RuleEnablementControllerTests: ProxyRuntimeControllerTests {
       modeSwitch, release: { loader.resume() },
       body: {
         try await requireTestPhase([started], timeout: 3)
-        let identity = RuleIdentity(action: .proxy, match: .domainExact("kept.example"))
+        let identity = ProxyRule(action: .proxy, match: try RuleMatch(domainExact: "kept.example"))
         let ruleCommit = Task {
           await controller.commitRuleDocument(
             CustomRuleDocument(rules: [], disabledIdentities: [identity]))
@@ -259,7 +261,7 @@ final class RuleEnablementControllerTests: ProxyRuntimeControllerTests {
     let (store, _) = try makeCustomRuleStore()
     let controller = makeRuleEnablementController(
       store: store, settings: ProxySettings(listen: ActivationFixture.listen, agentEnabled: false))
-    let identity = RuleIdentity(action: .proxy, match: .domainExact("saved.example"))
+    let identity = ProxyRule(action: .proxy, match: try RuleMatch(domainExact: "saved.example"))
     let outcome = await controller.updateRuleDocument(
       CustomRuleDocument(rules: [], disabledIdentities: [identity]))
     XCTAssertEqual(outcome, .saved)
@@ -290,7 +292,7 @@ extension RuleEnablementControllerTests {
   private func interruptRuleDeployment(switchMode: Bool) async throws {
     let seeded = try makeSeededCatalog()
     let (store, _) = try makeCustomRuleStore()
-    let rule = CustomRule(action: .direct, match: .domainExact("kept.example"))
+    let rule = CustomRule(action: .direct, match: try RuleMatch(domainExact: "kept.example"))
     try store.save([rule])
     let settings = ProxySettings(
       listen: ActivationFixture.listen, preferredMode: .rule,
@@ -362,7 +364,7 @@ extension RuleEnablementControllerTests {
   func testFailedDisableKeepsSavedIntentAndReportsDeploymentFailure() async throws {
     let seeded = try makeSeededCatalog()
     let (store, _) = try makeCustomRuleStore()
-    let rule = CustomRule(action: .direct, match: .domainExact("kept.example"))
+    let rule = CustomRule(action: .direct, match: try RuleMatch(domainExact: "kept.example"))
     try store.save([rule])
     let settings = ProxySettings(
       listen: ActivationFixture.listen, preferredMode: .rule,

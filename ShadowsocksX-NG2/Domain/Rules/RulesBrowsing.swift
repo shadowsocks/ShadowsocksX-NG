@@ -33,11 +33,11 @@ struct RulesSourceSnapshot: Equatable, Identifiable, Sendable {
 
 struct RulesRow: Equatable, Identifiable, Sendable {
   enum SelectionID: Hashable, Sendable {
-    case rule(RuleIdentity)
+    case rule(ProxyRule)
     case noDotHostname
   }
   let id: SelectionID
-  let identity: RuleIdentity?
+  let identity: ProxyRule?
   let content: String
   let sources: Set<RulesSource>
   let customIDs: Set<UUID>

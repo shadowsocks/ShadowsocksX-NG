@@ -63,7 +63,8 @@ final class CustomRuleEditingControllerTests: ProxyRuntimeControllerTests {
   func testEditorFailedDeploymentKeepsSavedEditAndStopsRuntime() async throws {
     let seeded = try makeSeededCatalog()
     let (store, _) = try makeCustomRuleStore()
-    let existing = CustomRule(action: .direct, match: .domainSuffix("kept.example"))
+    let existing = CustomRule(
+      action: .direct, match: try RuleMatch(domainSuffix: "kept.example"))
     try store.save([existing])
     let controller = makeControllerWithCustomRules(
       store: store,
@@ -85,11 +86,12 @@ final class CustomRuleEditingControllerTests: ProxyRuntimeControllerTests {
     XCTAssertEqual(result, .committed(.saved))
     await controller.ruleApplicationTask?.value
     XCTAssertEqual(try store.load().first?.id, existing.id)
-    XCTAssertEqual(try store.load().first?.match, .domainSuffix("new-rule.example"))
+    XCTAssertEqual(
+      try store.load().first?.match, try RuleMatch(domainSuffix: "new-rule.example"))
     XCTAssertNotEqual(workflow.snapshot.version, version)
     XCTAssertEqual(
       workflow.snapshot.rows.first { $0.customIDs.contains(existing.id) }?.identity,
-      RuleIdentity(action: .direct, match: .domainSuffix("new-rule.example")))
+      ProxyRule(action: .direct, match: try RuleMatch(domainSuffix: "new-rule.example")))
     XCTAssertNotEqual(runtimeStore.loadDocument(), originalRuntime)
     XCTAssertNotNil(runtimeStore.readFailure())
     XCTAssertNotEqual(controller.state, .running)

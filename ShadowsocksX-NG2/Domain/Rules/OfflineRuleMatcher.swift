@@ -56,7 +56,7 @@ private struct OfflineRuleTarget {
   let match: RuleMatch
   let display: String
   var isDomain: Bool {
-    if case .domainExact = match { return true }
+    if case .domainExact = match.pattern { return true }
     return false
   }
   var isSimpleHostname: Bool { isDomain && !display.contains(".") }
@@ -100,7 +100,7 @@ private struct OfflineRuleTarget {
           }
       })
     else { throw OfflineRuleMatcher.Failure.invalidTarget }
-    match = .domainExact(host)
+    match = try RuleMatch(domainExact: host)
     display = host
   }
 }

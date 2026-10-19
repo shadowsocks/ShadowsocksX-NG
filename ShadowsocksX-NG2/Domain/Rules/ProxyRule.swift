@@ -5,7 +5,7 @@ import Foundation
 
 /// 规则动作：目标经 Shadowsocks 代理，或直连。独立于 PAC、ACL 文本与
 /// 系统代理设置。
-enum RuleAction: String, Codable, CaseIterable, Equatable, Hashable, Sendable {
+enum RuleAction: String, CaseIterable, Equatable, Hashable, Sendable {
   case proxy
   case direct
 }
@@ -36,56 +36,23 @@ enum RuleDefaultAction: String, Codable, CaseIterable, Equatable, Hashable, Send
 
 /// 规则匹配条件。完整域名、域名后缀与 IPv4/IPv6 CIDR 是可运行的统一类型；
 /// 不把 URL 路径、协议、关键字或正则纳入。
-enum RuleMatch: Equatable, Hashable, Codable, Sendable {
-  private enum CodingKeys: String, CodingKey {
-    case kind, value
+struct RuleMatch: Equatable, Hashable, Sendable {
+  /// Read-only pattern; raw strings cannot be used to construct a RuleMatch.
+  enum Pattern: Equatable, Hashable, Sendable {
+    case domainExact(String)
+    case domainSuffix(String)
+    case ipv4CIDR(String)
+    case ipv6CIDR(String)
   }
 
-  private enum Kind: String, Codable {
-    case domainExact, domainSuffix, ipv4CIDR, ipv6CIDR
-  }
+  let pattern: Pattern
 
-  init(from decoder: Decoder) throws {
-    let container = try decoder.container(keyedBy: CodingKeys.self)
-    let value = try container.decode(String.self, forKey: .value)
-    switch try container.decode(Kind.self, forKey: .kind) {
-    case .domainExact:
-      try self.init(domainExact: value)
-    case .domainSuffix:
-      try self.init(nationalDomainSuffix: value)
-    case .ipv4CIDR:
-      try self.init(ipv4CIDR: value)
-    case .ipv6CIDR:
-      try self.init(ipv6CIDR: value)
-    }
-  }
+  private init(pattern: Pattern) { self.pattern = pattern }
 
-  func encode(to encoder: Encoder) throws {
-    var container = encoder.container(keyedBy: CodingKeys.self)
-    switch self {
-    case .domainExact(let value):
-      try container.encode(Kind.domainExact, forKey: .kind)
-      try container.encode(value, forKey: .value)
-    case .domainSuffix(let value):
-      try container.encode(Kind.domainSuffix, forKey: .kind)
-      try container.encode(value, forKey: .value)
-    case .ipv4CIDR(let value):
-      try container.encode(Kind.ipv4CIDR, forKey: .kind)
-      try container.encode(value, forKey: .value)
-    case .ipv6CIDR(let value):
-      try container.encode(Kind.ipv6CIDR, forKey: .kind)
-      try container.encode(value, forKey: .value)
-    }
-  }
+  static let localSuffix = RuleMatch(pattern: .domainSuffix("local"))
+  static let localhostSuffix = RuleMatch(pattern: .domainSuffix("localhost"))
 
-  /// 完整域名精确匹配（`full:`）。
-  case domainExact(String)
-  /// 域名后缀匹配：域名本身及其所有子域（`domain:` / 裸域名）。
-  case domainSuffix(String)
-  /// IPv4 CIDR（规范化后的 `a.b.c.d/len`）。
-  case ipv4CIDR(String)
-  /// IPv6 CIDR（规范化后的压缩形式）。
-  case ipv6CIDR(String)
+  var isFixedLocalSuffix: Bool { self == Self.localSuffix || self == Self.localhostSuffix }
 
   init(domainExact raw: String) throws {
     let value = raw.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
@@ -97,7 +64,7 @@ enum RuleMatch: Equatable, Hashable, Codable, Sendable {
     guard value.allSatisfy({ Self.isDomainLabelCharacter($0) || $0 == "." }) else {
       throw RuleMatchError.invalidDomain(raw)
     }
-    self = .domainExact(value)
+    self.init(pattern: .domainExact(value))
   }
 
   init(domainSuffix raw: String) throws {
@@ -113,7 +80,7 @@ enum RuleMatch: Equatable, Hashable, Codable, Sendable {
     // 单标签后缀（如 `com`）过宽；`cn` 作为国家后缀由吸收流程单独引入并显式允许。
     let labels = value.split(separator: ".")
     guard labels.count >= 2 else { throw RuleMatchError.invalidDomain(raw) }
-    self = .domainSuffix(value)
+    self.init(pattern: .domainSuffix(value))
   }
 
   /// 允许 `cn` 作为显式引入的国家后缀。
@@ -124,17 +91,17 @@ enum RuleMatch: Equatable, Hashable, Codable, Sendable {
       try self.init(domainSuffix: raw)
       return
     }
-    self = .domainSuffix(value)
+    self.init(pattern: .domainSuffix(value))
   }
 
   init(ipv4CIDR raw: String) throws {
     let normalized = try Self.normalizeIPv4CIDR(raw)
-    self = .ipv4CIDR(normalized)
+    self.init(pattern: .ipv4CIDR(normalized))
   }
 
   init(ipv6CIDR raw: String) throws {
     let normalized = try Self.normalizeIPv6CIDR(raw)
-    self = .ipv6CIDR(normalized)
+    self.init(pattern: .ipv6CIDR(normalized))
   }
 
   private static func isDomainLabelCharacter(_ character: Character) -> Bool {
@@ -240,42 +207,18 @@ enum RuleMatchError: Error, Equatable, Sendable {
   case invalidCIDR(String)
 }
 
-/// Source-independent routing identity; custom UUIDs continue to identify edits.
-/// Callers supply valid RuleMatch values; decoding and input constructors validate them.
-struct RuleIdentity: Codable, Equatable, Hashable, Sendable {
-  let action: RuleAction
-  let match: RuleMatch
-
-  init(action: RuleAction, match: RuleMatch) {
-    self.action = action
-    switch match {
-    case .domainExact(let value):
-      self.match = (try? RuleMatch(domainExact: value)) ?? match
-    case .domainSuffix(let value):
-      self.match = (try? RuleMatch(nationalDomainSuffix: value)) ?? match
-    case .ipv4CIDR(let value):
-      self.match = (try? RuleMatch(ipv4CIDR: value)) ?? match
-    case .ipv6CIDR(let value):
-      self.match = (try? RuleMatch(ipv6CIDR: value)) ?? match
-    }
-  }
-
-  var contentToken: String { "\(action.rawValue)|\(String(describing: match))" }
-}
-
 // MARK: - 来源身份
 
 /// 内置规则来源身份。
-enum RuleSourceKind: String, Codable, CaseIterable, Equatable, Hashable, Sendable {
+enum RuleSourceKind: String, CaseIterable, Equatable, Hashable, Sendable {
   case geolocationCN = "geolocation-cn"
   case chinaIPv4 = "china-ipv4"
   case gfwlist = "gfwlist"
   case custom = "custom"
 }
 
-/// 规则来源身份：固定来源类别 + 上游版本 + 展示标签。自定义条目与快照元数据
-/// 共用此身份。
-struct RuleSourceIdentity: Codable, Equatable, Hashable, Sendable {
+/// 内置快照的来源类别、上游版本与展示标签。
+struct RuleSourceIdentity: Equatable, Hashable, Sendable {
   let kind: RuleSourceKind
   let upstreamVersion: String
   let label: String
@@ -292,7 +235,7 @@ struct RuleSourceIdentity: Codable, Equatable, Hashable, Sendable {
 // MARK: - 规则
 
 /// 一条来源无关的代理规则。
-struct ProxyRule: Codable, Equatable, Hashable, Sendable {
+struct ProxyRule: Equatable, Hashable, Sendable {
   let action: RuleAction
   let match: RuleMatch
 
@@ -304,12 +247,23 @@ struct ProxyRule: Codable, Equatable, Hashable, Sendable {
     self.match = match
   }
 
-  var identity: RuleIdentity { RuleIdentity(action: action, match: match) }
+  /// Stable historical token, independent of Swift's debug representation.
+  var contentToken: String {
+    let kind: String
+    let value: String
+    switch match.pattern {
+    case .domainExact(let raw): (kind, value) = ("domainExact", raw)
+    case .domainSuffix(let raw): (kind, value) = ("domainSuffix", raw)
+    case .ipv4CIDR(let raw): (kind, value) = ("ipv4CIDR", raw)
+    case .ipv6CIDR(let raw): (kind, value) = ("ipv6CIDR", raw)
+    }
+    return "\(action.rawValue)|\(kind)(\(String(reflecting: value)))"
+  }
 
   /// sslocal ACL 单行表示（ASCII）。域名后缀 `||host`、完整域名 `|host`、
   /// CIDR 原样写入。
   var aclLine: String {
-    switch identity.match {
+    switch match.pattern {
     case .domainExact(let domain):
       return "|\(domain)"
     case .domainSuffix(let domain):

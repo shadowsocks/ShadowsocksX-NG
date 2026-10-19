@@ -48,7 +48,7 @@ enum CustomRuleSaveResult: Equatable, Sendable {
 
 extension RuleMatch {
   var editingKind: CustomRuleDraft.Kind {
-    switch self {
+    switch pattern {
     case .domainExact: .domainExact
     case .domainSuffix: .domainSuffix
     case .ipv4CIDR(let value): value.hasSuffix("/32") ? .ipAddress : .cidr
@@ -76,7 +76,7 @@ extension RulesCollection {
       return CustomRulePreview(failure: .staleDraft)
     }
     let rule = CustomRule(
-      id: draft.id, action: draft.action, match: match, source: previous?.source)
+      id: draft.id, action: draft.action, match: match)
     let others = document.rules.filter { $0.id != draft.editingID }
     guard !others.contains(where: { $0.identity == rule.identity }) else {
       return CustomRulePreview(failure: .duplicate, rule: rule)

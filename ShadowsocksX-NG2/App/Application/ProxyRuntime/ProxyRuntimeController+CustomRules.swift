@@ -101,7 +101,7 @@ extension ProxyRuntimeController {
     guard
       document.disabledIdentities.isDisjoint(
         with:
-          Set(RuleCoverage.fixedLocalMatches.map { RuleIdentity(action: .direct, match: $0) }))
+          Set(RuleCoverage.fixedLocalMatches.map { ProxyRule(action: .direct, match: $0) }))
     else { return .invalidDocument(detail: "Fixed local policy cannot be disabled") }
     do {
       _ = try ruleDocuments.load()

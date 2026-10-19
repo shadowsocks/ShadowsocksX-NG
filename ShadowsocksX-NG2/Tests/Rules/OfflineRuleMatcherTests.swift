@@ -90,7 +90,7 @@ final class OfflineRuleMatcherTests: XCTestCase {
   }
 
   func testFixedPolicyWinsAndSourceMembershipsRemainComplete() throws {
-    let proxy = ProxyRule(action: .proxy, match: .domainSuffix("local"))
+    let proxy = ProxyRule(action: .proxy, match: .localSuffix)
     let collection = RulesCollection.load(
       custom: { [] },
       builtin: {
@@ -106,7 +106,7 @@ final class OfflineRuleMatcherTests: XCTestCase {
       XCTAssertTrue(result.deciding.allSatisfy(\.isFixed))
     }
     let local = try OfflineRuleMatcher.test(collection: collection, address: "host.local")
-    XCTAssertEqual(local.otherMatches.map(\.identity), [proxy.identity])
+    XCTAssertEqual(local.otherMatches.map(\.identity), [proxy])
     let match = try RuleMatch(domainExact: "example.com")
     let custom = CustomRule(action: .proxy, match: match)
     let duplicate = ProxyRule(action: .proxy, match: match)

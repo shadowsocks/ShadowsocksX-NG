@@ -4,16 +4,16 @@ import Foundation
 struct RuleRelationship: Equatable, Sendable {
   enum Kind: Hashable, Sendable { case absorption, shadowing }
   enum Extent: Sendable { case full, partial }
-  let rule: RuleIdentity
+  let rule: ProxyRule
   let kind: Kind
   let extent: Extent
-  let covering: [RuleIdentity]
+  let covering: [ProxyRule]
 }
 
 /// Analyze the complete candidate set. Optional subjects limit explanation work
 /// to custom entries at the existing validation seam without narrowing context.
 struct RuleAnalysis: Equatable, Sendable {
-  let identities: [RuleIdentity]
+  let identities: [ProxyRule]
   let relationships: [RuleRelationship]
 
   var contentVersion: String {
@@ -22,10 +22,10 @@ struct RuleAnalysis: Equatable, Sendable {
   }
 
   init(rules: [ProxyRule], subjects: [ProxyRule]? = nil) {
-    let identities = Set(rules.map(\.identity)).map { ($0, $0.contentToken) }
+    let identities = Set(rules).map { ($0, $0.contentToken) }
       .sorted { $0.1 < $1.1 }.map(\.0)
     self.identities = identities
-    let targets = Set((subjects ?? rules).map(\.identity))
+    let targets = Set(subjects ?? rules)
     relationships = identities.filter { targets.contains($0) }.flatMap { target in
       [RuleRelationship.Kind.absorption, .shadowing].compactMap { kind in
         let covering = identities.filter { other in
@@ -63,14 +63,14 @@ extension RuleCoverage {
   static let fixedLocalMatches: [RuleMatch] = {
     FixedLocalProxyRanges.ipRanges.compactMap { value in
       value.contains(":") ? try? RuleMatch(ipv6CIDR: value) : try? RuleMatch(ipv4CIDR: value)
-    } + [.domainSuffix("localhost"), .domainSuffix("local")]
+    } + [.localhostSuffix, .localSuffix]
   }()
 
   static func fixedLocalCoverage(of match: RuleMatch) -> FixedRuleCoverage? {
     let matches = fixedLocalMatches.filter { intersects($0, match) }
     let simple: Bool
     let simpleIsFull: Bool
-    switch match {
+    switch match.pattern {
     case .domainExact(let value):
       simple = !value.contains(".")
       simpleIsFull = simple
@@ -96,14 +96,14 @@ extension RuleAnalysis {
     let expressed = rules.filter { defaultAction != .proxyWhenUnmatched || $0.action == .direct }
     let index = RulesOverlapIndex(rules: expressed)
     return expressed.filter { rule in
-      let analysis = RuleAnalysis(rules: index.overlapping(rule.identity.match), subjects: [rule])
+      let analysis = RuleAnalysis(rules: index.overlapping(rule.match), subjects: [rule])
       return !analysis.relationships.contains {
         $0.extent == .full
           && ($0.kind == .shadowing
             || $0.covering.contains { other in
-              RuleCoverage.fullyCovered(rule.identity.match, by: [other.match])
-                && (!RuleCoverage.fullyCovered(other.match, by: [rule.identity.match])
-                  || other.contentToken < rule.identity.contentToken)
+              RuleCoverage.fullyCovered(rule.match, by: [other.match])
+                && (!RuleCoverage.fullyCovered(other.match, by: [rule.match])
+                  || other.contentToken < rule.contentToken)
             })
       }
     }

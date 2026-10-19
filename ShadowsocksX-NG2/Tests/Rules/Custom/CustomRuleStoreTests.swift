@@ -1,4 +1,5 @@
 import Foundation
+import Testing
 import XCTest
 
 @testable import ShadowsocksX_NG2
@@ -22,11 +23,13 @@ final class CustomRuleStoreTests: XCTestCase {
   }
 
   func testSchemaOneMigratesAndDisablementRoundTripsInSameDocument() throws {
-    let rule = CustomRule(action: .direct, match: .domainExact("private.example"))
-    let legacy = try JSONSerialization.data(withJSONObject: [
-      "schemaVersion": 1,
-      "rules": JSONSerialization.jsonObject(with: JSONEncoder().encode([rule])),
-    ])
+    let rule = CustomRule(action: .direct, match: try RuleMatch(domainExact: "private.example"))
+    let legacy = Data(
+      """
+      {"schemaVersion":1,"rules":[{"id":"\(rule.id.uuidString)","action":"direct",
+       "match":{"kind":"domainExact","value":"private.example"},
+       "source":{"kind":"custom","upstreamVersion":"user","label":"自定义"}}]}
+      """.utf8)
     try legacy.write(to: store.fileURL)
     let migrated = try store.loadDocument()
     XCTAssertEqual(migrated.rules, [rule])
@@ -34,7 +37,6 @@ final class CustomRuleStoreTests: XCTestCase {
     try store.saveDocument(
       CustomRuleDocument(rules: migrated.rules, disabledIdentities: [rule.identity]))
     let saved = try store.loadDocument()
-    XCTAssertEqual(saved.schemaVersion, 2)
     XCTAssertEqual(saved.disabledIdentities, [rule.identity])
     XCTAssertNotEqual(
       try store.summary().contentVersion, CustomRuleSummary.summarizing([rule]).contentVersion)
@@ -44,7 +46,7 @@ final class CustomRuleStoreTests: XCTestCase {
     XCTAssertEqual(try store.load(), [])
   }
 
-  func testRoundTripPersistsActionMatchAndSourceMetadata() throws {
+  func testRoundTripPersistsActionMatchAndUUID() throws {
     let match = try RuleMatch(domainSuffix: "example.com")
     let rule = CustomRule(action: .direct, match: match)
 
@@ -55,8 +57,6 @@ final class CustomRuleStoreTests: XCTestCase {
     XCTAssertEqual(loaded[0].id, rule.id)
     XCTAssertEqual(loaded[0].action, .direct)
     XCTAssertEqual(loaded[0].match, match)
-    XCTAssertEqual(loaded[0].source.kind, .custom)
-    XCTAssertFalse(loaded[0].source.label.isEmpty)
   }
 
   func testRoundTripKeepsMultipleRuleKinds() throws {
@@ -72,18 +72,21 @@ final class CustomRuleStoreTests: XCTestCase {
   }
 
   func testStoredMatchIsNormalizedWithoutChangingCustomIdentity() throws {
-    let rule = CustomRule(action: .direct, match: .ipv4CIDR("203.0.113.15/24"))
+    let rule = CustomRule(action: .direct, match: try RuleMatch(ipv4CIDR: "203.0.113.15/24"))
     try store.save([rule])
     let loaded = try XCTUnwrap(store.load().first)
     XCTAssertEqual(loaded.id, rule.id)
-    XCTAssertEqual(loaded.match, .ipv4CIDR("203.0.113.0/24"))
+    XCTAssertEqual(loaded.match, try RuleMatch(ipv4CIDR: "203.0.113.0/24"))
     XCTAssertEqual(loaded.identity, rule.identity)
   }
 
   func testMalformedStoredCIDRReportsCorruptionWithoutRewritingDocument() throws {
-    for match in [RuleMatch.ipv4CIDR("/"), .ipv6CIDR("/")] {
-      try CustomRuleStore.encode(
-        CustomRuleDocument(rules: [CustomRule(action: .direct, match: match)])
+    for kind in ["ipv4CIDR", "ipv6CIDR"] {
+      try Data(
+        """
+        {"schemaVersion":3,"rules":[{"id":"A22CD040-4788-41CC-BA73-AF296C7FE410",
+         "action":"direct","match":{"kind":"\(kind)","value":"/"}}],"disabledIdentities":[]}
+        """.utf8
       ).write(to: store.fileURL)
       let before = try Data(contentsOf: store.fileURL)
       XCTAssertThrowsError(try store.load()) { error in
@@ -117,7 +120,7 @@ final class CustomRuleStoreTests: XCTestCase {
         return XCTFail("应点名 schema 版本不匹配，实际 \(error)")
       }
       XCTAssertEqual(found, 99)
-      XCTAssertEqual(expected, CustomRuleDocument.currentSchemaVersion)
+      XCTAssertEqual(expected, CustomRuleStore.currentSchemaVersion)
     }
   }
 
@@ -141,5 +144,72 @@ final class CustomRuleStoreTests: XCTestCase {
       CustomRule(action: .proxy, match: try RuleMatch(domainSuffix: "other.example"))
     ])
     XCTAssertNotEqual(changed.contentVersion, summary.contentVersion)
+  }
+}
+
+struct CustomRuleStorageMigrationTests {
+  @Test func legacySourceIsDiscardedOnNextSaveWithoutLosingSavedIntent() throws {
+    let data = Data(
+      """
+      {"schemaVersion":2,"rules":[
+        {"id":"A22CD040-4788-41CC-BA73-AF296C7FE410","action":"direct",
+         "match":{"kind":"ipv4CIDR","value":"203.0.113.15/24"},
+         "source":{"kind":"custom","upstreamVersion":"imported","label":"Old import"}}
+      ],"disabledIdentities":[
+        {"action":"proxy","match":{"kind":"domainExact","value":"orphan.example"}}
+      ]}
+      """.utf8)
+    let document = try CustomRuleStore.decode(data)
+    #expect(document.rules.first?.id.uuidString == "A22CD040-4788-41CC-BA73-AF296C7FE410")
+    #expect(document.disabledIdentities.count == 1)
+    let encoded = try CustomRuleStore.encode(document)
+    let json = try #require(JSONSerialization.jsonObject(with: encoded) as? [String: Any])
+    #expect(json["schemaVersion"] as? Int == 3)
+    let rule = try #require((json["rules"] as? [[String: Any]])?.first)
+    #expect(rule["source"] == nil)
+    #expect((rule["match"] as? [String: String])?["value"] == "203.0.113.0/24")
+    #expect(try CustomRuleStore.decode(encoded).disabledIdentities == document.disabledIdentities)
+  }
+}
+
+extension CustomRuleStorageMigrationTests {
+  @Test func loadDoesNotRewriteLegacyFileAndSaveRetainsOrphanDisablement() throws {
+    let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: directory) }
+    let store = CustomRuleStore(fileURL: directory.appendingPathComponent("rules.json"))
+    let legacy = Data(
+      """
+      {"schemaVersion":2,"rules":[],"disabledIdentities":[
+        {"action":"proxy","match":{"kind":"domainExact","value":"orphan.example"}}]}
+      """.utf8)
+    try legacy.write(to: store.fileURL)
+    let document = try store.loadDocument()
+    #expect(try Data(contentsOf: store.fileURL) == legacy)
+    let rule = CustomRule(action: .direct, match: try RuleMatch(domainExact: "new.example"))
+    try store.save([rule])
+    let saved = try store.loadDocument()
+    #expect(saved.rules == [rule])
+    #expect(saved.disabledIdentities == document.disabledIdentities)
+  }
+
+  @Test(arguments: ["uuid", "identity", "disabled"])
+  func duplicateRecordsRemainRejected(kind: String) throws {
+    let record: [String: Any] = [
+      "id": "A22CD040-4788-41CC-BA73-AF296C7FE410", "action": "direct",
+      "match": ["kind": "domainExact", "value": "example.com"],
+    ]
+    var second = record
+    if kind == "identity" { second["id"] = "B22CD040-4788-41CC-BA73-AF296C7FE410" }
+    if kind == "uuid" { second["action"] = "proxy" }
+    let disabled: [String: Any] = [
+      "action": "proxy", "match": ["kind": "domainExact", "value": "orphan.example"],
+    ]
+    let json: [String: Any] = [
+      "schemaVersion": 3, "rules": kind == "disabled" ? [] : [record, second],
+      "disabledIdentities": kind == "disabled" ? [disabled, disabled] : [],
+    ]
+    let data = try JSONSerialization.data(withJSONObject: json)
+    #expect(throws: CustomRuleStoreError.self) { try CustomRuleStore.decode(data) }
   }
 }

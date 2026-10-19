@@ -12,13 +12,16 @@ final class GeneratedRuleSnapshotTests: XCTestCase {
       builtin: { source in
         source == .geolocationCN ? snapshot : rulesFixture(source)
       })
-    let narrow = RuleIdentity(action: .direct, match: .domainSuffix("foo.cn"))
+    let narrow = ProxyRule(action: .direct, match: try RuleMatch(domainSuffix: "foo.cn"))
     XCTAssertFalse(collection.rows.contains { $0.identity == narrow })
     XCTAssertEqual(
       try OfflineRuleMatcher.test(collection: collection, address: "foo.cn").outcome, .direct)
     let disabled = collection.replacingUserDocument(
       CustomRuleDocument(
-        rules: [], disabledIdentities: [RuleIdentity(action: .direct, match: .domainSuffix("cn"))]))
+        rules: [],
+        disabledIdentities: [
+          ProxyRule(action: .direct, match: try RuleMatch(nationalDomainSuffix: "cn"))
+        ]))
     let result = try OfflineRuleMatcher.test(collection: disabled, address: "foo.cn")
     XCTAssertEqual(result.outcome, .unmatched)
     XCTAssertTrue(result.deciding.isEmpty)
@@ -107,7 +110,7 @@ final class GeneratedRuleSnapshotTests: XCTestCase {
     XCTAssertThrowsError(try store.load()) { error in
       XCTAssertEqual(
         error as? RuleSnapshotError,
-        .schemaVersionMismatch(found: 99, expected: RuleSnapshot.currentSchemaVersion))
+        .schemaVersionMismatch(found: 99, expected: RuleSnapshotStore.currentSchemaVersion))
     }
   }
 }
@@ -179,7 +182,8 @@ extension GeneratedRuleSnapshotTests {
       builtin: { source in
         source == .gfwlist ? snapshot : rulesFixture(source)
       })
-    let exception = RuleIdentity(action: .direct, match: .domainSuffix("safe.example.com"))
+    let exception = ProxyRule(
+      action: .direct, match: try RuleMatch(domainSuffix: "safe.example.com"))
     XCTAssertFalse(collection.rows.contains { $0.identity == exception })
     XCTAssertEqual(
       try OfflineRuleMatcher.test(collection: collection, address: "safe.example.com").outcome,
@@ -187,7 +191,9 @@ extension GeneratedRuleSnapshotTests {
     let disabled = collection.replacingUserDocument(
       CustomRuleDocument(
         rules: [],
-        disabledIdentities: [RuleIdentity(action: .proxy, match: .domainSuffix("example.com"))]))
+        disabledIdentities: [
+          ProxyRule(action: .proxy, match: try RuleMatch(domainSuffix: "example.com"))
+        ]))
     let result = try OfflineRuleMatcher.test(collection: disabled, address: "safe.example.com")
     XCTAssertEqual(result.outcome, .unmatched)
     XCTAssertTrue(result.deciding.isEmpty)

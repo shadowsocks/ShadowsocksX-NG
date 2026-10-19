@@ -91,13 +91,13 @@ final class RulesWorkflow: ObservableObject {
     snapshot = applyingQuery(to: next)
   }
 
-  var actionableSelection: Set<RuleIdentity> {
+  var actionableSelection: Set<ProxyRule> {
     Set(
       snapshot.rows.filter { snapshot.selection.contains($0.id) && !$0.isFixed }
         .compactMap(\.identity))
   }
 
-  func setEnabled(_ enabled: Bool, identities: Set<RuleIdentity>) async {
+  func setEnabled(_ enabled: Bool, identities: Set<ProxyRule>) async {
     guard let ticket = intentTicket(), let old = ticket.document else { return }
     let allowed = Set(snapshot.rows.filter { !$0.isFixed }.compactMap(\.identity))
     let targets = identities.intersection(allowed)

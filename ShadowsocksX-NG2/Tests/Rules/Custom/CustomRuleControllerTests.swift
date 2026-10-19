@@ -94,9 +94,9 @@ final class CustomRuleControllerTests: ProxyRuntimeControllerTests {
       store: store, settings: settings, proxyMode: .rule)
     try await controller.activate(seeded.server)
     let rules = [
-      CustomRule(action: .direct, match: .domainSuffix("order.example")),
-      CustomRule(action: .proxy, match: .domainExact("a.order.example")),
-      CustomRule(action: .direct, match: .domainExact("a.order.example")),
+      CustomRule(action: .direct, match: try RuleMatch(domainSuffix: "order.example")),
+      CustomRule(action: .proxy, match: try RuleMatch(domainExact: "a.order.example")),
+      CustomRule(action: .direct, match: try RuleMatch(domainExact: "a.order.example")),
     ]
     let first = await controller.commitRuleDocument(CustomRuleDocument(rules: rules)).outcome
     XCTAssertEqual(first, .saved)

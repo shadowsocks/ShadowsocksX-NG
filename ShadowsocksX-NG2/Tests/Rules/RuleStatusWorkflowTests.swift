@@ -9,7 +9,7 @@ final class RuleStatusWorkflowTests: XCTestCase {
     let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     defer { try? FileManager.default.removeItem(at: directory) }
     let store = CustomRuleStore(fileURL: directory.appendingPathComponent("rules.json"))
-    let rule = CustomRule(action: .proxy, match: .domainExact("example.net"))
+    let rule = CustomRule(action: .proxy, match: try RuleMatch(domainExact: "example.net"))
     try store.save([rule])
     let workflow = RulesWorkflow(
       loadDocument: { try store.loadDocument() },
@@ -34,8 +34,8 @@ final class RuleStatusWorkflowTests: XCTestCase {
     let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     defer { try? FileManager.default.removeItem(at: directory) }
     let store = CustomRuleStore(fileURL: directory.appendingPathComponent("rules.json"))
-    let disabled = CustomRule(action: .proxy, match: .domainExact("disabled.example"))
-    let enabled = CustomRule(action: .proxy, match: .domainExact("enabled.example"))
+    let disabled = CustomRule(action: .proxy, match: try RuleMatch(domainExact: "disabled.example"))
+    let enabled = CustomRule(action: .proxy, match: try RuleMatch(domainExact: "enabled.example"))
     try store.saveDocument(
       CustomRuleDocument(rules: [disabled, enabled], disabledIdentities: [disabled.identity]))
     let timerStarted = expectation(description: "success timer started")
@@ -70,7 +70,7 @@ final class RuleStatusWorkflowTests: XCTestCase {
     let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     defer { try? FileManager.default.removeItem(at: directory) }
     let store = CustomRuleStore(fileURL: directory.appendingPathComponent("rules.json"))
-    let rule = CustomRule(action: .proxy, match: .domainExact("example.net"))
+    let rule = CustomRule(action: .proxy, match: try RuleMatch(domainExact: "example.net"))
     try store.save([rule])
     let reloadStarted = expectation(description: "collection reload paused")
     let gate = RuleFeedbackClock(started: reloadStarted)
@@ -104,7 +104,7 @@ final class RuleStatusWorkflowTests: XCTestCase {
     let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     defer { try? FileManager.default.removeItem(at: directory) }
     let store = CustomRuleStore(fileURL: directory.appendingPathComponent("rules.json"))
-    let rule = CustomRule(action: .proxy, match: .domainExact("example.net"))
+    let rule = CustomRule(action: .proxy, match: try RuleMatch(domainExact: "example.net"))
     try store.save([rule])
     let timerStarted = expectation(description: "success timer started")
     let timerReturned = expectation(description: "old timer returned")

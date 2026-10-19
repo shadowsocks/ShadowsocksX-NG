@@ -56,7 +56,7 @@ final class RulesPresentationTests: XCTestCase {
     XCTAssertEqual(absorbed.relationships.first?.covering, [broad.identity])
     workflow.select([.rule(local.identity)])
     let fixed = try XCTUnwrap(workflow.selectedRelationshipRow?.fixedCoverage)
-    XCTAssertEqual(fixed.matches, [.domainSuffix("local")])
+    XCTAssertEqual(fixed.matches, [.localSuffix])
     workflow.select([.noDotHostname])
     XCTAssertNil(workflow.selectedRelationshipRow)
   }
@@ -115,7 +115,8 @@ private final class ReportFixtureLoader: @unchecked Sendable {
         source: RuleSourceIdentity(
           kind: metadata.source.kind, upstreamVersion: "v\(version)", label: metadata.source.label),
         upstreamReference: metadata.upstreamReference, inputDigest: "digest-\(version)",
-        fetchedAt: metadata.fetchedAt, license: metadata.license, attribution: metadata.attribution),
+        fetchedAt: metadata.fetchedAt, converterVersion: metadata.converterVersion,
+        license: metadata.license, attribution: metadata.attribution),
       rules: fixture.rules, lossReport: RuleConversionLossReport(absorbedCount: version))
   }
 }

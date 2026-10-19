@@ -99,8 +99,8 @@ enum RuleCoverage {
   static func domainConflictsWithFixedLocal(_ match: RuleMatch) -> Bool {
     // 固定本地 ACL 主机规则：||localhost、||local、^[^.]+$。
     let fixedLocalHostMatches: [RuleMatch] = [
-      .domainSuffix("localhost"),
-      .domainSuffix("local"),
+      .localhostSuffix,
+      .localSuffix,
     ]
     if matchesFixedLocalHost(match) { return true }
     for fixed in fixedLocalHostMatches where domainIntersects(match, fixed) {
@@ -137,7 +137,7 @@ enum RuleCoverage {
   }
 
   static func winningAction(for match: RuleMatch) -> RuleAction {
-    switch match {
+    switch match.pattern {
     case .domainExact, .domainSuffix: .proxy
     case .ipv4CIDR, .ipv6CIDR: .direct
     }
@@ -185,7 +185,7 @@ enum RuleCoverage {
   // MARK: 解析
 
   static func parseCIDR(_ match: RuleMatch) -> ParsedCIDR? {
-    switch match {
+    switch match.pattern {
     case .ipv4CIDR(let cidr):
       return parseCIDRString(cidr, family: .ipv4, maxPrefix: 32)
     case .ipv6CIDR(let cidr):
@@ -259,7 +259,7 @@ enum RuleCoverage {
   }
 
   private static func domainValue(_ match: RuleMatch) -> String? {
-    switch match {
+    switch match.pattern {
     case .domainExact(let domain), .domainSuffix(let domain):
       return domain
     case .ipv4CIDR, .ipv6CIDR:
@@ -268,7 +268,7 @@ enum RuleCoverage {
   }
 
   private static func isDomainSuffix(_ match: RuleMatch) -> Bool {
-    if case .domainSuffix = match { return true }
+    if case .domainSuffix = match.pattern { return true }
     return false
   }
 }
@@ -320,7 +320,7 @@ enum CustomRuleValidator {
   static func fixedLocalRejection(for rule: CustomRule) -> RejectedCustomRule? {
     guard rule.action == .proxy else { return nil }
     let conflicts: Bool
-    switch rule.identity.match {
+    switch rule.identity.match.pattern {
     case .domainExact, .domainSuffix:
       conflicts = RuleCoverage.domainConflictsWithFixedLocal(rule.identity.match)
     case .ipv4CIDR, .ipv6CIDR:
@@ -350,7 +350,7 @@ enum RuleRuntimeCompiler {
     document: CustomRuleDocument, builtIn: [ProxyRule], defaultAction: RuleDefaultAction
   ) -> CustomRuleValidationResult {
     let custom = document.rules.filter { !document.disabledIdentities.contains($0.identity) }
-    let enabled = builtIn.filter { !document.disabledIdentities.contains($0.identity) }
+    let enabled = builtIn.filter { !document.disabledIdentities.contains($0) }
     let validated = CustomRuleValidator.validate(
       custom: custom, builtIn: enabled, defaultAction: defaultAction)
     return CustomRuleValidationResult(
@@ -372,7 +372,7 @@ enum RuleRuntimeCompiler {
     case .rule:
       let document = document ?? CustomRuleDocument(rules: [])
       let custom = document.rules.filter { !document.disabledIdentities.contains($0.identity) }
-      let enabled = builtIn.filter { !document.disabledIdentities.contains($0.identity) }
+      let enabled = builtIn.filter { !document.disabledIdentities.contains($0) }
       let validated = CustomRuleValidator.hardValidation(custom: custom)
       let candidates = RuleAnalysis.runtimeCandidates(
         enabled + validated.accepted, defaultAction: defaultAction)

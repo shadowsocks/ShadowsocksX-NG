@@ -343,21 +343,22 @@ extension ProxyRuntimeFixture {
       return rulesFixture(
         source,
         rules: [
-          ProxyRule(action: .direct, match: .domainExact("direct.example")),
-          ProxyRule(action: .direct, match: .domainSuffix("fixture-direct.example")),
+          ProxyRule(action: .direct, match: try RuleMatch(domainExact: "direct.example")),
+          ProxyRule(
+            action: .direct, match: try RuleMatch(domainSuffix: "fixture-direct.example")),
         ])
     case .chinaIPv4:
       return rulesFixture(
         source,
         rules: [
-          ProxyRule(action: .direct, match: .ipv4CIDR("1.0.0.0/24"))
+          ProxyRule(action: .direct, match: try RuleMatch(ipv4CIDR: "1.0.0.0/24"))
         ])
     case .gfwlist:
       return rulesFixture(
         source,
         rules: [
-          ProxyRule(action: .proxy, match: .domainSuffix("proxy.example")),
-          ProxyRule(action: .direct, match: .domainExact("safe.proxy.example")),
+          ProxyRule(action: .proxy, match: try RuleMatch(domainSuffix: "proxy.example")),
+          ProxyRule(action: .direct, match: try RuleMatch(domainExact: "safe.proxy.example")),
         ])
     case .custom, .fixed:
       throw RuleSnapshotError.missing

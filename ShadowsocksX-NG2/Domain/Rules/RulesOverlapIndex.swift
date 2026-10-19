@@ -14,7 +14,7 @@ struct RulesOverlapIndex {
   init(rules: [ProxyRule]) {
     for rule in rules {
       var node = root
-      for component in Self.path(rule.identity.match) {
+      for component in Self.path(rule.match) {
         if node.children[component] == nil { node.children[component] = Node() }
         node = node.children[component]!
       }
@@ -27,17 +27,17 @@ struct RulesOverlapIndex {
     var candidates = node.rules
     for component in Self.path(match) {
       guard let next = node.children[component] else {
-        return candidates.filter { RuleCoverage.intersects($0.identity.match, match) }
+        return candidates.filter { RuleCoverage.intersects($0.match, match) }
       }
       node = next
       candidates += node.rules
     }
     candidates += node.children.values.flatMap { $0.descendants() }
-    return candidates.filter { RuleCoverage.intersects($0.identity.match, match) }
+    return candidates.filter { RuleCoverage.intersects($0.match, match) }
   }
 
   private static func path(_ match: RuleMatch) -> [String] {
-    switch match {
+    switch match.pattern {
     case .domainExact(let value), .domainSuffix(let value):
       return ["domain"] + value.split(separator: ".").reversed().map(String.init)
     case .ipv4CIDR, .ipv6CIDR:

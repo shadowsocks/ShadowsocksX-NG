@@ -2,6 +2,8 @@
 
 **Status**: accepted.
 
+The custom-rule source-metadata and schema preservation clause is superseded by [ADR-0039](0039-rule-values-and-independent-storage-models.md). Built-in snapshot decisions remain in force.
+
 Snapshots previously shipped every converted entry: effective rules plus same-action absorbed candidates (for example geolocation-cn domains covered by the synthesized `.cn` suffix) and GFWList `@@` exceptions shadowed by a broader proxy rule, each carrying conversion forensics (`originalEntry`, `absorbedBy`, per-rule notes). Runtime analysis recomputes absorption and shadowing from matches alone and never read those forensics, so the extra payload only widened the snapshot interface and slowed browsing and offline matching.
 
 Maintainer updates now omit absorbed and shadowed entries from the snapshot entirely. The conversion report keeps numeric totals only (`convertedCount`, `absorbedCount`, per-reason `skipped`/`rejected`); individual upstream strings go to converter stdout, not into the shipped artifact. Each rule is just an action and a match; the source identity lives once at snapshot level. We accept that disabling a broader built-in rule (such as `.cn`) no longer restores narrower built-in candidates — a rare recovery path not worth carrying thousands of extra rows on every load. Custom-rule disablement, offline testing, and ACL compilation continue to work from the shipped effective set.

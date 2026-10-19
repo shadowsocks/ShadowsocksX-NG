@@ -7,9 +7,10 @@ final class CustomRuleDeletionWorkflowTests: XCTestCase {
   func testMixedSelectionDeletesOnlyCustomUUIDsAndPreservesDisablementAndBuiltinMembership()
     async throws
   {
-    let custom = CustomRule(action: .proxy, match: .domainSuffix("merged.example"))
-    let other = CustomRule(action: .direct, match: .domainExact("other.example"))
-    let orphan = RuleIdentity(action: .proxy, match: .domainExact("orphan.example"))
+    let custom = CustomRule(
+      action: .proxy, match: try RuleMatch(domainSuffix: "merged.example"))
+    let other = CustomRule(action: .direct, match: try RuleMatch(domainExact: "other.example"))
+    let orphan = ProxyRule(action: .proxy, match: try RuleMatch(domainExact: "orphan.example"))
     let builtin = ProxyRule(action: custom.action, match: custom.match)
     var saved = CustomRuleDocument(
       rules: [custom, other], disabledIdentities: [custom.identity, orphan])
@@ -49,8 +50,8 @@ final class CustomRuleDeletionWorkflowTests: XCTestCase {
 
 extension CustomRuleDeletionWorkflowTests {
   func testFilteredSelectionCannotEnterConfirmationAndStaleConfirmationCannotExpand() async throws {
-    let first = CustomRule(action: .proxy, match: .domainExact("first.example"))
-    let hidden = CustomRule(action: .direct, match: .domainExact("hidden.example"))
+    let first = CustomRule(action: .proxy, match: try RuleMatch(domainExact: "first.example"))
+    let hidden = CustomRule(action: .direct, match: try RuleMatch(domainExact: "hidden.example"))
     var commits = 0
     var saved = CustomRuleDocument(rules: [first, hidden])
     let workflow = RulesWorkflow(
@@ -81,7 +82,7 @@ extension CustomRuleDeletionWorkflowTests {
   }
 
   func testVersionChangeRejectsDeletionEvenWhenTheCustomUUIDStillExists() async throws {
-    let rule = CustomRule(action: .proxy, match: .domainExact("kept.example"))
+    let rule = CustomRule(action: .proxy, match: try RuleMatch(domainExact: "kept.example"))
     var commits = 0
     let workflow = RulesWorkflow(
       loadDocument: { CustomRuleDocument(rules: [rule]) },
@@ -102,7 +103,7 @@ extension CustomRuleDeletionWorkflowTests {
   func testPendingDeletionBlocksRepeatsAndPersistenceFailureKeepsConfirmationRetryable()
     async throws
   {
-    let rule = CustomRule(action: .proxy, match: .domainExact("kept.example"))
+    let rule = CustomRule(action: .proxy, match: try RuleMatch(domainExact: "kept.example"))
     let original = CustomRuleDocument(rules: [rule])
     let started = expectation(description: "delete awaiting commit")
     var continuation: CheckedContinuation<Void, Never>?
@@ -134,7 +135,7 @@ extension CustomRuleDeletionWorkflowTests {
   }
 
   func testIncompleteCollectionRejectsDeletionFromPreviouslyLoadedFacts() async throws {
-    let rule = CustomRule(action: .proxy, match: .domainExact("kept.example"))
+    let rule = CustomRule(action: .proxy, match: try RuleMatch(domainExact: "kept.example"))
     var failed = false
     var commits = 0
     let workflow = RulesWorkflow(

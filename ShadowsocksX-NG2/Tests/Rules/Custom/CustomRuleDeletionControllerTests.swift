@@ -10,7 +10,7 @@ final class CustomRuleDeletionControllerTests: ProxyRuntimeControllerTests {
         return rulesFixture(
           source,
           rules: [
-            ProxyRule(action: .direct, match: .domainSuffix("cn"))
+            ProxyRule(action: .direct, match: try RuleMatch(nationalDomainSuffix: "cn"))
           ])
       }
       return try ProxyRuntimeFixture.controlFlowRuleSnapshot(source)
@@ -20,8 +20,8 @@ final class CustomRuleDeletionControllerTests: ProxyRuntimeControllerTests {
   func testDeletionWhileOffPersistsBatchAndDisabledOrphansWithoutStarting() async throws {
     let (store, _) = try makeCustomRuleStore()
     let rules = [
-      CustomRule(action: .direct, match: .domainExact("one.example")),
-      CustomRule(action: .direct, match: .domainExact("two.example")),
+      CustomRule(action: .direct, match: try RuleMatch(domainExact: "one.example")),
+      CustomRule(action: .direct, match: try RuleMatch(domainExact: "two.example")),
     ]
     let original = CustomRuleDocument(rules: rules, disabledIdentities: [rules[0].identity])
     try store.saveDocument(original)
@@ -53,8 +53,8 @@ final class CustomRuleDeletionControllerTests: ProxyRuntimeControllerTests {
     let seeded = try makeSeededCatalog()
     let (store, _) = try makeCustomRuleStore()
     let rules = [
-      CustomRule(action: .direct, match: .domainExact("one-delete.example")),
-      CustomRule(action: .direct, match: .domainExact("two-delete.example")),
+      CustomRule(action: .direct, match: try RuleMatch(domainExact: "one-delete.example")),
+      CustomRule(action: .direct, match: try RuleMatch(domainExact: "two-delete.example")),
     ]
     try store.save(rules)
     let controller = makeDeletionController(
@@ -87,7 +87,7 @@ final class CustomRuleDeletionControllerTests: ProxyRuntimeControllerTests {
   func testDeletionInNonRuleModesOnlySavesAndCoveredRuleDoesNotRestart() async throws {
     let seeded = try makeSeededCatalog()
     let (store, _) = try makeCustomRuleStore()
-    let rule = CustomRule(action: .direct, match: .domainExact("covered.cn"))
+    let rule = CustomRule(action: .direct, match: try RuleMatch(domainExact: "covered.cn"))
     for mode in [ProxyMode.global, .direct, .rule] {
       try store.save([rule])
       let controller = makeDeletionController(
@@ -113,8 +113,8 @@ final class CustomRuleDeletionControllerTests: ProxyRuntimeControllerTests {
   func testDeletionDeploymentFailureKeepsSavedDeletionAndStopsRuntime() async throws {
     let seeded = try makeSeededCatalog()
     let (store, _) = try makeCustomRuleStore()
-    let rule = CustomRule(action: .direct, match: .domainExact("keep-one.example"))
-    let orphan = RuleIdentity(action: .proxy, match: .domainExact("orphan.example"))
+    let rule = CustomRule(action: .direct, match: try RuleMatch(domainExact: "keep-one.example"))
+    let orphan = ProxyRule(action: .proxy, match: try RuleMatch(domainExact: "orphan.example"))
     try store.saveDocument(CustomRuleDocument(rules: [rule], disabledIdentities: [orphan]))
     let controller = makeDeletionController(
       store: store,
@@ -154,7 +154,7 @@ final class CustomRuleDeletionControllerTests: ProxyRuntimeControllerTests {
 
   func testDeletionPersistenceFailureRetainsOwnedDocumentAndDoesNotStartRuntime() async throws {
     let (store, directory) = try makeCustomRuleStore()
-    let rule = CustomRule(action: .direct, match: .domainExact("kept.example"))
+    let rule = CustomRule(action: .direct, match: try RuleMatch(domainExact: "kept.example"))
     let original = CustomRuleDocument(rules: [rule], disabledIdentities: [rule.identity])
     try store.saveDocument(original)
     let controller = makeDeletionController(

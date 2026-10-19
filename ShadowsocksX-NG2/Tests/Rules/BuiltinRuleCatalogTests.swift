@@ -35,7 +35,7 @@ final class BuiltinRuleCatalogTests: XCTestCase {
   }
 
   @MainActor
-  func testFirstBrowsingRetainsRuntimeSourceFailureUntilExplicitRetry() async {
+  func testFirstBrowsingRetainsRuntimeSourceFailureUntilExplicitRetry() async throws {
     let loader = SharedRuleSourceLoader()
     let snapshots = BuiltinRuleSnapshots(loader: { try loader.load($0) })
     do {
@@ -64,10 +64,9 @@ final class BuiltinRuleCatalogTests: XCTestCase {
       snapshot = try RuleSnapshotStore(fileURL: sourceURL).load()
     }
 
-    XCTAssertEqual(snapshot.schemaVersion, RuleSnapshot.currentSchemaVersion)
     XCTAssertEqual(snapshot.metadata.source.kind, .geolocationCN)
     XCTAssertEqual(
-      snapshot.metadata.converterVersion, RuleSnapshotMetadata.currentConverterVersion)
+      snapshot.metadata.converterVersion, RuleSnapshotStore.currentConverterVersion)
     XCTAssertFalse(snapshot.metadata.license.isEmpty)
     XCTAssertFalse(snapshot.metadata.attribution.isEmpty)
     XCTAssertFalse(snapshot.metadata.inputDigest.isEmpty)
@@ -77,12 +76,12 @@ final class BuiltinRuleCatalogTests: XCTestCase {
     XCTAssertFalse(rules.isEmpty)
     XCTAssertTrue(rules.allSatisfy { $0.action == .direct })
     XCTAssertTrue(
-      rules.contains { $0.match == .domainSuffix("cn") },
+      rules.contains { $0.match.pattern == .domainSuffix("cn") },
       "快照应含 .cn 后缀直连规则")
 
     // 转换期已删除被 .cn 吸收的域名条目。
     let independentCN = rules.filter {
-      switch $0.match {
+      switch $0.match.pattern {
       case .domainSuffix(let value): return value.hasSuffix(".cn") && value != "cn"
       case .domainExact(let value): return value.hasSuffix(".cn")
       default: return false
@@ -102,10 +101,9 @@ final class BuiltinRuleCatalogTests: XCTestCase {
       snapshot = try RuleSnapshotStore(fileURL: sourceURL).load()
     }
 
-    XCTAssertEqual(snapshot.schemaVersion, RuleSnapshot.currentSchemaVersion)
     XCTAssertEqual(snapshot.metadata.source.kind, .chinaIPv4)
     XCTAssertEqual(
-      snapshot.metadata.converterVersion, RuleSnapshotMetadata.currentConverterVersion)
+      snapshot.metadata.converterVersion, RuleSnapshotStore.currentConverterVersion)
     XCTAssertFalse(snapshot.metadata.license.isEmpty)
     XCTAssertFalse(snapshot.metadata.attribution.isEmpty)
     XCTAssertFalse(snapshot.metadata.inputDigest.isEmpty)
@@ -116,7 +114,7 @@ final class BuiltinRuleCatalogTests: XCTestCase {
     XCTAssertTrue(rules.allSatisfy { $0.action == .direct })
     XCTAssertTrue(
       rules.allSatisfy {
-        if case .ipv4CIDR = $0.match { return true }
+        if case .ipv4CIDR = $0.match.pattern { return true }
         return false
       }, "china-ipv4 快照应只含 IPv4 CIDR 直连候选")
   }
@@ -130,10 +128,9 @@ final class BuiltinRuleCatalogTests: XCTestCase {
       snapshot = try loadSourceTreeSnapshot(path: "Vendor/rules/gfwlist/snapshot.json")
     }
 
-    XCTAssertEqual(snapshot.schemaVersion, RuleSnapshot.currentSchemaVersion)
     XCTAssertEqual(snapshot.metadata.source.kind, .gfwlist)
     XCTAssertEqual(
-      snapshot.metadata.converterVersion, RuleSnapshotMetadata.currentConverterVersion)
+      snapshot.metadata.converterVersion, RuleSnapshotStore.currentConverterVersion)
     XCTAssertFalse(snapshot.metadata.license.isEmpty)
     XCTAssertFalse(snapshot.metadata.attribution.isEmpty)
     XCTAssertFalse(snapshot.metadata.inputDigest.isEmpty)
@@ -143,7 +140,7 @@ final class BuiltinRuleCatalogTests: XCTestCase {
     XCTAssertFalse(rules.isEmpty)
     XCTAssertTrue(
       rules.allSatisfy {
-        if case .domainSuffix = $0.match { return true }
+        if case .domainSuffix = $0.match.pattern { return true }
         return false
       }, "gfwlist 快照候选应为域名后缀")
 
@@ -160,12 +157,12 @@ final class BuiltinRuleCatalogTests: XCTestCase {
 
     XCTAssertTrue(
       merged.contains { rule in
-        if case .domainSuffix("cn") = rule.match { return true }
+        if case .domainSuffix("cn") = rule.match.pattern { return true }
         return false
       }, "合并结果应含 .cn 域名直连候选")
     XCTAssertTrue(
       merged.contains { rule in
-        if case .ipv4CIDR = rule.match { return true }
+        if case .ipv4CIDR = rule.match.pattern { return true }
         return false
       }, "合并结果应含 IPv4 CIDR 直连候选")
     XCTAssertTrue(merged.allSatisfy { $0.action == .direct })
@@ -176,7 +173,7 @@ final class BuiltinRuleCatalogTests: XCTestCase {
     return try RuleSnapshotStore(fileURL: sourceURL).load()
   }
 
-  func testRuleDefaultActionLabelsAndFallback() {
+  func testRuleDefaultActionLabelsAndFallback() throws {
     XCTAssertEqual(RuleDefaultAction.proxyWhenUnmatched.label, "代理")
     XCTAssertEqual(RuleDefaultAction.directWhenUnmatched.label, "直连")
     XCTAssertEqual(RuleDefaultAction.proxyWhenUnmatched.fallbackAction, .proxy)

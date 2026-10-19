@@ -8,9 +8,10 @@ final class RulesWorkflowTests: XCTestCase {
     let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     defer { try? FileManager.default.removeItem(at: directory) }
     let store = CustomRuleStore(fileURL: directory.appendingPathComponent("rules.json"))
-    let broad = CustomRule(action: .proxy, match: .domainSuffix("example.com"))
-    let narrow = CustomRule(action: .direct, match: .domainExact("safe.example.com"))
-    let orphan = RuleIdentity(action: .proxy, match: .domainExact("gone.example"))
+    let broad = CustomRule(
+      action: .proxy, match: try RuleMatch(domainSuffix: "example.com"))
+    let narrow = CustomRule(action: .direct, match: try RuleMatch(domainExact: "safe.example.com"))
+    let orphan = ProxyRule(action: .proxy, match: try RuleMatch(domainExact: "gone.example"))
     try store.saveDocument(
       CustomRuleDocument(rules: [broad, narrow], disabledIdentities: [orphan]))
     var commits = 0
@@ -68,7 +69,8 @@ final class RulesWorkflowTests: XCTestCase {
     let snapshot = RuleSnapshot(
       metadata: RuleSnapshotMetadata(
         source: source, upstreamReference: "upstream", inputDigest: "digest",
-        fetchedAt: Date(timeIntervalSince1970: 0), license: "MIT", attribution: "author"),
+        fetchedAt: Date(timeIntervalSince1970: 0), converterVersion: "2.0.0", license: "MIT",
+        attribution: "author"),
       rules: [ProxyRule(action: .direct, match: match)])
     let workflow = RulesWorkflow(
       loadCustom: { [custom] },
@@ -84,7 +86,7 @@ final class RulesWorkflowTests: XCTestCase {
     XCTAssertEqual(row.customIDs, [custom.id])
     XCTAssertEqual(row.identity, custom.identity)
   }
-  func testWrongBuiltinSourceIsAnIncompleteCollectionRatherThanMislabeledRules() async {
+  func testWrongBuiltinSourceIsAnIncompleteCollectionRatherThanMislabeledRules() async throws {
     let workflow = RulesWorkflow(
       loadCustom: { [] },
       builtinSnapshots: BuiltinRuleSnapshots(loader: { _ in
@@ -135,7 +137,7 @@ final class RulesWorkflowTests: XCTestCase {
     XCTAssertEqual(workflow.snapshot.selection, [.rule(entries[0].identity)])
   }
 
-  func testCorruptUserDocumentAndMissingBuiltinStayDistinctFromEmptySearch() async {
+  func testCorruptUserDocumentAndMissingBuiltinStayDistinctFromEmptySearch() async throws {
     let workflow = RulesWorkflow(
       loadCustom: { throw CustomRuleStoreError.corrupt(detail: "fixture") },
       builtinSnapshots: BuiltinRuleSnapshots(loader: { source in
@@ -303,7 +305,7 @@ func rulesFixture(
     metadata: RuleSnapshotMetadata(
       source: RuleSourceIdentity(kind: kind, upstreamVersion: "v1", label: source.rawValue),
       upstreamReference: "https://example.com/source", inputDigest: "fixture",
-      fetchedAt: Date(timeIntervalSince1970: 0),
+      fetchedAt: Date(timeIntervalSince1970: 0), converterVersion: "2.0.0",
       license: "MIT", attribution: "fixture author"), rules: rules)
 }
 

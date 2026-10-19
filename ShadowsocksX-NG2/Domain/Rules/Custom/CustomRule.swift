@@ -2,36 +2,20 @@ import Foundation
 
 // MARK: - 自定义规则
 
-/// 自定义规则：动作 + 匹配条件 + 来源元数据 + 稳定身份。
-/// 为管理 UI 提供持久入口；此类型不实现完整编辑、排序和删除界面。
-/// 有效的完整域名、后缀及 CIDR 规则参与两种规则子模式的 ACL 合并。
-struct CustomRule: Codable, Equatable, Hashable, Sendable, Identifiable {
+/// 自定义条目的持久身份与规范化规则值；编辑身份独立于跨来源规则身份。
+struct CustomRule: Equatable, Hashable, Sendable, Identifiable {
   let id: UUID
-  let action: RuleAction
-  let match: RuleMatch
-  /// 来源元数据：kind 恒为 `custom`，upstreamVersion/label 供冲突说明与展示。
-  let source: RuleSourceIdentity
+  let rule: ProxyRule
 
-  init(
-    id: UUID = UUID(),
-    action: RuleAction,
-    match: RuleMatch,
-    source: RuleSourceIdentity? = nil
-  ) {
+  init(id: UUID = UUID(), action: RuleAction, match: RuleMatch) {
     self.id = id
-    self.action = action
-    self.match = match
-    self.source =
-      source
-      ?? RuleSourceIdentity(kind: .custom, upstreamVersion: "user", label: "自定义")
+    rule = ProxyRule(action: action, match: match)
   }
 
-  /// 折叠为来源无关的运行时规则，参与 ACL 合并。
-  var proxyRule: ProxyRule {
-    ProxyRule(action: action, match: identity.match)
-  }
-
-  var identity: RuleIdentity { RuleIdentity(action: action, match: match) }
+  var action: RuleAction { rule.action }
+  var match: RuleMatch { rule.match }
+  var proxyRule: ProxyRule { rule }
+  var identity: ProxyRule { rule }
 
   /// 稳定的内容身份（不含 UUID），用于去重与诊断摘要。
   var contentToken: String {
@@ -41,54 +25,15 @@ struct CustomRule: Codable, Equatable, Hashable, Sendable, Identifiable {
 
 // MARK: - 持久化集合
 
-/// 自定义规则持久化文档：schema 版本 + 规则数组。
-struct CustomRuleDocument: Codable, Equatable, Sendable {
-  static let currentSchemaVersion = 2
-  let schemaVersion: Int
+/// 已保存的自定义条目与跨全部来源的规则停用意图。
+struct CustomRuleDocument: Equatable, Sendable {
   let rules: [CustomRule]
-  let disabledIdentities: Set<RuleIdentity>
+  let disabledIdentities: Set<ProxyRule>
 
-  init(rules: [CustomRule], disabledIdentities: Set<RuleIdentity> = []) {
-    schemaVersion = Self.currentSchemaVersion
+  init(rules: [CustomRule], disabledIdentities: Set<ProxyRule> = []) {
     self.rules = rules
     self.disabledIdentities = disabledIdentities
   }
-
-  private enum CodingKeys: String, CodingKey { case schemaVersion, rules, disabledIdentities }
-
-  init(from decoder: Decoder) throws {
-    let values = try decoder.container(keyedBy: CodingKeys.self)
-    schemaVersion = try values.decode(Int.self, forKey: .schemaVersion)
-    guard [1, Self.currentSchemaVersion].contains(schemaVersion) else {
-      throw CustomRuleStoreError.schemaVersionMismatch(
-        found: schemaVersion, expected: Self.currentSchemaVersion)
-    }
-    rules = try values.decode([CustomRule].self, forKey: .rules)
-    let disabled =
-      schemaVersion == 1 ? [] : try values.decode([RuleIdentity].self, forKey: .disabledIdentities)
-    disabledIdentities = Set(disabled)
-    guard disabledIdentities.count == disabled.count,
-      Set(rules.map(\.id)).count == rules.count,
-      Set(rules.map(\.identity)).count == rules.count,
-      rules.allSatisfy({ $0.source.kind == .custom })
-    else { throw CustomRuleStoreError.corrupt(detail: "Duplicate or invalid user rule records") }
-  }
-
-  func encode(to encoder: Encoder) throws {
-    var values = encoder.container(keyedBy: CodingKeys.self)
-    try values.encode(Self.currentSchemaVersion, forKey: .schemaVersion)
-    try values.encode(rules, forKey: .rules)
-    try values.encode(
-      disabledIdentities.map { ($0, $0.contentToken) }.sorted { $0.1 < $1.1 }.map(\.0),
-      forKey: .disabledIdentities)
-  }
-}
-
-enum CustomRuleStoreError: Error, Equatable, Sendable {
-  case missing
-  case corrupt(detail: String)
-  case schemaVersionMismatch(found: Int, expected: Int)
-  case ioFailure(detail: String)
 }
 
 // MARK: - 诊断摘要

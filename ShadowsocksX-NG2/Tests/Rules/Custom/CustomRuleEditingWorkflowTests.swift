@@ -17,21 +17,20 @@ final class CustomRuleEditingWorkflowTests: XCTestCase {
     draft.action = .direct
     let preview = await workflow.previewCustomRule(draft)
     XCTAssertNil(preview.failure)
-    XCTAssertEqual(preview.rule?.match, .ipv6CIDR("2001:db8::1/128"))
+    XCTAssertEqual(preview.rule?.match, try RuleMatch(ipv6CIDR: "2001:db8::1/128"))
     XCTAssertEqual(preview.displayContent, "2001:db8::1")
     XCTAssertEqual(workflow.snapshot.version, version)
     XCTAssertFalse(workflow.snapshot.rows.contains { $0.customIDs.contains(draft.id) })
     let outcome = await workflow.saveCustomRule(draft)
     XCTAssertEqual(outcome, .committed(.saved))
     let row = try XCTUnwrap(workflow.snapshot.rows.first { $0.customIDs.contains(draft.id) })
-    XCTAssertEqual(row.identity?.match, .ipv6CIDR("2001:db8::1/128"))
+    XCTAssertEqual(row.identity?.match, try RuleMatch(ipv6CIDR: "2001:db8::1/128"))
     XCTAssertEqual(row.sources, [.custom])
     XCTAssertNotEqual(workflow.snapshot.version, version)
   }
   func testEditingDisabledMergedRuleMovesOnlyCustomMembershipAndKeepsUUID() async throws {
     let original = CustomRule(
-      action: .proxy, match: .domainSuffix("old.example"),
-      source: RuleSourceIdentity(kind: .custom, upstreamVersion: "imported", label: "User import"))
+      action: .proxy, match: try RuleMatch(domainSuffix: "old.example"))
     let builtin = ProxyRule(action: .proxy, match: original.match)
     var saved = CustomRuleDocument(rules: [original], disabledIdentities: [original.identity])
     let workflow = RulesWorkflow(
@@ -56,10 +55,12 @@ final class CustomRuleEditingWorkflowTests: XCTestCase {
     XCTAssertEqual(result, .committed(.saved))
     XCTAssertEqual(saved.rules.count, 1)
     XCTAssertEqual(saved.rules.first?.id, original.id)
-    XCTAssertEqual(saved.rules.first?.source, original.source)
     XCTAssertEqual(
       saved.disabledIdentities,
-      [original.identity, RuleIdentity(action: .direct, match: .domainSuffix("new.example"))])
+      [
+        original.identity,
+        ProxyRule(action: .direct, match: try RuleMatch(domainSuffix: "new.example")),
+      ])
     let oldRow = try XCTUnwrap(workflow.snapshot.rows.first { $0.identity == original.identity })
     XCTAssertEqual(oldRow.sources, [.gfwlist])
     XCTAssertTrue(oldRow.customIDs.isEmpty)
@@ -94,7 +95,7 @@ final class CustomRuleEditingWorkflowTests: XCTestCase {
   }
 
   func testDuplicateAndFixedLocalConflictAreRejectedWithoutCommit() async throws {
-    let existing = CustomRule(action: .direct, match: .ipv4CIDR("8.8.8.8/32"))
+    let existing = CustomRule(action: .direct, match: try RuleMatch(ipv4CIDR: "8.8.8.8/32"))
     var commits = 0
     let workflow = RulesWorkflow(
       loadDocument: { CustomRuleDocument(rules: [existing]) },
@@ -129,11 +130,12 @@ final class CustomRuleEditingWorkflowTests: XCTestCase {
   }
 
   func testEquivalentBuiltinAndDisabledOrphanCanBeAddedWithoutEnabling() async throws {
-    let builtin = ProxyRule(action: .proxy, match: .domainSuffix("merge.example"))
-    let orphan = RuleIdentity(action: .proxy, match: .domainExact("orphan.example"))
+    let builtin = ProxyRule(
+      action: .proxy, match: try RuleMatch(domainSuffix: "merge.example"))
+    let orphan = ProxyRule(action: .proxy, match: try RuleMatch(domainExact: "orphan.example"))
     let workflow = RulesWorkflow(
       loadDocument: {
-        CustomRuleDocument(rules: [], disabledIdentities: [builtin.identity, orphan])
+        CustomRuleDocument(rules: [], disabledIdentities: [builtin, orphan])
       },
       commitDocument: { RuleDocumentCommit(outcome: .saved, document: $0) },
       builtinSnapshots: BuiltinRuleSnapshots(loader: {
@@ -189,7 +191,7 @@ final class CustomRuleEditingWorkflowTests: XCTestCase {
     draft.content = "CN"
     let national = await workflow.previewCustomRule(draft)
     XCTAssertNil(national.failure)
-    XCTAssertEqual(national.rule?.match, .domainSuffix("cn"))
+    XCTAssertEqual(national.rule?.match, try RuleMatch(nationalDomainSuffix: "cn"))
     draft.kind = .ipAddress
     for input in ["8.8.8.8/32", "[2001:db8::1]", "8.8.8.8:80", "example.com"] {
       draft.content = input
@@ -199,8 +201,9 @@ final class CustomRuleEditingWorkflowTests: XCTestCase {
   }
 
   func testPreviewExplainsAbsorptionShadowingAndPartialOverlapButAllowsSave() async throws {
-    let broad = CustomRule(action: .direct, match: .domainSuffix("coverage.example"))
-    let proxy = CustomRule(action: .proxy, match: .domainExact("a.coverage.example"))
+    let broad = CustomRule(
+      action: .direct, match: try RuleMatch(domainSuffix: "coverage.example"))
+    let proxy = CustomRule(action: .proxy, match: try RuleMatch(domainExact: "a.coverage.example"))
     let workflow = RulesWorkflow(
       loadDocument: { CustomRuleDocument(rules: [broad, proxy]) },
       commitDocument: { RuleDocumentCommit(outcome: .saved, document: $0) },
@@ -235,7 +238,7 @@ final class CustomRuleEditingWorkflowTests: XCTestCase {
   }
 
   func testStaleDraftCannotOverwriteAnotherSavedChangeAndDiscardingDraftDoesNothing() async throws {
-    let rule = CustomRule(action: .direct, match: .domainExact("kept.example"))
+    let rule = CustomRule(action: .direct, match: try RuleMatch(domainExact: "kept.example"))
     var commits = 0
     let workflow = RulesWorkflow(
       loadDocument: { CustomRuleDocument(rules: [rule]) },
@@ -302,7 +305,8 @@ extension CustomRuleEditingWorkflowTests {
   }
 
   func testSavedEditRejectsStaleDraftAndIncompleteCollection() async throws {
-    let rule = CustomRule(action: .direct, match: .domainSuffix("old.example"))
+    let rule = CustomRule(
+      action: .direct, match: try RuleMatch(domainSuffix: "old.example"))
     let original = CustomRuleDocument(rules: [rule])
     let outcome = CustomRuleUpdateOutcome.saved
     let workflow = RulesWorkflow(
@@ -333,7 +337,8 @@ extension CustomRuleEditingWorkflowTests {
 
 extension CustomRuleEditingWorkflowTests {
   func testDisabledEditCannotInheritDisablementOntoImmutableFixedIdentity() async throws {
-    let original = CustomRule(action: .direct, match: .domainExact("disabled.example"))
+    let original = CustomRule(
+      action: .direct, match: try RuleMatch(domainExact: "disabled.example"))
     var commits = 0
     let workflow = RulesWorkflow(
       loadDocument: {

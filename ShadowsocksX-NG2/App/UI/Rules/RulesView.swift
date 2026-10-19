@@ -380,7 +380,7 @@ extension RuleRelationship {
 extension RuleMatch {
   var browsingType: String {
     if editingKind == .ipAddress { return RulesCopy.text("IP 地址") }
-    return switch self {
+    return switch pattern {
     case .domainExact: RulesCopy.text("精确域名")
     case .domainSuffix: RulesCopy.text("域名后缀")
     case .ipv4CIDR: "IPv4 CIDR"

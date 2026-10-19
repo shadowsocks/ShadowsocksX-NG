@@ -6,8 +6,9 @@ import XCTest
 final class RuleEnablementWorkflowTests: XCTestCase {
   func testSavedTogglesStayInteractiveAndOfflineMatchingUsesLatestFactsDuringAnalysis() async throws
   {
-    let broad = CustomRule(action: .direct, match: .domainSuffix("pending.example"))
-    let narrow = CustomRule(action: .direct, match: .domainExact("x.pending.example"))
+    let broad = CustomRule(
+      action: .direct, match: try RuleMatch(domainSuffix: "pending.example"))
+    let narrow = CustomRule(action: .direct, match: try RuleMatch(domainExact: "x.pending.example"))
     let started = expectation(description: "analysis debounce paused")
     let gate = RulesAnalysisGate(started: started)
     var documents: [CustomRuleDocument] = []
@@ -74,8 +75,8 @@ final class RuleEnablementWorkflowTests: XCTestCase {
           return rulesFixture(
             source,
             rules: [
-              ProxyRule(action: .direct, match: .domainSuffix("cn")),
-              ProxyRule(action: .direct, match: .domainExact("fixture.example")),
+              ProxyRule(action: .direct, match: try RuleMatch(nationalDomainSuffix: "cn")),
+              ProxyRule(action: .direct, match: try RuleMatch(domainExact: "fixture.example")),
             ])
         }
         return rulesFixture(source)
@@ -86,7 +87,8 @@ final class RuleEnablementWorkflowTests: XCTestCase {
     let rowIDs = workflow.snapshot.rows.map(\.id)
     let fixed = workflow.snapshot.rows.filter(\.isFixed)
     XCTAssertFalse(fixed.isEmpty)
-    let nationalSuffix = RuleIdentity(action: .direct, match: .domainSuffix("cn"))
+    let nationalSuffix = ProxyRule(
+      action: .direct, match: try RuleMatch(nationalDomainSuffix: "cn"))
     await workflow.setEnabled(false, identities: [nationalSuffix])
     XCTAssertTrue(try store.loadDocument().disabledIdentities.contains(nationalSuffix))
     XCTAssertEqual(workflow.snapshot.rows.map(\.id), rowIDs)
@@ -102,7 +104,7 @@ final class RuleEnablementWorkflowTests: XCTestCase {
 
   func testSuccessfulCommitDoesNotReadSourcesOrUserDocumentAgain() async throws {
     let reads = RulesReadCounts()
-    let rule = CustomRule(action: .proxy, match: .domainExact("saved.example"))
+    let rule = CustomRule(action: .proxy, match: try RuleMatch(domainExact: "saved.example"))
     let workflow = RulesWorkflow(
       loadDocument: {
         reads.recordDocument()
@@ -125,7 +127,7 @@ final class RuleEnablementWorkflowTests: XCTestCase {
     let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     defer { try? FileManager.default.removeItem(at: directory) }
     let store = CustomRuleStore(fileURL: directory.appendingPathComponent("rules.json"))
-    let rule = CustomRule(action: .proxy, match: .domainExact("example.net"))
+    let rule = CustomRule(action: .proxy, match: try RuleMatch(domainExact: "example.net"))
     try store.save([rule])
     let started = expectation(description: "commit started")
     var continuation: CheckedContinuation<Void, Never>?
@@ -172,7 +174,7 @@ final class RuleEnablementWorkflowTests: XCTestCase {
     let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     defer { try? FileManager.default.removeItem(at: directory) }
     let store = CustomRuleStore(fileURL: directory.appendingPathComponent("rules.json"))
-    let rule = CustomRule(action: .direct, match: .domainExact("kept.example"))
+    let rule = CustomRule(action: .direct, match: try RuleMatch(domainExact: "kept.example"))
     try store.save([rule])
     var commits = 0
     let workflow = RulesWorkflow(
