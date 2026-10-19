@@ -4,7 +4,13 @@ import SwiftUI
 struct DetailFeedback<Result: DetailFeedbackResult, Content: View>: View {
   let completion: Result?
   @ViewBuilder let content: (Result) -> Content
-  @State private var feedback = DetailFeedbackState<Result>()
+  @State private var feedback: DetailFeedbackState<Result>
+
+  init(completion: Result?, @ViewBuilder content: @escaping (Result) -> Content) {
+    self.completion = completion
+    self.content = content
+    self._feedback = State(initialValue: DetailFeedbackState<Result>())
+  }
 
   var body: some View {
     VStack(alignment: .leading, spacing: 0) {
