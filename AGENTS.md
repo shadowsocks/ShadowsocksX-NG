@@ -4,6 +4,10 @@ macOS Shadowsocks 客户端。旧版实现已从本仓库移除,归档在 [shado
 
 ## Agent skills
 
+### Local validation
+
+验证 ShadowsocksX-NG2 变更或诊断本地验证产物时，读取 [本地验证技能](.agents/skills/shadowsocksx-ng2-local-validation/SKILL.md)。仓库内版本为维护入口；memory 中的同名技能仅为历史快照。
+
 ### Git commits
 
 Git 提交消息使用英文 Conventional Commits 格式。
