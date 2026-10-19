@@ -47,6 +47,23 @@ ShadowsocksX-NG 的现代化重写版本。新工程的全部源码与构建配�
 - `Vendor/rules/gfwlist/` — 内置 GFWList 代理候选快照（issue #65）：同上三件套，来源为 [gfwlist/gfwlist](https://github.com/gfwlist/gfwlist) 官方 Base64 AutoProxy `gfwlist.txt` 固定 commit。域名锚点转换为后缀匹配，满足条件的空路径或根路径 URL 前缀转换为精确域名匹配；「未匹配时直连」的 `bypass_all` ACL 编入这些代理候选。
 - `Scripts/` — 供应链脚本（见下节）与打包门槛断言；另有 `update-geolocation-cn.sh` / `update-china-ipv4.sh` / `update-gfwlist.sh`（显式维护动作，抓取固定版上游并转换）与 `verify-rule-snapshots.sh`（构建前离线校验快照完整性）。
 
+### 源码搜索
+
+先按上面的目录分层用 `rg --files` 定位，再限定目录或文件类型搜索内容；未找到时逐步扩大范围。以下命令从 `ShadowsocksX-NG2/` 执行：
+
+```sh
+# 查外部二进制版本与来源，先定位对应清单
+rg --files Vendor/sslocal -g 'manifest.json'
+# 查运行职责，限定相关 Swift 源码
+rg -n -g '*.swift' 'sslocal|reload' Agent Domain/Runtime App/Application/ProxyRuntime
+# 查规则内容时先只列出命中文件
+rg -l '关键词' Vendor/rules Tests/Fixtures/RuleSnapshots
+# 需要显示匹配行时，省略超长行并保留命中提示
+rg -n -M 300 '关键词' Vendor/rules
+```
+
+`Vendor/rules/*/snapshot.json` 与 `Tests/Fixtures/RuleSnapshots/*.json` 是生成的单行 JSON。`-M 300` 按字节限制长行显示，不限制总输出量；`-m` 和 `head -n` 只限制行数，不能防止单条长行撑大输出。需要完整规则时，定位具体快照后按 JSON 字段读取。清单与 `NOTICE` 也保留在各自的 Vendor 目录中，可按需单独搜索。
+
 ## 外部二进制供应链
 
 外部二进制只用上游官方构建产物：`sslocal`（shadowsocks-rust v1.25.0，装于 `Contents/Helpers/`）、`v2ray-plugin`（v1.3.2）与 Cloak `ck-client`（v2.12.0，两个插件均装于 `Contents/Helpers/Plugins/`）。信任根是提交在库里的清单哈希；构建链如下（spec #21 D6/D10）：
