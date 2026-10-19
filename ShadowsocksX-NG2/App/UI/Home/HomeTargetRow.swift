@@ -6,6 +6,8 @@ struct HomeTargetRow: View {
   let workflow: CatalogWorkflow
   let selected: Bool
   let active: Bool
+  /// 子树含活动目标（严格后代）：空心闪电，与实心的"本行即活动目标"区分。
+  let containsActiveTarget: Bool
   let expandable: Bool
   let expanded: Bool
   let path: String
@@ -39,6 +41,12 @@ struct HomeTargetRow: View {
                 selected ? Color(nsColor: .alternateSelectedControlTextColor) : .orange
               )
               .help(String(localized: "活动目标"))
+          } else if containsActiveTarget {
+            Image(systemName: "bolt")
+              .foregroundStyle(
+                selected ? Color(nsColor: .alternateSelectedControlTextColor) : .orange
+              )
+              .help(String(localized: "组内含活动目标"))
           }
           Spacer(minLength: 4)
           if let module = workflow.connectivity {

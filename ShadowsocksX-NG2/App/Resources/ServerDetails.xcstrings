@@ -155,6 +155,17 @@
         }
       }
     },
+    "含活动目标": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Contains active target"
+          }
+        }
+      }
+    },
     "开关": {
       "extractionState": "manual",
       "localizations": {

@@ -36,6 +36,7 @@ struct NodeDetailPresentation {
   init(
     node: CatalogTreeNode, server: ServerDetailPresentation?,
     eligibility: ActivationEligibility?, isActiveTarget: Bool,
+    containsActiveTarget: Bool = false,
     subscription: SubscriptionSummary? = nil,
     locale: Locale = .current, timeZone: TimeZone = .current
   ) {
@@ -54,7 +55,12 @@ struct NodeDetailPresentation {
           ? String(localized: "本地配置", table: "ServerDetails")
           : String(localized: "订阅配置", table: "ServerDetails"))
     ]
-    if isActiveTarget { descriptions.append(String(localized: "活动目标", table: "ServerDetails")) }
+    if isActiveTarget {
+      descriptions.append(String(localized: "活动目标", table: "ServerDetails"))
+    } else if containsActiveTarget {
+      // 与行级空心闪电同语义：子树内含活动目标，自身不是活动目标。
+      descriptions.append(String(localized: "含活动目标", table: "ServerDetails"))
+    }
     subtitle = descriptions.joined(separator: " · ")
     var messages: [String] = []
     if node.isGroup {

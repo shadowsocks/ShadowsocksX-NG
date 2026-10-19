@@ -32,9 +32,12 @@ struct FavoriteServersTable<MenuContent: View>: View {
 
   var body: some View {
     let rows = workflow.favorites
+    let activeAncestors = workflow.tree.ancestors(of: activeTargetID)
     Table(of: CatalogTreeNode.self, selection: $selection) {
       TableColumn("名称") { node in
-        ServerTableNameCell(node: node, activeTargetID: activeTargetID)
+        ServerTableNameCell(
+          node: node, activeTargetID: activeTargetID,
+          containsActiveTarget: activeAncestors.contains(node.id))
       }
       .width(min: 140, ideal: 160)
       TableColumn(ConnectivityCopy.text("响应延迟")) { node in

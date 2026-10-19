@@ -1,9 +1,11 @@
 import SwiftUI
 
-/// Table 名称列：名称占剩余宽度，活动目标在列尾。
+/// Table 名称列：名称占剩余宽度，活动目标在列尾。实心闪电标记活动目标
+/// 自身，空心闪电标记子树含活动目标的分组（严格祖先）。
 struct ServerTableNameCell: View {
   let node: CatalogTreeNode
   let activeTargetID: NodeID?
+  let containsActiveTarget: Bool
 
   var body: some View {
     HStack(spacing: 6) {
@@ -28,6 +30,10 @@ struct ServerTableNameCell: View {
         Image(systemName: "bolt.fill")
           .foregroundStyle(.orange)
           .help("活动目标")
+      } else if containsActiveTarget {
+        Image(systemName: "bolt")
+          .foregroundStyle(.orange)
+          .help("组内含活动目标")
       }
     }
     .frame(minHeight: 28)

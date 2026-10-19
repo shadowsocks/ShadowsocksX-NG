@@ -201,6 +201,49 @@ struct ServerTableInsertionTests {
   }
 }
 
+/// 活动目标行标记的祖先推导：空心闪电候选是活动目标的严格祖先分组。
+struct CatalogTreeActiveTargetAncestorTests {
+  private struct Fixture {
+    let tree: CatalogTreeSnapshot
+    let outer: NodeID
+    let inner: NodeID
+    let deepLeaf: NodeID
+    let rootServer: NodeID
+  }
+
+  private func nestedTree() throws -> Fixture {
+    var catalog = ConfigurationCatalog()
+    let outer = try catalog.addGroup("外层")
+    let inner = try catalog.addGroup("内层", to: outer)
+    let deepLeaf = try catalog.addTestServer("深层服务器", to: inner)
+    let rootServer = try catalog.addTestServer("根层服务器")
+    let tree = CatalogTreeSnapshot.build(from: catalog, plugins: NoManagedPluginProvider())
+    return Fixture(
+      tree: tree, outer: outer, inner: inner, deepLeaf: deepLeaf, rootServer: rootServer)
+  }
+
+  @Test
+  func absentOrUnknownActiveTargetYieldsNoAncestors() throws {
+    let fixture = try nestedTree()
+    #expect(fixture.tree.ancestors(of: nil).isEmpty)
+    #expect(fixture.tree.ancestors(of: NodeID(rawValue: "nope")).isEmpty)
+  }
+
+  @Test
+  func deepServerYieldsEveryAncestorGroup() throws {
+    let fixture = try nestedTree()
+    #expect(fixture.tree.ancestors(of: fixture.deepLeaf) == [fixture.outer, fixture.inner])
+    #expect(fixture.tree.ancestors(of: fixture.rootServer).isEmpty)
+  }
+
+  @Test
+  func activeGroupItselfIsExcludedFromItsOwnAncestors() throws {
+    let fixture = try nestedTree()
+    #expect(fixture.tree.ancestors(of: fixture.inner) == [fixture.outer])
+    #expect(fixture.tree.ancestors(of: fixture.outer).isEmpty)
+  }
+}
+
 @MainActor
 struct ServerTableRowDropTests {
   @Test

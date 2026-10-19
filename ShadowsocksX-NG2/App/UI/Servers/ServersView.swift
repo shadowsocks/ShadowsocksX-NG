@@ -24,6 +24,11 @@ struct ServersView: View {
   /// 非 private：ServersView+Share.swift 扩展经它呈现分享失败。
   @StateObject var errors = ErrorAlertPresenter()
 
+  /// 子树含活动目标的分组集合（空心闪电候选）；表格与详情共用一次推导。
+  private var activeAncestorIDs: Set<NodeID> {
+    workflow.tree.ancestors(of: activeTargetID)
+  }
+
   // 纯窗口状态：selection/sheet/alert 不进目录 module。
   @State private var renameTarget: NodeID?
   @State private var newGroupParent: NodeID?
@@ -138,6 +143,7 @@ struct ServersView: View {
       source: section.source ?? .manual, collapsed: expansion.collapsedGroupIDs
     )
     let depths = Dictionary(uniqueKeysWithValues: rows.map { ($0.id, $0.depth) })
+    let activeAncestors = activeAncestorIDs
     return Table(
       of: CatalogTreeNode.self, selection: $selection
     ) {
@@ -159,7 +165,9 @@ struct ServersView: View {
           } else {
             Color.clear.frame(width: 24, height: 28)
           }
-          ServerTableNameCell(node: node, activeTargetID: activeTargetID)
+          ServerTableNameCell(
+            node: node, activeTargetID: activeTargetID,
+            containsActiveTarget: activeAncestors.contains(node.id))
         }
         .padding(.leading, CGFloat(depths[node.id] ?? 0) * 14)
       }
@@ -291,7 +299,9 @@ extension ServersView {
     if let id = selection, let node = workflow.tree.node(withID: id) {
       CatalogNodeDetailView(
         workflow: workflow, activation: activation, nodeID: node.id,
-        isActiveTarget: activeTargetID == id, errors: errors
+        isActiveTarget: activeTargetID == id,
+        containsActiveTarget: activeAncestorIDs.contains(id),
+        errors: errors
       )
       .id(id)
     } else {

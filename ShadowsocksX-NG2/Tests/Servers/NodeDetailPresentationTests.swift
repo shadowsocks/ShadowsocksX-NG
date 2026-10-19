@@ -24,6 +24,18 @@ struct NodeDetailPresentationTests {
   }
 
   @Test
+  func groupContainingActiveTargetMarksItInSubtitle() {
+    let marked = NodeDetailPresentation(
+      node: node(isGroup: true), server: nil, eligibility: nil,
+      isActiveTarget: false, containsActiveTarget: true)
+    #expect(marked.subtitle == "本地 · 含活动目标")
+    let unmarked = NodeDetailPresentation(
+      node: node(isGroup: true), server: nil, eligibility: nil,
+      isActiveTarget: false, containsActiveTarget: false)
+    #expect(unmarked.subtitle == "本地")
+  }
+
+  @Test
   func parameterPropertiesPreserveFlagsEmptyValuesOrderAndDuplicates() {
     var detail = NodeDetailPresentation(
       node: node(isGroup: false), server: nil, eligibility: nil, isActiveTarget: false)

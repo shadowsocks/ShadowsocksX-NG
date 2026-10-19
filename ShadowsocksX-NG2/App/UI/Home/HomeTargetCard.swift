@@ -14,6 +14,11 @@ struct HomeTargetCard: View {
     browser.rows(in: workflow.tree, favorites: workflow.favorites)
   }
 
+  /// 子树含活动目标的分组集合（空心闪电候选）。
+  private var activeAncestors: Set<NodeID> {
+    workflow.tree.ancestors(of: activeTargetID)
+  }
+
   private var selected: CatalogTreeNode? {
     browser.selection.flatMap { workflow.tree.node(withID: $0) }
   }
@@ -98,6 +103,7 @@ struct HomeTargetCard: View {
               HomeTargetRow(
                 row: row, workflow: workflow,
                 selected: browser.selection == row.id, active: activeTargetID == row.id,
+                containsActiveTarget: activeAncestors.contains(row.id),
                 expandable: browser.mode == .all && row.node.isGroup,
                 expanded: browser.expandedGroupIDs.contains(row.id),
                 path: path(for: row.id),

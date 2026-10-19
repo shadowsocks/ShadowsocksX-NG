@@ -8,6 +8,8 @@ struct CatalogNodeDetailView: View {
   @ObservedObject var activation: ActivationFeedbackState
   let nodeID: NodeID
   let isActiveTarget: Bool
+  /// 子树含活动目标（严格后代），与行级空心闪电同源判定。
+  let containsActiveTarget: Bool
   let errors: ErrorAlertPresenter
   @StateObject private var parameters = ServerDetailParameters()
 
@@ -110,6 +112,7 @@ struct CatalogNodeDetailView: View {
     let subscription = subscriptionSummary(for: node)
     var detail = NodeDetailPresentation(
       node: node, server: server, eligibility: eligibility, isActiveTarget: isActiveTarget,
+      containsActiveTarget: containsActiveTarget,
       subscription: subscription, locale: locale, timeZone: timeZone)
     if let server, server.plugin.selection != .none {
       if parameters.failure != nil {

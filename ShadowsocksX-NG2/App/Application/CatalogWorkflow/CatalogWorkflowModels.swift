@@ -112,6 +112,18 @@ struct CatalogTreeSnapshot: Equatable {
     return names
   }
 
+  /// 节点的严格祖先身份（根 → 父，不含自身）。行级"子树含活动目标"标记经
+  /// `ancestors(of: activeTargetID)` 推导；目标为空或不在树中时为空集合。
+  func ancestors(of id: NodeID?) -> Set<NodeID> {
+    guard let id, var current = node(withID: id) else { return [] }
+    var ancestors = Set<NodeID>()
+    while let parentID = current.parentID, let parent = node(withID: parentID) {
+      ancestors.insert(parentID)
+      current = parent
+    }
+    return ancestors
+  }
+
   /// 全树已知无效服务器总数（诊断计数）。
   var invalidServerCount: Int {
     roots.reduce(0) { $0 + $1.subtreeInvalidServerCount }

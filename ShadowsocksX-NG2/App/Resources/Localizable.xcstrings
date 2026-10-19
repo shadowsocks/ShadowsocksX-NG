@@ -6676,6 +6676,23 @@
         }
       }
     },
+    "组内含活动目标": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "组内含活动目标"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Contains active target"
+          }
+        }
+      }
+    },
     "活动目标不存在，已清除目标；本地监听不受影响": {
       "extractionState": "manual",
       "localizations": {
