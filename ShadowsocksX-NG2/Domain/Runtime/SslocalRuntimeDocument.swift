@@ -72,7 +72,7 @@ struct SslocalLocalDocument: Codable, Equatable, Sendable {
 struct RuntimeListenDocument: Codable, Equatable, Sendable {
   let listenerMode: ListenerMode
   let bindAddress: String
-  var lan = LANListeningSettings()
+  var lan = LANListeningFacts()
   var authentication: RuntimeListenerAuthentication?
 
   enum CodingKeys: String, CodingKey {
@@ -110,7 +110,7 @@ struct SslocalRuntimeDocument: Codable, Equatable, Sendable {
     locals = listen.locals
     self.listen = RuntimeListenDocument(
       listenerMode: listen.listenerMode,
-      bindAddress: listen.bindAddress, lan: listen.lan)
+      bindAddress: listen.bindAddress, lan: LANListeningFacts(listen.lan))
     ipv6Only = listen.listenerMode.ipv6Only
     aclFilePath = acl?.path
     aclRuntime = acl
@@ -255,7 +255,7 @@ extension SslocalRuntimeDocument {
     var expected = ProxyListeningConfiguration()
     expected.local.socksPort = socksPort
     expected.local.httpPort = httpPort
-    expected.lan = listen.lan
+    expected.lan = listen.lan.configuration
     guard network.count == (listen.lan.isEnabled ? 2 : 0),
       expected.configuredPorts.allSatisfy({ ProxyPortRange.valid.contains($0) }),
       Set(expected.configuredPorts).count == 4

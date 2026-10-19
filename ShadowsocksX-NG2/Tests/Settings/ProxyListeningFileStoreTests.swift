@@ -12,8 +12,8 @@ final class ProxyListeningFileStoreTests: XCTestCase {
     try super.setUpWithError()
     directory = FileManager.default.temporaryDirectory
       .appendingPathComponent("ssxng-settings-tests-\(UUID().uuidString)", isDirectory: true)
-    store = ProxyListeningFileStore(
-      fileURL: directory.appendingPathComponent("proxy-listening.json"))
+    store = makeTestListeningStore(
+      fileURL: directory.appendingPathComponent("proxy-listening.enc"))
   }
 
   override func tearDownWithError() throws {
@@ -21,17 +21,12 @@ final class ProxyListeningFileStoreTests: XCTestCase {
     try super.tearDownWithError()
   }
 
-  private func writeRaw(_ text: String) throws {
-    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-    try Data(text.utf8).write(to: store.fileURL)
-  }
-
   private func makeWriteFailingStore() throws -> ProxyListeningFileStore {
     try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
     let blockedParent = directory.appendingPathComponent("blocked")
     try Data("not a directory".utf8).write(to: blockedParent)
-    return ProxyListeningFileStore(
-      fileURL: blockedParent.appendingPathComponent("proxy-listening.json"))
+    return makeTestListeningStore(
+      fileURL: blockedParent.appendingPathComponent("proxy-listening.enc"))
   }
 
   func testRoundTripKeepsListeningConfiguration() throws {
@@ -43,22 +38,12 @@ final class ProxyListeningFileStoreTests: XCTestCase {
     try store.save(settings)
 
     XCTAssertEqual(try store.load(), settings)
-    let raw = try String(contentsOf: store.fileURL, encoding: .utf8)
-    XCTAssertTrue(raw.contains("udpRelayEnabled"))
-    XCTAssertFalse(raw.contains("timeoutSeconds"))
-    XCTAssertFalse(raw.contains("verboseLogging"))
-    XCTAssertFalse(raw.contains("advertisedAddress"))
-    XCTAssertTrue(raw.contains("all_ipv6_interfaces"))
     XCTAssertEqual(try store.load().mode, "tcp_and_udp")
   }
 
-  func testListeningFileDoesNotOwnIndependentPreferences() throws {
-    try store.save(ProxyListeningConfiguration())
-    let data = try Data(contentsOf: store.fileURL)
-    let record = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
-    XCTAssertEqual(Set(record.keys), ["localListen", "lanListen"])
+  func testEncryptedListeningHasItsOwnFile() {
     XCTAssertEqual(
-      ProxyListeningFileStore.defaultFileURL().lastPathComponent, "proxy-listening.json")
+      ProxyListeningFileStore.defaultFileURL().lastPathComponent, "proxy-listening.enc")
   }
 
   func testEveryListenerModeRoundTripsWithoutAnAdvertisedAddress() throws {
@@ -66,8 +51,6 @@ final class ProxyListeningFileStoreTests: XCTestCase {
       try store.save(ProxyListeningConfiguration(listenerMode: mode))
 
       XCTAssertEqual(try store.load().listenerMode, mode)
-      let raw = try String(contentsOf: store.fileURL, encoding: .utf8)
-      XCTAssertFalse(raw.contains("advertisedAddress"))
     }
   }
 
@@ -81,12 +64,6 @@ final class ProxyListeningFileStoreTests: XCTestCase {
 
     XCTAssertEqual(loaded.socksPort, 1086)
     XCTAssertEqual(loaded.httpPort, 1087)
-  }
-
-  func testMissingPortFieldsUseNewFactoryDefaults() throws {
-    try writeRaw("{}")
-
-    XCTAssertEqual(try store.load(), ProxyListeningConfiguration())
   }
 
   func testInvalidSaveDoesNotTouchExistingSettings() throws {

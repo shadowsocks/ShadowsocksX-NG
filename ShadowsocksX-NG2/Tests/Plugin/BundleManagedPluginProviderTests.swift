@@ -7,7 +7,6 @@ import XCTest
 /// 拒绝）。路径只从静态事实表派生，绝不拼接引用原文。
 final class BundleManagedPluginProviderTests: XCTestCase {
   private var bundleRoot: URL!
-  private var credentials: InMemoryCredentialStore!
 
   override func setUpWithError() throws {
     try super.setUpWithError()
@@ -16,7 +15,7 @@ final class BundleManagedPluginProviderTests: XCTestCase {
     try FileManager.default.createDirectory(
       at: bundleRoot.appendingPathComponent("Contents/Helpers/Plugins"),
       withIntermediateDirectories: true)
-    credentials = InMemoryCredentialStore()
+
   }
 
   override func tearDownWithError() throws {

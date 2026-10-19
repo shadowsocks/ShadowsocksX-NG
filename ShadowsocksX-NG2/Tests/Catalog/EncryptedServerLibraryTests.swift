@@ -103,18 +103,18 @@ struct EncryptedServerLibraryTests {
   }
 }
 
-final class TestLibraryKeys: LibraryMasterKeyStoring {
+final class TestLibraryKeys: MasterKeyStoring {
   var values: [UUID: Data] = [:]
   var requiresInteraction = false
   var createFails = false
   func read(_ id: UUID, allowingInteraction: Bool) throws -> Data? {
     if requiresInteraction && !allowingInteraction {
-      throw CredentialStoreError.keychainStatus(-25308)
+      throw MasterKeyStoreError.keychainStatus(-25308)
     }
     return values[id]
   }
   func create(_ data: Data, id: UUID, allowingInteraction: Bool) throws {
-    if createFails { throw CredentialStoreError.keychainStatus(-25308) }
+    if createFails { throw MasterKeyStoreError.keychainStatus(-25308) }
     values[id] = data
   }
 }

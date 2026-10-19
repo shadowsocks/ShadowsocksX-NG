@@ -8,7 +8,6 @@ struct ConnectivityFormalRuntimeTests {
   @Test func changingTestURLDoesNotConvergeTheRunningFormalProxy() async throws {
     let runtime = ProxyRuntimeFixture.makeTemporaryRuntime()
     defer { try? FileManager.default.removeItem(at: runtime.directory) }
-    let credentials = InMemoryCredentialStore()
     let agent = ProxyRuntimeFixture.FakeLaunchAgent()
     let systemProxy = ProxyRuntimeFixture.FakeSystemProxy()
     let store = SettingsWorkflowTests.InMemorySettingsStore()
@@ -24,7 +23,7 @@ struct ConnectivityFormalRuntimeTests {
         at: runtime.directory.appendingPathComponent("catalog.json")),
       activationFileStore: ActivationStateFileStore(
         fileURL: runtime.directory.appendingPathComponent("activation.json")),
-      runtimeFileStore: fileStore, credentials: credentials, plugins: ActivationFixture.plugins,
+      runtimeFileStore: fileStore, plugins: ActivationFixture.plugins,
       listeningStore: store,
       customRuleStore: CustomRuleStore(
         fileURL: runtime.directory.appendingPathComponent("rules.json")),
@@ -46,7 +45,7 @@ struct ConnectivityFormalRuntimeTests {
     let defaults = try #require(UserDefaults(suiteName: suite))
     defer { defaults.removePersistentDomain(forName: suite) }
     let workflow = SettingsWorkflow(
-      committing: controller, credentials: credentials, connectivityDefaults: defaults)
+      committing: controller, connectivityDefaults: defaults)
     #expect(await workflow.saveConnectivityURL("http://example.com/probe?token=private"))
     #expect(controller.state == state)
     #expect(controller.activeTargetID == target)

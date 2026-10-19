@@ -25,7 +25,7 @@ extension RuntimePublicationTests {
     var listen = ProxyListeningConfiguration(listenerMode: .allIPv4Interfaces)
     listen.lan.authenticationEnabled = true
     listen.lan.username = "sample-lan-user"
-    listen.lan.passwordReference = "sample-keychain-reference"
+    listen.lan.password = "sample-keychain-reference"
     let auth = RuntimeListenerAuthentication(
       username: listen.lan.username,
       password: "sample-lan-password", directory: runtime.directory.path)

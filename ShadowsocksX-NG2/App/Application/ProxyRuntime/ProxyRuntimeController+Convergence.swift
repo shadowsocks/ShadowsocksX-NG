@@ -73,6 +73,10 @@ extension ProxyRuntimeController {
   /// 幂等跳过由 apply 层的 plan 空判定承担；目录重校验（跳过名单、目标失效
   /// 清除）已在 `reexpand` 完成，不受其影响。
   func convergeToReexpanded(_ catalog: ConfigurationCatalog) async {
+    guard !settingsUnreadable else {
+      state = .launchFailed(.unreadableSettings)
+      return
+    }
     guard catalogSnapshotReader.isCatalogAvailable else { return }
     switch reexpand(in: catalog) {
     case .deployed(let configuration):
@@ -102,6 +106,10 @@ extension ProxyRuntimeController {
 
   @discardableResult
   func convergeRuntime(_ intent: RuntimeConvergenceIntent) async -> ConvergenceResult {
+    guard !settingsUnreadable else {
+      state = .launchFailed(.unreadableSettings)
+      return .failed
+    }
     guard catalogSnapshotReader.isCatalogAvailable else { return .failed }
     switch intent {
     case .deployment(let source): return await convergeDeployment(source)
@@ -111,15 +119,6 @@ extension ProxyRuntimeController {
   }
 
   private func convergeDeployment(_ source: SslocalRuntimeDocument) async -> ConvergenceResult {
-    if settingsUnreadable {
-      RuntimeLog.emit(.activationFailed(reason: "settings unreadable"))
-      _ = await execute(.stop, document: nil)
-      lastDocument = nil
-      skippedServers = []
-      state = .launchFailed(.unreadableSettings)
-      await systemProxyObserver.holdSystemProxyIntent()
-      return .failed
-    }
     let contract: PreparedRuntimeContract
     do {
       contract = try PreparedRuntimeContract(await runtimeDocument(source, for: proxyMode))

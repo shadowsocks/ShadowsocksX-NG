@@ -11,7 +11,7 @@ struct LocalListeningSettings: Codable, Equatable, Sendable {
   var httpPort = 11087
 }
 
-/// 网络共享入口与本机入口共存，凭据只携带 Keychain 引用。
+/// 网络共享入口与本机入口共存，凭据随配置整体加密保存。
 struct LANListeningSettings: Codable, Equatable, Sendable {
   var isEnabled = false
   var mode: LANListenerMode = .allIPv4Interfaces
@@ -20,9 +20,46 @@ struct LANListeningSettings: Codable, Equatable, Sendable {
   var udpRelayEnabled = false
   var authenticationEnabled = false
   var username = "user"
-  var passwordReference: String?
+  var password: String?
 
   var effectiveMode: ListenerMode { isEnabled ? mode.bindingMode : .disabled }
+}
+
+/// 不含认证密码的监听事实，供运行元数据、占用检查和界面投影使用。
+struct LANListeningFacts: Codable, Equatable, Sendable {
+  var isEnabled = false
+  var mode: LANListenerMode = .allIPv4Interfaces
+  var socksPort = 11088
+  var httpPort = 11089
+  var udpRelayEnabled = false
+  var authenticationEnabled = false
+  var username = "user"
+
+  init() {}
+
+  init(_ settings: LANListeningSettings) {
+    isEnabled = settings.isEnabled
+    mode = settings.mode
+    socksPort = settings.socksPort
+    httpPort = settings.httpPort
+    udpRelayEnabled = settings.udpRelayEnabled
+    authenticationEnabled = settings.authenticationEnabled
+    username = settings.username
+  }
+
+  var effectiveMode: ListenerMode { isEnabled ? mode.bindingMode : .disabled }
+
+  var configuration: LANListeningSettings {
+    var settings = LANListeningSettings()
+    settings.isEnabled = isEnabled
+    settings.mode = mode
+    settings.socksPort = socksPort
+    settings.httpPort = httpPort
+    settings.udpRelayEnabled = udpRelayEnabled
+    settings.authenticationEnabled = authenticationEnabled
+    settings.username = username
+    return settings
+  }
 }
 
 /// 局域网地址族配置；关闭时仍保留所选方式。
@@ -44,7 +81,7 @@ enum LANListenerMode: String, Codable, CaseIterable, Equatable, Sendable {
   var displayName: String { bindingMode.displayName }
 }
 
-struct ProxyListeningConfiguration: Equatable, Sendable {
+struct ProxyListeningConfiguration: Codable, Equatable, Sendable {
   static let defaultSocksPort = 11086
   static let defaultHTTPPort = 11087
 
@@ -107,14 +144,14 @@ struct RuntimeListenFacts: Equatable, Sendable {
   let listenerMode: ListenerMode
   let socksPort: Int
   let httpPort: Int
-  var lan = LANListeningSettings()
+  var lan = LANListeningFacts()
 
   init(listen: ProxyListeningConfiguration) {
     self.init(
       listenerMode: .disabled,
       socksPort: listen.socksPort,
       httpPort: listen.httpPort)
-    lan = listen.lan
+    lan = LANListeningFacts(listen.lan)
   }
 
   init(

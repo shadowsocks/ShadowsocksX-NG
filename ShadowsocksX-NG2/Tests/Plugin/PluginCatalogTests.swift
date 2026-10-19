@@ -207,7 +207,6 @@ struct PluginCatalogTests {
         fileURL: runtime.directory.appendingPathComponent("plugins.json")),
       inspector: QuietPluginInspector())
     try plugins.addPlugin(program: "tool", path: first.path)
-    let credentials = InMemoryCredentialStore()
     var catalog = ConfigurationCatalog()
     let id = try ActivationFixture.addPlainServer("Plugin", in: &catalog)
     var fields = try #require(catalog.entry(for: id)).serverFieldsForPluginTest
@@ -228,7 +227,7 @@ struct PluginCatalogTests {
       catalogSnapshotReader: ProxyRuntimeFixture.catalogSnapshotReader(at: catalogFile),
       activationFileStore: ActivationStateFileStore(
         fileURL: runtime.directory.appendingPathComponent("activation.json")),
-      runtimeFileStore: files, credentials: credentials, plugins: plugins,
+      runtimeFileStore: files, plugins: plugins,
       listeningStore: InMemoryProxyListeningStore(),
       customRuleStore: CustomRuleStore(
         fileURL: runtime.directory.appendingPathComponent("rules.json")),

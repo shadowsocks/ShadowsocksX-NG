@@ -188,7 +188,6 @@ private final class PluginMappingCommitFixture {
       fileURL: directory.appendingPathComponent("mappings/plugins.json"))
     plugins = PluginCatalog(store: store, inspector: CommitPluginInspector())
     try plugins.addPlugin(program: "tool", path: first.path)
-    let credentials = InMemoryCredentialStore()
     var catalog = ConfigurationCatalog()
     group = try catalog.addGroup("Group")
     pluginServer = try ActivationFixture.addPlainServer(
@@ -219,7 +218,7 @@ private final class PluginMappingCommitFixture {
       catalogSnapshotReader: bootstrap.catalogSnapshotReader,
       activationFileStore: ActivationStateFileStore(
         fileURL: directory.appendingPathComponent("activation.json")),
-      runtimeFileStore: files, credentials: credentials, plugins: plugins,
+      runtimeFileStore: files, plugins: plugins,
       listeningStore: InMemoryProxyListeningStore(),
       customRuleStore: CustomRuleStore(fileURL: directory.appendingPathComponent("rules.json")),
       appBundle: AppArtifact.bundle,

@@ -21,7 +21,6 @@ private struct InvalidCreateDraftCase {
 final class CatalogWorkflowCreateServerTests: XCTestCase {
   private var workDir: URL!
   private var fileURL: URL!
-  private var credentials: InMemoryCredentialStore!
   private var runtime: FakeCatalogRuntime!
   var workflow: CatalogWorkflow!
 
@@ -32,7 +31,7 @@ final class CatalogWorkflowCreateServerTests: XCTestCase {
       .appendingPathComponent("catalog-create-server-tests-\(UUID().uuidString)", isDirectory: true)
     try FileManager.default.createDirectory(at: workDir, withIntermediateDirectories: true)
     fileURL = workDir.appendingPathComponent("catalog.json")
-    credentials = InMemoryCredentialStore()
+
     runtime = FakeCatalogRuntime()
     runtime.hasActiveTarget = true
     workflow = makeWorkflow()

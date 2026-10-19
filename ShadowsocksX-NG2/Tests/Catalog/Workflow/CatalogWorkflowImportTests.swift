@@ -12,7 +12,7 @@ struct CatalogWorkflowImportTests {
   // MARK: - SIP-008 整树导入
 
   @Test func sip008FileImportsTreeWithFreshIdentities() async throws {
-    try await withImportWorkflow { workflow, credentials in
+    try await withImportWorkflow { workflow in
       let outcome = await workflow.importServers(
         from: [.file(name: "机场.json", data: Data(SIP008DocumentFixture.tree.utf8))], into: nil)
 
@@ -38,12 +38,11 @@ struct CatalogWorkflowImportTests {
       #expect(try workflow.serverEditForm(for: first.id)?.remark == "香港 01")
       let second = try #require(root.childNodes.last)
       #expect(try workflow.serverEditForm(for: second.id)?.password == "pw2")
-      #expect(credentials.storageCount == 0, "服务器秘密不写逐项凭据存储")
     }
   }
 
   @Test func sip008FlatFallbackNamesRootFromFileName() async throws {
-    try await withImportWorkflow { workflow, _ in
+    try await withImportWorkflow { workflow in
       let outcome = await workflow.importServers(
         from: [.file(name: "我的机场.json", data: Data(SIP008DocumentFixture.flat.utf8))], into: nil)
 
@@ -54,7 +53,7 @@ struct CatalogWorkflowImportTests {
   }
 
   @Test func sip008NamelessFileFallsBackToGenericRootName() async throws {
-    try await withImportWorkflow { workflow, _ in
+    try await withImportWorkflow { workflow in
       let outcome = await workflow.importServers(
         from: [.file(name: "", data: Data(SIP008DocumentFixture.flat.utf8))], into: nil)
 
@@ -64,7 +63,7 @@ struct CatalogWorkflowImportTests {
   }
 
   @Test func sip008DuplicateRootNameGetsSuffix() async throws {
-    try await withImportWorkflow { workflow, _ in
+    try await withImportWorkflow { workflow in
       _ = await workflow.importServers(
         from: [.file(name: "机场.json", data: Data(SIP008DocumentFixture.tree.utf8))], into: nil)
       _ = await workflow.importServers(
@@ -77,7 +76,7 @@ struct CatalogWorkflowImportTests {
   }
 
   @Test func sip008PluginOptionsStoredWithoutProgram() async throws {
-    try await withImportWorkflow { workflow, credentials in
+    try await withImportWorkflow { workflow in
       _ = await workflow.importServers(
         from: [.file(name: "opts.json", data: Data(SIP008DocumentFixture.pluginOptions.utf8))],
         into: nil)
@@ -96,7 +95,7 @@ struct CatalogWorkflowImportTests {
   // MARK: - SIP-008 整份拒绝
 
   @Test func sip008InvalidRecordRejectsWholeSource() async throws {
-    try await withImportWorkflow { workflow, credentials in
+    try await withImportWorkflow { workflow in
       let document = """
         {"version":1,"servers":[
           {"server":"203.0.113.7","server_port":8388,"password":"pw","method":"aes-256-gcm"},
@@ -112,14 +111,13 @@ struct CatalogWorkflowImportTests {
       }
       #expect(index == 1, "点名无效记录")
       #expect(workflow.tree.roots.isEmpty, "整份拒绝不留部分子树")
-      #expect(credentials.storageCount == 0, "拒绝路径不写凭据")
     }
   }
 
   // MARK: - 二维码图片
 
   @Test func qrImageImportsDetectedServers() async throws {
-    try await withImportWorkflow { workflow, _ in
+    try await withImportWorkflow { workflow in
       let uri = "ss://YWVzLTI1Ni1nY206cGFzc3dvcmQxMjM@203.0.113.7:8388#二维码"
       let png = try QrCodeCodec.generatePNG(for: uri)
 
@@ -132,7 +130,7 @@ struct CatalogWorkflowImportTests {
   }
 
   @Test func qrImageWithoutSSPayloadFails() async throws {
-    try await withImportWorkflow { workflow, _ in
+    try await withImportWorkflow { workflow in
       let png = try QrCodeCodec.generatePNG(for: "plain text payload")
 
       let outcome = await workflow.importServers(
@@ -150,7 +148,7 @@ struct CatalogWorkflowImportTests {
   // MARK: - 文本文件与剪贴板
 
   @Test func textFileImportsLinesPartially() async throws {
-    try await withImportWorkflow { workflow, _ in
+    try await withImportWorkflow { workflow in
       let text = "ss://YWVzLTI1Ni1nY206cGFzc3dvcmQxMjM@203.0.113.7:8388#文件行\n垃圾行\n"
       let outcome = await workflow.importServers(
         from: [.file(name: "list.txt", data: Data(text.utf8))], into: nil)
@@ -164,7 +162,7 @@ struct CatalogWorkflowImportTests {
   }
 
   @Test func blankLinesKeepOriginalFailureIndexes() async throws {
-    try await withImportWorkflow { workflow, _ in
+    try await withImportWorkflow { workflow in
       let text = "第一行垃圾\n\n\nss://YWVzLTI1Ni1nY206cGFzc3dvcmQxMjM@203.0.113.7:8388"
       let outcome = await workflow.importServers(
         from: [.clipboardText(text)], into: nil)
@@ -177,7 +175,7 @@ struct CatalogWorkflowImportTests {
   }
 
   @Test func clipboardEmptyTextFailsWithoutCatalogChange() async throws {
-    try await withImportWorkflow { workflow, _ in
+    try await withImportWorkflow { workflow in
       let outcome = await workflow.importServers(
         from: [.clipboardText("   \n  ")], into: nil)
 
@@ -193,7 +191,7 @@ struct CatalogWorkflowImportTests {
   // MARK: - 来源独立性与提交失败回滚
 
   @Test func sourcesImportIndependently() async throws {
-    try await withImportWorkflow { workflow, _ in
+    try await withImportWorkflow { workflow in
       let broken = """
         {"version":1,"servers":[
           {"server":"203.0.113.7","server_port":8388,"password":"","method":"aes-256-gcm"}]}
@@ -212,7 +210,7 @@ struct CatalogWorkflowImportTests {
   }
 
   @Test func commitFailureDoesNotPublishImportedRecords() async throws {
-    try await withGateBrokenWorkflow { workflow, credentials in
+    try await withGateBrokenWorkflow { workflow in
       let text = "ss://YWVzLTI1Ni1nY206cGFzc3dvcmQxMjM@203.0.113.7:8388#提交失败"
 
       let outcome = await workflow.importServers(from: [.clipboardText(text)], into: nil)
@@ -227,7 +225,7 @@ struct CatalogWorkflowImportTests {
   }
 
   @Test func selectionCandidatePrefersLastImportedGroup() async throws {
-    try await withImportWorkflow { workflow, _ in
+    try await withImportWorkflow { workflow in
       let text = "ss://YWVzLTI1Ni1nY206cGFzc3dvcmQxMjM@203.0.113.7:8388#根层"
       let outcome = await workflow.importServers(
         from: [
@@ -245,39 +243,37 @@ struct CatalogWorkflowImportTests {
 
   /// 临时目录 + 内存凭据与库密钥；UUID 后缀命名，进程私有资源（runner 并行安全）。
   private func withImportWorkflow(
-    _ body: @MainActor (CatalogWorkflow, InMemoryCredentialStore) async throws -> Void
+    _ body: @MainActor (CatalogWorkflow) async throws -> Void
   ) async throws {
     let directory = FileManager.default.temporaryDirectory
       .appendingPathComponent("catalog-import-tests-\(UUID().uuidString)", isDirectory: true)
     defer { try? FileManager.default.removeItem(at: directory) }
     try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-    let credentials = InMemoryCredentialStore()
     let coordinator = CatalogCommitCoordinator(
       fileStore: makeTestCatalogStore(
         fileURL: directory.appendingPathComponent("catalog.json")),
       runtime: FakeCatalogRuntime())
     let workflow = makeCatalogWorkflow(coordinator: coordinator)
-    try await body(workflow, credentials)
+    try await body(workflow)
   }
 
   /// 目录文件置于 gate 子目录；把 gate 目录替换为同名文件后，下一次持久化
   /// 必然失败（回滚测试的确定性失败注入，与 CatalogWorkflowRollbackTests 同法）。
   private func withGateBrokenWorkflow(
-    _ body: @MainActor (CatalogWorkflow, InMemoryCredentialStore) async throws -> Void
+    _ body: @MainActor (CatalogWorkflow) async throws -> Void
   ) async throws {
     let directory = FileManager.default.temporaryDirectory
       .appendingPathComponent("catalog-import-gate-\(UUID().uuidString)", isDirectory: true)
     defer { try? FileManager.default.removeItem(at: directory) }
     let gateDir = directory.appendingPathComponent("gate")
     try FileManager.default.createDirectory(at: gateDir, withIntermediateDirectories: true)
-    let credentials = InMemoryCredentialStore()
     let coordinator = CatalogCommitCoordinator(
       fileStore: makeTestCatalogStore(fileURL: gateDir.appendingPathComponent("catalog.json")),
       runtime: FakeCatalogRuntime())
     let workflow = makeCatalogWorkflow(coordinator: coordinator)
     try FileManager.default.removeItem(at: gateDir)
     try Data().write(to: gateDir)
-    try await body(workflow, credentials)
+    try await body(workflow)
   }
 }
 

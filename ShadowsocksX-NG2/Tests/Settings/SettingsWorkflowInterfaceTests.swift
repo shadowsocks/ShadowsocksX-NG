@@ -17,7 +17,7 @@ final class SettingsWorkflowInterfaceTests: XCTestCase {
 
   func makeWorkflow() -> SettingsWorkflow {
     SettingsWorkflow(
-      committing: committing, occupancyProbe: probe, credentials: InMemoryCredentialStore())
+      committing: committing, occupancyProbe: probe)
   }
 
   func testPortEditorMapsValidationIssuesToTheAffectedFields() {

@@ -9,9 +9,8 @@ struct LANListeningWorkflowTests {
   @Test func disabledAuthenticationDoesNotGateLANSaveOnCredentialShape() async throws {
     let committing = FakeSettingsCommitter()
     let workflow = SettingsWorkflow(
-      committing: committing, occupancyProbe: FakeOccupancyProbe(),
-      credentials: InMemoryCredentialStore())
-    var draft = try workflow.beginLANListeningEditing()
+      committing: committing, occupancyProbe: FakeOccupancyProbe())
+    var draft = workflow.beginLANListeningEditing()
     draft.isEnabled = true
     draft.authenticationEnabled = false
     draft.username = ""
@@ -24,9 +23,8 @@ struct LANListeningWorkflowTests {
 
   @Test func enabledAuthenticationGatesLANSaveOnCredentialShape() async throws {
     let workflow = SettingsWorkflow(
-      committing: FakeSettingsCommitter(), occupancyProbe: FakeOccupancyProbe(),
-      credentials: InMemoryCredentialStore())
-    var draft = try workflow.beginLANListeningEditing()
+      committing: FakeSettingsCommitter(), occupancyProbe: FakeOccupancyProbe())
+    var draft = workflow.beginLANListeningEditing()
     draft.isEnabled = true
     draft.authenticationEnabled = true
     draft.username = "user:name"
@@ -40,10 +38,9 @@ struct LANListeningWorkflowTests {
     let committing = FakeSettingsCommitter()
     committing.committedSettings.listen.lan.authenticationEnabled = false
     committing.committedSettings.listen.lan.username = ""
-    committing.committedSettings.listen.lan.passwordReference = "kept"
+    committing.committedSettings.listen.lan.password = "kept"
     let workflow = SettingsWorkflow(
-      committing: committing, occupancyProbe: FakeOccupancyProbe(),
-      credentials: InMemoryCredentialStore())
+      committing: committing, occupancyProbe: FakeOccupancyProbe())
     var draft = workflow.beginPortSettingsEditing()
     draft.socksPort = 13001
     workflow.refreshPortEditorOccupancy(for: draft)
@@ -56,9 +53,8 @@ struct LANListeningWorkflowTests {
   @Test func togglingLANInvalidatesOccupancyWithoutChangingModeOrPorts() async throws {
     let probe = FakeOccupancyProbe(occupiedPorts: [11088])
     let workflow = SettingsWorkflow(
-      committing: FakeSettingsCommitter(), occupancyProbe: probe,
-      credentials: InMemoryCredentialStore())
-    var draft = try workflow.beginLANListeningEditing()
+      committing: FakeSettingsCommitter(), occupancyProbe: probe)
+    var draft = workflow.beginLANListeningEditing()
     draft.isEnabled = true
     workflow.refreshPortEditorOccupancy(for: draft.ports)
     await waitForPortEditorOccupancy(workflow, draft: draft.ports, port: .socks)
@@ -83,9 +79,8 @@ struct LANListeningWorkflowTests {
     let committing = FakeSettingsCommitter()
     let probe = FakeOccupancyProbe()
     let workflow = SettingsWorkflow(
-      committing: committing, occupancyProbe: probe,
-      credentials: InMemoryCredentialStore())
-    var draft = try workflow.beginLANListeningEditing()
+      committing: committing, occupancyProbe: probe)
+    var draft = workflow.beginLANListeningEditing()
     #expect(!draft.isEnabled)
     #expect(draft.mode == .allIPv4Interfaces)
     draft.isEnabled = true
@@ -101,7 +96,7 @@ struct LANListeningWorkflowTests {
     #expect(await workflow.saveLANListening(draft) == .persisted)
     #expect(probe.callCount == probeCount)
     #expect(committing.committedSettings.listen.locals.count == 2)
-    var reopened = try workflow.beginLANListeningEditing()
+    var reopened = workflow.beginLANListeningEditing()
     #expect(!reopened.isEnabled)
     #expect(reopened.mode == .allIPv6Interfaces)
     #expect(reopened.ports.socksPort == 13001)
@@ -118,16 +113,14 @@ struct LANListeningWorkflowTests {
     let committing = FakeSettingsCommitter()
     committing.committedSettings.listen.socksPort = 13001
     let probe = FakeOccupancyProbe(occupiedPorts: [11088, 11089])
-    let credentials = InMemoryCredentialStore()
     let workflow = SettingsWorkflow(
-      committing: committing, occupancyProbe: probe,
-      credentials: credentials)
-    let draft = try workflow.beginLANListeningEditing()
+      committing: committing, occupancyProbe: probe)
+    let draft = workflow.beginLANListeningEditing()
     #expect(draft.password.count == 10)
     #expect(await workflow.saveLANListening(draft) == .persisted)
     #expect(committing.committedSettings.listen.socksPort == 13001)
     #expect(probe.callCount == 0)
-    let reopened = try workflow.beginLANListeningEditing()
+    let reopened = workflow.beginLANListeningEditing()
     #expect(reopened.password == draft.password)
   }
 
@@ -145,33 +138,29 @@ struct LANListeningWorkflowTests {
     #expect(committing.committedSettings.listen.socksPort == 13001)
   }
 
-  @Test func persistenceFailurePreservesPasswordAndDeletesTheUncommittedSecret() async throws {
+  @Test func persistenceFailurePreservesCompleteCommittedListeningConfiguration() async throws {
     let committing = FakeSettingsCommitter()
-    let credentials = InMemoryCredentialStore()
     let workflow = SettingsWorkflow(
-      committing: committing, occupancyProbe: FakeOccupancyProbe(),
-      credentials: credentials)
-    let original = try workflow.beginLANListeningEditing()
+      committing: committing, occupancyProbe: FakeOccupancyProbe())
+    let original = workflow.beginLANListeningEditing()
     #expect(await workflow.saveLANListening(original) == .persisted)
     let saved = committing.committedSettings
-    var edited = try workflow.beginLANListeningEditing()
+    var edited = workflow.beginLANListeningEditing()
     edited.password = "replacement"
     committing.updateError = ProxyListeningStoreError.ioFailure(detail: "disk full")
     #expect(
       await workflow.saveLANListening(edited)
         == .commitFailed(.store(.ioFailure(detail: "disk full"))))
     #expect(committing.committedSettings == saved)
-    #expect(try workflow.beginLANListeningEditing().password == original.password)
-    #expect(credentials.storageCount == 1)
+    #expect(workflow.beginLANListeningEditing().password == original.password)
   }
 
   @Test func savingLANLocksTheEditorBeforeTCPProbing() async throws {
     let committing = FakeSettingsCommitter()
     let probe = GatedOccupancyProbe(gatedAnswer: .free, passThroughAnswer: .free)
     let workflow = SettingsWorkflow(
-      committing: committing, occupancyProbe: probe,
-      credentials: InMemoryCredentialStore())
-    var draft = try workflow.beginLANListeningEditing()
+      committing: committing, occupancyProbe: probe)
+    var draft = workflow.beginLANListeningEditing()
     draft.isEnabled = true
     draft.mode = .allIPv4Interfaces
     let submission = Task { await workflow.saveLANListening(draft) }
@@ -195,8 +184,8 @@ struct LANListeningWorkflowTests {
     let committing = FakeSettingsCommitter()
     let probe = FakeOccupancyProbe()
     let workflow = SettingsWorkflow(
-      committing: committing, occupancyProbe: probe, credentials: InMemoryCredentialStore())
-    var draft = try workflow.beginLANListeningEditing()
+      committing: committing, occupancyProbe: probe)
+    var draft = workflow.beginLANListeningEditing()
     draft.isEnabled = true
     draft.mode = mode
     draft.ports.socksPort = 13001
@@ -226,8 +215,8 @@ struct LANListeningWorkflowTests {
     committing.committedSettings.listen.httpPort = 32769
     let probe = FakeOccupancyProbe(occupiedPorts: [11088])
     let workflow = SettingsWorkflow(
-      committing: committing, occupancyProbe: probe, credentials: InMemoryCredentialStore())
-    var draft = try workflow.beginLANListeningEditing()
+      committing: committing, occupancyProbe: probe)
+    var draft = workflow.beginLANListeningEditing()
     draft.isEnabled = true
     draft.mode = .allIPv6Interfaces
     workflow.refreshPortEditorOccupancy(for: draft.ports)
@@ -271,8 +260,8 @@ struct LANListeningWorkflowTests {
     let probe = FakeOccupancyProbe(
       occupiedPorts: [11088], occupierIPv6ProcessIDs: [123], occupiedFamilies: [.ipv4])
     let workflow = SettingsWorkflow(
-      committing: committing, occupancyProbe: probe, credentials: InMemoryCredentialStore())
-    var draft = try workflow.beginLANListeningEditing()
+      committing: committing, occupancyProbe: probe)
+    var draft = workflow.beginLANListeningEditing()
     draft.isEnabled = true
     draft.mode = .allIPv4Interfaces
     workflow.refreshPortEditorOccupancy(for: draft.ports)
@@ -289,8 +278,8 @@ struct LANListeningWorkflowTests {
     committing.runtimeListenerProcessID = 123
     let probe = FakeOccupancyProbe(occupiedPorts: [13001], occupierProcessIDs: [123])
     let workflow = SettingsWorkflow(
-      committing: committing, occupancyProbe: probe, credentials: InMemoryCredentialStore())
-    var draft = try workflow.beginLANListeningEditing()
+      committing: committing, occupancyProbe: probe)
+    var draft = workflow.beginLANListeningEditing()
     draft.ports.socksPort = 13001
     workflow.refreshPortEditorOccupancy(for: draft.ports)
     await waitForPortEditorOccupancy(workflow, draft: draft.ports, port: .socks)

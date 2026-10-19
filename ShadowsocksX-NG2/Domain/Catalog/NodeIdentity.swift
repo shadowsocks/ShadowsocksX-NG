@@ -26,23 +26,3 @@ struct NodeID: Hashable, Codable, Sendable {
     try container.encode(rawValue)
   }
 }
-
-/// 凭据引用：与秘密值之间的非秘密关联（GLOSSARY.md「Credential reference」）。
-/// 配置树只存引用；秘密值经 CredentialStoring 读写。
-struct CredentialReference: Hashable, Codable, Sendable {
-  let rawValue: String
-
-  init(rawValue: String) { self.rawValue = rawValue }
-
-  /// 新建凭据引用。
-  static func fresh() -> CredentialReference { CredentialReference(rawValue: UUID().uuidString) }
-
-  init(from decoder: Decoder) throws {
-    rawValue = try decoder.singleValueContainer().decode(String.self)
-  }
-
-  func encode(to encoder: Encoder) throws {
-    var container = encoder.singleValueContainer()
-    try container.encode(rawValue)
-  }
-}

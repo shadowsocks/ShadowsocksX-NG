@@ -52,7 +52,7 @@ enum RuntimePaths {
 
   /// 本地与局域网代理监听配置（ProxyListeningFileStore）。
   static func proxyListeningFileURL() -> URL {
-    runtimeDirectory().appendingPathComponent("proxy-listening.json")
+    runtimeDirectory().appendingPathComponent("proxy-listening.enc")
   }
 
   /// 自定义规则文档（CustomRuleStore）。

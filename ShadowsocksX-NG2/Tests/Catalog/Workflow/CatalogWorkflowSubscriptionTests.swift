@@ -11,7 +11,6 @@ import XCTest
 final class CatalogWorkflowSubscriptionTests: XCTestCase {
   private var workDir: URL!
   var fileURL: URL!
-  var credentials: InMemoryCredentialStore!
   var fetcher: FakeSubscriptionFetcher!
   var runtime: FakeCatalogRuntime!
   var workflow: CatalogWorkflow!
@@ -22,7 +21,7 @@ final class CatalogWorkflowSubscriptionTests: XCTestCase {
       .appendingPathComponent("subscription-workflow-tests-\(UUID().uuidString)", isDirectory: true)
     try FileManager.default.createDirectory(at: workDir, withIntermediateDirectories: true)
     fileURL = workDir.appendingPathComponent("catalog.json")
-    credentials = InMemoryCredentialStore()
+
     runtime = FakeCatalogRuntime()
     fetcher = FakeSubscriptionFetcher(behavior: .success(SubscriptionDocs.flat(serverCount: 1)))
     workflow = makeWorkflow()

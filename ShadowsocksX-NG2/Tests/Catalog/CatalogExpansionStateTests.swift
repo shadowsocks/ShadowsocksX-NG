@@ -87,7 +87,6 @@ struct CatalogCreationExpansionTests {
   func removedCreationParentRejectsWithoutFallingBackToRoot(createServer: Bool) async throws {
     let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     defer { try? FileManager.default.removeItem(at: directory) }
-    let credentials = InMemoryCredentialStore()
     let workflow = makeCatalogWorkflow(
       coordinator: CatalogCommitCoordinator(
         fileStore: makeTestCatalogStore(fileURL: directory.appendingPathComponent("catalog.json")),
@@ -110,6 +109,5 @@ struct CatalogCreationExpansionTests {
       #expect(underlying as? CatalogError == .parentNotFound(parent))
     }
     #expect(workflow.tree.isEmpty)
-    #expect(credentials.storageSnapshot.isEmpty)
   }
 }

@@ -10,7 +10,7 @@ protocol ProxyRuntimeDiagnosticFacts: AnyObject {
   var proxyState: DiagnosticProxyState { get }
   var hasActiveTarget: Bool { get }
   /// 当前监听设置；监听地址在报告中只以回环/非回环两态呈现。
-  var listen: ProxyListeningConfiguration { get }
+  var listen: RuntimeListenFacts { get }
   /// 运行时契约的脱敏摘要（数量与模式）；契约缺失或无效为 nil。
   var contractSummary: String? { get }
   /// 自定义规则安全摘要：数量 + 内容版本，无原始域名。
@@ -342,7 +342,7 @@ extension ProxyRuntimeController: ProxyRuntimeDiagnosticFacts {
 
   var hasActiveTarget: Bool { isActiveTargetPresent }
 
-  var listen: ProxyListeningConfiguration { listenSettings }
+  var listen: RuntimeListenFacts { RuntimeListenFacts(listen: listenSettings) }
 
   var contractSummary: String? { runtimeDocumentSummary() }
 

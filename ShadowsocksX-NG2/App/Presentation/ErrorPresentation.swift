@@ -26,7 +26,7 @@ extension AppPresentation {
       return serverForm(error)
     case let error as SsUriError:
       return ssURI(error)
-    case let error as CredentialStoreError:
+    case let error as MasterKeyStoreError:
       return credential(error)
     case let error as SubscriptionFormError:
       return subscriptionForm(error)
@@ -191,10 +191,9 @@ extension AppPresentation {
     }
   }
 
-  private static func credential(_ error: CredentialStoreError) -> String {
+  private static func credential(_ error: MasterKeyStoreError) -> String {
     switch error {
     case .keychainStatus: return String(localized: "钥匙串操作失败")
-    case .secretNotUTF8: return String(localized: "钥匙串中的凭据不是文本")
     }
   }
 
@@ -265,6 +264,7 @@ extension AppPresentation {
     case .invalid(let errors): return errors.map(port).joined(separator: "；")
     case .ioFailure: return String(localized: "偏好文件读写失败")
     case .credentialFailure(let detail): return String(localized: "凭据操作失败：\(detail)")
+    case .encryptedFile: return String(localized: "监听配置无法解密或格式不受支持")
     }
   }
 

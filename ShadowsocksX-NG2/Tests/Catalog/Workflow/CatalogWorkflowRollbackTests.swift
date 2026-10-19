@@ -201,7 +201,7 @@ final class CatalogWorkflowRollbackTests: XCTestCase {
     existingSettings.listen.socksPort = 2086
     existingSettings.listen.httpPort = 2087
     existingSettings.preferredMode = .global
-    let listeningStore = ProxyListeningFileStore(
+    let listeningStore = makeTestListeningStore(
       fileURL: settingsURL)
     try listeningStore.save(existingSettings.listen)
     let existingTarget = NodeID(rawValue: "existing-target")

@@ -49,7 +49,6 @@ final class ProxyRuntimeController {
   let catalogSnapshotReader: RuntimeCatalogSnapshotReading
   let activationFileStore: ActivationStateFileStore
   let runtimeFileStore: RuntimeFileStore
-  let credentials: CredentialStoring
   let plugins: PluginExecutableResolving
   let refreshPluginSecurityFacts: @MainActor () -> Void
   let controlPreferences: ProxyControlPreferences
@@ -122,7 +121,6 @@ final class ProxyRuntimeController {
     activationFileStore: ActivationStateFileStore = ActivationStateFileStore(
       fileURL: ActivationStateFileStore.defaultFileURL()),
     runtimeFileStore: RuntimeFileStore = RuntimeFileStore(),
-    credentials: CredentialStoring = KeychainCredentialStore(),
     plugins: PluginExecutableResolving = BundleManagedPluginProvider(),
     refreshPluginSecurityFacts: @escaping @MainActor () -> Void = {},
     listeningStore: ProxyListeningStoring = ProxyListeningFileStore(),
@@ -155,7 +153,6 @@ final class ProxyRuntimeController {
     self.catalogSnapshotReader = catalogSnapshotReader
     self.activationFileStore = activationFileStore
     self.runtimeFileStore = runtimeFileStore
-    self.credentials = credentials
     self.plugins = plugins
     self.refreshPluginSecurityFacts = refreshPluginSecurityFacts
     self.controlPreferences = controlPreferences

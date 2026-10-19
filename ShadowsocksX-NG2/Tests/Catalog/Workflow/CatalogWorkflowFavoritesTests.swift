@@ -226,7 +226,6 @@ private struct FavoritesFixture {
   let directory: URL
   let store: CatalogFileStore
   let runtime = FakeCatalogRuntime()
-  let credentials = InMemoryCredentialStore()
   let fetcher = FakeSubscriptionFetcher(behavior: .success(SubscriptionDocs.tree()))
   let workflow: CatalogWorkflow
 

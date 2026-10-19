@@ -44,8 +44,7 @@ final class ControllerProxyRuntimeAdapter: ProxyRuntimeAdapting {
   /// `password()` 契约 = 可直接用于 userinfo 的秘密；此处不再做形状校验
   /// （凭据暴露边界不承诺防同用户篡改；写明文凭据文件前另有 `auth.isValid` 把关）。
   func terminalLANPassword() throws -> String {
-    guard let raw = controller.listenSettings.lan.passwordReference,
-      let password = try controller.credentials.secret(for: CredentialReference(rawValue: raw))
+    guard let password = controller.listenSettings.lan.password
     else {
       throw TerminalCommandFailure.credentialUnreadable
     }

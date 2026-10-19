@@ -8,7 +8,6 @@ import XCTest
 final class ConfigurationGroupExportTests: XCTestCase {
   private var workDir: URL!
   private var catalogFileURL: URL!
-  private var credentials: InMemoryCredentialStore!
   private var fetcher: FakeSubscriptionFetcher!
   private var workflow: CatalogWorkflow!
 
@@ -18,7 +17,7 @@ final class ConfigurationGroupExportTests: XCTestCase {
       .appendingPathComponent("group-export-tests-\(UUID().uuidString)", isDirectory: true)
     try FileManager.default.createDirectory(at: workDir, withIntermediateDirectories: true)
     catalogFileURL = workDir.appendingPathComponent("catalog.json")
-    credentials = InMemoryCredentialStore()
+
     fetcher = FakeSubscriptionFetcher(behavior: .success(Data()))
     workflow = makeWorkflow()
   }
@@ -131,10 +130,6 @@ final class ConfigurationGroupExportTests: XCTestCase {
     try catalog.addGroup("空组", id: emptyRoot)
     try catalog.addGroup("空子组", id: emptyNested, to: emptyRoot)
     try catalog.addGroup("含无效服务器", id: exportRoot)
-    let passwordRef = CredentialReference.fresh()
-    let optionsRef = CredentialReference.fresh()
-    try credentials.save("password", for: passwordRef)
-    try credentials.save("obfs=http", for: optionsRef)
     try catalog.addServer(
       ServerFields(
         address: "203.0.113.8", port: 8388, encryptionMethod: "aes-256-gcm",
@@ -161,10 +156,6 @@ final class ConfigurationGroupExportTests: XCTestCase {
     var catalog = ConfigurationCatalog()
     let rootID = NodeID.fresh()
     let serverID = NodeID.fresh()
-    let passwordRef = CredentialReference.fresh()
-    let optionsRef = CredentialReference.fresh()
-    try credentials.save("password", for: passwordRef)
-    try credentials.save("mode=websocket", for: optionsRef)
     try catalog.addGroup("不完整组", id: rootID)
     try catalog.addServer(
       ServerFields(
@@ -327,11 +318,9 @@ struct ConfigurationGroupSharingTests {
   @MainActor
   private struct Fixture {
     let directory: URL
-    let credentials = InMemoryCredentialStore()
     let root = NodeID.fresh()
     let empty = NodeID.fresh()
     let nestedServer = NodeID.fresh()
-    let nestedPassword = CredentialReference.fresh()
     let workflow: CatalogWorkflow
 
     init() throws {
@@ -341,13 +330,6 @@ struct ConfigurationGroupSharingTests {
       var catalog = ConfigurationCatalog()
       try catalog.addGroup("组/根", id: root)
       try catalog.addGroup("空组", id: empty)
-      let firstPassword = CredentialReference.fresh()
-      let lastPassword = CredentialReference.fresh()
-      let options = CredentialReference.fresh()
-      try credentials.save("first", for: firstPassword)
-      try credentials.save("nested", for: nestedPassword)
-      try credentials.save("last", for: lastPassword)
-      try credentials.save("mode=websocket;host=example.com", for: options)
       try catalog.addServer(
         ServerFields(
           address: "203.0.113.1", port: 8388,

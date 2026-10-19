@@ -70,6 +70,7 @@ extension ProxyRuntimeController {
 
   /// 保存监听配置后更新内存并收敛；文件失败不发布新值。
   func updateListening(_ proposed: ProxyListeningConfiguration) async throws {
+    guard !settingsUnreadable else { throw ProxyListeningStoreError.encryptedFile(.notLoaded) }
     try listeningStore.save(proposed)
     settings.listen = proposed
     settingsUnreadable = false

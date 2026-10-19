@@ -4,7 +4,7 @@ import Testing
 @testable import ShadowsocksX_NG2
 
 /// 偏好设置不可读时的控制器行为（「任何路径不静默改端口」）：
-/// 占位出厂端口不得部署——停止运行时并点名呈现启动失败。
+/// 占位出厂端口不得部署，已有后台代理与系统代理保持原状。
 @MainActor
 struct UnreadableSettingsTests {
   private struct Fixture {
@@ -22,7 +22,6 @@ struct UnreadableSettingsTests {
     let runtime = ProxyRuntimeFixture.makeTemporaryRuntime()
     let catalogFileURL = runtime.directory.appendingPathComponent("catalog.json")
     let activationFileURL = runtime.directory.appendingPathComponent("activation.json")
-    let credentials = InMemoryCredentialStore()
     let agent = ProxyRuntimeFixture.FakeLaunchAgent()
     let systemProxy = ProxyRuntimeFixture.FakeSystemProxy()
     agent.setStatus(agentStatus)
@@ -40,7 +39,6 @@ struct UnreadableSettingsTests {
       catalogSnapshotReader: catalogSnapshotReader,
       activationFileStore: ActivationStateFileStore(fileURL: activationFileURL),
       runtimeFileStore: RuntimeFileStore(fileURL: runtime.contract),
-      credentials: credentials,
       plugins: ActivationFixture.plugins,
       appBundle: AppArtifact.bundle,
       settingsRestore: settingsRestore,
@@ -82,7 +80,7 @@ struct UnreadableSettingsTests {
   }
 
   @Test
-  func resyncWithUnreadableSettingsStopsRunningAgentInsteadOfRedeploying() async throws {
+  func resyncWithUnreadableSettingsPreservesRunningAgentAndContract() async throws {
     let fixture = try makeFixture(
       agentStatus: .registered,
       settingsRestore: RestoredProxyRuntimeSettings(
@@ -106,8 +104,8 @@ struct UnreadableSettingsTests {
       AppPresentation.message(for: RuntimeFailureFacts.launch(.unreadableSettings))
         .contains("配置无法读取"))
     #expect(
-      fixture.agent.unregisterCount == 1, "存续的上一会话 agent 必须停下，不得以占位端口重部署")
-    #expect(!FileManager.default.fileExists(atPath: fixture.runtime.contract.path))
+      fixture.agent.unregisterCount == 0, "读取失败不得停止已有后台代理")
+    #expect(RuntimeFileStore(fileURL: fixture.runtime.contract).loadDocument() != nil)
     #expect(fixture.systemProxy.applied.isEmpty)
     #expect(fixture.controller.effectiveRuntimeListenFacts == nil)
   }

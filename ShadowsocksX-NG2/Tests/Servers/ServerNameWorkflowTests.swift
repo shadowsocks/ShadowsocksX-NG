@@ -23,10 +23,9 @@ private struct ServerNameImportCase: Sendable {
 struct ServerNameWorkflowTests {
   @Test(arguments: ["", " \t\n ", "\u{3000}"])
   func manualCreateAndEditRejectBlankNamesWithoutWrites(_ name: String) async throws {
-    try await withWorkflow { workflow, store, credentials in
+    try await withWorkflow { workflow, store in
       let id = try await workflow.createServer(Self.draft(name: "原名"), into: nil)
       let before = try store.load()
-      let secretsBefore = credentials.storageSnapshot
       let treeBefore = workflow.tree
       do {
         _ = try await workflow.createServer(Self.draft(name: name), into: nil)
@@ -41,14 +40,13 @@ struct ServerNameWorkflowTests {
         #expect(error as? ServerFormError == .emptyName)
       }
       #expect(try store.load() == before)
-      #expect(credentials.storageSnapshot == secretsBefore)
       #expect(workflow.tree == treeBefore)
     }
   }
 
   @Test
   func manualNamesAreTrimmedAndGeneratedNamesSurviveEndpointEdits() async throws {
-    try await withWorkflow { workflow, store, _ in
+    try await withWorkflow { workflow, store in
       let created = try await workflow.createServer(Self.draft(name: " \t新名称\n "), into: nil)
       #expect(try workflow.serverEditForm(for: created)?.remark == "新名称")
       try await workflow.updateServer(created, draft: Self.draft(name: "\n编辑名称\t"))
@@ -71,7 +69,7 @@ struct ServerNameWorkflowTests {
 
   @Test(arguments: ServerNameImportCase.all)
   fileprivate func uriImportsSaveNames(_ sample: ServerNameImportCase) async throws {
-    try await withWorkflow { workflow, store, _ in
+    try await withWorkflow { workflow, store in
       let uri = SsUri(
         method: "aes-256-gcm", password: "p", host: sample.host, port: sample.port,
         remark: sample.supplied)
@@ -86,7 +84,7 @@ struct ServerNameWorkflowTests {
 
   @Test(arguments: ServerNameImportCase.all)
   fileprivate func legacyImportsSaveNames(_ sample: ServerNameImportCase) async throws {
-    try await withWorkflow { _, store, credentials in
+    try await withWorkflow { _, store in
       var profile: [String: Any] = [
         "ServerHost": sample.host, "ServerPort": sample.port,
         "Method": "aes-256-gcm", "Password": "p",
@@ -118,7 +116,7 @@ struct ServerNameWorkflowTests {
   @Test(arguments: ServerNameImportCase.all)
   fileprivate func subscriptionImportsSaveNames(_ sample: ServerNameImportCase) async throws {
     let fetcher = FakeSubscriptionFetcher(behavior: .success(try Self.document(sample)))
-    try await withWorkflow(fetcher: fetcher) { workflow, store, _ in
+    try await withWorkflow(fetcher: fetcher) { workflow, store in
       let subscription = try await workflow.createSubscription(
         urlString: "https://provider.example/s")
       let group = try #require(workflow.tree.node(withID: subscription.groupID))
@@ -133,7 +131,7 @@ struct ServerNameWorkflowTests {
   func subscriptionRenamesKeepIdentityAndRefreshesRegenerateMissingNames() async throws {
     let initial = ServerNameImportCase.all[0]
     let fetcher = FakeSubscriptionFetcher(behavior: .success(try Self.document(initial)))
-    try await withWorkflow(fetcher: fetcher) { workflow, _, _ in
+    try await withWorkflow(fetcher: fetcher) { workflow, _ in
       let subscription = try await workflow.createSubscription(
         urlString: "https://provider.example/s")
       let id = try #require(workflow.tree.node(withID: subscription.groupID)?.childNodes.first?.id)
@@ -165,7 +163,7 @@ struct ServerNameWorkflowTests {
       behavior: .success(
         try Self.document(
           sample, plugin: "v2ray-plugin", pluginOptions: "mode=websocket")))
-    try await withWorkflow(fetcher: fetcher) { workflow, _, credentials in
+    try await withWorkflow(fetcher: fetcher) { workflow, _ in
       let subscription = try await workflow.createSubscription(
         urlString: "https://provider.example/s")
       let id = try #require(workflow.tree.node(withID: subscription.groupID)?.childNodes.first?.id)
@@ -191,12 +189,11 @@ struct ServerNameWorkflowTests {
   func duplicateEndpointsRejectRefreshAndPreserveSavedSnapshot() async throws {
     let sample = ServerNameImportCase.all[0]
     let fetcher = FakeSubscriptionFetcher(behavior: .success(try Self.document(sample)))
-    try await withWorkflow(fetcher: fetcher) { workflow, store, credentials in
+    try await withWorkflow(fetcher: fetcher) { workflow, store in
       let subscription = try await workflow.createSubscription(
         urlString: "https://provider.example/s")
       let treeBefore = workflow.tree
       let catalogBefore = try store.load().catalog
-      let secretsBefore = credentials.storageSnapshot
       let duplicate = Data(
         """
         {"version":1,"servers":[
@@ -208,7 +205,6 @@ struct ServerNameWorkflowTests {
       await workflow.refreshSubscription(subscription.id)
       #expect(workflow.tree == treeBefore)
       #expect(try store.load().catalog == catalogBefore)
-      #expect(credentials.storageSnapshot == secretsBefore)
       guard case .failed(_, let failure) = workflow.subscriptions.first?.status else {
         Issue.record("重复端点应拒绝整个刷新")
         return
@@ -287,16 +283,15 @@ extension ServerNameWorkflowTests {
   private func withWorkflow(
     fetcher: SubscriptionFetching = FakeSubscriptionFetcher(behavior: .success(Data())),
     _ body:
-      @MainActor (CatalogWorkflow, CatalogFileStore, InMemoryCredentialStore) async throws -> Void
+      @MainActor (CatalogWorkflow, CatalogFileStore) async throws -> Void
   ) async throws {
     let directory = FileManager.default.temporaryDirectory
       .appendingPathComponent("server-name-tests-\(UUID().uuidString)", isDirectory: true)
     defer { try? FileManager.default.removeItem(at: directory) }
     let store = makeTestCatalogStore(fileURL: directory.appendingPathComponent("catalog.json"))
-    let credentials = InMemoryCredentialStore()
     let coordinator = CatalogCommitCoordinator(fileStore: store, runtime: FakeCatalogRuntime())
     let workflow = makeCatalogWorkflow(
       coordinator: coordinator, subscriptionFetcher: fetcher)
-    try await body(workflow, store, credentials)
+    try await body(workflow, store)
   }
 }

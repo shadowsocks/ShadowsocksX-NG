@@ -166,7 +166,6 @@ final class CatalogRuntimeSnapshotIntegrationTests: XCTestCase {
   private var runtime: ProxyRuntimeFixture.TemporaryRuntime!
   private var catalogFileURL: URL!
   private var activationFileURL: URL!
-  private var credentials: InMemoryCredentialStore!
   private var agent: ProxyRuntimeFixture.FakeLaunchAgent!
   private var systemProxy: ProxyRuntimeFixture.FakeSystemProxy!
 
@@ -175,7 +174,7 @@ final class CatalogRuntimeSnapshotIntegrationTests: XCTestCase {
     runtime = ProxyRuntimeFixture.makeTemporaryRuntime()
     catalogFileURL = runtime.directory.appendingPathComponent("catalog.json")
     activationFileURL = runtime.directory.appendingPathComponent("activation.json")
-    credentials = InMemoryCredentialStore()
+
     agent = ProxyRuntimeFixture.FakeLaunchAgent()
     systemProxy = ProxyRuntimeFixture.FakeSystemProxy()
   }
@@ -254,7 +253,6 @@ final class CatalogRuntimeSnapshotIntegrationTests: XCTestCase {
       catalogSnapshotReader: catalogSnapshotReader,
       activationFileStore: ActivationStateFileStore(fileURL: activationFileURL),
       runtimeFileStore: runtimeFileStore,
-      credentials: credentials,
       plugins: ActivationFixture.plugins,
       listeningStore: InMemoryProxyListeningStore(),
       appBundle: AppArtifact.bundle,

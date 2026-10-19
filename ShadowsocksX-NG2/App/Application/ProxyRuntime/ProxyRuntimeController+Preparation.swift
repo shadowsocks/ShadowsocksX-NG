@@ -37,9 +37,7 @@ extension ProxyRuntimeController {
       guard preparationIsCurrent(ticket) else { throw RulePreparationError.superseded }
       let lan = ticket.settings.listen.lan
       guard lan.isEnabled && lan.authenticationEnabled else { return result.authenticatingLAN(nil) }
-      guard let raw = lan.passwordReference,
-        let password = try credentials.secret(for: CredentialReference(rawValue: raw))
-      else {
+      guard let password = lan.password else {
         throw ProxyListeningStoreError.credentialFailure(detail: String(localized: "局域网身份验证密码不可读"))
       }
       let auth = RuntimeListenerAuthentication(

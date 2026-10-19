@@ -1,20 +1,15 @@
 import Foundation
 
 extension SettingsWorkflow {
-  var committedLANListening: LANListeningSettings { committing.committedSettings.listen.lan }
+  var committedLANListening: LANListeningFacts {
+    LANListeningFacts(committing.committedSettings.listen.lan)
+  }
 
-  func beginLANListeningEditing() throws -> LANListeningDraft {
-    let lan = committedLANListening
-    let password: String
-    if let raw = lan.passwordReference {
-      guard let saved = try credentials.secret(for: CredentialReference(rawValue: raw)) else {
-        throw ProxyListeningStoreError.credentialFailure(detail: String(localized: "局域网身份验证密码不可读"))
-      }
-      password = saved
-    } else {
-      let alphabet = Array("abcdefghijklmnopqrstuvwxyz0123456789")
-      password = String((0..<10).map { _ in alphabet[Int.random(in: alphabet.indices)] })
-    }
+  func beginLANListeningEditing() -> LANListeningDraft {
+    let lan = committing.committedSettings.listen.lan
+    let alphabet = Array("abcdefghijklmnopqrstuvwxyz0123456789")
+    let password =
+      lan.password ?? String((0..<10).map { _ in alphabet[Int.random(in: alphabet.indices)] })
     listenerOccupancy.reset()
     return LANListeningDraft(
       ports: SettingsPortDraft(
@@ -49,65 +44,7 @@ extension SettingsWorkflow {
     proposed.lan.udpRelayEnabled = draft.udpRelayEnabled
     proposed.lan.authenticationEnabled = draft.authenticationEnabled
     proposed.lan.username = draft.username
-    return await saveLANCredentials(
-      proposed, password: draft.password,
-      oldReference: base.lan.passwordReference)
-  }
-
-  private func saveLANCredentials(
-    _ settings: ProxyListeningConfiguration, password: String,
-    oldReference: String?
-  ) async -> SettingsCommandOutcome {
-    var proposed = settings
-    if let old = oldReference {
-      do {
-        if try credentials.secret(for: CredentialReference(rawValue: old)) == password {
-          return await persistListening(proposed, fieldGroup: .lan)
-        }
-      } catch {
-        return .commitFailed(
-          .store(.credentialFailure(detail: String(localized: "局域网身份验证密码不可读"))))
-      }
-    }
-    // 身份验证启用时，新写入 keychain 的秘密必须可直接用于运行时认证文件。
-    if proposed.lan.authenticationEnabled,
-      !RuntimeListenerAuthentication.validPassword(password)
-        || !RuntimeListenerAuthentication.validUsername(proposed.lan.username)
-    {
-      return .commitFailed(
-        .store(.credentialFailure(detail: String(localized: "用户名或密码无效"))))
-    }
-    let reference = CredentialReference.fresh()
-    var journal = CredentialWriteJournal(credentials: credentials)
-    do {
-      try journal.save(password, for: reference)
-      proposed.lan.passwordReference = reference.rawValue
-      let outcome = await persistListening(proposed, fieldGroup: .lan)
-      if case .persisted = outcome {
-        if let old = oldReference {
-          try? credentials.delete(CredentialReference(rawValue: old))
-        }
-        return outcome
-      }
-      if case .partial = journal.rollback() {
-        return .commitFailed(.store(.credentialFailure(detail: String(localized: "凭据回滚失败"))))
-      }
-      return outcome
-    } catch {
-      let rollback = journal.rollback()
-      return .commitFailed(
-        .store(
-          .credentialFailure(
-            detail: rollback.isPartial ? String(localized: "凭据回滚失败") : String(localized: "凭据保存失败")))
-      )
-    }
-  }
-
-}
-
-extension CredentialRollbackOutcome {
-  fileprivate var isPartial: Bool {
-    if case .partial = self { return true }
-    return false
+    proposed.lan.password = draft.password
+    return await persistListening(proposed, fieldGroup: .lan)
   }
 }

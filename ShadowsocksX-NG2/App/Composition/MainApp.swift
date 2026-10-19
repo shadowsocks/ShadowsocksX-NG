@@ -196,7 +196,7 @@ private struct AppComposition {
     // 设置工作流 module（Candidate 02）：设置窗口的唯一 seam，组合根接线一次；
     // 写入侧经窄缝 SettingsCommitting，运行时控制器薄扩展即生产实现。
     let settingsWorkflow = SettingsWorkflow(
-      committing: controller, credentials: controller.credentials)
+      committing: controller)
     let testRuntime = ConnectivityRuntime(
       executable: Bundle.main.bundleURL.appendingPathComponent("Contents/Helpers/sslocal"))
     let connectivity = ServerConnectivity(
@@ -275,7 +275,6 @@ private struct AppComposition {
       catalogSnapshotReader: bootstrap.catalogSnapshotReader,
       activationFileStore: dependencies.activationFileStore,
       runtimeFileStore: dependencies.runtimeFileStore,
-      credentials: dependencies.credentials,
       plugins: plugins,
       refreshPluginSecurityFacts: { [weak plugins] in _ = plugins?.refreshSecurityFacts() },
       listeningStore: dependencies.listeningStore,
@@ -313,7 +312,6 @@ private struct AppComposition {
 /// 装配永远面向真实存储、系统服务与用户默认域。
 @MainActor
 private struct ApplicationDependencies {
-  let credentials: CredentialStoring
   let catalogFileStore: CatalogFileStore
   let activationFileStore: ActivationStateFileStore
   let runtimeFileStore: RuntimeFileStore
@@ -330,22 +328,21 @@ private struct ApplicationDependencies {
   let qrImageSaver: any QrImageSaver
 
   static func make() -> ApplicationDependencies {
+    let listeningStore = ProxyListeningFileStore()
+    let listening = ProxyListeningStartup.load(
+      store: listeningStore, presentReset: ProxyListeningResetAlert.present)
     // ADR 0017 初版文件形态的迁移（发布链从未包含，仅存量开发机）：文件不存在
     // 即空操作，随每次启动调用无害。
     SilentLaunchStore.migrateLegacyFileIfPresent(
       at: SilentLaunchStore.legacyFileURL, into: .standard)
-    let credentials = KeychainCredentialStore()
-    let library = ServerLibraryStorage(keys: KeychainLibraryMasterKeyStore())
+    let library = ServerLibraryStorage(keys: KeychainMasterKeyStore(namespace: "server-library"))
     let catalogFileStore = CatalogFileStore(
       fileURL: CatalogFileStore.defaultFileURL(), library: library)
-    let listeningStore = ProxyListeningFileStore()
-    let listening = ProxyListeningFileStore.restored(store: listeningStore)
     let restoredSettings = RestoredProxyRuntimeSettings(
       settings: ProxyRuntimeSettings(
-        listen: listening.configuration, preferences: ProxyControlPreferences()),
-      unreadableError: listening.unreadableError)
+        listen: listening, preferences: ProxyControlPreferences()),
+      unreadableError: nil)
     return ApplicationDependencies(
-      credentials: credentials,
       catalogFileStore: catalogFileStore,
       activationFileStore: ActivationStateFileStore(
         fileURL: ActivationStateFileStore.defaultFileURL()),

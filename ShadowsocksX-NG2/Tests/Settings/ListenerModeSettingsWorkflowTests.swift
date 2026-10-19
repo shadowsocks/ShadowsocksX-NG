@@ -8,7 +8,7 @@ extension SettingsWorkflowInterfaceTests {
     -> SettingsCommandOutcome
   {
     do {
-      var draft = try workflow.beginLANListeningEditing()
+      var draft = workflow.beginLANListeningEditing()
       draft.isEnabled = mode != nil
       if let mode { draft.mode = mode }
       return await workflow.saveLANListening(draft)
@@ -109,8 +109,8 @@ extension SettingsWorkflowInterfaceTests {
 
     var expected = original
     expected.listen.listenerMode = .allIPv4AndIPv6Interfaces
-    expected.listen.lan.passwordReference =
-      committing.committedSettings.listen.lan.passwordReference
+    expected.listen.lan.password =
+      committing.committedSettings.listen.lan.password
     XCTAssertEqual(outcome, .persisted)
     XCTAssertEqual(committing.updateCalls, [expected])
     XCTAssertEqual(committing.committedSettings, expected)

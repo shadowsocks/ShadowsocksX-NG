@@ -112,7 +112,7 @@ struct ServerFormLoadingTests {
   }
 
   @Test func presentationOmitsSecretsAndEditFormReadsCompleteRecord() async throws {
-    try await Self.withWorkflow(credentials: InMemoryCredentialStore()) { workflow in
+    try await Self.withWorkflow { workflow in
       let program = ManagedPluginCatalog.plugins[0].program
       let id = try await workflow.createServer(
         ServerEditDraft(
@@ -132,8 +132,7 @@ struct ServerFormLoadingTests {
   @Test
   func successfulRefreshReloadsSecretChangesAndFailureDoesNotReload() async throws {
     let fetcher = FakeSubscriptionFetcher(behavior: .success(SubscriptionDocs.flat(serverCount: 1)))
-    let credentials = InMemoryCredentialStore()
-    try await Self.withWorkflow(credentials: credentials, fetcher: fetcher) { workflow in
+    try await Self.withWorkflow(fetcher: fetcher) { workflow in
       let summary = try await workflow.createSubscription(urlString: "https://example.com/sub.json")
       let server = try #require(workflow.tree.node(withID: summary.groupID)?.childNodes.first)
       let fields = ServerFormFields()
@@ -170,7 +169,6 @@ struct ServerFormLoadingTests {
   }
 
   private static func withWorkflow(
-    credentials: CredentialStoring,
     fetcher: SubscriptionFetching = FakeSubscriptionFetcher(behavior: .success(Data())),
     _ body: (CatalogWorkflow) async throws -> Void
   ) async throws {
@@ -207,7 +205,7 @@ extension ServerFormLoadingTests {
   }
 
   @Test func detailFactsOmitSecretsAndExplicitParameterReadPreservesRawValue() async throws {
-    try await Self.withWorkflow(credentials: InMemoryCredentialStore()) { workflow in
+    try await Self.withWorkflow { workflow in
       let program = ManagedPluginCatalog.plugins[0].program
       let id = try await workflow.createServer(
         ServerEditDraft(
@@ -228,9 +226,6 @@ extension ServerFormLoadingTests {
     let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     defer { try? FileManager.default.removeItem(at: directory) }
     let store = makeTestCatalogStore(fileURL: directory.appendingPathComponent("catalog.json"))
-    let credentials = FormCredentialStore()
-    let optionsRef = CredentialReference.fresh()
-    try credentials.save("opaque=one;opaque=two", for: optionsRef)
     var catalog = ConfigurationCatalog()
     let id = try catalog.addServer(
       ServerFields(
@@ -240,13 +235,10 @@ extension ServerFormLoadingTests {
     try store.save(CatalogDocument(catalog: catalog))
     let workflow = makeCatalogWorkflow(
       coordinator: CatalogCommitCoordinator(fileStore: store, runtime: FakeCatalogRuntime()))
-    credentials.reads = 0
     #expect(
       workflow.serverDetailPresentation(for: id)?.plugin.selection
         == .unknown(program: "unknown-test-plugin"))
-    #expect(credentials.reads == 0)
     #expect(try workflow.serverDetailPluginOptions(for: id) == "opaque=one;opaque=two")
-    #expect(credentials.reads == 0)
   }
 
   @Test
@@ -315,22 +307,4 @@ extension ServerFormLoadingTests {
     #expect(fields.remark == "未保存名称")
   }
 
-}
-
-private final class FormCredentialStore: CredentialStoring {
-  let storage = InMemoryCredentialStore()
-  var reads = 0
-  var failReads = false
-
-  func secret(for reference: CredentialReference) throws -> String? {
-    reads += 1
-    if failReads { throw CredentialStoreError.secretNotUTF8 }
-    return try storage.secret(for: reference)
-  }
-
-  func save(_ secret: String, for reference: CredentialReference) throws {
-    try storage.save(secret, for: reference)
-  }
-
-  func delete(_ reference: CredentialReference) throws { try storage.delete(reference) }
 }

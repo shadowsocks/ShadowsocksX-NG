@@ -11,9 +11,8 @@ struct ConnectivitySettingsTests {
     defer { defaults.removePersistentDomain(forName: suite) }
     let committer = FakeSettingsCommitter()
     committer.updateError = ProxyListeningStoreError.ioFailure(detail: "must not commit")
-    let credentials = UnavailableConnectivityCredentials()
     let workflow = SettingsWorkflow(
-      committing: committer, credentials: credentials, connectivityDefaults: defaults)
+      committing: committer, connectivityDefaults: defaults)
     var published: [URL] = []
     workflow.connectivityURLDidChange = { published.append($0) }
     let url = "http://example.com/probe?token=public"
@@ -22,7 +21,7 @@ struct ConnectivitySettingsTests {
     #expect(committer.committedSettings == ProxyRuntimeSettings())
     #expect(published.map(\.absoluteString) == [url])
     let reopened = SettingsWorkflow(
-      committing: committer, credentials: credentials, connectivityDefaults: defaults)
+      committing: committer, connectivityDefaults: defaults)
     #expect(reopened.beginConnectivityURLEditing() == url)
   }
 
@@ -31,7 +30,7 @@ struct ConnectivitySettingsTests {
     let defaults = try #require(UserDefaults(suiteName: suite))
     defer { defaults.removePersistentDomain(forName: suite) }
     let workflow = SettingsWorkflow(
-      committing: FakeSettingsCommitter(), credentials: UnavailableConnectivityCredentials(),
+      committing: FakeSettingsCommitter(),
       connectivityDefaults: defaults)
     #expect(workflow.beginConnectivityURLEditing() == "http://www.gstatic.com/generate_204")
     for value: Any in [
@@ -48,7 +47,7 @@ struct ConnectivitySettingsTests {
     let defaults = try #require(UserDefaults(suiteName: suite))
     defer { defaults.removePersistentDomain(forName: suite) }
     let workflow = SettingsWorkflow(
-      committing: FakeSettingsCommitter(), credentials: UnavailableConnectivityCredentials(),
+      committing: FakeSettingsCommitter(),
       connectivityDefaults: defaults)
     var published: [URL] = []
     workflow.connectivityURLDidChange = { published.append($0) }
@@ -61,44 +60,21 @@ struct ConnectivitySettingsTests {
     #expect(published.count == 2)
   }
 
-  @Test func oldCredentialReferenceIsIgnoredWithoutAccessingKeychain() throws {
+  @Test func testURLIgnoresHistoricalCredentialReference() throws {
     let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
     defer { try? FileManager.default.removeItem(at: directory) }
     let file = directory.appendingPathComponent("proxy-listening.json")
-    try Data(
-      #"{"connectivityURLReference":{"obsolete":true},"preferredMode":"global"}"#.utf8
-    ).write(to: file)
-    let store = ProxyListeningFileStore(fileURL: file)
-    let settings = try store.load()
-    #expect(settings == ProxyListeningConfiguration())
-    try store.save(settings)
-    #expect(try !String(contentsOf: file, encoding: .utf8).contains("connectivityURLReference"))
+    let original = Data(#"{"connectivityURLReference":{"obsolete":true}}"#.utf8)
+    try original.write(to: file)
     let suite = "ConnectivitySettingsTests.\(UUID().uuidString)"
     let defaults = try #require(UserDefaults(suiteName: suite))
     defer { defaults.removePersistentDomain(forName: suite) }
     let committer = FakeSettingsCommitter()
-    committer.committedSettings.listen = settings
     let workflow = SettingsWorkflow(
-      committing: committer, credentials: UnavailableConnectivityCredentials(),
+      committing: committer,
       connectivityDefaults: defaults)
     #expect(workflow.beginConnectivityURLEditing() == "http://www.gstatic.com/generate_204")
-  }
-}
-
-private struct UnavailableConnectivityCredentials: CredentialStoring {
-  func save(_ secret: String, for reference: CredentialReference) throws {
-    Issue.record("Test URL must not write credentials")
-    throw CredentialStoreError.secretNotUTF8
-  }
-
-  func secret(for reference: CredentialReference) throws -> String? {
-    Issue.record("Test URL must not read credentials")
-    throw CredentialStoreError.secretNotUTF8
-  }
-
-  func delete(_ reference: CredentialReference) throws {
-    Issue.record("Test URL must not delete credentials")
-    throw CredentialStoreError.secretNotUTF8
+    #expect(try Data(contentsOf: file) == original)
   }
 }

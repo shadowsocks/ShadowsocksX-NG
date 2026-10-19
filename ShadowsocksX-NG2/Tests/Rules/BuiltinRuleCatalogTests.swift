@@ -183,23 +183,6 @@ final class BuiltinRuleCatalogTests: XCTestCase {
 
 }
 
-/// 测试用内存凭据存储：不触 Keychain。
-final class EphemeralCredentialStore: CredentialStoring {
-  private var storage: [String: String] = [:]
-
-  func secret(for reference: CredentialReference) throws -> String? {
-    storage[reference.rawValue]
-  }
-
-  func save(_ secret: String, for reference: CredentialReference) throws {
-    storage[reference.rawValue] = secret
-  }
-
-  func delete(_ reference: CredentialReference) throws {
-    storage[reference.rawValue] = nil
-  }
-}
-
 private final class SharedRuleSourceLoader: @unchecked Sendable {
   private let lock = NSLock()
   private var counts: [RulesSource: Int] = [:]

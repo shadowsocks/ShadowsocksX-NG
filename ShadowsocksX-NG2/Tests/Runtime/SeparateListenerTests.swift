@@ -4,6 +4,13 @@ import Testing
 @testable import ShadowsocksX_NG2
 
 struct SeparateListenerTests {
+  @Test func disabledAuthenticationDoesNotPublishRetainedPassword() throws {
+    var listen = ProxyListeningConfiguration()
+    listen.lan.password = "PRIVATE-RETAINED-PASSWORD"
+    let document = SslocalRuntimeDocument(servers: [], listen: listen)
+    #expect(try document.jsonData().range(of: Data("PRIVATE-RETAINED-PASSWORD".utf8)) == nil)
+  }
+
   @Test func terminalCommandsTreatPasswordAsUsableSecretWithoutReshaping() {
     var settings = ProxyListeningConfiguration(listenerMode: .allIPv4Interfaces)
     settings.lan.authenticationEnabled = true
@@ -74,17 +81,17 @@ struct SeparateListenerTests {
   @Test func disabledIPv6ConfigurationRoundTripsWithoutAffectingEffectiveRuntime() throws {
     let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     defer { try? FileManager.default.removeItem(at: directory) }
-    let store = ProxyListeningFileStore(
+    let store = makeTestListeningStore(
       fileURL: directory.appendingPathComponent("proxy-listening.json"))
     var listen = ProxyListeningConfiguration()
     listen.lan.mode = .allIPv6Interfaces
     listen.lan.authenticationEnabled = true
-    listen.lan.passwordReference = "saved-reference"
+    listen.lan.password = "saved-reference"
     try store.save(listen)
     let restored = try store.load()
     #expect(!restored.lan.isEnabled)
     #expect(restored.lan.mode == .allIPv6Interfaces)
-    #expect(restored.lan.passwordReference == "saved-reference")
+    #expect(restored.lan.password == "saved-reference")
     let document = SslocalRuntimeDocument(servers: [], listen: restored)
     #expect(document.locals.count == 2)
     #expect(document.ipv6Only == nil)
@@ -113,7 +120,7 @@ struct SeparateListenerTests {
     try AtomicFileWriter.write(oldData, to: oldURL)
     let newURL = directory.appendingPathComponent(
       ProxyListeningFileStore.defaultFileURL().lastPathComponent)
-    let store = ProxyListeningFileStore(fileURL: newURL)
+    let store = makeTestListeningStore(fileURL: newURL)
     #expect(try store.load() == ProxyListeningConfiguration())
     try store.save(ProxyListeningConfiguration())
     #expect(try Data(contentsOf: oldURL) == oldData)

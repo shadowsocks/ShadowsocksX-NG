@@ -66,10 +66,7 @@ final class CatalogFileStoreTests: XCTestCase {
   }
 
   func testPersistedFileContainsNoPlaintextSecrets() throws {
-    let credentials = InMemoryCredentialStore()
     var catalog = ConfigurationCatalog()
-    let passwordRef = CredentialReference.fresh()
-    let optionsRef = CredentialReference.fresh()
     let fields = ServerFields(
       address: "203.0.113.7",
       port: 8388,
@@ -80,8 +77,6 @@ final class CatalogFileStoreTests: XCTestCase {
       pluginOptions: "obfs-local;obfs=http"
     )
     _ = try catalog.addServer(fields)
-    try credentials.save("TOPSECRET-密码", for: passwordRef)
-    try credentials.save("obfs-local;obfs=http", for: optionsRef)
 
     try store.save(CatalogDocument(catalog: catalog))
 

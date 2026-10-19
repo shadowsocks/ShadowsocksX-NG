@@ -130,7 +130,6 @@ struct RuntimeConvergenceTests {
       snapshots: BuiltinRuleSnapshots = BuiltinRuleSnapshots(
         loader: ProxyRuntimeFixture.controlFlowRuleSnapshot)
     ) throws {
-      let credentials = InMemoryCredentialStore()
       var catalog = ConfigurationCatalog()
       server = try ActivationFixture.addPlainServer("收敛测试", in: &catalog)
       let catalogURL = runtime.directory.appendingPathComponent("catalog.json")
@@ -155,7 +154,7 @@ struct RuntimeConvergenceTests {
         catalogSnapshotReader: ProxyRuntimeFixture.catalogSnapshotReader(at: catalogURL),
         activationFileStore: ActivationStateFileStore(
           fileURL: runtime.directory.appendingPathComponent("activation.json")),
-        runtimeFileStore: runtimeStore, credentials: credentials,
+        runtimeFileStore: runtimeStore,
         plugins: ActivationFixture.plugins, listeningStore: settings,
         customRuleStore: CustomRuleStore(
           fileURL: runtime.directory.appendingPathComponent("rules.json")),
@@ -181,7 +180,7 @@ struct RuntimeConvergenceTests {
         controlPreferences: makeTestProxyControlPreferences(),
         catalogSnapshotReader: controller.catalogSnapshotReader,
         activationFileStore: controller.activationFileStore,
-        runtimeFileStore: runtimeStore, credentials: InMemoryCredentialStore(),
+        runtimeFileStore: runtimeStore,
         plugins: ActivationFixture.plugins, listeningStore: settings,
         customRuleStore: CustomRuleStore(
           fileURL: runtime.directory.appendingPathComponent("rules.json")),

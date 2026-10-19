@@ -168,6 +168,6 @@ The user-facing import from the old ShadowsocksX-NG application remains availabl
 
 - [ServerLibraryStorage.swift](../ShadowsocksX-NG2/Domain/Catalog/ServerLibraryStorage.swift): header, encryption, decryption, payload size limits, and historical-file handling.
 - [CatalogFileStore.swift](../ShadowsocksX-NG2/Domain/Catalog/CatalogFileStore.swift): direct catalog JSON encoding, schema v7, and structure validation.
-- [LibraryMasterKeyStore.swift](../ShadowsocksX-NG2/Domain/Credentials/LibraryMasterKeyStore.swift): master key attributes and keychain access.
+- [MasterKeyStore.swift](../ShadowsocksX-NG2/Domain/Credentials/MasterKeyStore.swift): master key attributes and keychain access.
 - [CatalogModels.swift](../ShadowsocksX-NG2/Domain/Catalog/CatalogModels.swift) and [SubscriptionRecord.swift](../ShadowsocksX-NG2/Domain/Subscription/SubscriptionRecord.swift): Codable models for catalog records and inline secrets.
 - [AtomicFileWriter.swift](../ShadowsocksX-NG2/Domain/Runtime/AtomicFileWriter.swift): temporary files and permission baseline.

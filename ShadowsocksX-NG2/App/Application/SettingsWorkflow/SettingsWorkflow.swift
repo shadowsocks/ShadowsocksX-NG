@@ -20,17 +20,14 @@ final class SettingsWorkflow: ObservableObject {
   var connectivityURLDidChange: ((URL) -> Void)?
 
   let committing: SettingsCommitting
-  let credentials: CredentialStoring
   let connectivityDefaults: UserDefaults
 
   init(
     committing: SettingsCommitting,
     occupancyProbe: PortOccupancyProbing = SystemPortOccupancyProbe(),
-    credentials: CredentialStoring = KeychainCredentialStore(),
     connectivityDefaults: UserDefaults = .standard
   ) {
     self.committing = committing
-    self.credentials = credentials
     self.connectivityDefaults = connectivityDefaults
     listenerOccupancy = ListenerOccupancy(committing: committing, probe: occupancyProbe)
     occupancyChanges = listenerOccupancy.objectWillChange.sink { [weak self] in

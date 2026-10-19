@@ -3,28 +3,6 @@ import XCTest
 
 @testable import ShadowsocksX_NG2
 
-/// 测试用内存凭据存储；契约与 Keychain 实现一致。
-final class InMemoryCredentialStore: CredentialStoring {
-  private var storage: [String: String] = [:]
-
-  var storageCount: Int { storage.count }
-
-  /// 全量键值快照（凭据生命周期观察：删除/回滚后应有值消失或恢复）。
-  var storageSnapshot: [String: String] { storage }
-
-  func save(_ secret: String, for reference: CredentialReference) throws {
-    storage[reference.rawValue] = secret
-  }
-
-  func secret(for reference: CredentialReference) throws -> String? {
-    storage[reference.rawValue]
-  }
-
-  func delete(_ reference: CredentialReference) throws {
-    storage.removeValue(forKey: reference.rawValue)
-  }
-}
-
 /// 订阅子树夹具：固定分组 + 嵌套分组 + 两个服务器叶子。
 struct SubscriptionFixture {
   let catalog: ConfigurationCatalog
@@ -206,7 +184,7 @@ func makeTestCatalogStore(
   return store
 }
 
-private final class FixtureLibraryKeys: LibraryMasterKeyStoring {
+private final class FixtureLibraryKeys: MasterKeyStoring {
   private static let lock = NSLock()
   nonisolated(unsafe) private static var values: [UUID: Data] = [:]
 
@@ -216,4 +194,8 @@ private final class FixtureLibraryKeys: LibraryMasterKeyStoring {
   func create(_ data: Data, id: UUID, allowingInteraction: Bool) throws {
     Self.lock.withLock { Self.values[id] = data }
   }
+}
+
+func makeTestListeningStore(fileURL: URL) -> ProxyListeningFileStore {
+  ProxyListeningFileStore(fileURL: fileURL, keys: FixtureLibraryKeys())
 }

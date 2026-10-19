@@ -101,10 +101,9 @@ struct ListenerOccupancyLifecycleTests {
   {
     let committing = FakeSettingsCommitter()
     let probe = GatedOccupancyProbe(gatedAnswer: .free, passThroughAnswer: .free)
-    let credentials = InMemoryCredentialStore()
     let workflow = SettingsWorkflow(
-      committing: committing, occupancyProbe: probe, credentials: credentials)
-    var draft = try workflow.beginLANListeningEditing()
+      committing: committing, occupancyProbe: probe)
+    var draft = workflow.beginLANListeningEditing()
     draft.isEnabled = true
     let submission = Task { await workflow.saveLANListening(draft) }
     await waitUntil(probe.entered > 0)
@@ -122,14 +121,12 @@ struct ListenerOccupancyLifecycleTests {
       #expect(committing.committedSettings.proxyExceptions == "example.com")
       #expect(committing.committedSettings.listen.lan.isEnabled)
       #expect(committing.updateCalls.count == 1)
-      #expect(credentials.storageCount == 1)
       return
     }
 
     #expect(await submission.value == .rejected(.superseded))
     #expect(!workflow.isCommitting)
     #expect(committing.updateCalls.isEmpty)
-    #expect(credentials.storageCount == 0)
     await waitUntil(workflow.canSaveLANListening(draft))
     #expect(committing.updateCalls.isEmpty)
   }

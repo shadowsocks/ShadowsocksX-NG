@@ -115,7 +115,6 @@ struct CatalogWorkflowLibraryTests {
       controlPreferences: makeTestProxyControlPreferences(),
       catalogSnapshotReader: bootstrap.catalogSnapshotReader, activationFileStore: activation,
       runtimeFileStore: RuntimeFileStore(fileURL: runtimeURL),
-      credentials: InMemoryCredentialStore(),
       settingsRestore: RestoredProxyRuntimeSettings(
         settings: ProxyRuntimeSettings(agentEnabled: true), unreadableError: nil),
       agent: agent)

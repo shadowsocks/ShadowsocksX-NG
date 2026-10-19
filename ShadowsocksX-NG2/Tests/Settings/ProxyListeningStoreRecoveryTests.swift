@@ -3,101 +3,76 @@ import Testing
 
 @testable import ShadowsocksX_NG2
 
-/// 偏好持久化读侧失败分类：损坏、I/O 失败与无效端口不得静默回落出厂端口，
-/// `restored()` 必须携带点名错误（「任何路径不静默改端口」）。
-struct ProxyRuntimeSettingsStoreRecoveryTests {
-  private func withStore(
-    _ body: (_ store: ProxyListeningFileStore, _ directory: URL) throws -> Void
-  ) throws {
-    let directory = FileManager.default.temporaryDirectory
-      .appendingPathComponent("ssxng-settings-recovery-\(UUID().uuidString)", isDirectory: true)
+struct ProxyListeningStoreRecoveryTests {
+  @Test func completeListeningIdentitySurvivesRestartWithoutPlaintextOnDisk() throws {
+    let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     defer { try? FileManager.default.removeItem(at: directory) }
+    let file = directory.appendingPathComponent("proxy-listening.enc")
+    let keys = TestLibraryKeys()
+    let store = ProxyListeningFileStore(fileURL: file, keys: keys)
+    var configuration = try store.load()
+    configuration.lan.username = "PRIVATE-LAN-USERNAME"
+    configuration.lan.password = "PRIVATE-LAN-PASSWORD"
+    try store.save(configuration)
+    let data = try Data(contentsOf: file)
+    for secret in ["PRIVATE-LAN-USERNAME", "PRIVATE-LAN-PASSWORD"] {
+      #expect(data.range(of: Data(secret.utf8)) == nil)
+    }
+    #expect(try ProxyListeningFileStore(fileURL: file, keys: keys).load() == configuration)
+  }
+
+  @Test func unavailableKeyBlocksOrdinarySaveAndResetCreatesIndependentDefaults() throws {
+    let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+    defer { try? FileManager.default.removeItem(at: directory) }
+    let keys = TestLibraryKeys()
+    let file = directory.appendingPathComponent("proxy-listening.enc")
+    let store = ProxyListeningFileStore(fileURL: file, keys: keys)
+    var configuration = try store.load()
+    configuration.lan.isEnabled = true
+    configuration.lan.authenticationEnabled = true
+    configuration.lan.password = "secret"
+    try store.save(configuration)
+    let original = try Data(contentsOf: file)
+    keys.values.removeAll()
+    let restarted = ProxyListeningFileStore(fileURL: file, keys: keys)
+    #expect(throws: ProxyListeningStoreError.encryptedFile(.keyUnavailable)) {
+      try restarted.load()
+    }
+    #expect(throws: ProxyListeningStoreError.encryptedFile(.keyUnavailable)) {
+      try restarted.save(ProxyListeningConfiguration())
+    }
+    #expect(try Data(contentsOf: file) == original)
+    keys.createFails = true
+    #expect(throws: (any Error).self) { try restarted.reset() }
+    #expect(try Data(contentsOf: file) == original)
+    keys.createFails = false
+    #expect(try restarted.reset() == ProxyListeningConfiguration())
+    #expect(
+      try ProxyListeningFileStore(fileURL: file, keys: keys).load() == ProxyListeningConfiguration()
+    )
+  }
+
+  @Test func resettingOneStoreDoesNotInvalidateTheOtherStore() throws {
+    let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+    defer { try? FileManager.default.removeItem(at: directory) }
+    let keys = TestLibraryKeys()
+    let library = CatalogFileStore(
+      fileURL: directory.appendingPathComponent("catalog.enc"),
+      library: ServerLibraryStorage(keys: keys))
     let store = ProxyListeningFileStore(
-      fileURL: directory.appendingPathComponent("proxy-listening.json"))
-    try body(store, directory)
-  }
-
-  @Test
-  func loadReportsCorruptFileInsteadOfSilentlyRewritingPorts() throws {
-    try withStore { store, directory in
-      try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-      try Data("not json".utf8).write(to: store.fileURL)
-
-      do {
-        _ = try store.load()
-        Issue.record("损坏文件应抛出 corrupt")
-      } catch {
-        guard case .corrupt = error as? ProxyListeningStoreError else {
-          Issue.record("应为 corrupt，实际 \(error)")
-          return
-        }
-      }
-    }
-  }
-
-  @Test
-  func loadDistinguishesReadFailureFromCorruption() throws {
-    try withStore { store, directory in
-      // proxy-listening.json 本身是一个目录：存在性检查通过，读取失败 → ioFailure。
-      try FileManager.default.createDirectory(
-        at: store.fileURL, withIntermediateDirectories: true)
-
-      do {
-        _ = try store.load()
-        Issue.record("读取失败应抛出 ioFailure")
-      } catch {
-        guard case .ioFailure = error as? ProxyListeningStoreError else {
-          Issue.record("应为 ioFailure，实际 \(error)")
-          return
-        }
-      }
-    }
-  }
-
-  @Test
-  func loadRejectsPersistedDuplicatePorts() throws {
-    try withStore { store, directory in
-      try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-      try Data(
-        """
-        {"localListen":{"socksPort":1086,"httpPort":1086}}
-        """.utf8
-      ).write(to: store.fileURL)
-
-      do {
-        _ = try store.load()
-        Issue.record("重复端口应抛出 invalid")
-      } catch {
-        #expect(
-          error as? ProxyListeningStoreError
-            == .invalid([.duplicatePort(endpoint: .socks, otherEndpoint: .http, port: 1086)]))
-      }
-    }
-  }
-
-  @Test
-  func restoredCarriesNamedErrorAndFactoryDefaults() throws {
-    try withStore { store, directory in
-      try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-      try Data("not json".utf8).write(to: store.fileURL)
-
-      let restored = ProxyListeningFileStore.restored(store: store)
-
-      #expect(restored.configuration == ProxyListeningConfiguration())
-      guard case .corrupt = restored.unreadableError else {
-        Issue.record("restored 必须携带 corrupt 错误，实际 \(String(describing: restored.unreadableError))")
-        return
-      }
-    }
-  }
-
-  @Test
-  func restoredOnMissingFileIsFactoryDefaultsWithoutError() throws {
-    try withStore { store, _ in
-      let restored = ProxyListeningFileStore.restored(store: store)
-
-      #expect(restored.configuration == ProxyListeningConfiguration())
-      #expect(restored.unreadableError == nil)
-    }
+      fileURL: directory.appendingPathComponent("proxy-listening.enc"), keys: keys)
+    _ = try library.load()
+    var configuration = try store.load()
+    configuration.local.socksPort = 12000
+    configuration.lan.password = "retained-password"
+    try store.save(configuration)
+    _ = try library.reset()
+    #expect(try ProxyListeningFileStore(fileURL: store.fileURL, keys: keys).load() == configuration)
+    let libraryBytes = try Data(contentsOf: library.fileURL)
+    _ = try store.reset()
+    #expect(try Data(contentsOf: library.fileURL) == libraryBytes)
+    #expect(
+      try CatalogFileStore(fileURL: library.fileURL, library: ServerLibraryStorage(keys: keys))
+        .load().catalog.isEmpty)
   }
 }

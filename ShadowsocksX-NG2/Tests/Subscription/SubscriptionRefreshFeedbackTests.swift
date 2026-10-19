@@ -80,7 +80,6 @@ struct SubscriptionRefreshFeedbackTests {
   @MainActor
   private final class Fixture {
     let directory: URL
-    let credentials = InMemoryCredentialStore()
     let fetcher = FakeSubscriptionFetcher(behavior: .success(SubscriptionDocs.flat(serverCount: 1)))
     let workflow: CatalogWorkflow
 

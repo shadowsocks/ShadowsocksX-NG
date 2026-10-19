@@ -12,7 +12,6 @@ final class ProxyControlWorkflowIntegrationTests: XCTestCase {
   private var runtime: ProxyRuntimeFixture.TemporaryRuntime!
   private var catalogFileURL: URL!
   private var activationFileURL: URL!
-  private var credentials: InMemoryCredentialStore!
   var agent: ProxyRuntimeFixture.FakeLaunchAgent!
   var systemProxy: ProxyRuntimeFixture.FakeSystemProxy!
   var networkMonitor = ProxyRuntimeFixture.FakeSystemProxyNetworkChangeMonitor()
@@ -24,7 +23,7 @@ final class ProxyControlWorkflowIntegrationTests: XCTestCase {
     runtime = ProxyRuntimeFixture.makeTemporaryRuntime()
     catalogFileURL = runtime.directory.appendingPathComponent("catalog.json")
     activationFileURL = runtime.directory.appendingPathComponent("activation.json")
-    credentials = InMemoryCredentialStore()
+
     agent = ProxyRuntimeFixture.FakeLaunchAgent()
     systemProxy = ProxyRuntimeFixture.FakeSystemProxy()
     systemProxyHelper = ProxyRuntimeFixture.FakeSystemProxyHelperService()
@@ -70,7 +69,6 @@ final class ProxyControlWorkflowIntegrationTests: XCTestCase {
       catalogSnapshotReader: ProxyRuntimeFixture.catalogSnapshotReader(at: catalogFileURL),
       activationFileStore: ActivationStateFileStore(fileURL: activationFileURL),
       runtimeFileStore: runtimeFileStore,
-      credentials: credentials,
       plugins: ActivationFixture.plugins,
       listeningStore: listeningStore ?? InMemoryProxyListeningStore(),
       appBundle: AppArtifact.bundle,

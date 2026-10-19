@@ -8,7 +8,6 @@ struct SettingsView: View {
   @ObservedObject var workflow: SettingsWorkflow
   @ObservedObject var loginController: LaunchAtLoginController
   @ObservedObject var silentLaunch: SilentLaunchController
-  @State private var listenerEditingError: String?
   @State private var presentedEditor: SettingsEditorSheet?
 
   var body: some View {
@@ -88,14 +87,8 @@ struct SettingsView: View {
       portSettingsRow
       settingRow(String(localized: "局域网监听")) {
         Button {
-          do {
-            presentedEditor = .lan(
-              LANListeningEditorSession(
-                initialDraft: try workflow.beginLANListeningEditing()))
-            listenerEditingError = nil
-          } catch {
-            listenerEditingError = String(localized: "局域网身份验证密码不可读，请重试。")
-          }
+          presentedEditor = .lan(
+            LANListeningEditorSession(initialDraft: workflow.beginLANListeningEditing()))
         } label: {
           HStack(spacing: 8) {
             VStack(alignment: .trailing, spacing: 3) {
@@ -114,9 +107,6 @@ struct SettingsView: View {
         }
         .buttonStyle(.bordered)
         .accessibilityLabel("局域网监听")
-      }
-      if let listenerEditingError {
-        Text(listenerEditingError).font(.caption).foregroundStyle(.red)
       }
     } header: {
       sectionHeader(String(localized: "后台代理客户端"))

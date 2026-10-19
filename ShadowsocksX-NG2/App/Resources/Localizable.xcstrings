@@ -8920,6 +8920,111 @@
           }
         }
       }
+    },
+    "无法读取监听配置": {
+      "extractionState": "manual",
+      "comment": "Startup alert title when proxy listening configuration cannot be loaded.",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法读取监听配置"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unable to Read Listening Configuration"
+          }
+        }
+      }
+    },
+    "重置监听配置": {
+      "extractionState": "manual",
+      "comment": "The only startup recovery alert action. Confirms discarding proxy listening settings.",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重置监听配置"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reset Listening Configuration"
+          }
+        }
+      }
+    },
+    "重置会丢弃原有监听配置，包括端口和局域网认证设置，并关闭局域网监听。服务器库和其他偏好设置保持不变。重置成功后应用才能继续启动。": {
+      "extractionState": "manual",
+      "comment": "Explains the scope and consequences before the user confirms resetting listening configuration.",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重置会丢弃原有监听配置，包括端口和局域网认证设置，并关闭局域网监听。服务器库和其他偏好设置保持不变。重置成功后应用才能继续启动。"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Resetting discards the previous listening configuration, including ports and LAN authentication settings, and disables LAN listening. The server library and other preferences remain unchanged. The app can start only after the reset succeeds."
+          }
+        }
+      }
+    },
+    "无法访问监听配置主密钥": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法访问监听配置主密钥"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unable to access the listening configuration master key."
+          }
+        }
+      }
+    },
+    "监听配置无法解密或格式不受支持": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "监听配置无法解密或格式不受支持"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The listening configuration cannot be decrypted or its format is unsupported."
+          }
+        }
+      }
+    },
+    "本地代理配置无法读取，未应用新的代理配置": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The local proxy configuration cannot be read. No new proxy configuration was applied."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "本地代理配置无法读取，未应用新的代理配置"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

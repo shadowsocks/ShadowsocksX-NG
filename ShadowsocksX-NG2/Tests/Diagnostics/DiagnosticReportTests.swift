@@ -57,7 +57,7 @@ final class DiagnosticReportTests: XCTestCase {
           node: NodeID(rawValue: "leaf-1"),
           reason: .pluginNotProvided(program: "simple-obfs"))))
     snapshot.hasActiveTarget = true
-    snapshot.listen = ProxyListeningConfiguration()
+    snapshot.listen = RuntimeListenFacts(listen: ProxyListeningConfiguration())
     snapshot.runtimeDocumentSummary = Redactor.documentSummary(
       ProxyRuntimeFixture.makeDocument(
         serverAddress: address, password: password, pluginOpts: pluginOpts))
@@ -143,7 +143,8 @@ final class DiagnosticReportTests: XCTestCase {
   /// 监听方式与实际绑定地址进入报告；设置不再收集单独的 LAN 地址。
   func testAllIPv4ListenerModeReportsItsBindingAddress() {
     var snapshot = DiagnosticSnapshot()
-    snapshot.listen = ProxyListeningConfiguration(listenerMode: .allIPv4Interfaces)
+    snapshot.listen = RuntimeListenFacts(
+      listen: ProxyListeningConfiguration(listenerMode: .allIPv4Interfaces))
     snapshot.homePathForRedaction = nil
 
     let report = DiagnosticReportBuilder.markdown(from: snapshot)

@@ -7,7 +7,7 @@ import Testing
 @MainActor
 struct SubscriptionInformationWorkflowTests {
   @Test func successfulInformationSurvivesFailureAndReload() async throws {
-    try await withWorkflow { workflow, store, credentials, fetcher in
+    try await withWorkflow { workflow, store, fetcher in
       let summary = try await workflow.createSubscription(urlString: "https://p.example.com/sub")
       #expect(summary.information?.bytesUsed == 25)
       #expect(summary.information?.bytesRemaining == 75)
@@ -30,7 +30,7 @@ struct SubscriptionInformationWorkflowTests {
   }
 
   @Test func successfulRefreshReplacesMissingAndInvalidFields() async throws {
-    try await withWorkflow { workflow, _, _, fetcher in
+    try await withWorkflow { workflow, _, fetcher in
       let first = try await workflow.createSubscription(urlString: "https://p.example.com/sub")
       fetcher.setBehavior(
         .success(
@@ -57,7 +57,7 @@ struct SubscriptionInformationWorkflowTests {
   }
 
   @Test func cancelledRefreshCannotCommitEvenIfFetcherReturnsData() async throws {
-    try await withWorkflow { workflow, store, credentials, _ in
+    try await withWorkflow { workflow, store, _ in
       let first = try await workflow.createSubscription(urlString: "https://p.example.com/sub")
       let bytes = try Data(contentsOf: store.fileURL)
       let fetcher = InformationGateFetcher()
@@ -75,7 +75,7 @@ struct SubscriptionInformationWorkflowTests {
   }
 
   @Test func persistenceFailureDoesNotPublishNewInformation() async throws {
-    try await withWorkflow { workflow, store, _, fetcher in
+    try await withWorkflow { workflow, store, fetcher in
       let first = try await workflow.createSubscription(urlString: "https://p.example.com/sub")
       let tree = workflow.tree
       // 只破坏本夹具的文件路径，让原子替换失败，不影响其他 runner。
@@ -91,7 +91,7 @@ struct SubscriptionInformationWorkflowTests {
   }
 
   @Test func encryptedDocumentHidesSecretsAndRetainsOnlyAllowlistedInformation() async throws {
-    try await withWorkflow { workflow, store, credentials, fetcher in
+    try await withWorkflow { workflow, store, fetcher in
       fetcher.setBehavior(
         .success(
           Data(
@@ -123,7 +123,7 @@ struct SubscriptionInformationWorkflowTests {
   }
 
   @Test func oldDocumentWithoutInformationOrSuccessfulTimeLoadsWithoutGuessing() async throws {
-    try await withWorkflow { workflow, store, credentials, _ in
+    try await withWorkflow { workflow, store, _ in
       _ = try await workflow.createSubscription(urlString: "https://p.example.com/sub")
       var document = try store.load()
       document.subscriptions[0].information = nil
@@ -140,21 +140,20 @@ struct SubscriptionInformationWorkflowTests {
   private func withWorkflow(
     _ body:
       @MainActor (
-        CatalogWorkflow, CatalogFileStore, InMemoryCredentialStore, FakeSubscriptionFetcher
+        CatalogWorkflow, CatalogFileStore, FakeSubscriptionFetcher
       ) async throws -> Void
   ) async throws {
     let directory = FileManager.default.temporaryDirectory
       .appendingPathComponent("subscription-information-\(UUID().uuidString)", isDirectory: true)
     defer { try? FileManager.default.removeItem(at: directory) }
     let store = makeTestCatalogStore(fileURL: directory.appendingPathComponent("catalog.json"))
-    let credentials = InMemoryCredentialStore()
     let fetcher = FakeSubscriptionFetcher(
       behavior: .success(
         Data(#"{"version":1,"servers":[],"bytes_used":25,"bytes_remaining":75}"#.utf8)))
     let workflow = makeCatalogWorkflow(
       coordinator: CatalogCommitCoordinator(fileStore: store, runtime: FakeCatalogRuntime()),
       subscriptionFetcher: fetcher)
-    try await body(workflow, store, credentials, fetcher)
+    try await body(workflow, store, fetcher)
   }
 }
 

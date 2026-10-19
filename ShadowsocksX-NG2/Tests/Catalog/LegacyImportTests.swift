@@ -10,7 +10,6 @@ final class LegacyImportTests: XCTestCase {
   private var catalogURL: URL!
   private var activationURL: URL!
   private var settingsURL: URL!
-  private var credentials: InMemoryCredentialStore!
   private var marker: TestLegacyImportMarker!
   private var provider: FixedLegacySnapshotProvider!
 
@@ -22,7 +21,7 @@ final class LegacyImportTests: XCTestCase {
     catalogURL = directory.appendingPathComponent("catalog.json")
     activationURL = directory.appendingPathComponent("activation.json")
     settingsURL = directory.appendingPathComponent("proxy-listening.json")
-    credentials = InMemoryCredentialStore()
+
     marker = TestLegacyImportMarker()
     provider = FixedLegacySnapshotProvider(snapshot: try Self.makeSnapshot())
   }
@@ -73,7 +72,7 @@ final class LegacyImportTests: XCTestCase {
     existingSettings.listen.socksPort = 2086
     existingSettings.listen.httpPort = 2087
     existingSettings.preferredMode = .global
-    let listeningStore = ProxyListeningFileStore(
+    let listeningStore = makeTestListeningStore(
       fileURL: settingsURL)
     try listeningStore.save(existingSettings.listen)
 

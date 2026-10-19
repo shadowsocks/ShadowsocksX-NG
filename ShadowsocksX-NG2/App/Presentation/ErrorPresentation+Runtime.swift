@@ -45,7 +45,7 @@ extension AppPresentation {
         localized:
           "本地代理 \(endpoint.uppercased()) 端点 \(host):\(port.formatted(.number.grouping(.never))) 未就绪（\(endpointFailure(cause))）"
       )
-    case .unreadableSettings: return String(localized: "本地代理配置无法读取，已停止代理以避免静默改用出厂端口")
+    case .unreadableSettings: return String(localized: "本地代理配置无法读取，未应用新的代理配置")
     }
   }
 

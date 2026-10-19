@@ -11,7 +11,6 @@ import XCTest
 final class CatalogWorkflowTests: XCTestCase {
   private var workDir: URL!
   private var fileURL: URL!
-  private var credentials: InMemoryCredentialStore!
   private var runtime: FakeCatalogRuntime!
   var workflow: CatalogWorkflow!
 
@@ -22,7 +21,7 @@ final class CatalogWorkflowTests: XCTestCase {
       .appendingPathComponent("catalog-workflow-tests-\(UUID().uuidString)", isDirectory: true)
     try FileManager.default.createDirectory(at: workDir, withIntermediateDirectories: true)
     fileURL = workDir.appendingPathComponent("catalog.json")
-    credentials = InMemoryCredentialStore()
+
     runtime = FakeCatalogRuntime()
     workflow = makeWorkflow()
   }

@@ -168,6 +168,6 @@ NG2 尚未发版，读取器不迁移其历史数据：
 
 - [ServerLibraryStorage.swift](../ShadowsocksX-NG2/Domain/Catalog/ServerLibraryStorage.swift)：文件头、加解密、payload 大小限制与历史文件处理。
 - [CatalogFileStore.swift](../ShadowsocksX-NG2/Domain/Catalog/CatalogFileStore.swift)：直接目录 JSON 编码、schema v7 和结构校验。
-- [LibraryMasterKeyStore.swift](../ShadowsocksX-NG2/Domain/Credentials/LibraryMasterKeyStore.swift)：主密钥的 Keychain 属性与访问方式。
+- [MasterKeyStore.swift](../ShadowsocksX-NG2/Domain/Credentials/MasterKeyStore.swift)：主密钥的 Keychain 属性与访问方式。
 - [CatalogModels.swift](../ShadowsocksX-NG2/Domain/Catalog/CatalogModels.swift)、[SubscriptionRecord.swift](../ShadowsocksX-NG2/Domain/Subscription/SubscriptionRecord.swift)：目录记录及内联秘密的 Codable 模型。
 - [AtomicFileWriter.swift](../ShadowsocksX-NG2/Domain/Runtime/AtomicFileWriter.swift)：临时文件与权限基线。

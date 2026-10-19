@@ -12,7 +12,6 @@ class ProxyRuntimeControllerTests: XCTestCase {
   var runtime: ProxyRuntimeFixture.TemporaryRuntime!
   var catalogFileURL: URL!
   var activationFileURL: URL!
-  var credentials: InMemoryCredentialStore!
   var agent: ProxyRuntimeFixture.FakeLaunchAgent!
   var systemProxy: ProxyRuntimeFixture.FakeSystemProxy!
   var systemProxyHelper: ProxyRuntimeFixture.FakeSystemProxyHelperService!
@@ -80,7 +79,7 @@ class ProxyRuntimeControllerTests: XCTestCase {
     runtime = ProxyRuntimeFixture.makeTemporaryRuntime()
     catalogFileURL = runtime.directory.appendingPathComponent("catalog.json")
     activationFileURL = runtime.directory.appendingPathComponent("activation.json")
-    credentials = InMemoryCredentialStore()
+
     agent = ProxyRuntimeFixture.FakeLaunchAgent()
     systemProxy = ProxyRuntimeFixture.FakeSystemProxy()
     systemProxyHelper = ProxyRuntimeFixture.FakeSystemProxyHelperService()
@@ -166,7 +165,6 @@ class ProxyRuntimeControllerTests: XCTestCase {
       catalogSnapshotReader: ProxyRuntimeFixture.catalogSnapshotReader(at: catalogFileURL),
       activationFileStore: ActivationStateFileStore(fileURL: activationFileURL),
       runtimeFileStore: runtimeFileStore,
-      credentials: credentials,
       plugins: ActivationFixture.plugins,
       listeningStore: listeningStore ?? InMemoryProxyListeningStore(),
       customRuleStore: customRuleStore

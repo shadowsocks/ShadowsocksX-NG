@@ -115,6 +115,10 @@ extension ProxyRuntimeController {
   /// GUI startup restores the Agent. Healthy proxy intent only inspects; unhealthy
   /// proxy intent suspends; disabled intent never writes SystemConfiguration.
   func resyncOnLaunch() async {
+    guard !settingsUnreadable else {
+      state = .launchFailed(.unreadableSettings)
+      return
+    }
     guard catalogSnapshotReader.isCatalogAvailable else { return }
     refreshPluginSecurityFacts()
     systemProxyObserver.beginStartupResync()

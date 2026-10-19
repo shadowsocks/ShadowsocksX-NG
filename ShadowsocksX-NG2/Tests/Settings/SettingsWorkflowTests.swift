@@ -8,7 +8,6 @@ final class SettingsWorkflowTests: XCTestCase {
   private var runtime: ProxyRuntimeFixture.TemporaryRuntime!
   private var catalogFileURL: URL!
   private var activationFileURL: URL!
-  private var credentials: InMemoryCredentialStore!
   private var agent: ProxyRuntimeFixture.FakeLaunchAgent!
   private var systemProxy: ProxyRuntimeFixture.FakeSystemProxy!
   private var listeningStore: InMemorySettingsStore!
@@ -18,7 +17,7 @@ final class SettingsWorkflowTests: XCTestCase {
     runtime = ProxyRuntimeFixture.makeTemporaryRuntime()
     catalogFileURL = runtime.directory.appendingPathComponent("catalog.json")
     activationFileURL = runtime.directory.appendingPathComponent("activation.json")
-    credentials = InMemoryCredentialStore()
+
     agent = ProxyRuntimeFixture.FakeLaunchAgent()
     systemProxy = ProxyRuntimeFixture.FakeSystemProxy()
     listeningStore = InMemorySettingsStore()
@@ -32,7 +31,7 @@ final class SettingsWorkflowTests: XCTestCase {
   func testListenerModeSavePersistsWithoutStartingAnOffAgent() async throws {
     let pair = makePair()
 
-    var draft = try pair.workflow.beginLANListeningEditing()
+    var draft = pair.workflow.beginLANListeningEditing()
     draft.isEnabled = true
     draft.mode = .allIPv4AndIPv6Interfaces
     let outcome = await pair.workflow.saveLANListening(draft)
@@ -58,7 +57,6 @@ final class SettingsWorkflowTests: XCTestCase {
       catalogSnapshotReader: catalogSnapshotReader,
       activationFileStore: ActivationStateFileStore(fileURL: activationFileURL),
       runtimeFileStore: runtimeFileStore,
-      credentials: credentials,
       plugins: ActivationFixture.plugins,
       listeningStore: listeningStore,
       appBundle: AppArtifact.bundle,
@@ -74,7 +72,7 @@ final class SettingsWorkflowTests: XCTestCase {
       sendSignal: { _, _ in 0 },
       processIsAlive: { $0 == 42 })
     let workflow = SettingsWorkflow(
-      committing: controller, occupancyProbe: FakeOccupancyProbe(), credentials: credentials)
+      committing: controller, occupancyProbe: FakeOccupancyProbe())
     return (controller, workflow)
   }
 

@@ -11,7 +11,6 @@ final class CatalogWorkflowPluginTests: XCTestCase {
   private var workDir: URL!
   private var bundleRoot: URL!
   private var fileURL: URL!
-  private var credentials: InMemoryCredentialStore!
   private var workflow: CatalogWorkflow!
 
   override func setUp() async throws {
@@ -26,7 +25,7 @@ final class CatalogWorkflowPluginTests: XCTestCase {
       at: bundleRoot.appendingPathComponent("Contents/Helpers/Plugins"),
       withIntermediateDirectories: true)
     fileURL = workDir.appendingPathComponent("catalog.json")
-    credentials = InMemoryCredentialStore()
+
     workflow = makeWorkflow()
   }
 

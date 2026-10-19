@@ -1,17 +1,21 @@
 import Foundation
 import Security
 
-/// 服务器库主密钥的二进制存储；交互只由显式解锁命令开启。
-protocol LibraryMasterKeyStoring {
+enum MasterKeyStoreError: Error, Equatable {
+  case keychainStatus(OSStatus)
+}
+
+/// 主密钥的二进制存储；交互只由显式解锁或重置命令开启。
+protocol MasterKeyStoring {
   func read(_ id: UUID, allowingInteraction: Bool) throws -> Data?
   func create(_ data: Data, id: UUID, allowingInteraction: Bool) throws
 }
 
-struct KeychainLibraryMasterKeyStore: LibraryMasterKeyStoring {
+struct KeychainMasterKeyStore: MasterKeyStoring {
   let service: String
 
-  init(service: String = "com.qiuyuzhou.ShadowsocksX-NG2.server-library") {
-    self.service = service
+  init(namespace: String) {
+    self.service = "com.qiuyuzhou.ShadowsocksX-NG2.\(namespace)"
   }
 
   func read(_ id: UUID, allowingInteraction: Bool) throws -> Data? {
@@ -23,7 +27,7 @@ struct KeychainLibraryMasterKeyStore: LibraryMasterKeyStoring {
       let status = SecItemCopyMatching(query as CFDictionary, &result)
       if status == errSecItemNotFound { return nil }
       guard status == errSecSuccess, let data = result as? Data else {
-        throw CredentialStoreError.keychainStatus(status)
+        throw MasterKeyStoreError.keychainStatus(status)
       }
       return data
     }
@@ -33,13 +37,13 @@ struct KeychainLibraryMasterKeyStore: LibraryMasterKeyStoring {
     try withClassicKeychainInteraction(allowingInteraction) {
       var application: SecTrustedApplication?
       try check(SecTrustedApplicationCreateFromPath(nil, &application))
-      guard let application else { throw CredentialStoreError.keychainStatus(errSecParam) }
+      guard let application else { throw MasterKeyStoreError.keychainStatus(errSecParam) }
       var access: SecAccess?
       try check(
         SecAccessCreate(
-          "ShadowsocksX-NG2 server library" as CFString,
+          "ShadowsocksX-NG2 encrypted configuration" as CFString,
           [application] as CFArray, &access))
-      guard let access else { throw CredentialStoreError.keychainStatus(errSecParam) }
+      guard let access else { throw MasterKeyStoreError.keychainStatus(errSecParam) }
       var item = query(id)
       item[kSecValueData as String] = data
       item[kSecAttrAccess as String] = access
@@ -58,7 +62,7 @@ struct KeychainLibraryMasterKeyStore: LibraryMasterKeyStoring {
   }
 
   private func check(_ status: OSStatus) throws {
-    guard status == errSecSuccess else { throw CredentialStoreError.keychainStatus(status) }
+    guard status == errSecSuccess else { throw MasterKeyStoreError.keychainStatus(status) }
   }
 }
 
@@ -68,9 +72,9 @@ private func withClassicKeychainInteraction<T>(_ allowed: Bool, _ operation: () 
 {
   var previous: DarwinBoolean = false
   let getStatus = SecKeychainGetUserInteractionAllowed(&previous)
-  guard getStatus == errSecSuccess else { throw CredentialStoreError.keychainStatus(getStatus) }
+  guard getStatus == errSecSuccess else { throw MasterKeyStoreError.keychainStatus(getStatus) }
   let setStatus = SecKeychainSetUserInteractionAllowed(allowed)
-  guard setStatus == errSecSuccess else { throw CredentialStoreError.keychainStatus(setStatus) }
+  guard setStatus == errSecSuccess else { throw MasterKeyStoreError.keychainStatus(setStatus) }
   defer { SecKeychainSetUserInteractionAllowed(previous.boolValue) }
   return try operation()
 }

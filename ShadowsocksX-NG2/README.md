@@ -29,7 +29,7 @@ ShadowsocksX-NG 的现代化重写版本。新工程的全部源码与构建配�
   - `Settings/` — 代理监听配置文件、独立代理控制偏好、运行计算的内存快照与静默启动偏好。
   - `SystemProxy/` — 系统代理 typed 配置、property list 映射、计划器与特权 helper 的 XPC 契约/请求引擎。
   - `Plugin/` — 托管插件、用户插件映射与插件安全校验。
-  - `Credentials/`、`LegacyImport/`、`Diagnostics/` — 凭据存储与写入日志、旧版导入、诊断报告。
+  - `Credentials/`、`LegacyImport/`、`Diagnostics/` — 主密钥存储与加密文件提交、旧版导入、诊断报告。
 
   跨进程契约按**文件**编入其它 target：`Runtime/` 的 10 个文件同时编入 wrapper（`RuntimePaths`、`SslocalRuntimeDocument`、`RuntimeLog` 等），`SystemProxy/` 全部 6 个文件编入特权 helper。`project.yml` 里这 16 条是显式路径，在 `Domain/` 内移动文件必须同步，漏改会让 `xcodegen generate` 以缺文件直接失败。布局守卫（`Tests/Architecture/SkeletonTests.swift` 的 `DomainLayoutTests`）断言根下无平铺 `.swift`、树下只有 `.swift`（非源码文件会被 XcodeGen 收进 Resources 阶段并封进签名后的 bundle）。
 - `Tests/` — 单元测试 target，随 `ShadowsocksX-NG2` scheme 运行。目录即主题，根下不留平铺测试文件：
@@ -196,8 +196,8 @@ Python 是唯一的上游转换实现；Swift 只加载、校验并消费快照�
 
 后台代理客户端运行时，本地 SOCKS/HTTP 始终监听 `127.0.0.1`，默认端口为 `11086`/`11087`；本地 SOCKS 固定开启 UDP 中继。局域网入口默认关闭，使用独立端口 `11088`/`11089`，支持 IPv4、双栈和仅 IPv6 三种方式。四端口必须在 `1025...65535` 内且全部不同。
 
-局域网 SOCKS 的 UDP 中继和 SOCKS/HTTP 共用的身份验证独立设置。密码保存在 Keychain，运行时派生当前用户专用的认证文件；上游认证失败日志中的密码会隐藏。设置只检查 TCP 占用，不设置独立 UDP 端口。首页命令按选择地址使用本地或局域网端口，局域网身份验证开启时加入编码后的凭据；tooltip 显示完整命令。
+局域网 SOCKS 的 UDP 中继和 SOCKS/HTTP 共用的身份验证独立设置。用户名与密码随监听配置整体加密保存，Keychain 仅保存监听专用主密钥；运行时派生当前用户专用的认证文件；上游认证失败日志中的密码会隐藏。设置只检查 TCP 占用，不设置独立 UDP 端口。首页命令按选择地址使用本地或局域网端口，局域网身份验证开启时加入编码后的凭据；tooltip 显示完整命令。
 
-监听配置单独保存在 `proxy-listening.json`，只包含本地与局域网监听相关值。代理模式、规则默认动作、代理服务开关、系统代理开关和附加系统代理例外以 `proxyControl.` 前缀的独立键保存在 UserDefaults；运行计算的内存快照不代表统一持久化文档。监听仍采用联合校验与原子文件保存；UserDefaults 偏好不提供同步落盘失败的报错与回滚。
+监听配置单独加密保存在 `proxy-listening.enc`，只包含本地与局域网监听相关值。代理模式、规则默认动作、代理服务开关、系统代理开关和附加系统代理例外以 `proxyControl.` 前缀的独立键保存在 UserDefaults；运行计算的内存快照不代表统一持久化文档。监听仍采用联合校验与原子文件保存；UserDefaults 偏好不提供同步落盘失败的报错与回滚。
 
-不迁移旧 `settings.json`：新监听文件与新增偏好缺值时使用默认值，需要重新设置现有开发配置；旧文件不读取、不删除，遗留 Keychain 条目不访问、不清理。已有语言、静默启动、测试 URL 等独立偏好及服务器资料保持原状。极端监听文件损坏接受人工恢复，不建设应用内修复流程。设计见 [ADR-0034](../docs/adr/0034-separate-local-and-lan-listeners.md)、[ADR-0040](../docs/adr/0040-keep-settings-recovery-simple.md) 和 [ADR-0041](../docs/adr/0041-separate-preferences-from-proxy-listening-configuration.md)。
+不迁移旧 `settings.json`：新监听文件与新增偏好缺值时使用默认值，需要重新设置现有开发配置；旧文件不读取、不删除，遗留 Keychain 条目不访问、不清理。已有语言、静默启动、测试 URL 等独立偏好及服务器资料保持原状。监听读取失败会阻断正常启动，包括静默启动，并显示只含“重置监听配置”的说明性 alert。用户确认后创建新监听主密钥并原子保存默认配置，默认关闭局域网监听。重置成功前保留原文件及已有后台代理和系统代理；成功后按默认配置与原有开关意图收敛。不迁移旧 `proxy-listening.json`，不读取或清理旧逐项 Keychain 凭据；发现旧文件时同样提示确认重置。设计见 [ADR-0034](../docs/adr/0034-separate-local-and-lan-listeners.md)、[ADR-0040](../docs/adr/0040-keep-settings-recovery-simple.md) 、[ADR-0041](../docs/adr/0041-separate-preferences-from-proxy-listening-configuration.md) 和 [ADR-0042](../docs/adr/0042-encrypt-proxy-listening-configuration.md)。
