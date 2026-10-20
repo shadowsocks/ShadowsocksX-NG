@@ -46,4 +46,4 @@
 
 ## 上游默认行为
 
-sslocal v1.25.0 未设置独立 UDP 地址与端口时，SOCKS UDP 中继沿用该入口的地址与端口，并非每次 UDP ASSOCIATE 随机分配中继监听端口。本设计不设置独立 UDP 端口，也不增加 UDP 占用检查。[默认地址派生](https://github.com/shadowsocks/shadowsocks-rust/blob/v1.25.0/crates/shadowsocks-service/src/local/socks/server/mod.rs#L120)、[UDP ASSOCIATE 回复](https://github.com/shadowsocks/shadowsocks-rust/blob/v1.25.0/crates/shadowsocks-service/src/local/socks/server/socks5/tcprelay.rs#L289)。
+sslocal v1.26.0 未设置独立 UDP 地址与端口时，SOCKS UDP 中继沿用该入口的地址与端口，并非每次 UDP ASSOCIATE 随机分配中继监听端口。本设计不设置独立 UDP 端口，也不增加 UDP 占用检查。[默认地址派生](https://github.com/qiuyuzhou/shadowsocks-rust/blob/v1.26.0/crates/shadowsocks-service/src/local/socks/server/mod.rs#L121)、[UDP ASSOCIATE 回复](https://github.com/qiuyuzhou/shadowsocks-rust/blob/v1.26.0/crates/shadowsocks-service/src/local/socks/server/socks5/tcprelay.rs#L301)。

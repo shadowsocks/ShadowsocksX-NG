@@ -48,7 +48,7 @@ enum ListenerMode: String, Codable, CaseIterable, Equatable, Sendable {
   var exposesNetworkInterfaces: Bool { self != .disabled }
 }
 
-/// `sslocal` 的一个本地入站。上游 v1.25.0 通过 `locals[]` 同时承载 SOCKS5
+/// `sslocal` 的一个本地入站。上游 v1.26.0 通过 `locals[]` 同时承载 SOCKS5
 /// 与 HTTP；HTTP 直接由 shadowsocks-rust 提供，不经过 Legacy Privoxy。
 struct SslocalLocalDocument: Codable, Equatable, Sendable {
   let inboundProtocol: String
@@ -234,7 +234,7 @@ extension SslocalRuntimeDocument {
   }
 
   /// GUI 准备侧校验：端口、协议与共享范围必须一致。空 `servers` 合法：
-  /// 无活动目标时 agent 以空服务器列表提供本地监听；上游 sslocal v1.25.0
+  /// 无活动目标时 agent 以空服务器列表提供本地监听；上游 sslocal v1.26.0
   /// 接受空 servers 并照常绑定本地入站。
   var isWellFormed: Bool {
     guard

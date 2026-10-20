@@ -3,8 +3,8 @@ import XCTest
 
 @testable import ShadowsocksX_NG2
 
-/// 真实 sslocal 冒烟：wrapper 驱动 bundle 内官方 sslocal
-/// v1.25.0——本地 SOCKS 端口完成监听绑定，并完成一次完整 SOCKS5 握手（方法
+/// 真实 sslocal 冒烟：wrapper 驱动 bundle 内 sslocal v1.26.0——本地 SOCKS 端口
+/// 完成监听绑定，并完成一次完整 SOCKS5 握手（方法
 /// 协商 + CONNECT 请求得到按协议的应答）。远端服务器不可达只影响应答码，不
 /// 影响握手本身（真实服务器功能验证属发布门槛人工检查项）。
 class RealSslocalSmokeTests: XCTestCase {
@@ -243,7 +243,7 @@ final class RealSslocalListenerSmokeTests: RealSslocalSmokeTests {
   }
 
   /// 无活动服务器监听：空 `servers` 契约是合法部署——上游
-  /// sslocal v1.25.0 接受空服务器列表并照常绑定 SOCKS/HTTP 入站。真实运行时
+  /// sslocal v1.26.0 接受空服务器列表并照常绑定 SOCKS/HTTP 入站。真实运行时
   /// 证据（系统代理写入属真实宿主验收，不在替身/回环测试范围内）。
   func testRealSslocalBindsLocalsWithEmptyServerList() throws {
     var ports = Set<Int>()

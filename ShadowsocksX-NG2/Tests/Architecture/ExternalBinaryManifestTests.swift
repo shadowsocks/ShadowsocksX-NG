@@ -62,10 +62,14 @@ final class ExternalBinaryManifestTests: XCTestCase {
     let manifest = try manifest("sslocal")
     try assertPinnedSchema(manifest, name: "sslocal")
     XCTAssertEqual(manifest.project, "shadowsocks-rust")
-    XCTAssertEqual(manifest.release, "v1.25.0")
+    XCTAssertEqual(manifest.release, "v1.26.0")
+    let url = try XCTUnwrap(URL(string: manifest.url))
+    XCTAssertTrue(
+      url.path.hasPrefix("/qiuyuzhou/shadowsocks-rust/releases/download/"),
+      "sslocal 应固定到 ShadowsocksX-NG fork 的 release")
     XCTAssertEqual(
       manifest.archiveSHA256,
-      "58e0caf0cc9266c4ea226f38aa20fb28c1be12efc87a73cf5903197867555208")
+      "deda5c3591dd08ec1cd72acdec07c18c33c93ca2d40c6e9fc68121b3e9fa3707")
     XCTAssertEqual(manifest.bundleSubpath, "Helpers")
     XCTAssertEqual(manifest.signIdentifier, Self.bundleID + ".sslocal")
   }

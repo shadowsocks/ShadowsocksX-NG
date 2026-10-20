@@ -3,7 +3,7 @@ import XCTest
 @testable import ShadowsocksX_NG2
 
 /// 运行时文档缝：派生 JSON 的字段契约与监听设置透传。
-/// 上游字段名以 shadowsocks-rust v1.25.0 配置契约为准；无插件时整体省略插件字段。
+/// 上游字段名以 shadowsocks-rust v1.26.0 配置契约为准；无插件时整体省略插件字段。
 final class RuntimeDocumentTests: XCTestCase {
   private func encodedDictionary(_ document: SslocalRuntimeDocument) throws -> [String: Any] {
     let data = try document.jsonData()

@@ -153,7 +153,7 @@ enum RuleCoverage {
     return fullyCovered(range, by: matches.compactMap { matchingCIDR($0) })
   }
 
-  /// IPv4 and its mapped IPv6 image match the same addresses in sslocal v1.25.0.
+  /// IPv4 and its mapped IPv6 image match the same addresses in sslocal v1.26.0.
   /// Identity keeps the original family; coverage uses the common IPv6 space.
   private static func matchingCIDR(_ match: RuleMatch) -> ParsedCIDR? {
     guard let range = parseCIDR(match) else { return nil }
