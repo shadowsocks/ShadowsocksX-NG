@@ -1,4 +1,5 @@
 import Foundation
+import os
 
 /// 运行时日志基线：事件是封闭枚举，脱敏由构造保证——永不
 /// 携带密码、插件参数、Keychain 值、完整订阅 URL 及其 token 或运行时 JSON
@@ -113,9 +114,84 @@ enum RuntimeLogEvent: Equatable, CustomStringConvertible, Sendable {
   }
 }
 
+/// 系统日志路由（统一日志，Console.app 可按 subsystem/category 过滤）：
+/// level 三分（失败类 error、里程碑 default、冗长测量 info）、category 五分
+/// （runtime / supervision / system-proxy / connectivity / diagnostics）。
+/// 拆分规则：`text` + `privateDetail` == `description`；自由错误 detail 与
+/// 连通性测量内容（含探测目标 IP）拆出由发射缝标 private，公开文本由
+/// description 尾部裁切派生，不手抄前缀。穷举 switch：新事件漏路由无法编译。
+extension RuntimeLogEvent {
+  var systemLogRoute: SystemLogRoute {
+    switch self {
+    case .contractWritten, .contractUnchanged, .runtimeFilesDeleted:
+      return SystemLogRoute(
+        level: .default, category: "runtime", text: description, privateDetail: nil)
+    case .contractMissing, .contractInvalid, .activationFailed:
+      return SystemLogRoute(
+        level: .error, category: "runtime", text: description, privateDetail: nil)
+    case .runtimePersistFailed(let detail):
+      return SystemLogRoute(
+        level: .error, category: "runtime", text: String(description.dropLast(detail.count)),
+        privateDetail: detail)
+    case .settingsUnreadable(let detail):
+      return SystemLogRoute(
+        level: .error, category: "runtime",
+        text: String(description.dropLast(detail.count)), privateDetail: detail)
+    case .agentRegistered, .agentUnregistered, .sslocalSpawned, .sslocalStopRequested,
+      .reloadForwarded, .reloadDeferred, .reloadRestarted:
+      return SystemLogRoute(
+        level: .default, category: "supervision", text: description, privateDetail: nil)
+    case .sslocalSpawnFailed, .sslocalExitedUnexpectedly, .listenNotEstablished:
+      return SystemLogRoute(
+        level: .error, category: "supervision", text: description, privateDetail: nil)
+    case .agentRegisterFailed(let detail):
+      return SystemLogRoute(
+        level: .error, category: "supervision",
+        text: String(description.dropLast(detail.count)), privateDetail: detail)
+    case .agentUnregisterFailed(let detail):
+      return SystemLogRoute(
+        level: .error, category: "supervision",
+        text: String(description.dropLast(detail.count)), privateDetail: detail)
+    case .systemProxyUnchanged:
+      return SystemLogRoute(
+        level: .default, category: "system-proxy", text: description, privateDetail: nil)
+    case .systemProxyHelperRegisterFailed(let detail):
+      return SystemLogRoute(
+        level: .error, category: "system-proxy",
+        text: String(description.dropLast(detail.count)), privateDetail: detail)
+    case .systemProxyWriteFailed(let detail):
+      return SystemLogRoute(
+        level: .error, category: "system-proxy",
+        text: String(description.dropLast(detail.count)), privateDetail: detail)
+    case .endpointProbeFailed(_, _, let detail):
+      return SystemLogRoute(
+        level: .error, category: "connectivity",
+        text: String(description.dropLast(detail.count)), privateDetail: detail)
+    case .connectivityMeasurement(_, let entry):
+      // 测量内容含探测目标 IP，整段标 private（普通日志不进服务器地址）。
+      return SystemLogRoute(
+        level: .info, category: "connectivity",
+        text: String(description.dropLast(entry.description.count)),
+        privateDetail: entry.description)
+    case .diagnosticsExported:
+      return SystemLogRoute(
+        level: .default, category: "diagnostics", text: description, privateDetail: nil)
+    }
+  }
+}
+
+/// 系统日志路由事实：发射缝按此构造统一日志消息。`text` 已含与
+/// `privateDetail` 之间的分隔符，两者拼接等于事件的 `description`。
+struct SystemLogRoute: Sendable {
+  var level: OSLogType
+  var category: String
+  var text: String
+  var privateDetail: String?
+}
+
 /// 事件接收缝：GUI 进程把事件接入 RuntimeEventStore（内存环形
-/// 缓冲），供主窗口日志查看器实时呈现与诊断导出取用；wrapper 进程不注册，
-/// 仅走 stderr → agent.log 收敛。接收方拿到的是封闭枚举原值，渲染发生在
+/// 缓冲），供主窗口日志查看器实时呈现与诊断导出取用；wrapper 进程不注册
+/// （stderr 收敛进 agent.log）。接收方拿到的是封闭枚举原值，渲染发生在
 /// 呈现边缘（诊断报告的白名单清洗只可能作用于原值）。
 protocol RuntimeEventSink: Sendable {
   func append(event: RuntimeLogEvent, timestamp: Date)
@@ -135,18 +211,29 @@ enum Redactor {
 
 }
 
-/// 事件发射缝：wrapper 与 GUI 共用 stderr 行式输出（wrapper 侧由 launchd/
-/// agent.log 收敛，GUI 侧进系统日志）；GUI 启动时另注册接收缝接入事件缓冲。
+/// 事件发射缝：wrapper 与 GUI 共用 stderr 行式输出（wrapper 侧收敛进
+/// agent.log）与系统日志输出（统一 subsystem，Console.app 按 category 过滤，
+/// 拆出的 detail 段标 private）；GUI 启动时另注册接收缝接入事件缓冲。
 enum RuntimeLog {
+  /// 系统日志 subsystem：各进程共用一个名字，Console.app 一条过滤全看。
+  static let subsystem = "com.qiuyuzhou.ShadowsocksX-NG2"
+
   private static let sinkHolder = SinkHolder()
 
-  /// 注册/替换事件接收缝；传 nil 恢复纯 stderr（测试隔离用）。
+  /// 注册/替换事件接收缝；传 nil 移除接收缝（测试隔离用）。
   static func setSink(_ sink: (any RuntimeEventSink)?) {
     sinkHolder.set(sink)
   }
 
   static func emit(_ event: RuntimeLogEvent) {
     if let line = event.standardErrorLine { FileHandle.standardError.write(Data(line.utf8)) }
+    let route = event.systemLogRoute
+    let logger = Logger(subsystem: subsystem, category: route.category)
+    if let detail = route.privateDetail {
+      logger.log(level: route.level, "\(route.text, privacy: .public)\(detail, privacy: .private)")
+    } else {
+      logger.log(level: route.level, "\(route.text, privacy: .public)")
+    }
     sinkHolder.current?.append(event: event, timestamp: Date())
   }
 
