@@ -156,13 +156,6 @@ targets:
     entitlements:
       path: App/Resources/ShadowsocksX-NG2.entitlements
       properties: {}
-    scheme:
-      testTargets:
-        # 单测多 runner 并行执行：夹具均为进程私有资源（运行时空闲端口、
-        # UUID 后缀的 UserDefaults suite 与 Keychain service、匿名 XPC
-        # listener、临时目录），跨 runner 无共享状态。
-        - name: ShadowsocksX-NG2Tests
-          parallelizable: true
     dependencies:
       # 代理运行时 wrapper（BundleProgram）：以独立可执行文件装入
       # Contents/MacOS，由 LaunchAgent plist 以 bundle 相对路径引用。
@@ -285,6 +278,34 @@ targets:
       # scheme 构建的 app 产物取（AppArtifact），宿主 app 不再被启动。
       - target: ShadowsocksX-NG2Core
 schemes:
+  # app 主 scheme。测试动作注入 SSXNG_SYSTEM_LOG=0 关闭统一日志写入：
+  # 测试进程与其拉起的子进程不把测试日志灌进系统日志 store（stderr 与
+  # agent.log 不受影响）。Run/Profile 不带该变量——从 Xcode 调试运行时
+  # 系统日志照常输出。开关实现见 RuntimeLog.systemLogEnabled。
+  ShadowsocksX-NG2:
+    build:
+      targets:
+        ShadowsocksX-NG2: [run, test, profile, archive, analyze]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        # 单测多 runner 并行执行：夹具均为进程私有资源（运行时空闲端口、
+        # UUID 后缀的 UserDefaults suite 与 Keychain service、匿名 XPC
+        # listener、临时目录），跨 runner 无共享状态。
+        - name: ShadowsocksX-NG2Tests
+          parallelizable: true
+      environmentVariables:
+        - variable: SSXNG_SYSTEM_LOG
+          value: "0"
+          isEnabled: true
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release
   # 真实进程冒烟独立 scheme（task test:smoke）：拉起真实 sslocal，按需执行；
   # 发布门槛要求与 packaging-gate 一起全绿。
   ShadowsocksX-NG2Smoke:
@@ -296,3 +317,8 @@ schemes:
       targets:
         - name: ShadowsocksX-NG2SmokeTests
           parallelizable: true
+      # 同主 scheme：冒烟进程与其拉起的真实 sslocal/agent 关闭统一日志写入。
+      environmentVariables:
+        - variable: SSXNG_SYSTEM_LOG
+          value: "0"
+          isEnabled: true

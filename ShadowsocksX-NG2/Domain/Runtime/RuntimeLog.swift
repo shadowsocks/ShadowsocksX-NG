@@ -220,6 +220,15 @@ enum RuntimeLog {
   /// 系统日志 subsystem：各进程共用一个名字，Console.app 一条过滤全看。
   static let subsystem = "com.qiuyuzhou.ShadowsocksX-NG2"
 
+  /// 统一日志写入开关（测试缝）：`SSXNG_SYSTEM_LOG=0` 关闭系统日志写入，
+  /// stderr 行与事件缓冲不受影响。scheme 的测试动作注入该值，测试拉起的
+  /// 子进程在夹具 env 显式设置——测试运行不把大量日志灌进系统日志 store。
+  static let systemLogEnabled = isSystemLogEnabled(ProcessInfo.processInfo.environment)
+
+  static func isSystemLogEnabled(_ environment: [String: String]) -> Bool {
+    environment["SSXNG_SYSTEM_LOG"] != "0"
+  }
+
   private static let sinkHolder = SinkHolder()
 
   /// 注册/替换事件接收缝；传 nil 移除接收缝（测试隔离用）。
@@ -229,12 +238,15 @@ enum RuntimeLog {
 
   static func emit(_ event: RuntimeLogEvent) {
     if let line = event.standardErrorLine { FileHandle.standardError.write(Data(line.utf8)) }
-    let route = event.systemLogRoute
-    let logger = Logger(subsystem: subsystem, category: route.category)
-    if let detail = route.privateDetail {
-      logger.log(level: route.level, "\(route.text, privacy: .public)\(detail, privacy: .private)")
-    } else {
-      logger.log(level: route.level, "\(route.text, privacy: .public)")
+    if systemLogEnabled {
+      let route = event.systemLogRoute
+      let logger = Logger(subsystem: subsystem, category: route.category)
+      if let detail = route.privateDetail {
+        logger.log(
+          level: route.level, "\(route.text, privacy: .public)\(detail, privacy: .private)")
+      } else {
+        logger.log(level: route.level, "\(route.text, privacy: .public)")
+      }
     }
     sinkHolder.current?.append(event: event, timestamp: Date())
   }

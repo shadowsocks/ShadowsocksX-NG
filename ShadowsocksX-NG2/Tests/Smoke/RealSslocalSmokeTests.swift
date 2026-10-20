@@ -99,6 +99,7 @@ class RealSslocalSmokeTests: XCTestCase {
       environment["SSXNG_SSLOCAL_PATH"] = try sslocalURL.path
     }
     environment["SSXNG_RUNTIME_DIR"] = workDir.path
+    environment["SSXNG_SYSTEM_LOG"] = "0"
     process.environment = environment
     try process.run()
     wrappers.append(process)

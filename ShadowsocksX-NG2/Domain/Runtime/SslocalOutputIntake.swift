@@ -30,6 +30,8 @@ struct SslocalUnifiedLogDestination: SslocalLineDestination {
   private let logger = Logger(subsystem: RuntimeLog.subsystem, category: "sslocal")
 
   func receive(_ line: String) {
+    // 统一日志写入受测试缝控制（SSXNG_SYSTEM_LOG=0 关闭），agent.log 去向不受影响。
+    guard RuntimeLog.systemLogEnabled else { return }
     logger.log(level: Self.level(for: line), "\(line, privacy: .private)")
   }
 

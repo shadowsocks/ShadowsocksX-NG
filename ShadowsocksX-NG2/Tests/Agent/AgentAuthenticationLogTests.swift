@@ -35,6 +35,7 @@ struct AgentAuthenticationLogTests {
     environment["SSXNG_CONTRACT_PATH"] = contract.path
     environment["SSXNG_SSLOCAL_PATH"] = stub.path
     environment["SSXNG_RUNTIME_DIR"] = directory.path
+    environment["SSXNG_SYSTEM_LOG"] = "0"
     process.environment = environment
     try process.run()
     defer {
@@ -62,6 +63,8 @@ extension AgentAuthenticationLogTests {
     process.executableURL = AppArtifact.bundleURL.appendingPathComponent(
       "Contents/MacOS/ShadowsocksX-NG2Agent")
     var environment = ProcessInfo.processInfo.environment.filter { !$0.key.hasPrefix("SSXNG_") }
+    // 剥离只针对路径缝；统一日志开关继续显式关闭（与 scheme 测试动作一致）。
+    environment["SSXNG_SYSTEM_LOG"] = "0"
     if contractOverride {
       environment["SSXNG_CONTRACT_PATH"] = paths.runtime.fileURL.path
       environment["SSXNG_RUNTIME_DIR"] = root.appendingPathComponent("unused").path

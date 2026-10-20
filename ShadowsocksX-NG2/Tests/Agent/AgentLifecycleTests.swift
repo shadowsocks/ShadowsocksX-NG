@@ -84,6 +84,7 @@ class AgentLifecycleTests: XCTestCase {
     environment["SSXNG_CONTRACT_PATH"] = contractURL.path
     environment["SSXNG_SSLOCAL_PATH"] = stubURL.path
     environment["SSXNG_RUNTIME_DIR"] = workDir.path
+    environment["SSXNG_SYSTEM_LOG"] = "0"
     environment["SSLOCAL_STUB_STATE"] = stubStateURL.path
     environment["SSLOCAL_STUB_PID_DIR"] = childPIDDirectory.path
     environment["SSLOCAL_STUB_BEHAVIOR"] = behavior
