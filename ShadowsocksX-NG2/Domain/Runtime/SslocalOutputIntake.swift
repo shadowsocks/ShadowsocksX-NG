@@ -29,11 +29,11 @@ struct SslocalStandardErrorDestination: SslocalLineDestination {
 /// 获得时间戳、category、level 与行数关联；stderr/agent.log 通路没有这些
 /// 可过滤维度。级别由 intake 探测，这里只投影到统一日志五级。
 struct SslocalUnifiedLogDestination: SslocalLineDestination {
-  private let logger = Logger(subsystem: RuntimeLog.subsystem, category: "sslocal")
+  private let logger = Logger(subsystem: SystemLog.subsystem, category: "sslocal")
 
   func receive(_ row: LogLine) {
     // 统一日志写入受测试缝控制（SSXNG_SYSTEM_LOG=0 关闭），agent.log 去向不受影响。
-    guard RuntimeLog.systemLogEnabled else { return }
+    guard SystemLog.systemLogEnabled else { return }
     logger.log(level: OSLogType(row.level), "\(row.text, privacy: .private)")
   }
 }

@@ -184,15 +184,6 @@ extension RuntimeLogEvent {
   }
 }
 
-/// 系统日志路由事实：发射缝按此构造统一日志消息。`text` 已含与
-/// `privateDetail` 之间的分隔符，两者拼接等于事件的 `description`。
-struct SystemLogRoute: Sendable {
-  var level: OSLogType
-  var category: String
-  var text: String
-  var privateDetail: String?
-}
-
 /// 事件接收缝：GUI 进程把事件接入 RuntimeEventStore（内存环形
 /// 缓冲），供主窗口日志查看器实时呈现与诊断导出取用；wrapper 进程不注册
 /// （stderr 收敛进 agent.log）。接收方拿到的是封闭枚举原值，渲染发生在
@@ -219,18 +210,6 @@ enum Redactor {
 /// agent.log）与系统日志输出（统一 subsystem，Console.app 按 category 过滤，
 /// 拆出的 detail 段标 private）；GUI 启动时另注册接收缝接入事件缓冲。
 enum RuntimeLog {
-  /// 系统日志 subsystem：各进程共用一个名字，Console.app 一条过滤全看。
-  static let subsystem = "com.qiuyuzhou.ShadowsocksX-NG2"
-
-  /// 统一日志写入开关（测试缝）：`SSXNG_SYSTEM_LOG=0` 关闭系统日志写入，
-  /// stderr 行与事件缓冲不受影响。scheme 的测试动作注入该值，测试拉起的
-  /// 子进程在夹具 env 显式设置——测试运行不把大量日志灌进系统日志 store。
-  static let systemLogEnabled = isSystemLogEnabled(ProcessInfo.processInfo.environment)
-
-  static func isSystemLogEnabled(_ environment: [String: String]) -> Bool {
-    environment["SSXNG_SYSTEM_LOG"] != "0"
-  }
-
   private static let sinkHolder = SinkHolder()
   private static let lineSourceLock = OSAllocatedUnfairLock(initialState: LogLineSource.gui)
 
@@ -252,16 +231,7 @@ enum RuntimeLog {
     if let line = event.standardErrorLine(timestamp: now) {
       FileHandle.standardError.write(Data(line.utf8))
     }
-    if systemLogEnabled {
-      let route = event.systemLogRoute
-      let logger = Logger(subsystem: subsystem, category: route.category)
-      if let detail = route.privateDetail {
-        logger.log(
-          level: route.level, "\(route.text, privacy: .public)\(detail, privacy: .private)")
-      } else {
-        logger.log(level: route.level, "\(route.text, privacy: .public)")
-      }
-    }
+    SystemLog.emit(event.systemLogRoute)
     sinkHolder.current?.append(event: event, timestamp: now)
   }
 

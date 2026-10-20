@@ -1,5 +1,4 @@
 import Foundation
-import Security
 import XCTest
 
 @testable import ShadowsocksX_NG2
@@ -21,7 +20,7 @@ final class SystemProxyHelperXPCRoundTripTests: XCTestCase {
     })
     let delegate = SystemProxyHelperListenerDelegate(
       engine: engine,
-      expectedClientIdentifier: try XCTUnwrap(Self.currentProcessSigningIdentifier()))
+      expectedClientIdentifier: try XCTUnwrap(ProcessSigningIdentifier.current()))
     let listener = NSXPCListener.anonymous()
     listener.delegate = delegate
     listener.resume()
@@ -68,20 +67,5 @@ final class SystemProxyHelperXPCRoundTripTests: XCTestCase {
     }
     await fulfillment(of: [clearReplied], timeout: 10)
     XCTAssertEqual(clearedResponse, .cleared)
-  }
-
-  /// 本进程的代码签名 identifier（与生产 SystemProxyClientValidator 同一
-  /// SecCode 查询路径，对自身用 SecCodeCopySelf 取 code）。
-  private static func currentProcessSigningIdentifier() -> String? {
-    var code: SecCode?
-    guard SecCodeCopySelf([], &code) == errSecSuccess, let code else { return nil }
-    var staticCode: SecStaticCode?
-    guard SecCodeCopyStaticCode(code, [], &staticCode) == errSecSuccess, let staticCode
-    else { return nil }
-    var information: CFDictionary?
-    guard SecCodeCopySigningInformation(staticCode, SecCSFlags(), &information) == errSecSuccess,
-      let information
-    else { return nil }
-    return (information as NSDictionary)[kSecCodeInfoIdentifier] as? String
   }
 }

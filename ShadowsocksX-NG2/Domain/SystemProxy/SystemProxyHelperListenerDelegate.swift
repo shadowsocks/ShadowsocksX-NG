@@ -7,17 +7,21 @@ import Security
 final class SystemProxyHelperListenerDelegate: NSObject, NSXPCListenerDelegate {
   private let engine: SystemProxyHelperEngine
   private let expectedClientIdentifier: String
+  private let log: @Sendable (SystemProxyHelperLogEvent) -> Void
 
   /// 引擎由进程入口显式注入：特权写入器 SystemProxyWriter 属 helper 专属
   /// （不进共享编译单元），测试注入假写入器。期望客户端身份生产默认为 2.0
   /// bundle identifier；去宿主化（ADR 0021）后单测运行于 xctest runner，
-  /// 连接方身份随宿主改变，测试注入本进程实际签名 identifier。
+  /// 连接方身份随宿主改变，测试注入本进程实际签名 identifier。`log` 是
+  /// 事件发射缝（ADR-0047）：连接接受/拒绝各记一条。
   init(
     engine: SystemProxyHelperEngine,
-    expectedClientIdentifier: String = SystemProxyHelperIdentity.clientCodeSigningIdentifier
+    expectedClientIdentifier: String = SystemProxyHelperIdentity.clientCodeSigningIdentifier,
+    log: @escaping @Sendable (SystemProxyHelperLogEvent) -> Void = SystemProxyHelperLog.emit
   ) {
     self.engine = engine
     self.expectedClientIdentifier = expectedClientIdentifier
+    self.log = log
     super.init()
   }
 
@@ -28,7 +32,11 @@ final class SystemProxyHelperListenerDelegate: NSObject, NSXPCListenerDelegate {
     guard
       SystemProxyClientValidator.clientSigningIdentifier(newConnection)
         == expectedClientIdentifier
-    else { return false }
+    else {
+      log(.connectionRejected(pid: newConnection.processIdentifier))
+      return false
+    }
+    log(.connectionAccepted(pid: newConnection.processIdentifier))
     newConnection.exportedInterface = NSXPCInterface(with: SystemProxyHelperControlling.self)
     newConnection.exportedObject = engine
     newConnection.resume()

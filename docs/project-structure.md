@@ -22,14 +22,14 @@
   - `Catalog/` — 配置目录树、结构不变量错误、目录文件存储、节点与凭据身份，以及 `ss://` 编解码 `SsUri`。
   - `Subscription/` — 订阅文档解析、抓取、订阅记录与刷新失败。
   - `Rules/` — 代理模式、规则身份与匹配、内置规则快照、规则集合/浏览/分析、离线规则测试；`Rules/Custom/` 为用户自定义规则的编辑草稿、校验与存储。
-  - `Runtime/` — 代理运行服务：运行时文档与监听设置、ACL 与部署收据、路径、原子写入、文件存储、日志与事件（统一日志行 `LogLine`、sslocal 输出 intake）、端点/端口/socket 探针。
+  - `Runtime/` — 代理运行服务：运行时文档与监听设置、ACL 与部署收据、路径、原子写入、文件存储、日志与事件（统一日志发射单元 `SystemLog`、统一日志行 `LogLine`、sslocal 输出 intake）、端点/端口/socket 探针。
   - `Activation/` — 激活候选校验、激活状态机与 `RuntimeConfiguration`。
   - `Settings/` — 代理监听配置文件、独立代理控制偏好、运行计算的内存快照与静默启动偏好。
-  - `SystemProxy/` — 系统代理 typed 配置、property list 映射、计划器与特权 helper 的 XPC 契约/请求引擎。
+  - `SystemProxy/` — 系统代理 typed 配置、property list 映射、计划器、特权 helper 的 XPC 契约/请求引擎与 helper 侧日志事件。
   - `Plugin/` — 托管插件、用户插件映射与插件安全校验。
   - `Credentials/`、`LegacyImport/`、`Diagnostics/` — 主密钥存储与加密文件提交、旧版导入、诊断报告。
 
-  跨进程契约按**文件**编入其它 target：`Runtime/` 的 8 个文件和 `Settings/ApplicationSupportPaths.swift` 同时编入 wrapper（`RuntimePaths`、`RuntimeSupervision`、`RuntimeLog`、`LogLine`、`SslocalOutputIntake` 等），`SystemProxy/` 全部 6 个文件编入特权 helper。`project.yml` 里这 15 条是显式路径，在 `Domain/` 内移动文件必须同步，漏改会让 `xcodegen generate` 以缺文件直接失败。布局守卫（`Tests/Architecture/SkeletonTests.swift` 的 `DomainLayoutTests`）断言根下无平铺 `.swift`、树下只有 `.swift`（非源码文件会被 XcodeGen 收进 Resources 阶段并封进签名后的 bundle）。
+  跨进程契约按**文件**编入其它 target：`Runtime/` 的 9 个文件和 `Settings/ApplicationSupportPaths.swift` 同时编入 wrapper（`RuntimePaths`、`RuntimeSupervision`、`RuntimeLog`、`SystemLog`、`LogLine`、`SslocalOutputIntake` 等），`SystemProxy/` 全部 7 个文件连同 `Runtime/SystemLog.swift` 编入特权 helper（helper 侧日志只进统一日志，ADR-0047）。`project.yml` 里这 18 条是显式路径，在 `Domain/` 内移动文件必须同步，漏改会让 `xcodegen generate` 以缺文件直接失败。布局守卫（`Tests/Architecture/SkeletonTests.swift` 的 `DomainLayoutTests`）断言根下无平铺 `.swift`、树下只有 `.swift`（非源码文件会被 XcodeGen 收进 Resources 阶段并封进签名后的 bundle）。
 - `Tests/` — 单元测试 target，随 `ShadowsocksX-NG2` scheme 运行。目录即主题，根下不留平铺测试文件：
   - `Architecture/` — 跨切面工程约束守卫（分层与布局、平台效应 seam、开窗落点、清单完整性），扫源码或构建产物而不驱动行为。
   - `TestSupport/` — 测试等待与清理 helper 的故障回归用例。

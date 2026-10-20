@@ -8,4 +8,7 @@ let delegate = SystemProxyHelperListenerDelegate(
 let listener = NSXPCListener(machServiceName: SystemProxyHelperIdentity.machServiceName)
 listener.delegate = delegate
 listener.resume()
+// 拉起就绪事件只进统一日志（ADR-0047）：launchd 丢弃本进程 stdout/stderr，
+// 这是「helper 是否被拉起」的唯一痕迹。
+SystemProxyHelperLog.emit(.listenerReady)
 dispatchMain()

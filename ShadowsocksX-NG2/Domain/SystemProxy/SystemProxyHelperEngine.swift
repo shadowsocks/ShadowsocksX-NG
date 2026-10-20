@@ -26,35 +26,38 @@ final class SystemProxyHelperEngine: NSObject, SystemProxyHelperControlling {
 
   private let queue: DispatchQueue
   private let perform: Performing
+  private let log: @Sendable (SystemProxyHelperLogEvent) -> Void
 
-  init(perform: @escaping Performing, queue: DispatchQueue? = nil) {
+  /// `log` 是事件发射缝（ADR-0047）：生产直通统一日志，测试注入替身
+  /// 断言发射内容；默认参数不改变既有测试装配。
+  init(
+    perform: @escaping Performing,
+    queue: DispatchQueue? = nil,
+    log: @escaping @Sendable (SystemProxyHelperLogEvent) -> Void = SystemProxyHelperLog.emit
+  ) {
     self.perform = perform
     self.queue = queue ?? Self.sharedQueue
+    self.log = log
     super.init()
   }
 
   func apply(_ payload: Data, withReply reply: @escaping (Data) -> Void) {
     let reply = ReplyBox(reply)
-    queue.async { [perform, reply] in
+    queue.async { [perform, reply, log] in
       let request = Result { try SystemProxyHelperWire.decodeConfiguration(payload) }
-      reply(Self.responseData(request: request.map { .apply($0) }, perform: perform))
+      reply(
+        Self.loggedResponseData(request: request.map { .apply($0) }, perform: perform, log: log))
     }
   }
 
   func clear(withReply reply: @escaping (Data) -> Void) {
     let reply = ReplyBox(reply)
-    queue.async { [perform, reply] in
-      reply(Self.responseData(request: .success(.clear), perform: perform))
+    queue.async { [perform, reply, log] in
+      reply(Self.loggedResponseData(request: .success(.clear), perform: perform, log: log))
     }
   }
 
   // MARK: - 请求执行（纯逻辑，可测）
-
-  static func responseData(
-    request: Result<Request, Error>, perform: Performing
-  ) -> Data {
-    SystemProxyHelperWire.encode(response(request: request, perform: perform))
-  }
 
   static func response(
     request: Result<Request, Error>, perform: Performing
@@ -72,6 +75,17 @@ final class SystemProxyHelperEngine: NSObject, SystemProxyHelperControlling {
     } catch {
       return .failure(.helperUnavailable(String(describing: error)))
     }
+  }
+
+  /// 执行请求、按应答发射一条执行结果事件并编码应答——日志与应答同源，
+  /// 不可能记下与回传不一致的结果。
+  private static func loggedResponseData(
+    request: Result<Request, Error>, perform: Performing,
+    log: @Sendable (SystemProxyHelperLogEvent) -> Void
+  ) -> Data {
+    let response = self.response(request: request, perform: perform)
+    log(SystemProxyHelperLogEvent(response: response))
+    return SystemProxyHelperWire.encode(response)
   }
 }
 
