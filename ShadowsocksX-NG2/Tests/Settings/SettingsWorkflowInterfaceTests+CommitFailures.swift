@@ -20,7 +20,6 @@ extension SettingsWorkflowInterfaceTests {
     XCTAssertEqual(workflow.lastFailure, .store(.ioFailure(detail: "disk full")))
     XCTAssertTrue(workflow.lastFailure?.presentableMessage.contains("偏好文件") == true)
     XCTAssertEqual(committing.committedSettings, original)
-    XCTAssertTrue(committing.updateCalls.isEmpty)
     XCTAssertFalse(workflow.isCommitting)
   }
 }

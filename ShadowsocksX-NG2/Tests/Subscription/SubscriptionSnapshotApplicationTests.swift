@@ -154,11 +154,6 @@ final class SubscriptionSnapshotApplicationTests: XCTestCase {
                 encryptionMethod: "aes-256-gcm", password: "password")))
         ]))
     _ = try catalog.applySubscriptionSnapshot(document, into: groupID)
-    for entry in catalog.entries.values {
-      if case .server(var fields) = entry.kind {
-        fields.password = "resolved"
-      }
-    }
 
     let effect = machine.catalogDidCommit(
       catalog, plugins: NoManagedPluginProvider(),

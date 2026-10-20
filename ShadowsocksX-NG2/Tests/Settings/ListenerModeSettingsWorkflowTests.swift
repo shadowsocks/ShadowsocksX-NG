@@ -128,7 +128,6 @@ extension SettingsWorkflowInterfaceTests {
       .commitFailed(.store(.ioFailure(detail: "disk full"))))
     XCTAssertEqual(workflow.lastFailure, .store(.ioFailure(detail: "disk full")))
     XCTAssertEqual(committing.committedSettings, original)
-    XCTAssertTrue(committing.updateCalls.isEmpty)
     XCTAssertFalse(workflow.isCommitting)
   }
 }

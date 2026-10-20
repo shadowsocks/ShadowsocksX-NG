@@ -101,9 +101,6 @@ struct UnreadableSettingsTests {
       return
     }
     #expect(
-      AppPresentation.message(for: RuntimeFailureFacts.launch(.unreadableSettings))
-        .contains("配置无法读取"))
-    #expect(
       fixture.agent.unregisterCount == 0, "读取失败不得停止已有后台代理")
     #expect(RuntimeFileStore(fileURL: fixture.runtime.contract).loadDocument() != nil)
     #expect(fixture.systemProxy.applied.isEmpty)

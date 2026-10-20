@@ -137,8 +137,8 @@ final class CatalogCommitCoordinatorTests: XCTestCase {
       try catalog.addTestServer("新节点")
     }
 
+    // 一次提交恰好一次同步。
     await waitUntilRuntimeSettles(runtime.convergeCount == 1)
-    XCTAssertEqual(runtime.convergeCount, 1, "一次提交恰好一次同步")
     let snapshot = try XCTUnwrap(runtime.convergeSnapshots.first)
     XCTAssertTrue(snapshot.catalog.contains(added), "同步使用刚提交的内存快照")
     XCTAssertEqual(snapshot.subscriptions, [])
@@ -183,9 +183,9 @@ final class CatalogCommitCoordinatorTests: XCTestCase {
     try coordinator.commit { catalog, _ in try catalog.renameGroup(groupID, to: "改名") }
     await waitUntilRuntimeSettles(runtime.convergeCount == 2)
     _ = try coordinator.commit { catalog, _ in try catalog.remove(serverID) }
+    // 移动、改名、删除各触发一次同步。
     await waitUntilRuntimeSettles(runtime.convergeCount == 3)
 
-    XCTAssertEqual(runtime.convergeCount, 3, "移动、改名、删除各触发一次同步")
     XCTAssertEqual(
       coordinator.syncStatus,
       .finished(generation: 3, outcome: .converged(skippedServers: [])),
@@ -239,7 +239,6 @@ final class CatalogCommitCoordinatorTests: XCTestCase {
     // 同一 MainActor 回合内的两次提交：旧代次同步尚未启动即被取代。
     await waitUntilRuntimeSettles(runtime.convergeCount == 1)
 
-    XCTAssertEqual(runtime.convergeCount, 1, "被取代的旧代次不触碰运行时")
     let snapshot = try XCTUnwrap(runtime.convergeSnapshots.first)
     XCTAssertEqual(snapshot.catalog.rootChildren.count, 2, "最终同步采用最新提交快照")
     XCTAssertEqual(

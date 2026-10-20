@@ -23,7 +23,6 @@ extension CatalogWorkflowSubscriptionTests {
       }
     }
     await waitUntilRuntimeSettles(runtime.convergeCount - convergesBefore == 2)
-    XCTAssertEqual(runtime.convergeCount - convergesBefore, 2)
   }
 
   func testSubscriptionsPersistAcrossWorkflowReload() async throws {

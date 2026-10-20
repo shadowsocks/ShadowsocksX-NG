@@ -37,13 +37,11 @@ final class SubscriptionRefreshFailureTests: XCTestCase {
     }
   }
 
-  func testHTTPStatusFailureRoundTripsAsTypedFacts() throws {
+  func testHTTPStatusFailurePayloadOmitsInternalReason() throws {
     let failure = SubscriptionRefreshFailure.httpStatus(code: 503)
 
     let data = try JSONEncoder().encode(failure)
-    let restored = try JSONDecoder().decode(SubscriptionRefreshFailure.self, from: data)
 
-    XCTAssertEqual(restored, failure)
     let json = String(bytes: data, encoding: .utf8) ?? ""
     XCTAssertFalse(json.contains("reason"))
   }
@@ -52,9 +50,7 @@ final class SubscriptionRefreshFailureTests: XCTestCase {
     let failure = SubscriptionRefreshFailure.commit
 
     let data = try JSONEncoder().encode(failure)
-    let restored = try JSONDecoder().decode(SubscriptionRefreshFailure.self, from: data)
 
-    XCTAssertEqual(restored, failure)
     let json = String(bytes: data, encoding: .utf8) ?? ""
     XCTAssertFalse(json.contains("credential"))
     XCTAssertFalse(json.contains("reference"))

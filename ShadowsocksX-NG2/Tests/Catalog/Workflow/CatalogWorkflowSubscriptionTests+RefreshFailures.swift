@@ -27,7 +27,6 @@ extension CatalogWorkflowSubscriptionTests {
     XCTAssertEqual(failure, .httpStatus(code: 503))
     // 仅状态提交了一次（快照未动）。
     await waitUntilRuntimeSettles(runtime.convergeCount - convergesBefore == 1)
-    XCTAssertEqual(runtime.convergeCount - convergesBefore, 1)
   }
 
   func testDuplicateIDFailureKeepsSnapshot() async throws {
