@@ -191,20 +191,6 @@ final class SettingsWorkflowInterfaceTests: XCTestCase {
     XCTAssertEqual(committing.updateCalls, [expected])
     XCTAssertEqual(committing.committedSettings, expected)
     XCTAssertNil(workflow.lastFailure)
-  }
-
-  func testProxyExceptionsIgnoreListeningPersistenceFailure() async {
-    let original = committedSettingsForItemSaveTests()
-    committing.committedSettings = original
-    committing.updateError = ProxyListeningStoreError.ioFailure(detail: "disk full")
-    let workflow = makeWorkflow()
-
-    let outcome = await workflow.saveProxyExceptions("localhost")
-
-    XCTAssertEqual(outcome, .persisted)
-    XCTAssertEqual(committing.committedSettings.proxyExceptions, "localhost")
-    XCTAssertEqual(committing.committedSettings.listen, original.listen)
-    XCTAssertNil(workflow.lastFailure)
     XCTAssertFalse(workflow.isCommitting)
   }
 

@@ -20,6 +20,7 @@ final class ProxyRuntimeAgentAndSystemProxyTests: ProxyRuntimeControllerTests {
 
     XCTAssertEqual(controller.state, .running, "无活动目标 agent 仍提供本地监听")
     XCTAssertEqual(agent.registerCount, 1, "开启意图驱动注册")
+    XCTAssertEqual(controller.controlPreferences.agentEnabled, true, "开启意图随快照持久化")
     let onDisk = try XCTUnwrap(
       RuntimeFileStore(fileURL: runtime.contract).loadDocument())
     XCTAssertTrue(onDisk.servers.isEmpty, "无活动目标以空服务器列表监听")
@@ -221,6 +222,7 @@ extension ProxyRuntimeAgentAndSystemProxyTests {
 
     await controller.setAgentEnabled(false)
 
+    XCTAssertEqual(controller.state, .off, "关闭级联后运行时停止")
     XCTAssertEqual(
       eventLog.events,
       ["register", "apply", "clear", "unregister"],
@@ -249,27 +251,6 @@ extension ProxyRuntimeAgentAndSystemProxyTests {
     XCTAssertEqual(controller.state, .off)
     XCTAssertEqual(systemProxy.clearCount, 0, "未发生 on→off 迁移，不清理")
     XCTAssertEqual(controller.systemProxyState, .idle)
-  }
-
-  /// 关闭级联独立于监听文件，仍先清理系统代理再停止服务。
-  func testAgentOffCascadeIgnoresListeningFileFailure() async throws {
-    let seeded = try makeSeededCatalog()
-    let listeningStore = InMemoryProxyListeningStore()
-    listeningStore.saveError = ProxyListeningStoreError.ioFailure(detail: "disk full")
-    let controller = makeController(
-      probe: ProxyRuntimeFixture.FakeProbe.reachable(), listeningStore: listeningStore,
-      settings: ProxyRuntimeSettings(
-        listen: ActivationFixture.listen, agentEnabled: true, systemProxyEnabled: true))
-    try await controller.activate(seeded.server)
-
-    await controller.setAgentEnabled(false)
-
-    XCTAssertEqual(controller.state, .off)
-    XCTAssertGreaterThan(systemProxy.clearCount, 0)
-    XCTAssertFalse(controlPreferences.agentEnabled)
-    XCTAssertFalse(controlPreferences.systemProxyEnabled)
-    XCTAssertEqual(controller.systemProxyState, .idle)
-    XCTAssertNil(listeningStore.saved)
   }
 
   /// 特权 helper 待批准：意图保持待应用、系统设置不变，

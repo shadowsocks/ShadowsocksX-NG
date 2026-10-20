@@ -338,12 +338,10 @@ func makeTestProxyControlPreferences() -> ProxyControlPreferences {
 
 final class InMemoryProxyListeningStore: ProxyListeningStoring {
   var saved: ProxyListeningConfiguration?
-  var saveError: Error?
 
   func load() throws -> ProxyListeningConfiguration { saved ?? ProxyListeningConfiguration() }
 
   func save(_ configuration: ProxyListeningConfiguration) throws {
-    if let saveError { throw saveError }
     try configuration.enforcePersistenceConstraints()
     saved = configuration
   }

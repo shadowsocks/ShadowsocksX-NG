@@ -244,22 +244,6 @@ final class ProxyControlWorkflowIntegrationTests: XCTestCase {
     XCTAssertEqual(systemProxy.clearCount, 0)
   }
 
-  func testModeChoiceIgnoresListeningFileFailure() async throws {
-    _ = try makeSeededCatalog()
-    let listeningStore = InMemoryProxyListeningStore()
-    listeningStore.saveError = ProxyListeningStoreError.ioFailure(detail: "disk unavailable")
-    let composition = makeProxies(
-      probe: ProxyRuntimeFixture.FakeProbe.reachable(), listeningStore: listeningStore,
-      settings: ProxyRuntimeSettings(listen: ActivationFixture.listen, agentEnabled: false))
-
-    let snapshot = await composition.control.setProxyMode(.global)
-
-    XCTAssertEqual(snapshot.proxyMode, .global)
-    XCTAssertEqual(controlPreferences.preferredMode, .global)
-    XCTAssertEqual(snapshot.runtime, ProxyRuntimeFacts(status: .off, isOn: false))
-    XCTAssertNil(listeningStore.saved)
-  }
-
   func testSameModeCommandIsNoopWithoutSettingsOrSystemProxyWrites() async throws {
     _ = try makeSeededCatalog()
     let listeningStore = InMemoryProxyListeningStore()

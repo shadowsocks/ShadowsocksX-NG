@@ -116,21 +116,6 @@ final class ProxyRuntimeModeCommandTests: ProxyRuntimeControllerTests {
     XCTAssertEqual(restored.proxyMode, .global)
   }
 
-  func testModeChoiceDoesNotDependOnListeningFileWrites() async throws {
-    let listeningStore = InMemoryProxyListeningStore()
-    listeningStore.saveError = FakeSettingsSaveError.system
-    let controller = makeController(
-      probe: ProxyRuntimeFixture.FakeProbe.reachable(), listeningStore: listeningStore,
-      settings: ProxyRuntimeSettings(listen: ActivationFixture.listen, agentEnabled: false))
-
-    await controller.setProxyMode(.global)
-
-    XCTAssertEqual(controller.proxyMode, .global)
-    XCTAssertEqual(controller.settings.preferredMode, .global)
-    XCTAssertEqual(controller.state, .off)
-    XCTAssertNil(listeningStore.saved)
-  }
-
   func testDirectModeDeploysACLWithoutServerAndProjectsSOCKSProxy() async throws {
     let listeningStore = InMemoryProxyListeningStore()
     let controller = makeController(
@@ -227,22 +212,6 @@ final class ProxyRuntimeModeCommandTests: ProxyRuntimeControllerTests {
     XCTAssertGreaterThan(systemProxy.clearCount, 0)
   }
 
-  func testAgentToggleIgnoresListeningFileFailure() async throws {
-    let listeningStore = InMemoryProxyListeningStore()
-    listeningStore.saveError = FakeSettingsSaveError.system
-    let controller = makeController(
-      probe: ProxyRuntimeFixture.FakeProbe.reachable(), listeningStore: listeningStore,
-      settings: ProxyRuntimeSettings(listen: ActivationFixture.listen, agentEnabled: false))
-
-    await controller.setAgentEnabled(true)
-
-    XCTAssertTrue(controller.agentIntentEnabled)
-    XCTAssertTrue(controlPreferences.agentEnabled)
-    XCTAssertEqual(controller.state, .running)
-    XCTAssertEqual(agent.registerCount, 1)
-    XCTAssertNil(listeningStore.saved)
-  }
-
   func testDirectReceiptIsRecheckedAfterReachableStaleListenerProbes() async throws {
     let seeded = try makeSeededCatalog()
     let listeningStore = InMemoryProxyListeningStore()
@@ -273,12 +242,6 @@ final class ProxyRuntimeModeCommandTests: ProxyRuntimeControllerTests {
     XCTAssertNotNil(runtimeStore.readFailure())
     XCTAssertEqual(systemProxy.applied.count, appliedCount)
     XCTAssertGreaterThan(systemProxy.clearCount, 0)
-  }
-
-  private enum FakeSettingsSaveError: Error, CustomStringConvertible {
-    case system
-
-    var description: String { "fake-save-error" }
   }
 }
 

@@ -323,15 +323,15 @@ struct PluginCatalogSecurityTests {
     #expect(snapshot.resolve(program: "tool")?.path == nil)
   }
 
-  @Test func userDiagnosticFactsNeverInheritManagedVersion() {
+  /// 用户来源条目在生产映射中恒无版本（managedInfo 为 nil），
+  /// 报告行内显示来源标签而不是版本号。
+  @Test func userDiagnosticFactsShowSourceLabelInsteadOfVersion() {
     var snapshot = DiagnosticSnapshot()
     snapshot.managedPlugins = [
-      DiagnosticPluginFacts(
-        program: "v2ray-plugin", version: "v1.3.2", present: true, source: .user)
+      DiagnosticPluginFacts(program: "v2ray-plugin", version: "", present: true, source: .user)
     ]
     let report = DiagnosticReportBuilder.markdown(from: snapshot)
     #expect(report.contains("v2ray-plugin user"))
-    #expect(!report.contains("v1.3.2"))
   }
 
 }
