@@ -2,7 +2,7 @@
 
 **Status**：accepted（2026-10-19）。已实施；验证结果见对应实现提交。
 
-后续修订：GUI 与上游配置的单向输出及私有意图比较见 [ADR-0043](0043-one-way-sslocal-configuration-output.md)。
+后续修订：GUI 与上游配置的单向输出及私有意图比较见 [ADR-0043](0043-one-way-sslocal-configuration-output.md)。ACL 变化改用信号热重载见 [ADR-0048](0048-reload-sslocal-acl-by-signal.md)，取代下文 ACL 变化必须重启的规定。
 
 ## 职责
 

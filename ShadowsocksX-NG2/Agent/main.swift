@@ -89,9 +89,9 @@ private func superviseChild(
   flags: SignalFlags
 ) -> SupervisionOutcome {
   var current = document
-  // SIGUSR1 没有应用确认，旧进程曾用过的引用保守保留到该进程退出。
+  // 重载信号没有应用确认，旧进程曾用过的引用保守保留到该进程退出。
   var processFiles = document.retainedFiles
-  var reloadPending = false
+  var reloadPending = Set<Int32>()
   var healthy = false
   var receiptPublished = false
   var readinessDeadline = Date().addingTimeInterval(listenEstablishmentDeadline)
@@ -113,13 +113,10 @@ private func superviseChild(
     }
     if !healthy {
       if listenersAreEstablished(document: current, child: child) {
-        if reloadPending {
-          guard kill(child.processIdentifier, SIGUSR1) == 0 else {
-            recordDeploymentFailure(current, reason: "Deferred reload failed")
-            _ = stopChild(child)
-            return .stopped
-          }
-          reloadPending = false
+        guard sendReloadSignals(&reloadPending, to: child.processIdentifier) else {
+          recordDeploymentFailure(current, reason: "Deferred reload failed")
+          _ = stopChild(child)
+          return .stopped
         }
         healthy = true
       } else if Date() >= readinessDeadline {
@@ -165,23 +162,31 @@ private func superviseChild(
         }
         return .restart
       }
-      let needsDeferral = next.acl != nil && !listenersAreEstablished(document: next, child: child)
-      guard selectDeployment(next), needsDeferral || kill(child.processIdentifier, SIGUSR1) == 0
+      // 无需重启的更新沿用本子进程已建立的监听事实。
+      let needsDeferral = next.acl != nil && !healthy
+      reloadPending.formUnion(next.reloadSignals(from: current))
+      guard selectDeployment(next),
+        needsDeferral
+          || sendReloadSignals(&reloadPending, to: child.processIdentifier)
       else {
-        recordDeploymentFailure(next, reason: "Server reload failed")
+        recordDeploymentFailure(next, reason: "Reload failed")
         _ = stopChild(child)
         return .stopped
       }
       RuntimeLog.emit(needsDeferral ? .reloadDeferred : .reloadForwarded)
-      reloadPending = needsDeferral
       processFiles.formUnion(next.retainedFiles)
       current = next
       receiptPublished = false
-      healthy = false
       readinessDeadline = Date().addingTimeInterval(listenEstablishmentDeadline)
     }
     _ = flags.wait(timeout: .now() + listenProbeInterval)
   }
+}
+
+private func sendReloadSignals(_ signals: inout Set<Int32>, to processID: Int32) -> Bool {
+  guard signals.sorted().allSatisfy({ kill(processID, $0) == 0 }) else { return false }
+  signals.removeAll()
+  return true
 }
 
 /// 停止超时不得进入启动分支。保留 pid 文件供下次 Agent 拒绝重叠启动。

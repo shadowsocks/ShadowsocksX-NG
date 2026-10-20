@@ -1,9 +1,49 @@
+import Darwin
 import Foundation
 import Testing
 
 @testable import ShadowsocksX_NG2
 
 struct RuntimePublicationTests {
+  @Test func aclAndServerChangesDoNotRequireRestart() throws {
+    let runtime = ProxyRuntimeFixture.makeTemporaryRuntime()
+    defer { try? FileManager.default.removeItem(at: runtime.directory) }
+    let store = RuntimeFileStore(fileURL: runtime.contract)
+    try store.write(
+      ProxyRuntimeFixture.makeDocument().replacingACL(.global(at: store.aclFileURL)))
+    let previous = try #require(RuntimePublication.load(at: store.supervisionFileURL))
+    try store.write(
+      ProxyRuntimeFixture.makeDocument(serverAddress: "198.51.100.9")
+        .replacingACL(.direct(at: store.aclFileURL)))
+    let next = try #require(RuntimePublication.load(at: store.supervisionFileURL))
+    #expect(next.acl != previous.acl)
+    #expect(next.configurationID != previous.configurationID)
+    #expect(next.reloadSignals(from: previous) == [SIGUSR1, SIGUSR2])
+    #expect(!next.requiresRestart(from: previous))
+  }
+
+  @Test func configurationIdentitySurvivesACLOnlyPublicationAndLegacyReloadIsConservative() throws {
+    let runtime = ProxyRuntimeFixture.makeTemporaryRuntime()
+    defer { try? FileManager.default.removeItem(at: runtime.directory) }
+    let store = RuntimeFileStore(fileURL: runtime.contract)
+    let source = ProxyRuntimeFixture.makeDocument().replacingACL(.global(at: store.aclFileURL))
+    try store.write(source)
+    let previous = try #require(RuntimePublication.load(at: store.supervisionFileURL))
+    try store.write(source.replacingACL(.direct(at: store.aclFileURL)))
+    let next = try #require(RuntimePublication.load(at: store.supervisionFileURL))
+    #expect(previous.configurationID != nil)
+    #expect(next.configurationID == previous.configurationID)
+    #expect(next.configuration != previous.configuration)
+    #expect(next.reloadSignals(from: previous) == [SIGUSR2])
+    let bytes = try JSONEncoder().encode(next)
+    var object = try #require(JSONSerialization.jsonObject(with: bytes) as? [String: Any])
+    object.removeValue(forKey: "configurationID")
+    let legacy = try JSONDecoder().decode(
+      RuntimeSupervision.self, from: JSONSerialization.data(withJSONObject: object))
+    #expect(legacy.hasValidStructure)
+    #expect(legacy.reloadSignals(from: legacy) == [SIGUSR1])
+  }
+
   @Test func publicationDoesNotSelectActiveLinks() throws {
     let runtime = ProxyRuntimeFixture.makeTemporaryRuntime()
     defer { try? FileManager.default.removeItem(at: runtime.directory) }
@@ -218,6 +258,7 @@ extension RuntimePublicationTests {
     let bytes = try Data(contentsOf: store.supervisionFileURL)
     for (key, value) in [
       ("version", 1 as Any), ("version", 99 as Any), ("configuration", "../outside.json" as Any),
+      ("configurationID", "invalid-identity" as Any),
     ] {
       var object = try #require(JSONSerialization.jsonObject(with: bytes) as? [String: Any])
       object[key] = value

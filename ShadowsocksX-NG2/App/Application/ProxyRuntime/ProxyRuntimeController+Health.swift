@@ -29,7 +29,8 @@ extension ProxyRuntimeController {
     requiresReceipt: Bool = false,
     convergeProxyOnSuccess: Bool = true,
     preserveProxyOnFailure: Bool = false,
-    preparedContract: PreparedRuntimeContract? = nil
+    preparedContract: PreparedRuntimeContract? = nil,
+    reloadingProcessID: Int32? = nil
   ) async -> Bool {
     guard preparedContract == nil || preparedContract?.document == document else {
       return await reportRuntimeFileFailure(preserveProxyOnFailure: preserveProxyOnFailure)
@@ -49,7 +50,8 @@ extension ProxyRuntimeController {
       guard generation == flowGeneration, preparation == runtimePreparationGeneration else {
         return false
       }
-      let attempt = await launchHealthAttempt(facts, expectedDigest: expectedDigest)
+      let attempt = await launchHealthAttempt(
+        facts, expectedDigest: expectedDigest, reloadingProcessID: reloadingProcessID)
       guard generation == flowGeneration, preparation == runtimePreparationGeneration else {
         return false
       }
@@ -78,7 +80,7 @@ extension ProxyRuntimeController {
 
   private func launchHealthAttempt(
     _ document: RuntimeDeploymentFacts,
-    expectedDigest: String?
+    expectedDigest: String?, reloadingProcessID: Int32? = nil
   ) async -> LaunchHealthAttempt {
     if runtimeFileStore.blocksDeployment(document.intentSHA256) { return .agentLost }
     var receiptForHealth: RuntimeDeploymentReceipt?
@@ -94,8 +96,11 @@ extension ProxyRuntimeController {
       receiptForHealth = receipt
     }
 
-    if let endpointFailure = await unhealthyLocalEndpoint(in: document) {
-      return .retry(endpointFailure)
+    if reloadingProcessID == nil || receiptForHealth?.processID != reloadingProcessID {
+      if reloadingProcessID != nil { state = .starting }
+      if let endpointFailure = await unhealthyLocalEndpoint(in: document) {
+        return .retry(endpointFailure)
+      }
     }
 
     if let receiptForHealth {
@@ -224,7 +229,7 @@ extension ProxyRuntimeController {
       else { return }
       systemProxyObserver.refreshSystemProxyApproval()
       systemProxyObserver.updateSystemProxyActions()
-      guard settings.systemProxyEnabled, state != .starting,
+      guard settings.systemProxyEnabled, state != .starting, runtimeReloadProcesses.isEmpty,
         !systemProxyObserver.systemProxyStartupInProgress, settings.agentEnabled,
         let document = runtimeObservation
       else { continue }

@@ -8,6 +8,93 @@ final class ProxyRuntimeModeCommandTests: ProxyRuntimeControllerTests {
     BuiltinRuleSnapshots(loader: ProxyRuntimeFixture.controlFlowRuleSnapshot)
   }
 
+  func testHealthyModeSwitchKeepsRunningWithoutProbingPorts() async throws {
+    let seeded = try makeSeededCatalog()
+    let probe = ProxyRuntimeFixture.FakeProbe.reachable()
+    let controller = makeController(probe: probe)
+    try await controller.activate(seeded.server)
+    try Data("42".utf8).write(to: runtime.pidFile)
+    let callsBefore = probe.callCount
+    let runtimeStore = RuntimeFileStore(fileURL: runtime.contract)
+    var statesAtReload: [ProxyRuntimeController.AgentRunState] = []
+    signals.reloadReceipt = {
+      statesAtReload.append(controller.state)
+      try? runtimeStore.writePublishedRuntimeReceipt(processID: 42)
+    }
+
+    await controller.setProxyMode(.direct)
+    await controller.setProxyMode(.global)
+    await controller.setProxyMode(.rule)
+
+    XCTAssertEqual(statesAtReload, [.running, .running, .running])
+    XCTAssertEqual(controller.state, .running)
+    XCTAssertEqual(probe.callCount, callsBefore, "热重载不得重新探测未变化的监听端口")
+  }
+
+  func testACLReloadWithReplacementChildStillProbesListeners() async throws {
+    let seeded = try makeSeededCatalog()
+    let probe = ProxyRuntimeFixture.FakeProbe.reachable()
+    let controller = makeController(probe: probe, processIsAlive: { [42, 43].contains($0) })
+    try await controller.activate(seeded.server)
+    try Data("42".utf8).write(to: runtime.pidFile)
+    let callsBefore = probe.callCount
+    let runtimeStore = RuntimeFileStore(fileURL: runtime.contract)
+    signals.reloadReceipt = { try? runtimeStore.writePublishedRuntimeReceipt(processID: 43) }
+
+    await controller.setProxyMode(.direct)
+
+    XCTAssertEqual(controller.state, .running)
+    XCTAssertGreaterThan(probe.callCount, callsBefore, "新子进程必须重新验证监听")
+  }
+
+  func testACLReloadRequiresCurrentReceiptWithoutProbingUnchangedListeners() async throws {
+    let seeded = try makeSeededCatalog()
+    let probe = ProxyRuntimeFixture.FakeProbe.reachable()
+    let controller = makeController(probe: probe)
+    try await controller.activate(seeded.server)
+    try Data("42".utf8).write(to: runtime.pidFile)
+    let callsBefore = probe.callCount
+    signals.reloadReceipt = {}
+
+    await controller.setProxyMode(.direct)
+
+    XCTAssertEqual(controller.state, .serviceFailed(.agent))
+    XCTAssertEqual(probe.callCount, callsBefore)
+    XCTAssertNotNil(RuntimeFileStore(fileURL: runtime.contract).readFailure())
+  }
+
+  func testNewModeSupersedesPendingACLReloadWithoutStartingOrProbing() async throws {
+    let seeded = try makeSeededCatalog()
+    let probe = ProxyRuntimeFixture.FakeProbe.reachable()
+    let waiting = expectation(description: "waiting for reload receipt")
+    let gate = RuleRuntimeDelayGate(started: waiting)
+    let controller = makeController(
+      probe: probe, launchHealthTimeoutSeconds: 5,
+      launchHealthRetryDelay: { try await gate.wait() })
+    try await controller.activate(seeded.server)
+    try Data("42".utf8).write(to: runtime.pidFile)
+    let callsBefore = probe.callCount
+    signals.reloadReceipt = {}
+    let pending = Task { await controller.setProxyMode(.direct) }
+    try await withTestTask(pending, release: { gate.resume() }) {
+      try await requireTestPhase([waiting])
+      XCTAssertEqual(controller.state, .running)
+      let store = RuntimeFileStore(fileURL: runtime.contract)
+      var stateAtReload: ProxyRuntimeController.AgentRunState?
+      self.signals.reloadReceipt = {
+        stateAtReload = controller.state
+        try? store.writePublishedRuntimeReceipt(processID: 42)
+      }
+      await controller.setProxyMode(.global)
+      XCTAssertEqual(stateAtReload, .running)
+      XCTAssertEqual(controller.state, .running)
+      XCTAssertEqual(probe.callCount, callsBefore)
+    }
+    XCTAssertTrue(controller.runtimeReloadProcesses.isEmpty)
+    XCTAssertEqual(controller.proxyMode, .global)
+    XCTAssertEqual(controller.state, .running)
+  }
+
   func testSetProxyModePersistsTheChoiceAndARestoreRestoresIt() async throws {
     let listeningStore = InMemoryProxyListeningStore()
     let controller = makeController(

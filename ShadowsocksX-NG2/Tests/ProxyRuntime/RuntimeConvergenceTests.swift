@@ -116,12 +116,13 @@ struct RuntimeConvergenceTests {
   }
 
   @Test(arguments: [false, true])
-  func unchangedModeACLOnlyChecksHealthWhenSystemProxyIsEnabled(
+  func unchangedModeACLDoesNotReprobeHealthyListeners(
     systemProxyEnabled: Bool
   ) async throws {
     let fixture = try Fixture(systemProxyEnabled: systemProxyEnabled)
     defer { fixture.cleanUp() }
     try await fixture.controller.activate(fixture.server)
+    try Data("42".utf8).write(to: fixture.runtime.pidFile)
     let bytes = try Data(contentsOf: fixture.runtimeStore.fileURL)
     let registers = fixture.agent.registerCount
     let unregisters = fixture.agent.unregisterCount
@@ -138,7 +139,7 @@ struct RuntimeConvergenceTests {
     #expect(fixture.agent.registerCount == registers)
     #expect(fixture.agent.unregisterCount == unregisters)
     #expect(fixture.signals.signalsSent.filter { $0.signal != 0 }.count == signals)
-    #expect(fixture.probe.ports.count == probes + (systemProxyEnabled ? 2 : 0))
+    #expect(fixture.probe.ports.count == probes)
   }
 
   @MainActor

@@ -317,6 +317,7 @@ struct RuntimeDeploymentFacts: Equatable, Sendable {
   let hasServers: Bool
   let aclSummary: String?
   let intentSHA256: String?
+  let configurationIntentSHA256: String?
 
   init(_ document: SslocalRuntimeDocument) {
     locals = document.locals.map {
@@ -328,5 +329,6 @@ struct RuntimeDeploymentFacts: Equatable, Sendable {
     hasServers = !document.servers.isEmpty
     aclSummary = document.aclRuntime?.summary
     intentSHA256 = document.intentSHA256
+    configurationIntentSHA256 = document.replacingACL(nil).intentSHA256
   }
 }

@@ -40,7 +40,7 @@ final class RuntimePublicationSmokeTests: RealSslocalSmokeTests {
     stopWrapperAndAssertCleanExit(wrapper, description: "reload wrapper exits")
   }
 
-  func testLargeACLReuseAndSingleInstanceModeHandoff() throws {
+  func testLargeACLReuseAndModeReloadWithoutReplacingChild() throws {
     let echo = try LoopbackEchoServer()
     let proxy = try ConnectionCountingServer()
     let ports = try grabThreeListenPorts(excluding: [echo.port, proxy.port])
@@ -69,8 +69,13 @@ final class RuntimePublicationSmokeTests: RealSslocalSmokeTests {
       try store.write(direct)
       XCTAssertEqual(kill(wrapper.processIdentifier, SIGUSR1), 0)
       try assertReceiptOwnsListeners(document: direct)
-      XCTAssertNotEqual(store.readRuntimeReceipt()?.processID, oldPID)
-      XCTAssertNotEqual(kill(oldPID, 0), 0, "旧子进程退出后新监听才就绪")
+      XCTAssertEqual(store.readRuntimeReceipt()?.processID, oldPID)
+      // 回执不证明上游已应用 ACL；实际路由收敛后再验证两个入口。
+      XCTAssertTrue(
+        try waitForCondition(timeout: 8) {
+          self.performSocksConnectReply(
+            socksPort: listen.socksPort, targetHost: "127.0.0.1", targetPort: echo.port) == 0
+        })
       let payload = Array("direct\n".utf8)
       XCTAssertEqual(
         try performDirectSocksEcho(
@@ -81,6 +86,14 @@ final class RuntimePublicationSmokeTests: RealSslocalSmokeTests {
       try store.write(source)
       XCTAssertEqual(kill(wrapper.processIdentifier, SIGUSR1), 0)
       try assertReceiptOwnsListeners(document: source)
+      XCTAssertEqual(store.readRuntimeReceipt()?.processID, oldPID)
+      let before = proxy.connectionCount
+      XCTAssertTrue(
+        try waitForCondition(timeout: 8) {
+          self.performHTTPConnect(
+            httpPort: listen.httpPort, targetHost: "127.0.0.1", targetPort: echo.port)
+          return proxy.connectionCount > before
+        })
       try assertPublicTargetsProxy(listen: listen, fakeSS: proxy)
       XCTAssertEqual(RuntimePublication.load(at: store.supervisionFileURL)?.acl, acl)
       XCTAssertEqual(
@@ -89,6 +102,113 @@ final class RuntimePublicationSmokeTests: RealSslocalSmokeTests {
       XCTAssertEqual(try Data(contentsOf: aclURL), Data(large.content.utf8))
     }
     stopWrapperAndAssertCleanExit(wrapper, description: "mode wrapper exits")
+  }
+
+  func testCombinedServerAndRuleReloadAndDefaultActionChangesKeepChild() throws {
+    let echo = try LoopbackEchoServer()
+    let firstExit = try ConnectionCountingServer()
+    let secondExit = try ConnectionCountingServer()
+    let ports = try grabThreeListenPorts(excluding: [echo.port, firstExit.port, secondExit.port])
+    let listen = ProxyListeningConfiguration(socksPort: ports[0], httpPort: ports[1])
+    func document(_ port: Int, _ acl: ProxyACLDocument) -> SslocalRuntimeDocument {
+      SslocalRuntimeDocument(
+        servers: [
+          .init(
+            id: "rules", server: "127.0.0.1", serverPort: port,
+            password: "smoke", method: "aes-256-gcm", plugin: nil, pluginOpts: nil)
+        ], listen: listen, acl: acl)
+    }
+    let source = document(
+      firstExit.port, ruleProbeACL(defaultAction: .directWhenUnmatched, rules: []))
+    let wrapper = try launchWrapper(source)
+    let store = RuntimeFileStore(fileURL: contractURL)
+    try assertReceiptOwnsListeners(document: source)
+    let pid = try XCTUnwrap(store.readRuntimeReceipt()?.processID)
+    let custom = document(
+      secondExit.port,
+      ruleProbeACL(
+        defaultAction: .directWhenUnmatched,
+        rules: [ProxyRule(action: .proxy, match: try RuleMatch(domainSuffix: "blocked.example"))]))
+    try store.write(custom)
+    XCTAssertEqual(kill(wrapper.processIdentifier, SIGUSR1), 0)
+    try assertReceiptOwnsListeners(document: custom)
+    XCTAssertTrue(
+      try waitForCondition(timeout: 8) {
+        self.performHTTPConnect(
+          httpPort: listen.httpPort, targetHost: "blocked.example", targetPort: echo.port)
+        return secondExit.connectionCount > 0
+      })
+    XCTAssertEqual(store.readRuntimeReceipt()?.processID, pid)
+    let removed = document(
+      secondExit.port, ruleProbeACL(defaultAction: .directWhenUnmatched, rules: []))
+    try store.write(removed)
+    XCTAssertEqual(kill(wrapper.processIdentifier, SIGUSR1), 0)
+    try assertReceiptOwnsListeners(document: removed)
+    XCTAssertTrue(
+      try waitForCondition(timeout: 8) {
+        self.performSocksConnectReply(
+          socksPort: listen.socksPort, targetHost: "blocked.example", targetPort: echo.port) == 0
+      })
+    let payload = Array("reloaded rule\n".utf8)
+    XCTAssertEqual(
+      try performDirectHTTPEcho(
+        httpPort: listen.httpPort, targetHost: "blocked.example", targetPort: echo.port,
+        payload: payload), payload)
+    for (acl, proxiesDomain) in [
+      (ruleProbeACL(defaultAction: .proxyWhenUnmatched, rules: []), true),
+      (ProxyACLDocument.global(at: aclFileURL), false),
+    ] {
+      let next = document(secondExit.port, acl)
+      let before = secondExit.connectionCount
+      try store.write(next)
+      XCTAssertEqual(kill(wrapper.processIdentifier, SIGUSR1), 0)
+      try assertReceiptOwnsListeners(document: next)
+      XCTAssertTrue(
+        try waitForCondition(timeout: 8) {
+          if proxiesDomain {
+            self.performHTTPConnect(
+              httpPort: listen.httpPort, targetHost: "blocked.example", targetPort: echo.port)
+            return secondExit.connectionCount > before
+          }
+          return self.performSocksConnectReply(
+            socksPort: listen.socksPort, targetHost: "blocked.example", targetPort: echo.port) == 0
+        })
+      XCTAssertEqual(store.readRuntimeReceipt()?.processID, pid)
+    }
+    stopWrapperAndAssertCleanExit(wrapper, description: "rule reload wrapper exits")
+  }
+
+  func testRejectedACLReloadKeepsPreviousRulesWithoutReplacingChild() throws {
+    let echo = try LoopbackEchoServer()
+    let ports = try grabThreeListenPorts(excluding: [echo.port])
+    let listen = ProxyListeningConfiguration(socksPort: ports[0], httpPort: ports[1])
+    let source = SslocalRuntimeDocument(
+      servers: [], listen: listen, acl: .direct(at: aclFileURL))
+    let wrapper = try launchWrapper(source)
+    let store = RuntimeFileStore(fileURL: contractURL)
+    try assertReceiptOwnsListeners(document: source)
+    let pid = try XCTUnwrap(store.readRuntimeReceipt()?.processID)
+    let next = source.replacingACL(
+      ruleProbeACL(defaultAction: .proxyWhenUnmatched, rules: []))
+    try store.write(next)
+    let snapshot = try XCTUnwrap(RuntimePublication.load(at: store.supervisionFileURL))
+    let acl = try XCTUnwrap(snapshot.acl)
+    // 模拟发布后磁盘损坏；上游解析拒绝，Agent 回执无法识别这种内部失败。
+    try AtomicFileWriter.write(Data("[\n".utf8), to: workDir.appendingPathComponent(acl.file))
+    XCTAssertEqual(kill(wrapper.processIdentifier, SIGUSR1), 0)
+    XCTAssertTrue(
+      try waitForCondition(timeout: 8) {
+        let log = try String(contentsOf: self.workDir.appendingPathComponent("agent.log"))
+        return log.contains("ACL reload failed") && log.contains("keeping the previous rules")
+      })
+    try assertReceiptOwnsListeners(document: next)
+    XCTAssertEqual(store.readRuntimeReceipt()?.processID, pid)
+    XCTAssertNil(store.readFailure())
+    let payload = Array("previous rules\n".utf8)
+    XCTAssertEqual(
+      try performDirectSocksEcho(
+        socksPort: listen.socksPort, targetPort: echo.port, payload: payload), payload)
+    stopWrapperAndAssertCleanExit(wrapper, description: "rejected ACL wrapper exits")
   }
 
   func testHealthyCrashReplaysCurrentDeploymentAndRecoveryFailureDoesNotLoop() throws {

@@ -2,6 +2,8 @@
 
 **Status**: accepted; system-proxy rollback clause superseded by ADR-0019. Runtime and mode rollback remain.
 
+**ACL reload superseded (2026-10-20)**: [ADR-0048](0048-reload-sslocal-acl-by-signal.md) replaces restart-on-ACL-change with `SIGUSR2` reload. Listener and authentication changes still require restart.
+
 ## Context
 
 Global mode previously projected only the system SOCKS endpoint and relied on sslocal's default proxy-everything behaviour. That left local-network targets without a product-owned direct guarantee: LAN-sharing clients, IPv6 destinations whose system-proxy exceptions macOS does not reliably honour, and any request that reaches the SOCKS/HTTP inbounds still needed a defined routing policy. The ACL work (spec #59) requires global mode to mean "public targets default through Shadowsocks, local targets stay direct", using only the fixed local safety rules.

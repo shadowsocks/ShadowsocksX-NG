@@ -53,6 +53,7 @@ class AgentLifecycleTests: XCTestCase {
       trap 'rm -f "$child_pid_file"' EXIT
       trap 'echo "SIGTERM" >> "$SSLOCAL_STUB_STATE"; exit 0' TERM
       trap 'echo "SIGUSR1" >> "$SSLOCAL_STUB_STATE"' USR1
+      trap 'echo "SIGUSR2" >> "$SSLOCAL_STUB_STATE"' USR2
       for other in "$SSLOCAL_STUB_PID_DIR"/*; do
         if [ -f "$other" ] && kill -0 "${other##*/}" 2>/dev/null; then
           echo "OVERLAPPING CHILD" >> "$SSLOCAL_STUB_STATE"

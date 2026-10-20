@@ -8,6 +8,8 @@
 
 **Supersedes in part**: ADR-0009 and ADR-0010's "ACL path, content, digest, and summary are runtime identity" — content is no longer carried in the contract, and the ACL path is a stable link that does not change across mode switches. The restart-on-change rule itself stands.
 
+**ACL reload superseded (2026-10-20)**: [ADR-0048](0048-reload-sslocal-acl-by-signal.md) replaces restart-on-ACL-change with `SIGUSR2` reload. Listener and authentication changes still require restart.
+
 ## Context
 
 sslocal's routing policy is one of four ACL shapes — `direct`, `global`, `rule-proxy-default`, `rule-direct-default` — but all four were written into a single `sslocal-active.acl`, overwritten on every proxy mode switch and on every deploy even when the ACL body had not changed. The contract JSON also embedded the full ACL body (`x_shadowsocksx_ng_acl.content`), so a rule-mode switch paid roughly the same large write twice. Upstream sslocal is gaining signal-triggered ACL reload; mode switches should be cheap now and restart-free later.

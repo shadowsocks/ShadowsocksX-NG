@@ -71,6 +71,16 @@ struct RuntimeFileStore {
           contract.document, old: old, create: { try create($0, kind: $1, suffix: $2) })
         let encoded = authentication.document
         let configurationData = try encoded.jsonData()
+        let configurationID =
+          old.flatMap { previous -> String? in
+            guard let identity = previous.configurationID,
+              publishedIntent(previous)?.configurationSHA256
+                == ProxyACLDocument.digest(configurationData),
+              (try? Data(contentsOf: directoryURL.appendingPathComponent(previous.configuration)))
+                == configurationData
+            else { return nil }
+            return identity
+          } ?? UUID().uuidString
         let configuration = try create(configurationData, kind: "config", suffix: "sslocal.json")
         let intent = PublishedRuntimeIntent(
           sha256: contract.sha256, configurationSHA256: ProxyACLDocument.digest(configurationData),
@@ -79,7 +89,8 @@ struct RuntimeFileStore {
           JSONEncoder().encode(intent), kind: "config", suffix: "intent.json")
         let snapshot = RuntimeSupervision(
           version: 2, generation: generation, deploymentID: UUID().uuidString,
-          configuration: configuration, intentMetadata: intentMetadata,
+          configuration: configuration, configurationID: configurationID,
+          intentMetadata: intentMetadata,
           locals: encoded.locals.map {
             .init(
               inboundProtocol: $0.inboundProtocol, localAddress: $0.localAddress,

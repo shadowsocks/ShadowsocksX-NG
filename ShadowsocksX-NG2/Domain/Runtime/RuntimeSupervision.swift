@@ -28,6 +28,8 @@ struct RuntimeSupervision: Codable, Equatable, Sendable {
   let generation: UInt64
   let deploymentID: String
   let configuration: String
+  /// 配置字节未变时复用的随机身份；旧监管资料缺失时保守重载配置。
+  let configurationID: String?
   /// GUI 私有意图摘要的同代文件；Agent 只保留引用，不读取正文。
   let intentMetadata: String
   let locals: [Endpoint]
@@ -44,7 +46,16 @@ struct RuntimeSupervision: Codable, Equatable, Sendable {
 
   func requiresRestart(from old: Self) -> Bool {
     locals != old.locals || ipv6Only != old.ipv6Only
-      || authenticationID != old.authenticationID || acl != old.acl
+      || authenticationID != old.authenticationID
+  }
+
+  func reloadSignals(from old: Self) -> Set<Int32> {
+    var signals = Set<Int32>()
+    if configurationID == nil || configurationID != old.configurationID {
+      signals.insert(SIGUSR1)
+    }
+    if acl != old.acl { signals.insert(SIGUSR2) }
+    return signals
   }
 
   var hasValidStructure: Bool {
@@ -53,6 +64,7 @@ struct RuntimeSupervision: Codable, Equatable, Sendable {
       RuntimePublication.generation(of: configuration) == generation,
       RuntimePublication.generation(of: intentMetadata) == generation,
       configuration != intentMetadata,
+      configurationID.map({ UUID(uuidString: $0) != nil }) ?? true,
       authenticationFiles.allSatisfy({ $0.hasPrefix("auth-") && $0.hasSuffix(".json") }),
       aclVariants.values.allSatisfy({ $0.file.hasPrefix("acl-") && $0.file.hasSuffix(".ini") }),
       authenticationID.map({ UUID(uuidString: $0) != nil }) ?? true,

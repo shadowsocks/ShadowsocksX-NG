@@ -54,6 +54,7 @@ extension ProxyRuntimeController {
   private func convergencePlanIsEmpty(
     _ document: SslocalRuntimeDocument, preparedContract: PreparedRuntimeContract?
   ) -> Bool {
+    guard runtimeReloadProcesses.isEmpty else { return false }
     switch state {
     case .running, .firewallBlocked:
       break
@@ -197,11 +198,12 @@ extension ProxyRuntimeController {
       return .unchanged
     }
     if policy == .modeTransition, unchanged,
-      runtimeFileStore.readFailure() == nil, alreadyRunning
+      runtimeFileStore.readFailure() == nil, alreadyRunning,
+      aclReloadProcessID(for: next) != nil
     {
       guard settings.systemProxyEnabled else { return .unchanged }
-      state = .starting
-      return await presentLaunchHealth(next) ? .applied : .failed
+      await systemProxyObserver.convergeSystemProxy()
+      return .applied
     }
     if policy == .savedRules {
       modeChangeGeneration += 1
@@ -215,6 +217,20 @@ extension ProxyRuntimeController {
     case deployment
     case modeTransition
     case savedRules
+  }
+
+  /// 仅 ACL 变化且原有子进程仍健康时，继续沿用监听事实。
+  private func aclReloadProcessID(for document: SslocalRuntimeDocument) -> Int32? {
+    switch state {
+    case .running, .firewallBlocked: break
+    default: return nil
+    }
+    guard agent.status == .registered, case .running = wrapperState(),
+      let identity = document.replacingACL(nil).intentSHA256,
+      runtimeObservation?.configurationIntentSHA256 == identity
+    else { return nil }
+    return effectiveRuntimeListenerProcessID
+      ?? runtimeReloadProcesses.values.first(where: { processIsAlive($0) })
   }
 
   /// 共用执行脊柱；票据不越过意图 seam。
@@ -235,8 +251,12 @@ extension ProxyRuntimeController {
       return .unchanged
     }
     guard convergenceIsCurrent(ticket) else { return .superseded }
+    let reloadingProcessID = aclReloadProcessID(for: document)
+    let reloadID = UUID()
+    if let reloadingProcessID { runtimeReloadProcesses[reloadID] = reloadingProcessID }
+    defer { runtimeReloadProcesses.removeValue(forKey: reloadID) }
     runtimeObservation = RuntimeDeploymentFacts(document)
-    state = .starting
+    if reloadingProcessID == nil { state = .starting }
     let execution = await execute(.run(document), document: document, preparedContract: contract)
     ticket.flow = execution.flow
     guard convergenceIsCurrent(ticket) else { return .superseded }
@@ -250,7 +270,8 @@ extension ProxyRuntimeController {
       document,
       requiresReceipt: policy != .deployment || document.aclRuntime != nil,
       convergeProxyOnSuccess: policy == .deployment,
-      preserveProxyOnFailure: false, preparedContract: contract)
+      preserveProxyOnFailure: false, preparedContract: contract,
+      reloadingProcessID: reloadingProcessID)
     guard convergenceIsCurrent(ticket) else { return .superseded }
     guard healthy else {
       await failDeployment(ticket: &ticket)

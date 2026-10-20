@@ -108,6 +108,7 @@ final class ProxyRuntimeController {
   var flowGeneration = 0
   var modeChangeGeneration = 0
   var runtimeObservation: RuntimeDeploymentFacts?
+  var runtimeReloadProcesses: [UUID: Int32] = [:]
   var firewallObservationTask: Task<Void, Never>?
 
   var proxyMode: ProxyMode { didSet { factChanges.markChanged() } }
