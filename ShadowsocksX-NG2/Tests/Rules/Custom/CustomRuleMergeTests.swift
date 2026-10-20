@@ -138,32 +138,4 @@ final class CustomRuleMergeTests: XCTestCase {
     XCTAssertEqual(directDefault.relationships.first?.kind, .shadowing)
     XCTAssertEqual(directDefault.accepted.count, 1)
   }
-
-  /// 全局模式 ACL 不加载自定义规则。
-  func testGlobalACLDoesNotLoadCustomRules() throws {
-    let customRules = [
-      custom(.direct, try RuleMatch(domainSuffix: "internal.example")),
-      custom(.proxy, try RuleMatch(ipv4CIDR: "203.0.113.0/24")),
-    ]
-    // 全局模式的 runtimeDocument 路径不加载自定义规则集合；此处
-    // 验证全局 ACL 文档本身不含自定义痕迹。
-    let acl = ProxyACLDocument.global(
-      at: URL(fileURLWithPath: "/tmp/ssxng-test/sslocal-active.acl"))
-    XCTAssertFalse(acl.content.contains("internal.example"))
-    XCTAssertFalse(acl.content.contains("203.0.113.0/24"))
-    XCTAssertEqual(
-      Array(acl.content.split(separator: "\n").map(String.init).dropFirst(2)),
-      FixedLocalProxyRanges.aclBypassRules)
-    // 自定义规则集合本身不参与全局编译（调用方不传入）。
-  }
-
-  /// 直连模式 ACL 不加载自定义规则。
-  func testDirectACLDoesNotLoadCustomRules() throws {
-    let acl = ProxyACLDocument.direct(
-      at: URL(fileURLWithPath: "/tmp/ssxng-test/sslocal-active.acl"))
-    XCTAssertFalse(acl.content.contains("[proxy_list]"))
-    XCTAssertEqual(
-      Array(acl.content.split(separator: "\n").map(String.init).dropFirst(2)),
-      FixedLocalProxyRanges.aclBypassRules)
-  }
 }

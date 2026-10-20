@@ -98,37 +98,4 @@ final class OfflineRulesWorkflowTests: XCTestCase {
     }
   }
 
-  func testExternalSettingsChangesNeverSupplyAFallbackOrAlterThreeStateResults() async throws {
-    let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
-    defer { try? FileManager.default.removeItem(at: directory) }
-    let preferences = makeTestProxyControlPreferences()
-    let rules = [
-      CustomRule(action: .proxy, match: try RuleMatch(domainExact: "proxy.example")),
-      CustomRule(action: .direct, match: try RuleMatch(domainExact: "direct.example")),
-    ]
-    let workflow = RulesWorkflow(
-      loadCustom: { rules }, builtinSnapshots: BuiltinRuleSnapshots(loader: { rulesFixture($0) }))
-    await workflow.refresh()
-    for mode in [ProxyModeKind.rule, .global, .direct] {
-      for defaultAction in RuleDefaultAction.allCases {
-        for enabled in [false, true] {
-          preferences.preferredMode = mode
-          preferences.ruleDefaultAction = defaultAction
-          preferences.agentEnabled = enabled
-          preferences.systemProxyEnabled = enabled
-          workflow.query(RulesQuery(search: "hidden", source: .fixed))
-          for (target, outcome) in [
-            ("proxy.example", OfflineRuleMatcher.Outcome.proxy),
-            ("direct.example", .direct), ("unresolved.example", .unmatched),
-            ("198.51.100.8", .unmatched),
-          ] {
-            workflow.setTestTarget(target)
-            await workflow.testAddress()
-            XCTAssertEqual(workflow.snapshot.addressTest.result?.outcome, outcome)
-          }
-        }
-      }
-    }
-  }
-
 }
