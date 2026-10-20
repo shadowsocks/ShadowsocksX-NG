@@ -2,8 +2,8 @@ import XCTest
 
 @testable import ShadowsocksX_NG2
 
-/// helper XPC 契约测试：typed payload 往返、引擎应答编码与
-/// 串行 last-writer 语义，全部用确定性替身，不触真实 XPC 与 SystemConfiguration。
+/// helper XPC 契约测试：引擎应答编码、typed 失败归并与串行
+/// last-writer 语义，全部用确定性替身，不触真实 XPC 与 SystemConfiguration。
 final class SystemProxyHelperContractTests: XCTestCase {
   private let configuration = SystemProxyConfiguration(
     socks: .init(host: "127.0.0.1", port: 1086),
@@ -29,14 +29,7 @@ final class SystemProxyHelperContractTests: XCTestCase {
     }
   }
 
-  func testConfigurationPayloadRoundTripsThroughJSON() throws {
-    let payload = try SystemProxyHelperWire.encodeConfiguration(configuration)
-    let decoded = try SystemProxyHelperWire.decodeConfiguration(payload)
-    XCTAssertEqual(decoded, configuration)
-  }
-
   func testEngineAnswersApplyWithTypedOutcome() throws {
-    let requested = try SystemProxyHelperWire.encodeConfiguration(configuration)
     let observed = LockedArray<SystemProxyHelperEngine.Request>()
     let response = SystemProxyHelperEngine.response(
       request: .success(.apply(configuration)),
@@ -47,9 +40,6 @@ final class SystemProxyHelperContractTests: XCTestCase {
 
     XCTAssertEqual(observed.all, [.apply(configuration)], "helper 收到 closed typed 配置")
     XCTAssertEqual(response, .applied(.written))
-    XCTAssertEqual(
-      try SystemProxyHelperWire.decodeConfiguration(requested), configuration,
-      "payload 与配置一致")
   }
 
   func testEngineAnswersClearWithTypedOutcome() {

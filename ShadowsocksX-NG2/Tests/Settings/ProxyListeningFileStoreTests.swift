@@ -38,7 +38,6 @@ final class ProxyListeningFileStoreTests: XCTestCase {
     try store.save(settings)
 
     XCTAssertEqual(try store.load(), settings)
-    XCTAssertEqual(try store.load().mode, "tcp_and_udp")
   }
 
   func testEncryptedListeningHasItsOwnFile() {

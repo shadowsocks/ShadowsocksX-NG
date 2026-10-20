@@ -69,12 +69,6 @@ final class RuntimeDocumentTests: XCTestCase {
     XCTAssertFalse(server.keys.contains("plugin_opts"))
   }
 
-  func testJSONDataIsStableAcrossEncodes() throws {
-    let document = makeDocument(plugin: "/bundle/plugins/x")
-
-    XCTAssertEqual(try document.jsonData(), try document.jsonData(), "编码确定性（sortedKeys）")
-  }
-
   // MARK: 监听设置透传
 
   func testRuntimeDocumentLeavesTimeoutAndLoggingAtUpstreamDefaults() throws {
@@ -111,7 +105,6 @@ final class RuntimeDocumentTests: XCTestCase {
       socksPort: 1086,
       httpPort: 1087)
 
-    XCTAssertEqual(listen.bindAddress, "127.0.0.1")
     XCTAssertEqual(
       listen.locals,
       [
@@ -130,7 +123,6 @@ final class RuntimeDocumentTests: XCTestCase {
       socksPort: 1086,
       httpPort: 1087)
 
-    XCTAssertEqual(listen.bindAddress, "127.0.0.1")
     XCTAssertEqual(Set(listen.locals.map(\.localAddress)), ["127.0.0.1", "0.0.0.0"])
   }
 

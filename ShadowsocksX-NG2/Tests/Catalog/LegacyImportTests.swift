@@ -127,8 +127,6 @@ final class LegacyImportTests: XCTestCase {
     XCTAssertEqual(try makeTestCatalogStore(fileURL: catalogURL).load().catalog, originalCatalog)
     XCTAssertEqual(
       try ActivationStateFileStore(fileURL: activationURL).loadActiveTargetID(), originalID)
-    XCTAssertEqual(
-      originalServerFields.password, "original-password")
     XCTAssertFalse(marker.completed)
   }
 

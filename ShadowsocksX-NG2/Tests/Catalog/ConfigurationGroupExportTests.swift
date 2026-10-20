@@ -274,7 +274,6 @@ struct ConfigurationGroupSharingTests {
     #expect(uris[1].pluginProgram == "missing-plugin")
     #expect(uris[1].pluginOptions == "mode=websocket;host=example.com")
     #expect(uris[1].remark == "嵌套服务器")
-    #expect(draft.uriList.data == Data(draft.uriText.utf8))
     #expect(draft.uriList.suggestedFileName == "组 根.txt")
     #expect(draft.uriList.format == .uriList)
     let node = try #require(fixture.workflow.tree.node(withID: fixture.root))

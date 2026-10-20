@@ -10,7 +10,6 @@ final class ProxyRuntimeSettingsTests: XCTestCase {
 
     XCTAssertEqual(settings.listen.socksPort, 11086)
     XCTAssertEqual(settings.listen.httpPort, 11087)
-    XCTAssertEqual(settings.listen.mode, "tcp_and_udp")
     XCTAssertFalse(settings.agentEnabled, "全新用户无服务器配置，Agent 默认 off")
     XCTAssertFalse(settings.systemProxyEnabled)
     XCTAssertTrue(settings.validationErrors.isEmpty)

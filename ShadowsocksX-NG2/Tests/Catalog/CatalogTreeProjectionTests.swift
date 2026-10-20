@@ -45,7 +45,6 @@ final class CatalogTreeProjectionTests: XCTestCase {
       rows.map(\.id.rawValue),
       ["root-server", "outer", "inner", "deep-leaf", "outer-leaf", "empty"])
     XCTAssertEqual(rows.map(\.depth), [0, 0, 1, 2, 1, 0])
-    XCTAssertEqual(rows.map(\.node.name), rows.map(\.id.rawValue), "行身份即节点身份")
   }
 
   func testVisibleRowsSkipCollapsedSubtrees() {

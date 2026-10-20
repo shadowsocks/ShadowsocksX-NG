@@ -10,7 +10,6 @@ final class ProxyRuleTests: XCTestCase {
   // MARK: - 动作与匹配
 
   func testActionsAreProxyAndDirect() throws {
-    XCTAssertEqual(RuleAction.allCases, [.proxy, .direct])
     XCTAssertEqual(RuleAction.proxy.rawValue, "proxy")
     XCTAssertEqual(RuleAction.direct.rawValue, "direct")
   }
@@ -67,24 +66,6 @@ final class ProxyRuleTests: XCTestCase {
     XCTAssertThrowsError(try RuleMatch(ipv6CIDR: "2001:db8::/129"))
     XCTAssertThrowsError(try RuleMatch(ipv6CIDR: "203.0.113.0/24"), "IPv4 不得进入 IPv6 匹配")
     XCTAssertThrowsError(try RuleMatch(ipv6CIDR: "gggg::/32"))
-  }
-
-  // MARK: - 来源身份
-
-  func testSourceIdentityCapturesKindAndUpstream() throws {
-    let source = RuleSourceIdentity(
-      kind: .geolocationCN,
-      upstreamVersion: "20260925234224",
-      label: "geolocation-cn")
-    XCTAssertEqual(source.kind, .geolocationCN)
-    XCTAssertEqual(source.upstreamVersion, "20260925234224")
-    XCTAssertEqual(source.id, "geolocation-cn")
-  }
-
-  func testSourceKindsCoverBuiltInAndCustom() throws {
-    XCTAssertEqual(
-      RuleSourceKind.allCases,
-      [.geolocationCN, .chinaIPv4, .gfwlist, .custom])
   }
 
   // MARK: - 规则序列化

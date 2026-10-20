@@ -71,7 +71,7 @@ struct CatalogWorkflowImportTests {
 
       #expect(workflow.tree.roots.count == 2)
       #expect(workflow.tree.roots.map(\.name) == ["我的机场", "我的机场 2"], "重名加序号后缀")
-      #expect(workflow.tree.roots.map(\.id).count == 2, "重复导入产生独立副本（ADR-0027）")
+      #expect(Set(workflow.tree.roots.map(\.id)).count == 2, "重复导入产生独立副本（ADR-0027）")
     }
   }
 
