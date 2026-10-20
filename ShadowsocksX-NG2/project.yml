@@ -208,13 +208,14 @@ targets:
     platform: macOS
     sources:
       - path: Agent
-      # Agent 只共享非秘密监管协议、路径和探针，不编译 sslocal 配置或凭据类型。
-      # 显式文件路径变动必须同步本清单并重新生成工程。
+      # Agent 只共享非秘密监管协议、路径、探针与 sslocal 输出 intake，不编译
+      # sslocal 配置或凭据类型。显式文件路径变动必须同步本清单并重新生成工程。
       - path: Domain/Settings/ApplicationSupportPaths.swift
       - path: Domain/Runtime/RuntimePaths.swift
       - path: Domain/Runtime/AtomicFileWriter.swift
       - path: Domain/Runtime/RuntimeSupervision.swift
       - path: Domain/Runtime/RuntimeLog.swift
+      - path: Domain/Runtime/SslocalOutputIntake.swift
       - path: Domain/Runtime/EndpointHealthProbe.swift
       - path: Domain/Runtime/RuntimeSocketOwnershipProbe.swift
     settings:

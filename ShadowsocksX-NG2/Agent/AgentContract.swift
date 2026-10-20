@@ -71,12 +71,15 @@ func spawnSslocal() -> Process? {
   guard FileManager.default.isExecutableFile(atPath: sslocalURL.path) else { return nil }
   let child = Process()
   let errorPipe = Pipe()
-  let logRedactor = SslocalLogRedactor()
+  // sslocal 输出 intake：分帧 + 密码脱敏后送两个去向——agent.log 文件
+  // （经 stderr 收敛，raw capture 保留）与统一日志（category `sslocal`）。
+  let outputIntake = SslocalOutputIntake(
+    destinations: [SslocalStandardErrorDestination(), SslocalUnifiedLogDestination()])
   child.standardError = errorPipe
   child.standardOutput = errorPipe
   errorPipe.fileHandleForReading.readabilityHandler = { handle in
     let data = handle.availableData
-    logRedactor.write(data)
+    outputIntake.write(data)
     if data.isEmpty { handle.readabilityHandler = nil }
   }
   child.executableURL = sslocalURL
@@ -110,7 +113,9 @@ func redirectStandardStreams(to logURL: URL) {
   if fileManager.fileExists(atPath: logURL.path) {
     let attributes = try? fileManager.attributesOfItem(atPath: logURL.path)
     if let size = attributes?[.size] as? UInt64, size > 1_048_576 {
-      // 启动时超限即截断；当前不滚动或导出诊断日志。
+      // agent.log 文件去向（stderr→freopen）的保留策略：启动时超限即截断，
+      // 当前不滚动或导出诊断日志。策略留在这个文件去向（wrapper 事件行与
+      // 脱敏后的 sslocal 行共写这一个文件），不并入 sslocal 输出 intake。
       try? fileManager.removeItem(at: logURL)
     }
   }

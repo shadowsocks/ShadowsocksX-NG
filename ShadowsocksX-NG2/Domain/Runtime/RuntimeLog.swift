@@ -116,7 +116,8 @@ enum RuntimeLogEvent: Equatable, CustomStringConvertible, Sendable {
 
 /// 系统日志路由（统一日志，Console.app 可按 subsystem/category 过滤）：
 /// level 三分（失败类 error、里程碑 default、冗长测量 info）、category 五分
-/// （runtime / supervision / system-proxy / connectivity / diagnostics）。
+/// （runtime / supervision / system-proxy / connectivity / diagnostics；
+/// sslocal 输出 intake 的自由文本行走独立的 category `sslocal`，不经本枚举）。
 /// 拆分规则：`text` + `privateDetail` == `description`；自由错误 detail 与
 /// 连通性测量内容（含探测目标 IP）拆出由发射缝标 private，公开文本由
 /// description 尾部裁切派生，不手抄前缀。穷举 switch：新事件漏路由无法编译。
