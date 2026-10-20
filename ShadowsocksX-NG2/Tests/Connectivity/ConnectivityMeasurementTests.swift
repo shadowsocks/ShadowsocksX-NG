@@ -107,7 +107,7 @@ struct ConnectivityMeasurementTests {
     #expect(result.outcome == .success(milliseconds: 15))
     let lines = result.trace.map { RuntimeLogEvent.connectivityMeasurement(id: UUID(), entry: $0) }
     #expect(lines.allSatisfy { $0.diagnosticReportLine == nil })
-    #expect(lines.allSatisfy { $0.standardErrorLine == nil })
+    #expect(lines.allSatisfy { $0.standardErrorLine() == nil })
     #expect(!lines.map(\.description).joined().contains("SECRET"))
     #expect(!lines.map(\.description).joined().contains("private"))
   }

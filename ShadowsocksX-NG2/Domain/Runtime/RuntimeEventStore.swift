@@ -21,17 +21,10 @@ final class RuntimeEventStore: RuntimeEventSink, @unchecked Sendable {
     }
 
     /// 指定事件文本的行格式；报告侧先经白名单清洗，再复用相同时间戳与间隔。
+    /// 时间戳格式与统一日志行（`LogLine`）共用同一 POSIX 格式器。
     func renderedLine(eventText: String) -> String {
-      "\(Self.timestampFormatter.string(from: timestamp))  \(eventText)"
+      "\(LogLine.timestampFormatter.string(from: timestamp))  \(eventText)"
     }
-
-    /// DateFormatter 在现代 Foundation 中线程安全；本格式器只被读取。
-    static let timestampFormatter: DateFormatter = {
-      let formatter = DateFormatter()
-      formatter.locale = Locale(identifier: "en_US_POSIX")
-      formatter.dateFormat = "yyyy-MM-dd HH:mm:ss.SSS"
-      return formatter
-    }()
   }
 
   /// 进程级共享实例：GUI 启动时注册为 RuntimeLog 的接收缝。

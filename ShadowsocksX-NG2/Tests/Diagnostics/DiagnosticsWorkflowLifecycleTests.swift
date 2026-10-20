@@ -64,7 +64,7 @@ final class DiagnosticsWorkflowLifecycleTests: DiagnosticsWorkflowTestCase {
     let initialSummary = workflow.summary
     let task = Task { await workflow.readWhileActive() }
     // 计数闭包每次轮询都产生新值：等待「首个 tail 投影到达」而非具体值。
-    await waitUntil(workflow.logView.agentLogTail?.hasPrefix("tail-") == true)
+    await waitUntil(workflow.logView.rows.contains { $0.text.hasPrefix("tail-") })
     _ = workflow.prepareReport()
     task.cancel()
     await task.value
@@ -85,7 +85,7 @@ final class DiagnosticsWorkflowLifecycleTests: DiagnosticsWorkflowTestCase {
     })
 
     let older = Task { await workflow.readWhileActive() }
-    await waitUntil(workflow.logView.agentLogTail?.hasPrefix("tail-") == true)
+    await waitUntil(workflow.logView.rows.contains { $0.text.hasPrefix("tail-") })
 
     let newer = Task { await workflow.readWhileActive() }
     // 旧循环最迟在下一个轮询间隔随代际守卫退出。
@@ -107,7 +107,7 @@ final class DiagnosticsWorkflowLifecycleTests: DiagnosticsWorkflowTestCase {
     newer.cancel()
     await newer.value
     XCTAssertTrue(
-      workflow.logView.agentLogTail?.hasPrefix("tail-") == true, "最新 projection 保持")
+      workflow.logView.rows.contains { $0.text.hasPrefix("tail-") }, "最新 projection 保持")
   }
 
   func testCancellingReadStopsPublishingNewProjections() async throws {
@@ -118,7 +118,7 @@ final class DiagnosticsWorkflowLifecycleTests: DiagnosticsWorkflowTestCase {
     })
 
     let task = Task { await workflow.readWhileActive() }
-    await waitUntil(workflow.logView.agentLogTail?.hasPrefix("tail-") == true)
+    await waitUntil(workflow.logView.rows.contains { $0.text.hasPrefix("tail-") })
     task.cancel()
     await task.value
     let frozen = workflow.logView

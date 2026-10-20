@@ -72,7 +72,7 @@ func spawnSslocal() -> Process? {
   let child = Process()
   let errorPipe = Pipe()
   // sslocal 输出 intake：分帧 + 密码脱敏后送两个去向——agent.log 文件
-  // （经 stderr 收敛，raw capture 保留）与统一日志（category `sslocal`）。
+  // （经 stderr 收敛，按统一行格式落盘）与统一日志（category `sslocal`）。
   let outputIntake = SslocalOutputIntake(
     destinations: [SslocalStandardErrorDestination(), SslocalUnifiedLogDestination()])
   child.standardError = errorPipe

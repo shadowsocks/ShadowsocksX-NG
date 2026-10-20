@@ -2,6 +2,8 @@ import Foundation
 
 // Agent 只读取非秘密监管资料，独占稳定链接切换。配置和认证由 GUI 准备。
 redirectStandardStreams(to: agentLogURL)
+// stderr 行式输出的来源标记：本进程是 wrapper，行内据此与 GUI 事件区分。
+RuntimeLog.setLineSource(.wrapper)
 
 // 日志与运行目录独立创建；不能依赖日志初始化建立生命周期锁的父目录。
 do {

@@ -27,11 +27,11 @@ final class RuntimeEventStoreTests: XCTestCase {
     // 行格式 = 固定格式时间戳 + 两空格 + 事件文本（不锚定时区，格式器随本机）。
     XCTAssertEqual(
       snapshot[0].renderedLine,
-      RuntimeEventStore.Entry.timestampFormatter.string(from: first)
+      LogLine.timestampFormatter.string(from: first)
         + "  contract written (servers=42)")
     XCTAssertEqual(
       snapshot[1].renderedLine,
-      RuntimeEventStore.Entry.timestampFormatter.string(from: second) + "  launch agent registered")
+      LogLine.timestampFormatter.string(from: second) + "  launch agent registered")
   }
 
   func testCapacityKeepsMostRecentEvents() {

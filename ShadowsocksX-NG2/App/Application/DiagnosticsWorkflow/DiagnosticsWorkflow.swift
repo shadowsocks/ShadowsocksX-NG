@@ -91,11 +91,11 @@ struct DiagnosticSummary: Equatable, Sendable {
   var hasActiveTarget: Bool
 }
 
-/// 日志视图 projection（ADR-0006）：raw GUI 事件行与
-/// raw wrapper `agent.log` 尾部只经显式查看/复制呈现，永不进入诊断报告。
+/// 日志视图 projection（ADR-0006）：raw GUI 事件行与 wrapper
+/// `agent.log` 尾部行经日志视图 intake 归一为同一种行，只经显式查看/复制
+/// 呈现，永不进入诊断报告。
 struct DiagnosticLogView: Equatable, Sendable {
-  var guiEventLines: [String] = []
-  var agentLogTail: String?
+  var rows: [LogLine] = []
 }
 
 /// 报告准备的结构化产物：UI 只负责把 data 写入用户选择的文件。
@@ -151,7 +151,7 @@ final class DiagnosticsWorkflow: ObservableObject {
     events: RuntimeEventStore = .shared,
     catalogFacts: @escaping @MainActor () -> DiagnosticCatalogFacts?,
     agentLogTail: @escaping () -> String? = {
-      AgentLogTail.readLastLines(of: ApplicationSupportPaths.current.agentLogURL)
+      DiagnosticLogIntake.readTail(of: ApplicationSupportPaths.current.agentLogURL)
     },
     fileFacts: @escaping @MainActor () -> [DiagnosticFileFacts] =
       DiagnosticsWorkflow.productionFileFacts,
@@ -219,10 +219,9 @@ final class DiagnosticsWorkflow: ObservableObject {
     summary = DiagnosticSummary(
       proxyState: runtimeFacts.proxyState,
       hasActiveTarget: runtimeFacts.hasActiveTarget)
-    let lines = events.snapshot.map(\.renderedLine)
-    let tail = agentLogTail()
+    let rows = DiagnosticLogIntake.rows(events: events.snapshot, tail: agentLogTail())
     guard generation == readGeneration, !Task.isCancelled else { return }
-    logView = DiagnosticLogView(guiEventLines: lines, agentLogTail: tail)
+    logView = DiagnosticLogView(rows: rows)
   }
 
   private func makeSnapshot() -> DiagnosticSnapshot {

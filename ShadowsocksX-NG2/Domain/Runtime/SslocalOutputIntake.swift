@@ -1,14 +1,16 @@
 import Foundation
 import os
 
-/// 脱敏后行的去向缝：intake 只产出行，行最终落在哪里由 adapter 决定。
+/// 脱敏后行的去向缝：intake 只产出行（`LogLine`），行最终落在哪里由
+/// adapter 决定。
 protocol SslocalLineDestination: Sendable {
-  func receive(_ line: String)
+  func receive(_ row: LogLine)
 }
 
 /// adapter：wrapper 的 stderr。`redirectStandardStreams` 以 freopen 把 stderr
-/// 收敛进 agent.log，raw capture 原样保留（ADR-0006 的本地查看面）。handle
-/// 可注入（生产默认标准错误），测试用管道替身断言序列化，不碰进程全局 stderr。
+/// 收敛进 agent.log，行按统一行格式渲染（时间戳/级别/来源与诊断查看器同一
+/// 口径）。handle 可注入（生产默认标准错误），测试用管道替身断言序列化，
+/// 不碰进程全局 stderr。
 struct SslocalStandardErrorDestination: SslocalLineDestination {
   private let handle: FileHandle
 
@@ -16,8 +18,8 @@ struct SslocalStandardErrorDestination: SslocalLineDestination {
     self.handle = handle
   }
 
-  func receive(_ line: String) {
-    handle.write(Data((line + "\n").utf8))
+  func receive(_ row: LogLine) {
+    handle.write(Data((row.rendered + "\n").utf8))
   }
 }
 
@@ -25,30 +27,14 @@ struct SslocalStandardErrorDestination: SslocalLineDestination {
 /// 上游输出是自由文本，不进封闭枚举事件流；整行标 private——上游默认日志
 /// 可能含服务器地址（ADR-0014），正文阅读继续走 agent.log 查看面。Console
 /// 获得时间戳、category、level 与行数关联；stderr/agent.log 通路没有这些
-/// 可过滤维度。
+/// 可过滤维度。级别由 intake 探测，这里只投影到统一日志五级。
 struct SslocalUnifiedLogDestination: SslocalLineDestination {
   private let logger = Logger(subsystem: RuntimeLog.subsystem, category: "sslocal")
 
-  func receive(_ line: String) {
+  func receive(_ row: LogLine) {
     // 统一日志写入受测试缝控制（SSXNG_SYSTEM_LOG=0 关闭），agent.log 去向不受影响。
     guard RuntimeLog.systemLogEnabled else { return }
-    logger.log(level: Self.level(for: line), "\(line, privacy: .private)")
-  }
-
-  /// level 只按空白分隔 token 探测上游级别名（tracing/env_logger 文本格式
-  /// 的 ERROR/WARN/WARNING），探测不到一律 `.info`（stream 可见、不落盘）；
-  /// agent.log 才是持久面，持久 store 只收探测到的警告与错误。统一日志只有
-  /// 五级、没有 warning：WARN/WARNING 落 `.default`（持久、与 error 可区分，
-  /// 级别名仍在行文本里）。上游改格式时优雅退化为全 `.info`，不丢行。
-  static func level(for line: String) -> OSLogType {
-    for token in line.split(whereSeparator: \.isWhitespace) {
-      switch token {
-      case "ERROR": return .error
-      case "WARN", "WARNING": return .default
-      default: continue
-      }
-    }
-    return .info
+    logger.log(level: OSLogType(row.level), "\(row.text, privacy: .private)")
   }
 }
 
@@ -58,14 +44,17 @@ struct SslocalUnifiedLogDestination: SslocalLineDestination {
 ///
 /// 这是上游自由文本进入日志去向的唯一入口：脱敏规则只在这一处，不再随去向
 /// 复制；上游认证失败日志包含客户端提交的密码，按完整行隐藏密码后再分发。
+/// 行模型（时间戳、级别探测、来源 `sslocal`）也在此构造，各 adapter 只做投影。
 final class SslocalOutputIntake: @unchecked Sendable {
   private let lock = NSLock()
   private var buffer = Data()
   private var discardingOversizedLine = false
   private let destinations: [any SslocalLineDestination]
+  private let now: () -> Date
 
-  init(destinations: [any SslocalLineDestination]) {
+  init(destinations: [any SslocalLineDestination], now: @escaping () -> Date = { Date() }) {
     self.destinations = destinations
+    self.now = now
   }
 
   func write(_ data: Data) {
@@ -88,7 +77,7 @@ final class SslocalOutputIntake: @unchecked Sendable {
     } else if buffer.count > 65_536 {
       buffer.removeAll()
       discardingOversizedLine = true
-      emitLine("sslocal: log line truncated")
+      emitLine("log line truncated")
     }
   }
 
@@ -97,8 +86,13 @@ final class SslocalOutputIntake: @unchecked Sendable {
     let sanitized = text.replacingOccurrences(
       of: "password: [^\\r\\n]*",
       with: "password: [redacted]", options: .regularExpression)
+    let row = LogLine(
+      timestamp: now(),
+      level: .detect(in: sanitized),
+      source: .sslocal,
+      text: sanitized)
     for destination in destinations {
-      destination.receive(sanitized)
+      destination.receive(row)
     }
   }
 }

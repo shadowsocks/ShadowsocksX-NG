@@ -7,7 +7,7 @@ final class DiagnosticsWindowState: ObservableObject {
   static let sceneID = "diagnostics"
 
   @Published private(set) var isOpen = false
-  @Published var source: DiagnosticsView.LogSource = .guiEvents
+  @Published var filter = DiagnosticLogFilter()
   @Published var exportedDiagnosticsPath: String?
   let errors = ErrorAlertPresenter()
   private weak var window: NSWindow?

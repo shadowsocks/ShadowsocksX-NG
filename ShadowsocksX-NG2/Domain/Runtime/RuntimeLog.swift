@@ -50,10 +50,12 @@ enum RuntimeLogEvent: Equatable, CustomStringConvertible, Sendable {
 
   case connectivityMeasurement(id: UUID, entry: ConnectivityTrace)
 
-  /// Detailed measurements are available only through explicit in-app log viewing.
-  var standardErrorLine: String? {
+  /// stderr 行式输出（统一行格式，见 `LogLine`）；wrapper 侧收敛进
+  /// agent.log。连通性测量内容只经应用内日志查看器显式查看，不落 stderr
+  /// 行与诊断报告。
+  func standardErrorLine(timestamp: Date = Date()) -> String? {
     if case .connectivityMeasurement = self { return nil }
-    return "ssxng: \(description)\n"
+    return LogLine(event: self, timestamp: timestamp, source: RuntimeLog.lineSource).rendered + "\n"
   }
 
   var description: String {
@@ -230,6 +232,15 @@ enum RuntimeLog {
   }
 
   private static let sinkHolder = SinkHolder()
+  private static let lineSourceLock = OSAllocatedUnfairLock(initialState: LogLineSource.gui)
+
+  /// stderr 行的来源标记：GUI 进程默认 `gui`，wrapper 启动时置 `wrapper`，
+  /// 同一枚举事件的两个进程由此在行内可分辨。启动期一次性设置。
+  static var lineSource: LogLineSource { lineSourceLock.withLock { $0 } }
+
+  static func setLineSource(_ source: LogLineSource) {
+    lineSourceLock.withLock { $0 = source }
+  }
 
   /// 注册/替换事件接收缝；传 nil 移除接收缝（测试隔离用）。
   static func setSink(_ sink: (any RuntimeEventSink)?) {
@@ -237,7 +248,10 @@ enum RuntimeLog {
   }
 
   static func emit(_ event: RuntimeLogEvent) {
-    if let line = event.standardErrorLine { FileHandle.standardError.write(Data(line.utf8)) }
+    let now = Date()
+    if let line = event.standardErrorLine(timestamp: now) {
+      FileHandle.standardError.write(Data(line.utf8))
+    }
     if systemLogEnabled {
       let route = event.systemLogRoute
       let logger = Logger(subsystem: subsystem, category: route.category)
@@ -248,7 +262,7 @@ enum RuntimeLog {
         logger.log(level: route.level, "\(route.text, privacy: .public)")
       }
     }
-    sinkHolder.current?.append(event: event, timestamp: Date())
+    sinkHolder.current?.append(event: event, timestamp: now)
   }
 
   /// 可变静态的锁保护持有者：emit 可能来自任意线程。

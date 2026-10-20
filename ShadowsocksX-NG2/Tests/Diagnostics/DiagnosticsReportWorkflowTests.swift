@@ -88,10 +88,15 @@ final class DiagnosticsReportWorkflowTests: DiagnosticsWorkflowTestCase {
 
     // 读取循环提供 raw 投影（显式查看/复制的唯一来源）。
     let task = Task { await workflow.readWhileActive() }
-    await waitUntil(workflow.logView.agentLogTail == rawTail)
+    await waitUntil(workflow.logView.rows.contains { $0.text.hasPrefix("wrapper stderr") })
     XCTAssertTrue(
-      workflow.logView.guiEventLines.joined().contains("SECRET-PROBE-DETAIL"),
+      workflow.logView.rows.contains {
+        $0.source == .gui && $0.text.contains("SECRET-PROBE-DETAIL")
+      },
       "raw 事件行保留 detail 供本地排障")
+    XCTAssertTrue(
+      workflow.logView.rows.contains { $0.text.contains(password) },
+      "raw 日志视图是显式本地查看面，正文不改写")
     task.cancel()
     await task.value
 

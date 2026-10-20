@@ -208,6 +208,7 @@ targets:
       - path: Domain/Runtime/AtomicFileWriter.swift
       - path: Domain/Runtime/RuntimeSupervision.swift
       - path: Domain/Runtime/RuntimeLog.swift
+      - path: Domain/Runtime/LogLine.swift
       - path: Domain/Runtime/SslocalOutputIntake.swift
       - path: Domain/Runtime/EndpointHealthProbe.swift
       - path: Domain/Runtime/RuntimeSocketOwnershipProbe.swift
