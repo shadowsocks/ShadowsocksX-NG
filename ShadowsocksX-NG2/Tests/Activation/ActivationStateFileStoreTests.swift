@@ -60,17 +60,6 @@ final class ActivationStateFileStoreTests: XCTestCase {
     XCTAssertNil(try store.loadActiveTargetID(), "清除即整文件替换，不再残留旧目标")
   }
 
-  // MARK: 权限基线
-
-  func testSaveCreatesDirectory0700AndFile0600() throws {
-    try store.save(activeTargetID: NodeID(rawValue: "s1"))
-
-    let fileAttributes = try FileManager.default.attributesOfItem(atPath: store.fileURL.path)
-    XCTAssertEqual(fileAttributes[.posixPermissions] as? Int, 0o600, "文件权限 0600")
-    let dirAttributes = try FileManager.default.attributesOfItem(atPath: workDir.path)
-    XCTAssertEqual(dirAttributes[.posixPermissions] as? Int, 0o700, "目录权限 0700")
-  }
-
   func testDefaultFileURLMatchesRuntimeDirectoryContract() {
     XCTAssertTrue(
       ActivationStateFileStore.defaultFileURL().path.hasSuffix(

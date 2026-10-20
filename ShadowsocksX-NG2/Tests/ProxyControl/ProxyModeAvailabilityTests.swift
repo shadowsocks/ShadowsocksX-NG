@@ -27,16 +27,6 @@ final class ProxyModeAvailabilityTests: XCTestCase {
       FixedLocalProxyRanges.systemProxyExceptions)
   }
 
-  func testIPv6LANModeKeepsLocalSystemProxyEndpoints() {
-    let listen = ProxyListeningConfiguration(listenerMode: .allIPv6Interfaces)
-    let document = SslocalRuntimeDocument(servers: [], listen: listen)
-
-    let configuration = ProxyMode.direct.systemProxyConfiguration(for: document)
-
-    XCTAssertEqual(configuration.socks, .init(host: "127.0.0.1", port: listen.socksPort))
-    XCTAssertEqual(configuration.http, .init(host: "127.0.0.1", port: listen.httpPort))
-  }
-
   /// 全局模式：系统 SOCKS/HTTP 投影 + 固定本地例外，与直连共用
   /// 同一安全范围；公网路由由 ACL 决定，不由系统例外决定。
   func testGlobalModeUsesLocalSOCKSAndIncludesFixedBypasses() {

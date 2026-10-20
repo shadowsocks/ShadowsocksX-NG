@@ -124,31 +124,16 @@ extension ProxyControlWorkflowIntegrationTests {
       "export http_proxy=http://127.0.0.1:11087;export https_proxy=http://127.0.0.1:11087;")
   }
 
-  func testHTTPExportCapabilityUsesLoopbackAddressForAllIPv4Interfaces() {
-    var listen = ProxyListeningConfiguration()
-    listen.listenerMode = .allIPv4Interfaces
-    listen.httpPort = 8080
-    XCTAssertEqual(
-      HTTPExportCapability(listen: listen).copyableLine,
-      "export http_proxy=http://127.0.0.1:8080;export https_proxy=http://127.0.0.1:8080;")
-  }
+  /// 导出行恒指向本地监听回环 127.0.0.1，与 listenerMode 无关（ADR-0034）。
+  func testHTTPExportCapabilityAlwaysUsesIPv4LoopbackRegardlessOfListenerMode() {
+    for mode in ListenerMode.allCases {
+      var listen = ProxyListeningConfiguration(listenerMode: mode)
+      listen.httpPort = 8080
 
-  func testHTTPExportCapabilityUsesIPv4LoopbackForDualStackMode() {
-    var listen = ProxyListeningConfiguration()
-    listen.listenerMode = .allIPv4AndIPv6Interfaces
-    listen.httpPort = 8080
-
-    XCTAssertEqual(
-      HTTPExportCapability(listen: listen).copyableLine,
-      "export http_proxy=http://127.0.0.1:8080;export https_proxy=http://127.0.0.1:8080;")
-  }
-
-  func testHTTPExportCapabilityBracketsIPv6LoopbackOnlyForIPv6OnlyMode() {
-    var listen = ProxyListeningConfiguration()
-    listen.listenerMode = .allIPv6Interfaces
-    listen.httpPort = 8080
-    XCTAssertEqual(
-      HTTPExportCapability(listen: listen).copyableLine,
-      "export http_proxy=http://127.0.0.1:8080;export https_proxy=http://127.0.0.1:8080;")
+      XCTAssertEqual(
+        HTTPExportCapability(listen: listen).copyableLine,
+        "export http_proxy=http://127.0.0.1:8080;export https_proxy=http://127.0.0.1:8080;",
+        "\(mode) 不改变导出行")
+    }
   }
 }

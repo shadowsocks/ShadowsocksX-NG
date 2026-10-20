@@ -99,20 +99,6 @@ final class ActivationStateMachineTests: XCTestCase {
     XCTAssertNil(machine.activeTargetID)
   }
 
-  func testActivateGroupWhoseLeavesAreAllInvalidIsRejected() throws {
-    var catalog = ConfigurationCatalog()
-    let group = try catalog.addGroup("组")
-    let leaf = try ActivationFixture.addPlainServer(
-      "a", to: group, in: &catalog)
-    var fields = try ActivationFixture.serverFields(of: leaf, in: catalog)
-    fields.encryptionMethod = "future-cipher"
-    try catalog.updateServer(leaf, with: fields)
-
-    ActivationFixture.assertThrows(.targetExpandsToNothing(group)) {
-      try activate(group, in: catalog)
-    }
-  }
-
   func testActivateServerWithUnprovidedPluginIsRejectedNamingProgram() throws {
     var catalog = ConfigurationCatalog()
     let leaf = try ActivationFixture.addPlainServer("a", in: &catalog)

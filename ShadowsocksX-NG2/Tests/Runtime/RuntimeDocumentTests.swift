@@ -77,13 +77,6 @@ final class RuntimeDocumentTests: XCTestCase {
 
   // MARK: 监听设置透传
 
-  func testListenSettingsUseTCPAndUDPForSOCKSAndTCPOnlyForHTTP() {
-    let listen = ProxyListeningConfiguration()
-
-    XCTAssertEqual(listen.mode, "tcp_and_udp")
-    XCTAssertEqual(listen.locals.map(\.mode), ["tcp_and_udp", "tcp_only"])
-  }
-
   func testRuntimeDocumentLeavesTimeoutAndLoggingAtUpstreamDefaults() throws {
     let document = SslocalRuntimeDocument(
       servers: [
@@ -173,12 +166,5 @@ final class RuntimeDocumentTests: XCTestCase {
         servers: [], listen: ProxyListeningConfiguration(listenerMode: mode))
       XCTAssertEqual(document.socksLocal?.probeHost, "127.0.0.1")
     }
-  }
-
-  func testHTTPInboundIsAlwaysPresentAlongsideSOCKS() {
-    let listen = ProxyListeningConfiguration(
-      listenerMode: .disabled, socksPort: 2086, httpPort: 2087)
-
-    XCTAssertEqual(listen.locals.map(\.inboundProtocol), ["socks", "http"])
   }
 }

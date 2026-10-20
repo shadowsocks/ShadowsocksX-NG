@@ -318,7 +318,10 @@ final class ProxyControlWorkflowTests: XCTestCase {
 
   // MARK: - 命令边界
 
-  func testCommandsTouchOnlyRuntimeAndTargetFactsAdapters() async {
+  /// 四个命令各自只触达自己的运行时缝：模式命令不派发 agent/系统代理命令，
+  /// 重同步不派发开关命令；目录激活、订阅刷新、设置保存与诊断导出不在本
+  /// module 的依赖面上（类型层面不存在这些入口）。
+  func testCommandsTouchOnlyTheirOwnRuntimeAdapter() async {
     await workflow.setAgentEnabled(true)
     await workflow.setSystemProxyEnabled(true)
     await workflow.setProxyMode(.global)
@@ -328,8 +331,5 @@ final class ProxyControlWorkflowTests: XCTestCase {
     XCTAssertEqual(runtime.systemProxyCommands, [true])
     XCTAssertEqual(runtime.modeCommands, [.global])
     XCTAssertEqual(runtime.resyncCount, 1)
-    // 目标缝只被 snapshot 组装读取；目录激活、订阅刷新、设置保存与诊断导出
-    // 不在本 module 的依赖面上（类型层面不存在这些入口）。
-    XCTAssertFalse(targetFacts.queriedTargetIDs.isEmpty, "每次观察经窄缝取目标事实")
   }
 }

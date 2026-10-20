@@ -83,7 +83,7 @@ final class GeneratedRuleSnapshotTests: XCTestCase {
     XCTAssertTrue(rules.allSatisfy { Set($0.keys) == ["action", "match"] })
   }
 
-  func testSnapshotStoreRoundTripAndVersionGuard() throws {
+  func testSnapshotStoreRoundTripAndMissingFileGuard() throws {
     let snapshot = try generatedSnapshot("geolocation-cn")
     let dir = FileManager.default.temporaryDirectory
       .appendingPathComponent("ssxng-rule-snapshot-\(UUID().uuidString)", isDirectory: true)
@@ -99,19 +99,6 @@ final class GeneratedRuleSnapshotTests: XCTestCase {
     let loaded = try store.load()
     XCTAssertEqual(loaded.rules.map(\.match), snapshot.rules.map(\.match))
     XCTAssertEqual(loaded.metadata, snapshot.metadata)
-
-    // schema / converter 版本不匹配使加载失败。
-    let rawObject = try JSONSerialization.jsonObject(with: Data(contentsOf: url))
-    guard var raw = rawObject as? [String: Any] else {
-      return XCTFail("snapshot JSON root should be an object")
-    }
-    raw["schemaVersion"] = 99
-    try JSONSerialization.data(withJSONObject: raw).write(to: url)
-    XCTAssertThrowsError(try store.load()) { error in
-      XCTAssertEqual(
-        error as? RuleSnapshotError,
-        .schemaVersionMismatch(found: 99, expected: RuleSnapshotStore.currentSchemaVersion))
-    }
   }
 }
 

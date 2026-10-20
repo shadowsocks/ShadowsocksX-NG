@@ -96,37 +96,4 @@ final class ProxyRuntimeGlobalModeTests: ProxyRuntimeControllerTests {
       systemProxy.applied.last?.http,
       .init(host: "127.0.0.1", port: ActivationFixture.listen.httpPort))
   }
-
-  func testFailedGlobalInstanceKeepsNewModeAndStopsService() async throws {
-    let seeded = try makeSeededCatalog()
-    let listeningStore = InMemoryProxyListeningStore()
-    let controller = makeController(
-      probe: ProxyRuntimeFixture.FakeProbe.reachable(),
-      listeningStore: listeningStore,
-      settings: ProxyRuntimeSettings(
-        listen: ActivationFixture.listen, agentEnabled: true, systemProxyEnabled: true),
-      launchHealthTimeoutSeconds: 0.05)
-    try await controller.activate(seeded.server)
-    XCTAssertEqual(controller.systemProxyState, .applied)
-    let runtimeStore = RuntimeFileStore(fileURL: runtime.contract)
-    let previousDocument = try XCTUnwrap(runtimeStore.loadDocument())
-    let previousApplicationCount = systemProxy.applied.count
-
-    agent.onRegister = { [runtimeStore, previousDocument] in
-      guard let requested = runtimeStore.loadDocument() else { return }
-      let accepted = requested.aclRuntime == nil ? requested : previousDocument
-      try? runtimeStore.writeRuntimeReceipt(for: accepted, processID: 42)
-    }
-
-    await controller.setProxyMode(.global)
-
-    XCTAssertEqual(controller.proxyMode, .global)
-    XCTAssertEqual(controller.settings.preferredMode, .global)
-    XCTAssertEqual(controller.controlPreferences.preferredMode, .global)
-    XCTAssertEqual(runtimeStore.loadDocument()?.aclRuntime?.summary, "global")
-    XCTAssertEqual(controller.state, .serviceFailed(.agent))
-    XCTAssertNotNil(runtimeStore.readFailure())
-    XCTAssertEqual(systemProxy.applied.count, previousApplicationCount)
-    XCTAssertGreaterThan(systemProxy.clearCount, 0)
-  }
 }

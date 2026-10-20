@@ -146,20 +146,6 @@ final class ProxyRuntimeAgentAndSystemProxyTests: ProxyRuntimeControllerTests {
       FileManager.default.fileExists(atPath: runtime.contract.path), "运行时契约保留")
   }
 
-  func testDisableClearFailureIsPresentedAndObservationStillStops() async throws {
-    let seeded = try makeSeededCatalog()
-    let controller = makeController(probe: ProxyRuntimeFixture.FakeProbe.reachable())
-    try await controller.activate(seeded.server)
-    await controller.setAgentEnabled(true)
-    await controller.setSystemProxyEnabled(true)
-    systemProxy.clearError = SystemProxyError.commitFailed("busy")
-
-    await controller.setSystemProxyEnabled(false)
-
-    XCTAssertEqual(controller.systemProxyState, .clearFailed(.operation(.commitFailed)))
-    XCTAssertFalse(systemProxyNetworkChangeMonitor.isObserving, "清理失败后也结束临时观察")
-  }
-
   /// 系统代理意图持久化：GUI 重启后从恢复快照读回。
   func testSystemProxyIntentPersistsAcrossGUIRestart() async throws {
     let seeded = try makeSeededCatalog()

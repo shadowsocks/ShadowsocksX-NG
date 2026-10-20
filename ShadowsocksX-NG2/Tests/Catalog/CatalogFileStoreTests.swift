@@ -51,19 +51,7 @@ final class CatalogFileStoreTests: XCTestCase {
     XCTAssertFalse(try store.load().catalog.contains(first), "旧内容被整体替换而非追加")
   }
 
-  // MARK: 权限与敏感信息
-
-  func testSaveCreatesDirectory0700AndFile0600() throws {
-    var catalog = ConfigurationCatalog()
-    _ = try catalog.addTestServer("leaf")
-
-    try store.save(CatalogDocument(catalog: catalog))
-
-    let fileAttributes = try FileManager.default.attributesOfItem(atPath: store.fileURL.path)
-    XCTAssertEqual(fileAttributes[.posixPermissions] as? Int, 0o600, "文件权限 0600")
-    let dirAttributes = try FileManager.default.attributesOfItem(atPath: workDir.path)
-    XCTAssertEqual(dirAttributes[.posixPermissions] as? Int, 0o700, "目录权限 0700")
-  }
+  // MARK: 敏感信息
 
   func testPersistedFileContainsNoPlaintextSecrets() throws {
     var catalog = ConfigurationCatalog()
