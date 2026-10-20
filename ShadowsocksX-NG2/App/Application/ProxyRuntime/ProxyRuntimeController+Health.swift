@@ -214,10 +214,8 @@ extension ProxyRuntimeController {
 }
 
 extension ProxyRuntimeController {
-  /// Uses the existing local endpoint/receipt health seam while the GUI is alive.
-  /// Network path availability is deliberately absent from this decision.
-  /// 任务柄与循环调度在观察机（scheduleSystemProxyHealthObservation）；循环体
-  /// 留在本体——它同时承担运行时健康呈现，系统代理反应转发给观察机。
+  /// Agent 独占稳定运行期间的故障判定；GUI 只读取明确失败，避免重复连接入站。
+  /// 任务柄仍由系统代理观察机持有，并保留批准状态与待首次应用的刷新。
   func runSystemProxyHealthObservationLoop() async {
     while !Task.isCancelled {
       try? await Task.sleep(nanoseconds: systemProxyHealthPollIntervalNanoseconds)
@@ -230,46 +228,15 @@ extension ProxyRuntimeController {
         !systemProxyObserver.systemProxyStartupInProgress, settings.agentEnabled,
         let document = runtimeObservation
       else { continue }
-      await inspectSystemProxyRuntimeHealth(document)
-    }
-  }
-
-  private func inspectSystemProxyRuntimeHealth(_ document: RuntimeDeploymentFacts) async {
-    if runtimeFileStore.blocksDeployment(document.intentSHA256) {
-      state = .serviceFailed(.agent)
-      await systemProxyObserver.suspendSystemProxy()
-      return
-    }
-    let generation = flowGeneration
-    let outcome = await launchHealthAttempt(
-      document,
-      expectedDigest: document.aclSummary != nil
-        ? runtimeFileStore.receiptIdentity(for: document.intentSHA256) : nil)
-    // await 恢复后重查意图与代际：agent 已被关闭或已有新 execute 时，
-    // 失败呈现与系统代理挂起都归属新的意图状态，本任务不得再改写。
-    guard !Task.isCancelled, generation == flowGeneration, settings.systemProxyEnabled,
-      settings.agentEnabled
-    else {
-      return
-    }
-    switch outcome {
-    case .ready:
-      let wasUnavailable = systemProxyObserver.systemProxyWasUnavailable
-      switch state {
-      case .running, .firewallBlocked: break
-      default: await presentFirewallStatus(for: document)
-      }
-      if !systemProxyExitAvailable {
+      if let failure = runtimeFileStore.readFailure(),
+        let deploymentID = runtimeFileStore.receiptIdentity(for: document.intentSHA256),
+        failure.deploymentID == deploymentID
+      {
+        state = .serviceFailed(.agent)
         await systemProxyObserver.suspendSystemProxy()
-      } else if wasUnavailable || systemProxyObserver.systemProxyInitialApplyPending {
+      } else if systemProxyObserver.systemProxyInitialApplyPending {
         await systemProxyObserver.convergeSystemProxy()
       }
-    case .agentLost:
-      state = .serviceFailed(.agent)
-      await systemProxyObserver.suspendSystemProxy()
-    case .retry(let failure):
-      if let failure { presentEndpointFailure(failure) } else { state = .serviceFailed(.agent) }
-      await systemProxyObserver.suspendSystemProxy()
     }
   }
 }

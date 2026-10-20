@@ -24,6 +24,13 @@ extension ProxyControlWorkflowIntegrationTests {
     XCTAssertTrue(predicate(composition.control.snapshot), "实际快照：\(composition.control.snapshot)")
   }
 
+  private func waitForSystemProxyObservationCycle(_ composition: Composition) async throws {
+    systemProxyHelper.setStatus(.requiresApproval)
+    try await waitForSnapshot(composition) { $0.systemProxyApprovalRequired }
+    systemProxyHelper.setStatus(.approved)
+    try await waitForSnapshot(composition) { !$0.systemProxyApprovalRequired }
+  }
+
   func testCurrentDifferencesIncludeChangedAndNewServicesAndDisappearWhenRestored() async throws {
     let composition = try await enabledSystemProxyComposition()
     let original = systemProxy.services[0]
@@ -121,16 +128,61 @@ extension ProxyControlWorkflowIntegrationTests {
     XCTAssertEqual(systemProxy.applied.count, 1)
   }
 
-  func testHealthLossClearsOnceAndRecoveryAutomaticallyApplies() async throws {
+  func testSteadyObservationDoesNotProbeOrInferFailureFromReceiptState() async throws {
     let probe = ProxyRuntimeFixture.FakeProbe.reachable()
     let composition = try await enabledSystemProxyComposition(probe: probe)
-    probe.setOutcomes([.refused(detail: "local stopped")])
+    let store = composition.controller.runtimeFileStore
+    let callsAfterLaunch = probe.callCount
+    probe.setOutcomes([.refused(detail: "must not probe while running")])
+    try JSONEncoder().encode(
+      RuntimeDeploymentFailure(deploymentID: UUID().uuidString, reason: "older deployment failed")
+    ).write(to: store.failureFileURL)
+
+    for receipt in [
+      nil,
+      RuntimeDeploymentReceipt(processID: 42, deploymentID: UUID().uuidString),
+      RuntimeDeploymentReceipt(
+        processID: 9999,
+        deploymentID: try XCTUnwrap(store.readRuntimeReceipt()).deploymentID),
+    ] {
+      if let receipt {
+        try JSONEncoder().encode(receipt).write(to: store.runtimeStatusFileURL)
+      } else {
+        try FileManager.default.removeItem(at: store.runtimeStatusFileURL)
+      }
+      // Two approval transitions prove that observation continues across complete iterations.
+      try await waitForSystemProxyObservationCycle(composition)
+      XCTAssertEqual(systemProxy.clearCount, 0)
+      XCTAssertEqual(composition.control.snapshot.systemProxyApplication, .applied)
+      XCTAssertEqual(composition.control.snapshot.runtime.status, .running)
+    }
+    let metadata = try XCTUnwrap(RuntimePublication.metadata(at: store.supervisionFileURL))
+    try store.recordFailure(reason: "unattributable after identity loss")
+    try FileManager.default.removeItem(
+      at: store.directoryURL.appendingPathComponent(metadata.intentMetadata))
+    try await waitForSystemProxyObservationCycle(composition)
+    XCTAssertEqual(systemProxy.clearCount, 0, "无法匹配部署身份时不推断当前故障")
+    try FileManager.default.removeItem(at: store.supervisionFileURL)
+    try await waitForSystemProxyObservationCycle(composition)
+    XCTAssertEqual(systemProxy.clearCount, 0, "缺失监管资料不能把旧部署失败变成当前故障")
+    XCTAssertEqual(composition.control.snapshot.systemProxyApplication, .applied)
+    XCTAssertEqual(probe.callCount, callsAfterLaunch)
+  }
+
+  func testDeploymentFailureClearsOnceAndExplicitRetryApplies() async throws {
+    let probe = ProxyRuntimeFixture.FakeProbe.reachable()
+    let composition = try await enabledSystemProxyComposition(probe: probe)
+    try composition.controller.runtimeFileStore.recordFailure(reason: "Agent confirmed failure")
     try await waitForSnapshot(composition) { $0.systemProxyApplication == .paused }
     XCTAssertTrue(composition.control.snapshot.systemProxyIntentEnabled)
     XCTAssertEqual(systemProxy.clearCount, 1)
     await emitAndWaitForInspection(.networkPath, in: composition)
     XCTAssertEqual(systemProxy.clearCount, 1, "失效期间不循环重试")
-    probe.setOutcomes([.reachable])
+    try composition.controller.runtimeFileStore.clearFailure()
+    try await waitForSystemProxyObservationCycle(composition)
+    XCTAssertEqual(composition.control.snapshot.systemProxyApplication, .paused)
+    XCTAssertEqual(systemProxy.applied.count, 1, "删除失败记录本身不是恢复证明")
+    _ = await composition.control.setAgentEnabled(true)
     try await waitForSnapshot(composition) { $0.systemProxyApplication == .applied }
     XCTAssertEqual(systemProxy.applied.count, 2)
   }
@@ -138,12 +190,12 @@ extension ProxyControlWorkflowIntegrationTests {
   func testPausedIntentOffPreventsRecoveryApply() async throws {
     let probe = ProxyRuntimeFixture.FakeProbe.reachable()
     let composition = try await enabledSystemProxyComposition(probe: probe)
-    probe.setOutcomes([.refused(detail: "stopped")])
+    try composition.controller.runtimeFileStore.recordFailure(reason: "Agent confirmed failure")
     try await waitForSnapshot(composition) { $0.systemProxyApplication == .paused }
     let healthObservation = composition.controller.systemProxyObserver.systemProxyHealthTask
     XCTAssertNotNil(healthObservation)
     _ = await composition.control.setSystemProxyEnabled(false)
-    probe.setOutcomes([.reachable])
+    try composition.controller.runtimeFileStore.clearFailure()
     await healthObservation?.value
     XCTAssertFalse(networkMonitor.isObserving, "关闭意图后应停止观察与自动恢复")
     XCTAssertEqual(systemProxy.applied.count, 1)
@@ -247,11 +299,11 @@ extension ProxyControlWorkflowIntegrationTests {
     XCTAssertEqual(systemProxy.applied.count, 2, "关闭意图下保存不应用")
   }
 
-  func testHealthClearFailurePreservesIntentAndNeedsExplicitRetry() async throws {
+  func testDeploymentFailureClearErrorPreservesIntentAndNeedsExplicitRetry() async throws {
     let probe = ProxyRuntimeFixture.FakeProbe.reachable()
     let composition = try await enabledSystemProxyComposition(probe: probe)
     systemProxy.clearError = SystemProxyError.commitFailed("busy")
-    probe.setOutcomes([.refused(detail: "local stopped")])
+    try composition.controller.runtimeFileStore.recordFailure(reason: "Agent confirmed failure")
     try await waitForSnapshot(composition) { $0.systemProxyApplication.isClearFailure }
     XCTAssertTrue(composition.control.snapshot.systemProxyIntentEnabled)
     XCTAssertTrue(composition.control.snapshot.systemProxyInspection.canRetryClear)
@@ -316,7 +368,7 @@ extension ProxyControlWorkflowIntegrationTests {
     systemProxy.beforeRead = { await gate.wait() }
     let read = Task { await composition.control.recheckSystemProxy() }
     await fulfillment(of: [gate.started], timeout: 2)
-    probe.setOutcomes([.refused(detail: "stopped")])
+    try composition.controller.runtimeFileStore.recordFailure(reason: "Agent confirmed failure")
     try await waitForSnapshot(composition) { $0.systemProxyApplication == .paused }
     gate.resume()
     _ = await read.value
@@ -333,7 +385,7 @@ extension ProxyControlWorkflowIntegrationTests {
     systemProxy.beforeRead = { await gate.wait() }
     let read = Task { await composition.control.recheckSystemProxy() }
     await fulfillment(of: [gate.started], timeout: 2)
-    probe.setOutcomes([.refused(detail: "stopped")])
+    try composition.controller.runtimeFileStore.recordFailure(reason: "Agent confirmed failure")
     try await waitForSnapshot(composition) { $0.systemProxyApplication.isClearFailure }
     gate.resume()
     _ = await read.value
@@ -377,7 +429,7 @@ extension ProxyControlWorkflowIntegrationTests {
     let repair = Task { await composition.control.repairSystemProxy() }
     await fulfillment(of: [gate.started], timeout: 2)
     XCTAssertTrue(composition.control.snapshot.systemProxyInspection.isBusy)
-    probe.setOutcomes([.refused(detail: "stopped")])
+    try composition.controller.runtimeFileStore.recordFailure(reason: "Agent confirmed failure")
     try await waitForSnapshot(composition) { $0.runtime.status != .running }
     gate.resume()
     _ = await repair.value

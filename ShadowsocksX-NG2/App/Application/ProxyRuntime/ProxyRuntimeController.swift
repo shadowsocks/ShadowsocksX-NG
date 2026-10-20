@@ -145,7 +145,7 @@ final class ProxyRuntimeController {
     ruleApplicationDelay: @escaping () async throws -> Void = {
       try await Task.sleep(for: .milliseconds(150))
     },
-    systemProxyHealthPollIntervalNanoseconds: UInt64 = 2_000_000_000,
+    systemProxyHealthPollIntervalNanoseconds: UInt64 = 5_000_000_000,
     helperRefreshDelayNanoseconds: UInt64 = 15_000_000_000,
     sendSignal: @escaping @Sendable (Int32, Int32) -> Int32 = { kill($0, $1) },
     processIsAlive: @escaping @Sendable (Int32) -> Bool = { $0 > 0 && kill($0, 0) == 0 }
