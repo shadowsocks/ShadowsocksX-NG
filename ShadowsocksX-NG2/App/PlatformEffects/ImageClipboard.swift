@@ -11,21 +11,3 @@ protocol ImageClipboard {
 enum ImageClipboardFailure: Equatable, Error {
   case writeFailed
 }
-
-/// 测试与 Preview 使用的内存实现：不触碰用户的真实 pasteboard。
-@MainActor
-final class InMemoryImageClipboard: ImageClipboard {
-  private(set) var pngData: Data?
-  var writeFailure: ImageClipboardFailure?
-
-  init(writeFailure: ImageClipboardFailure? = nil) {
-    self.writeFailure = writeFailure
-  }
-
-  func write(_ pngData: Data) throws {
-    if let writeFailure {
-      throw writeFailure
-    }
-    self.pngData = pngData
-  }
-}

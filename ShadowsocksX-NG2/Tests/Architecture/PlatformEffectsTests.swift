@@ -3,61 +3,7 @@ import XCTest
 @testable import ShadowsocksX_NG2
 
 @MainActor
-final class TextClipboardTests: XCTestCase {
-  func testMissingTextIsNormalEmptyState() {
-    let clipboard = InMemoryTextClipboard()
-
-    XCTAssertNil(clipboard.read())
-  }
-
-  func testPlainTextCanBeWrittenAndReadBack() throws {
-    let clipboard = InMemoryTextClipboard()
-
-    try clipboard.write("ss://example")
-
-    XCTAssertEqual(clipboard.read(), "ss://example")
-  }
-
-  func testWriteFailureIsTypedAndDoesNotExposePlatformDetails() {
-    let clipboard = InMemoryTextClipboard(writeFailure: .writeFailed)
-
-    XCTAssertThrowsError(try clipboard.write("secret")) { error in
-      XCTAssertEqual(error as? TextClipboardFailure, .writeFailed)
-    }
-  }
-}
-
-@MainActor
-final class ImageClipboardTests: XCTestCase {
-  func testWrittenPNGIsStored() throws {
-    let clipboard = InMemoryImageClipboard()
-
-    try clipboard.write(Data([0x89, 0x50]))
-
-    XCTAssertEqual(clipboard.pngData, Data([0x89, 0x50]))
-  }
-
-  func testWriteFailureIsTypedAndDoesNotExposePlatformDetails() {
-    let clipboard = InMemoryImageClipboard(writeFailure: .writeFailed)
-
-    XCTAssertThrowsError(try clipboard.write(Data())) { error in
-      XCTAssertEqual(error as? ImageClipboardFailure, .writeFailed)
-    }
-  }
-}
-
-@MainActor
 final class QrImageSaverTests: XCTestCase {
-  func testDraftIsPassedThroughToSaver() {
-    let saver = InMemoryQrImageSaver()
-    let draft = QrImageSaveDraft(data: Data([0x01]), suggestedFileName: "机房.png")
-
-    let outcome = saver.save(draft)
-
-    XCTAssertEqual(outcome, .cancelled)
-    XCTAssertEqual(saver.drafts, [draft])
-  }
-
   func testSuggestedFileNameReplacesPathReservedCharacters() {
     XCTAssertEqual(
       QrImageSaveDraft.suggestedFileName(from: "机房/一号:备用"),

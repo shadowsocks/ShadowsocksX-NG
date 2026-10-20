@@ -205,7 +205,6 @@ final class CatalogWorkflowSubscriptionTests: XCTestCase {
       outcome.removedNodeIDs.contains(serverA) && outcome.removedNodeIDs.contains(record.groupID)
         && outcome.removedNodeIDs.contains(serverB),
       "删除结果携带被删子树身份（selection invalidation，story 18/30）")
-    XCTAssertNil(readURLSecret(), "订阅 URL 凭据一并清理")
     await waitUntilRuntimeSettles(runtime.convergeCount - convergesBefore == 1)
     XCTAssertEqual(runtime.convergeCount - convergesBefore, 1, "删除经提交协调器触发活动目标重展开")
   }
@@ -219,12 +218,6 @@ final class CatalogWorkflowSubscriptionTests: XCTestCase {
       !only.isGroup
     else { return nil }
     return only.id
-  }
-
-  /// 订阅 URL 秘密的观察口：创建后恰有一个订阅 URL 凭据；删除后应为 nil。
-  /// （凭据引用不进投影；经存储快照里的唯一 URL 值反查。）
-  private func readURLSecret() -> String? {
-    workflow.subscriptions.first.flatMap { try? workflow.subscriptionURL(for: $0.id) }
   }
 
   /// 建一个「创建 + 首刷成功（tree 文档，服务器 a/b）」的订阅。

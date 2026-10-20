@@ -11,24 +11,3 @@ protocol TextClipboard {
 enum TextClipboardFailure: Equatable, Error {
   case writeFailed
 }
-
-/// 测试与 Preview 使用的内存实现：不触碰用户的真实 pasteboard。
-@MainActor
-final class InMemoryTextClipboard: TextClipboard {
-  private(set) var text: String?
-  var writeFailure: TextClipboardFailure?
-
-  init(text: String? = nil, writeFailure: TextClipboardFailure? = nil) {
-    self.text = text
-    self.writeFailure = writeFailure
-  }
-
-  func read() -> String? { text }
-
-  func write(_ text: String) throws {
-    if let writeFailure {
-      throw writeFailure
-    }
-    self.text = text
-  }
-}

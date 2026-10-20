@@ -58,19 +58,3 @@ final class AppKitQrImageSaver: QrImageSaver {
     }
   }
 }
-
-/// Tests and previews receive the draft without opening a panel or writing a file.
-@MainActor
-final class InMemoryQrImageSaver: QrImageSaver {
-  var result: QrImageSaveResult
-  private(set) var drafts: [QrImageSaveDraft] = []
-
-  init(result: QrImageSaveResult = .cancelled) {
-    self.result = result
-  }
-
-  func save(_ draft: QrImageSaveDraft) -> QrImageSaveResult {
-    drafts.append(draft)
-    return result
-  }
-}
