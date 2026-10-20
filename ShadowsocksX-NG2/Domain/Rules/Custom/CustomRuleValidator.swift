@@ -346,18 +346,6 @@ enum RuleRuntimeCompiler {
     let builtIn: [ProxyRule]
     let aclURL: URL
   }
-  static func validation(
-    document: CustomRuleDocument, builtIn: [ProxyRule], defaultAction: RuleDefaultAction
-  ) -> CustomRuleValidationResult {
-    let custom = document.rules.filter { !document.disabledIdentities.contains($0.identity) }
-    let enabled = builtIn.filter { !document.disabledIdentities.contains($0) }
-    let validated = CustomRuleValidator.validate(
-      custom: custom, builtIn: enabled, defaultAction: defaultAction)
-    return CustomRuleValidationResult(
-      accepted: RuleAnalysis.runtimeCandidates(
-        enabled + validated.accepted, defaultAction: defaultAction),
-      rejected: validated.rejected, relationships: validated.relationships)
-  }
 
   static func compile(_ input: Input) -> SslocalRuntimeDocument {
     let source = input.source

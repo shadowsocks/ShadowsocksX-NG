@@ -102,14 +102,6 @@ final class CustomRuleControllerTests: ProxyRuntimeControllerTests {
     XCTAssertEqual(first, .saved)
     await controller.ruleApplicationTask?.value
     XCTAssertEqual(try store.load(), rules, "保存保留用户 UUID 和全部意图")
-    // 遮蔽关系由领域层验证器判定（与运行时部署无关的纯函数）。
-    let validation = RuleRuntimeCompiler.validation(
-      document: CustomRuleDocument(rules: rules, disabledIdentities: []),
-      builtIn: [], defaultAction: .directWhenUnmatched)
-    XCTAssertTrue(
-      validation.relationships.contains {
-        $0.rule == rules[2].identity && $0.kind == .shadowing && $0.extent == .full
-      })
     let runtimeStore = RuntimeFileStore(fileURL: runtime.contract)
     let before = try activeACLContent(runtimeStore)
     let unregisterBefore = agent.unregisterCount
@@ -123,10 +115,6 @@ final class CustomRuleControllerTests: ProxyRuntimeControllerTests {
     XCTAssertEqual(try activeACLContent(runtimeStore), before)
     XCTAssertEqual(agent.unregisterCount, unregisterBefore)
     XCTAssertEqual(controller.readCustomRuleSummary(), summary)
-    let repeatedValidation = RuleRuntimeCompiler.validation(
-      document: CustomRuleDocument(rules: reversed, disabledIdentities: []),
-      builtIn: [], defaultAction: .directWhenUnmatched)
-    XCTAssertEqual(repeatedValidation, validation)
   }
 
   /// 校验拒绝：固定本地冲突整批不落地，旧规则保持不变。

@@ -47,19 +47,3 @@ struct DiagnosticReportExportAction {
     }
   }
 }
-
-/// 测试与 Preview 使用的内存实现：记录收到的 draft，但不打开保存面板或写文件。
-@MainActor
-final class InMemoryDiagnosticReportExporter: DiagnosticReportExporter {
-  var result: DiagnosticReportExportResult
-  private(set) var drafts: [DiagnosticReportDraft] = []
-
-  init(result: DiagnosticReportExportResult = .cancelled) {
-    self.result = result
-  }
-
-  func export(draft: DiagnosticReportDraft) -> DiagnosticReportExportResult {
-    drafts.append(draft)
-    return result
-  }
-}

@@ -72,19 +72,3 @@ final class AppKitConfigurationGroupFileExporter: ConfigurationGroupFileExporter
     }
   }
 }
-
-/// Tests and previews receive the complete draft without opening a panel or writing a file.
-@MainActor
-final class InMemoryConfigurationGroupFileExporter: ConfigurationGroupFileExporter {
-  var result: ConfigurationGroupFileExportResult
-  private(set) var drafts: [ConfigurationGroupExportDraft] = []
-
-  init(result: ConfigurationGroupFileExportResult = .cancelled) {
-    self.result = result
-  }
-
-  func export(draft: ConfigurationGroupExportDraft) -> ConfigurationGroupFileExportResult {
-    drafts.append(draft)
-    return result
-  }
-}

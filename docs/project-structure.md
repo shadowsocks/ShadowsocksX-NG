@@ -12,7 +12,7 @@
   - `Application/` — 应用层（无 SwiftUI 视图）：`*Workflow/` 工作流 module（UI-facing interface 与实现协作者）、`ProxyRuntime/` 运行时控制器家族与事实投影、`Services/` LaunchAgent/登录项/helper/防火墙。
   - `Presentation/` — 跨功能表现层：错误呈现、被多个界面共用的状态模型。
   - `UI/` — 视图层，按子视图分目录（`Workspace/`、`Home/`、`Servers/`、`Subscriptions/`、`Rules/`、`Settings/`、`Diagnostics/`、`StatusMenu/`，`Servers/Plugin/` 为插件管理子视图）。
-  - `PlatformEffects/` — 平台效应 seam（协议 + InMemory 替身 + AppKit adapter），系统框架访问集中于此。
+  - `PlatformEffects/` — 平台效应 seam（协议 + AppKit adapter；测试替身在 `Tests/Support/`），系统框架访问集中于此。
   - `Resources/` — `Info.plist`、`entitlements`（生成物）与 `Assets.xcassets`、`*.xcstrings`（入库）。
 
   分层边界由 `Tests/Architecture/SkeletonTests.swift` 的正向圈定守卫断言：只扫描 `App/UI/`，视图层不得引用运行时控制器、工作流实现协作者或原始目录/凭据存储类型；新增运行时适配器放进 `Application/` 即自动落在扫描范围外，无需登记豁免。注意 `App/` 下任何非源码文件都会被 XcodeGen 收进 Resources 阶段并封进签名后的 bundle，因此文档不放 `App/`（`project.yml` 已排除 `**/*.md`）。分层与主题的组织方式、守卫为何取正面圈定、以及 XcodeGen 的上述约束见 [ADR-0029](adr/0029-source-layout-declares-layer-and-theme.md)。
