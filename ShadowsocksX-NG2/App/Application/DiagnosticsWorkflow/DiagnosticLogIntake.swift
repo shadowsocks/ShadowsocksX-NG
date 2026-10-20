@@ -13,15 +13,14 @@ enum DiagnosticLogIntake {
     let size = (try? handle.seekToEnd()) ?? 0
     let window = min(UInt64(max(1, maxBytes)), size)
     try? handle.seek(toOffset: size - window)
-    let data = (try? handle.read(upToCount: Int(window))) ?? Data()
+    var data = (try? handle.read(upToCount: Int(window))) ?? Data()
     guard !data.isEmpty else { return nil }
+    if window < size, let firstNewline = data.firstIndex(of: 10) {
+      data.removeSubrange(...firstNewline)
+    }
     // 窗口边界可能切断多字节字符：有意宽容解码，坏字节替换而非丢弃整段。
     // swiftlint:disable:next optional_data_string_conversion
-    var text = String(decoding: data, as: UTF8.self)
-    if window < size, let firstNewline = text.firstIndex(of: "\n") {
-      text.removeSubrange(text.startIndex...firstNewline)
-    }
-    return text
+    return String(decoding: data, as: UTF8.self)
   }
 
   /// 归并行（旧→新）：GUI 事件行与 agent.log 尾部行统一按时间戳排序。
@@ -45,8 +44,10 @@ enum DiagnosticLogIntake {
   /// 行内容（raw 保真），只把结尾行分隔符排除在外。
   private static func tailLines(_ tail: String?) -> [LogLine] {
     guard let tail, !tail.isEmpty else { return [] }
-    var lines = tail.split(separator: "\n", omittingEmptySubsequences: false).map(String.init)
-    if tail.hasSuffix("\n") { lines.removeLast() }
+    // 按 scalar 拆 LF：Swift Character 把 CRLF 合为一个字符，不能按单个 LF 匹配。
+    var lines = tail.unicodeScalars.split(separator: "\n", omittingEmptySubsequences: false)
+      .map(String.init)
+    if tail.unicodeScalars.last == "\n" { lines.removeLast() }
     return lines.map { LogLine.parse($0) ?? LogLine.legacy($0) }
   }
 }

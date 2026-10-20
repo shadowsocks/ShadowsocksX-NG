@@ -18,6 +18,11 @@ struct DiagnosticLogIntakeTests {
     #expect(DiagnosticLogIntake.readTail(of: url, maxBytes: 6) == "CC\n")
   }
 
+  @Test func dropsPartialCRLFLineAtWindowBoundary() throws {
+    let url = try temporaryLogFile(content: "AAAA\r\nBBBB\r\nCC\r\n")
+    #expect(DiagnosticLogIntake.readTail(of: url, maxBytes: 8) == "CC\r\n")
+  }
+
   @Test func missingFileReturnsNil() {
     let url = FileManager.default.temporaryDirectory
       .appendingPathComponent("ssxng-tail-\(UUID().uuidString)/agent.log")
@@ -25,6 +30,38 @@ struct DiagnosticLogIntakeTests {
   }
 
   // MARK: - 行归一与归并
+
+  @Test func CRLFOutputKeepsFollowingErrorsVisible() throws {
+    let pipe = Pipe()
+    let intake = SslocalOutputIntake(
+      destinations: [SslocalStandardErrorDestination(handle: pipe.fileHandleForWriting)])
+    intake.write(Data("INFO first\r\nERROR second\r\n".utf8))
+    try pipe.fileHandleForWriting.close()
+    let tail = try #require(
+      String(data: pipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8))
+    try pipe.fileHandleForReading.close()
+
+    let rows = DiagnosticLogIntake.rows(events: [], tail: tail)
+    #expect(rows.map(\.text) == ["INFO first\r", "ERROR second\r"])
+    #expect(rows.map(\.level) == [.info, .error])
+    #expect(DiagnosticLogFilter(level: .errors).apply(rows).map(\.text) == ["ERROR second\r"])
+  }
+
+  @Test func mergesAcrossDaylightSavingFallback() throws {
+    let clock = ISO8601DateFormatter()
+    let store = RuntimeEventStore()
+    store.append(
+      event: .agentRegistered,
+      timestamp: try #require(clock.date(from: "2026-11-01T06:00:00Z")))
+    let tail = """
+      2026-11-01 01:59:00.000 -0400 [info] [wrapper] before fallback
+      2026-11-01 01:01:00.000 -0500 [error] [wrapper] after fallback
+      """
+
+    let rows = DiagnosticLogIntake.rows(events: store.snapshot, tail: tail)
+    #expect(rows.map(\.text) == ["before fallback", "launch agent registered", "after fallback"])
+    #expect(rows.allSatisfy { $0.timestamp != nil })
+  }
 
   @Test func mergesRowsByTimestamp() {
     let store = RuntimeEventStore()

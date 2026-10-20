@@ -30,6 +30,29 @@ struct LogLineTests {
     #expect(LogLine.parse("2026-10-20T03:04:12.123456Z [info] [gui] text") == nil)
   }
 
+  @Test func offsetTimestampsPreserveRepeatedLocalTimes() throws {
+    let first = try #require(
+      LogLine.parse("2026-11-01 01:30:00.000 -0400 [info] [wrapper] first"))
+    let second = try #require(
+      LogLine.parse("2026-11-01 01:30:00.000 -0500 [info] [wrapper] second"))
+    let firstTime = try #require(first.timestamp)
+    let secondTime = try #require(second.timestamp)
+    #expect(secondTime.timeIntervalSince(firstTime) == 3600)
+    #expect(LogLine.parse(first.rendered) == first)
+    #expect(LogLine.parse(second.rendered) == second)
+    #expect(
+      first.rendered.range(of: " [+-][0-9]{4} \\[info\\]", options: .regularExpression) != nil)
+  }
+
+  @Test func readsUniformRowsWithoutTimezoneFromEarlierVersions() throws {
+    let row = try #require(
+      LogLine.parse("2026-10-20 12:00:00.123 [error] [wrapper] older event"))
+    #expect(row.timestamp != nil)
+    #expect(row.level == .error)
+    #expect(row.source == .wrapper)
+    #expect(row.text == "older event")
+  }
+
   @Test func legacyRowsKeepRawTextAndGuessSource() {
     let event = LogLine.legacy("ssxng: listen not established within deadline: a 127.0.0.1:1")
     #expect(event.timestamp == nil)

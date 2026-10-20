@@ -30,7 +30,7 @@ enum LogLineSource: String, Sendable {
 
 /// 统一日志行模型：「一行日志是什么」在本类型收口——写侧（agent.log 的
 /// stderr 通路）与读侧（诊断日志查看器）共用同一渲染与解析。行格式：
-/// `yyyy-MM-dd HH:mm:ss.SSS [error|warning|info] [gui|wrapper|sslocal] 正文`，
+/// `yyyy-MM-dd HH:mm:ss.SSS Z [error|warning|info] [gui|wrapper|sslocal] 正文`，
 /// 时间戳固定 POSIX locale，报障对照不随用户区域漂移。
 struct LogLine: Equatable, Sendable {
   /// 写侧行必有时间戳；旧格式行（升级前落盘）无法解析时为 nil。
@@ -56,10 +56,11 @@ struct LogLine: Equatable, Sendable {
 
   /// 严格解析统一行格式；无法解析返回 nil，由调用方走 `legacy` 降级。
   static func parse(_ raw: String) -> LogLine? {
-    guard raw.count > stampLength + 4 else { return nil }
-    let stampEnd = raw.index(raw.startIndex, offsetBy: stampLength)
-    guard raw[stampEnd] == " ",
-      let timestamp = timestampFormatter.date(from: String(raw[..<stampEnd]))
+    guard let stampEnd = raw.range(of: " [")?.lowerBound else { return nil }
+    let stamp = String(raw[..<stampEnd])
+    guard
+      let timestamp = timestampFormatter.date(from: stamp)
+        ?? legacyTimestampFormatter.date(from: stamp)
     else { return nil }
     var rest = raw[stampEnd...]
     guard let level = takeToken(&rest, as: LogLineLevel.self),
@@ -93,17 +94,17 @@ struct LogLine: Equatable, Sendable {
   }
 
   /// DateFormatter 在现代 Foundation 中线程安全；本格式器只被读取。
-  static let timestampFormatter: DateFormatter = {
+  static let timestampFormatter = makeTimestampFormatter("yyyy-MM-dd HH:mm:ss.SSS Z")
+
+  // 升级前的行没有时区，只能按本地时间读取；新行必须保留回拨前后的偏移量。
+  private static let legacyTimestampFormatter = makeTimestampFormatter("yyyy-MM-dd HH:mm:ss.SSS")
+
+  private static func makeTimestampFormatter(_ format: String) -> DateFormatter {
     let formatter = DateFormatter()
     formatter.locale = Locale(identifier: "en_US_POSIX")
-    formatter.dateFormat = "yyyy-MM-dd HH:mm:ss.SSS"
+    formatter.dateFormat = format
     return formatter
-  }()
-
-  /// 时间戳列宽从格式器派生（固定格式输出定宽）：格式若变化，解析随之
-  /// 失效降级，不错位解析。
-  private static let stampLength =
-    timestampFormatter.string(from: Date(timeIntervalSince1970: 0)).count
+  }
 }
 
 extension LogLine {
