@@ -179,23 +179,30 @@ func makeTestCatalogStore(
   fileURL: URL, library: ServerLibraryStorage? = nil
 ) -> CatalogFileStore {
   let store = CatalogFileStore(
-    fileURL: fileURL, library: library ?? ServerLibraryStorage(keys: FixtureLibraryKeys()))
+    fileURL: fileURL,
+    library: library ?? ServerLibraryStorage(keys: FixtureLibraryKeys(namespace: fileURL.path)))
   _ = try? store.load()
   return store
 }
 
 private final class FixtureLibraryKeys: MasterKeyStoring {
   private static let lock = NSLock()
-  nonisolated(unsafe) private static var values: [UUID: Data] = [:]
+  nonisolated(unsafe) private static var values: [String: [UUID: Data]] = [:]
+  private let namespace: String
 
+  init(namespace: String) { self.namespace = namespace }
+
+  func ids() throws -> [UUID] {
+    Self.lock.withLock { Array(Self.values[namespace, default: [:]].keys) }
+  }
   func read(_ id: UUID, allowingInteraction: Bool) throws -> Data? {
-    Self.lock.withLock { Self.values[id] }
+    Self.lock.withLock { Self.values[namespace]?[id] }
   }
   func create(_ data: Data, id: UUID, allowingInteraction: Bool) throws {
-    Self.lock.withLock { Self.values[id] = data }
+    Self.lock.withLock { Self.values[namespace, default: [:]][id] = data }
   }
 }
 
 func makeTestListeningStore(fileURL: URL) -> ProxyListeningFileStore {
-  ProxyListeningFileStore(fileURL: fileURL, keys: FixtureLibraryKeys())
+  ProxyListeningFileStore(fileURL: fileURL, keys: FixtureLibraryKeys(namespace: fileURL.path))
 }

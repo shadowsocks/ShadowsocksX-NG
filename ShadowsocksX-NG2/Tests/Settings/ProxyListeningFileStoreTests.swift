@@ -13,7 +13,7 @@ final class ProxyListeningFileStoreTests: XCTestCase {
     directory = FileManager.default.temporaryDirectory
       .appendingPathComponent("ssxng-settings-tests-\(UUID().uuidString)", isDirectory: true)
     store = makeTestListeningStore(
-      fileURL: directory.appendingPathComponent("proxy-listening.enc"))
+      fileURL: directory.appendingPathComponent("proxy-listening.age"))
   }
 
   override func tearDownWithError() throws {
@@ -26,7 +26,7 @@ final class ProxyListeningFileStoreTests: XCTestCase {
     let blockedParent = directory.appendingPathComponent("blocked")
     try Data("not a directory".utf8).write(to: blockedParent)
     return makeTestListeningStore(
-      fileURL: blockedParent.appendingPathComponent("proxy-listening.enc"))
+      fileURL: blockedParent.appendingPathComponent("proxy-listening.age"))
   }
 
   func testRoundTripKeepsListeningConfiguration() throws {
@@ -42,7 +42,7 @@ final class ProxyListeningFileStoreTests: XCTestCase {
 
   func testEncryptedListeningHasItsOwnFile() {
     XCTAssertEqual(
-      ProxyListeningFileStore.defaultFileURL().lastPathComponent, "proxy-listening.enc")
+      ProxyListeningFileStore.defaultFileURL().lastPathComponent, "proxy-listening.age")
   }
 
   func testEveryListenerModeRoundTripsWithoutAnAdvertisedAddress() throws {

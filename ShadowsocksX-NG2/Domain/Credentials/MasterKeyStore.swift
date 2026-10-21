@@ -7,6 +7,7 @@ enum MasterKeyStoreError: Error, Equatable {
 
 /// 主密钥的二进制存储；交互只由显式解锁或重置命令开启。
 protocol MasterKeyStoring {
+  func ids() throws -> [UUID]
   func read(_ id: UUID, allowingInteraction: Bool) throws -> Data?
   func create(_ data: Data, id: UUID, allowingInteraction: Bool) throws
 }
@@ -16,6 +17,23 @@ struct KeychainMasterKeyStore: MasterKeyStoring {
 
   init(namespace: String) {
     self.service = "com.qiuyuzhou.ShadowsocksX-NG2.\(namespace)"
+  }
+
+  func ids() throws -> [UUID] {
+    try withClassicKeychainInteraction(false) {
+      var query = baseQuery
+      query[kSecReturnAttributes as String] = true
+      query[kSecMatchLimit as String] = kSecMatchLimitAll
+      var result: AnyObject?
+      let status = SecItemCopyMatching(query as CFDictionary, &result)
+      if status == errSecItemNotFound { return [] }
+      guard status == errSecSuccess, let items = result as? [[String: Any]] else {
+        throw MasterKeyStoreError.keychainStatus(status)
+      }
+      return items.compactMap { item in
+        (item[kSecAttrAccount as String] as? String).flatMap(UUID.init(uuidString:))
+      }.sorted { $0.uuidString < $1.uuidString }
+    }
   }
 
   func read(_ id: UUID, allowingInteraction: Bool) throws -> Data? {
@@ -52,10 +70,15 @@ struct KeychainMasterKeyStore: MasterKeyStoring {
   }
 
   private func query(_ id: UUID) -> [String: Any] {
+    var query = baseQuery
+    query[kSecAttrAccount as String] = id.uuidString
+    return query
+  }
+
+  private var baseQuery: [String: Any] {
     [
       kSecClass as String: kSecClassGenericPassword,
       kSecAttrService as String: service,
-      kSecAttrAccount as String: id.uuidString,
       kSecAttrSynchronizable as String: false,
       kSecUseDataProtectionKeychain as String: false,
     ]

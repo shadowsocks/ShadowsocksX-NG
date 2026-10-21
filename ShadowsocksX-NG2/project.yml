@@ -28,6 +28,10 @@ settings:
 configFiles:
   Debug: Configs/Signing-Debug.xcconfig
   Release: Configs/Signing-Release.xcconfig
+packages:
+  AgeSwift:
+    url: https://github.com/qiuyuzhou/AgeSwift
+    exactVersion: 0.1.0
 targets:
   ShadowsocksX-NG2:
     type: application
@@ -100,6 +104,11 @@ targets:
           copyFiles:
             destination: resources
             subpath: ThirdParty/Cloak
+      - path: Vendor/AgeSwift/LICENSE-MIT
+        buildPhase:
+          copyFiles:
+            destination: resources
+            subpath: ThirdParty/AgeSwift
       - path: Vendor/ck-client/THIRD-PARTY-NOTICES
         buildPhase:
           copyFiles:
@@ -157,6 +166,7 @@ targets:
       path: App/Resources/ShadowsocksX-NG2.entitlements
       properties: {}
     dependencies:
+      - package: AgeSwift
       # 代理运行时 wrapper（BundleProgram）：以独立可执行文件装入
       # Contents/MacOS，由 LaunchAgent plist 以 bundle 相对路径引用。
       - target: ShadowsocksX-NG2Agent
@@ -196,6 +206,8 @@ targets:
         PRODUCT_MODULE_NAME: ShadowsocksX_NG2
         # 静态库产物不签名（app 的 DevID 身份不适用）。
         CODE_SIGNING_ALLOWED: NO
+    dependencies:
+      - package: AgeSwift
   ShadowsocksX-NG2Agent:
     type: tool
     platform: macOS
@@ -264,6 +276,7 @@ targets:
       # 去宿主化（ADR 0021）：单测链 Core 静态库镜像而非 app 可执行，测试在
       # 独立 xctest runner 中运行，宿主 app 不再被启动。
       - target: ShadowsocksX-NG2Core
+      - package: AgeSwift
   ShadowsocksX-NG2SmokeTests:
     type: bundle.unit-test
     platform: macOS
@@ -283,6 +296,7 @@ targets:
       # 去宿主化（ADR 0021）：smoke 同样链 Core 镜像库；真实 sslocal/agent 从
       # scheme 构建的 app 产物取（AppArtifact），宿主 app 不再被启动。
       - target: ShadowsocksX-NG2Core
+      - package: AgeSwift
 schemes:
   # app 主 scheme。测试动作注入 SSXNG_SYSTEM_LOG=0 关闭统一日志写入：
   # 测试进程与其拉起的子进程不把测试日志灌进系统日志 store（stderr 与

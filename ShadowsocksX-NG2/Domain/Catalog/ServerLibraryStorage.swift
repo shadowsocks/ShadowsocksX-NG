@@ -2,14 +2,14 @@ import Foundation
 
 typealias ServerLibraryError = EncryptedFileError
 
-/// 服务器库专用载荷与密钥空间；封装格式保持不变。
+/// 服务器库专用载荷与密钥空间；使用标准 age 文件。
 final class ServerLibraryStorage {
   private let encrypted: EncryptedFileStorage<CatalogDocument>
 
-  init(keys: MasterKeyStoring = KeychainMasterKeyStore(namespace: "server-library")) {
+  init(keys: MasterKeyStoring = KeychainMasterKeyStore(namespace: "server-library.age")) {
     encrypted = EncryptedFileStorage(
-      keys: keys, magic: "SSXNG2LB", version: 2, maximumSize: 64 * 1024 * 1024,
-      legacyFileName: "catalog.json", makeDefault: { CatalogDocument() },
+      keys: keys, maximumSize: 64 * 1024 * 1024,
+      legacyFileNames: ["catalog.enc", "catalog.json"], makeDefault: { CatalogDocument() },
       encode: CatalogFileStore.encode, decode: CatalogFileStore.decode)
   }
 

@@ -7,7 +7,7 @@ struct ProxyListeningStoreRecoveryTests {
   @Test func completeListeningIdentitySurvivesRestartWithoutPlaintextOnDisk() throws {
     let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     defer { try? FileManager.default.removeItem(at: directory) }
-    let file = directory.appendingPathComponent("proxy-listening.enc")
+    let file = directory.appendingPathComponent("proxy-listening.age")
     let keys = TestLibraryKeys()
     let store = ProxyListeningFileStore(fileURL: file, keys: keys)
     var configuration = try store.load()
@@ -25,7 +25,7 @@ struct ProxyListeningStoreRecoveryTests {
     let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     defer { try? FileManager.default.removeItem(at: directory) }
     let keys = TestLibraryKeys()
-    let file = directory.appendingPathComponent("proxy-listening.enc")
+    let file = directory.appendingPathComponent("proxy-listening.age")
     let store = ProxyListeningFileStore(fileURL: file, keys: keys)
     var configuration = try store.load()
     configuration.lan.isEnabled = true
@@ -57,10 +57,10 @@ struct ProxyListeningStoreRecoveryTests {
     defer { try? FileManager.default.removeItem(at: directory) }
     let keys = TestLibraryKeys()
     let library = CatalogFileStore(
-      fileURL: directory.appendingPathComponent("catalog.enc"),
+      fileURL: directory.appendingPathComponent("catalog.age"),
       library: ServerLibraryStorage(keys: keys))
     let store = ProxyListeningFileStore(
-      fileURL: directory.appendingPathComponent("proxy-listening.enc"), keys: keys)
+      fileURL: directory.appendingPathComponent("proxy-listening.age"), keys: keys)
     _ = try library.load()
     var configuration = try store.load()
     configuration.local.socksPort = 12000

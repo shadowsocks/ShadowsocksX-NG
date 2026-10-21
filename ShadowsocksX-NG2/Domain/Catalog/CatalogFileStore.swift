@@ -28,7 +28,7 @@ struct CatalogFileStore {
     try library.reset(at: fileURL)
   }
 
-  /// 默认密文位置：`~/Library/Application Support/ShadowsocksX-NG2/configuration/catalog.enc`。
+  /// 默认密文位置：`~/Library/Application Support/ShadowsocksX-NG2/configuration/catalog.age`。
   static func defaultFileURL() -> URL {
     ApplicationSupportPaths.current.catalogFileURL
   }

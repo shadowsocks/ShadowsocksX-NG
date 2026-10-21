@@ -27,7 +27,7 @@ struct CatalogWorkflowLibraryTests {
   @Test func explicitUnlockLoadsLibraryAndResumesRuntime() async throws {
     let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     defer { try? FileManager.default.removeItem(at: directory) }
-    let url = directory.appendingPathComponent("catalog.enc")
+    let url = directory.appendingPathComponent("catalog.age")
     let keys = TestLibraryKeys()
     func makeStore() -> CatalogFileStore {
       CatalogFileStore(
@@ -62,7 +62,7 @@ struct CatalogWorkflowLibraryTests {
   @Test func failedResetPreservesOldLibraryAndSuccessfulResetUsesNewKey() async throws {
     let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     defer { try? FileManager.default.removeItem(at: directory) }
-    let url = directory.appendingPathComponent("catalog.enc")
+    let url = directory.appendingPathComponent("catalog.age")
     let keys = TestLibraryKeys()
     let store = CatalogFileStore(
       fileURL: url,
@@ -130,7 +130,7 @@ struct CatalogWorkflowLibraryTests {
   @Test func editedSubscriptionURLPersistsWhileRefreshIsInProgress() async throws {
     let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     defer { try? FileManager.default.removeItem(at: directory) }
-    let url = directory.appendingPathComponent("catalog.enc")
+    let url = directory.appendingPathComponent("catalog.age")
     let keys = TestLibraryKeys()
     let fixture = try CatalogFixtures.makeSubscriptionFixture(prefix: "edit-url")
     let record = SubscriptionRecord(
@@ -163,7 +163,7 @@ struct CatalogWorkflowLibraryTests {
   @Test func failedURLSaveDoesNotFetchOrPublishAndFailedRefreshKeepsSecrets() async throws {
     let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     defer { try? FileManager.default.removeItem(at: directory) }
-    let store = makeTestCatalogStore(fileURL: directory.appendingPathComponent("gate/catalog.enc"))
+    let store = makeTestCatalogStore(fileURL: directory.appendingPathComponent("gate/catalog.age"))
     let fetcher = FakeSubscriptionFetcher(behavior: .success(SubscriptionDocs.tree()))
     let runtime = FakeCatalogRuntime()
     let workflow = makeCatalogWorkflow(

@@ -18,9 +18,9 @@ struct ApplicationSupportPaths {
 
   var logsDirectoryURL: URL { rootURL.appendingPathComponent("logs", isDirectory: true) }
   var agentLogURL: URL { logsDirectoryURL.appendingPathComponent("agent.log") }
-  var catalogFileURL: URL { configurationDirectoryURL.appendingPathComponent("catalog.enc") }
+  var catalogFileURL: URL { configurationDirectoryURL.appendingPathComponent("catalog.age") }
   var proxyListeningFileURL: URL {
-    configurationDirectoryURL.appendingPathComponent("proxy-listening.enc")
+    configurationDirectoryURL.appendingPathComponent("proxy-listening.age")
   }
   var customRulesFileURL: URL {
     configurationDirectoryURL.appendingPathComponent("custom-rules.json")

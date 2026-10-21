@@ -34,20 +34,26 @@ struct ProxyListeningFileStore: ProxyListeningStoring {
 
   init(
     fileURL: URL = ProxyListeningFileStore.defaultFileURL(),
-    keys: MasterKeyStoring = KeychainMasterKeyStore(namespace: "proxy-listening")
+    keys: MasterKeyStoring = KeychainMasterKeyStore(namespace: "proxy-listening.age")
   ) {
     self.fileURL = fileURL
     encrypted = EncryptedFileStorage(
-      keys: keys, magic: "SSXNG2LP", version: 1, maximumSize: 1024 * 1024,
-      legacyFileName: "proxy-listening.json", makeDefault: { ProxyListeningConfiguration() },
+      keys: keys, maximumSize: 1024 * 1024,
+      legacyFileNames: ["proxy-listening.enc", "proxy-listening.json"],
+      makeDefault: { ProxyListeningConfiguration() },
       encode: { configuration in
         try configuration.enforcePersistenceConstraints()
-        return try JSONEncoder().encode(configuration)
+        return try JSONEncoder().encode(
+          ProxyListeningPayload(version: 1, configuration: configuration))
       },
       decode: { data in
         let configuration: ProxyListeningConfiguration
         do {
-          configuration = try JSONDecoder().decode(ProxyListeningConfiguration.self, from: data)
+          let payload = try JSONDecoder().decode(ProxyListeningPayload.self, from: data)
+          guard payload.version == 1 else { throw EncryptedFileError.unsupportedVersion }
+          configuration = payload.configuration
+        } catch let error as EncryptedFileError {
+          throw error
         } catch { throw ProxyListeningStoreError.corrupt(detail: "invalid listening payload") }
         try configuration.enforcePersistenceConstraints()
         return configuration
@@ -82,4 +88,9 @@ struct ProxyListeningFileStore: ProxyListeningStoring {
     } catch { throw ProxyListeningStoreError.ioFailure(detail: String(describing: error)) }
   }
 
+}
+
+private struct ProxyListeningPayload: Codable {
+  let version: Int
+  let configuration: ProxyListeningConfiguration
 }

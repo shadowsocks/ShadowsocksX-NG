@@ -14,7 +14,7 @@ struct ProxyListeningStartupTests {
     try old.write(to: oldURL)
     let keys = TestLibraryKeys()
     let store = ProxyListeningFileStore(
-      fileURL: directory.appendingPathComponent("proxy-listening.enc"), keys: keys)
+      fileURL: directory.appendingPathComponent("proxy-listening.age"), keys: keys)
     var prompts = 0
     let configuration = ProxyListeningStartup.load(store: store) { error in
       prompts += 1
@@ -32,7 +32,7 @@ struct ProxyListeningStartupTests {
     let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     defer { try? FileManager.default.removeItem(at: directory) }
     let keys = TestLibraryKeys()
-    let file = directory.appendingPathComponent("proxy-listening.enc")
+    let file = directory.appendingPathComponent("proxy-listening.age")
     let store = ProxyListeningFileStore(fileURL: file, keys: keys)
     _ = try store.load()
     let original = try Data(contentsOf: file)

@@ -10,7 +10,7 @@ struct ServerFormLoadingTests {
     defer { try? FileManager.default.removeItem(at: directory) }
     let workflow = makeCatalogWorkflow(
       coordinator: CatalogCommitCoordinator(
-        fileStore: makeTestCatalogStore(fileURL: directory.appendingPathComponent("catalog.enc")),
+        fileStore: makeTestCatalogStore(fileURL: directory.appendingPathComponent("catalog.age")),
         runtime: FakeCatalogRuntime()))
     #expect(try workflow.serverEditForm(for: .fresh()) == nil)
   }

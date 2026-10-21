@@ -1,3 +1,4 @@
+import AgeSwift
 import Foundation
 import Testing
 
@@ -13,7 +14,7 @@ struct EncryptedServerLibraryTests {
     try original.write(to: legacyURL)
     let keys = TestLibraryKeys()
     let store = CatalogFileStore(
-      fileURL: directory.appendingPathComponent("catalog.enc"),
+      fileURL: directory.appendingPathComponent("catalog.age"),
       library: ServerLibraryStorage(keys: keys))
     #expect(throws: ServerLibraryError.unsupportedVersion) { try store.load() }
     #expect(try Data(contentsOf: legacyURL) == original)
@@ -27,7 +28,7 @@ struct EncryptedServerLibraryTests {
   @Test func completeRecordsSurviveRestartAndOnlyCiphertextIsWritten() throws {
     let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     defer { try? FileManager.default.removeItem(at: directory) }
-    let url = directory.appendingPathComponent("catalog.enc")
+    let url = directory.appendingPathComponent("catalog.age")
     let keys = TestLibraryKeys()
     let store = CatalogFileStore(fileURL: url, library: ServerLibraryStorage(keys: keys))
     _ = try store.load()
@@ -44,6 +45,7 @@ struct EncryptedServerLibraryTests {
     let document = CatalogDocument(catalog: catalog, subscriptions: [record], favoriteIDs: [group])
     try store.save(document)
     let first = try Data(contentsOf: url)
+    #expect(first.starts(with: Data("age-encryption.org/v1\n".utf8)))
     for secret in ["PRIVATE-", "private.example", "provider.example"] {
       #expect(first.range(of: Data(secret.utf8)) == nil)
     }
@@ -57,7 +59,7 @@ struct EncryptedServerLibraryTests {
   func alteredFileIsRejectedWithoutFallback(offset: Int) throws {
     let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     defer { try? FileManager.default.removeItem(at: directory) }
-    let url = directory.appendingPathComponent("catalog.enc")
+    let url = directory.appendingPathComponent("catalog.age")
     let keys = TestLibraryKeys()
     let store = CatalogFileStore(fileURL: url, library: ServerLibraryStorage(keys: keys))
     _ = try store.load()
@@ -73,12 +75,10 @@ struct EncryptedServerLibraryTests {
   @Test func previousEncryptedEnvelopeIsUnsupportedAndPreserved() throws {
     let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     defer { try? FileManager.default.removeItem(at: directory) }
-    let url = directory.appendingPathComponent("catalog.enc")
+    let url = directory.appendingPathComponent("catalog.age")
     let keys = TestLibraryKeys()
-    let store = CatalogFileStore(fileURL: url, library: ServerLibraryStorage(keys: keys))
-    _ = try store.load()
-    var old = try Data(contentsOf: url)
-    old[8] = 1
+    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    let old = Data("SSXNG2LB".utf8) + Data([2]) + Data(repeating: 0, count: 64)
     try old.write(to: url)
     let restarted = CatalogFileStore(fileURL: url, library: ServerLibraryStorage(keys: keys))
     #expect(throws: ServerLibraryError.unsupportedVersion) { try restarted.load() }
@@ -88,7 +88,7 @@ struct EncryptedServerLibraryTests {
   @Test func unavailableOrWrongKeyDoesNotReplaceCiphertext() throws {
     let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     defer { try? FileManager.default.removeItem(at: directory) }
-    let url = directory.appendingPathComponent("catalog.enc")
+    let url = directory.appendingPathComponent("catalog.age")
     let keys = TestLibraryKeys()
     let store = CatalogFileStore(fileURL: url, library: ServerLibraryStorage(keys: keys))
     _ = try store.load()
@@ -96,7 +96,8 @@ struct EncryptedServerLibraryTests {
     let restarted = CatalogFileStore(
       fileURL: url, library: ServerLibraryStorage(keys: TestLibraryKeys()))
     #expect(throws: ServerLibraryError.keyUnavailable) { try restarted.load() }
-    keys.values = keys.values.mapValues { _ in Data(repeating: 0, count: 32) }
+    keys.values = try keys.values.mapValues { _ in Data(try AgeIdentity.generate().serialized.utf8)
+    }
     let wrongKey = CatalogFileStore(fileURL: url, library: ServerLibraryStorage(keys: keys))
     #expect(throws: ServerLibraryError.authenticationFailed) { try wrongKey.load() }
     #expect(try Data(contentsOf: url) == ciphertext)
@@ -107,8 +108,10 @@ final class TestLibraryKeys: MasterKeyStoring {
   var values: [UUID: Data] = [:]
   var requiresInteraction = false
   var createFails = false
+  var blockedIDs: Set<UUID> = []
+  func ids() throws -> [UUID] { values.keys.sorted { $0.uuidString < $1.uuidString } }
   func read(_ id: UUID, allowingInteraction: Bool) throws -> Data? {
-    if requiresInteraction && !allowingInteraction {
+    if blockedIDs.contains(id) || (requiresInteraction && !allowingInteraction) {
       throw MasterKeyStoreError.keychainStatus(-25308)
     }
     return values[id]

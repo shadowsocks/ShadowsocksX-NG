@@ -1,4 +1,4 @@
-import CryptoKit
+import AgeSwift
 import Foundation
 
 enum EncryptedFileError: Error, Equatable {
@@ -9,34 +9,33 @@ enum EncryptedFileError: Error, Equatable {
   case notLoaded
 }
 
-/// 加密文件的密钥、封装与原子提交；每个实例独立持有已加载密钥。
+/// age 文件的密钥选择与原子提交；每个实例独立持有已匹配的 identity。
 final class EncryptedFileStorage<Value> {
   private let keys: MasterKeyStoring
-  private var currentKey: (id: UUID, data: Data)?
+  private var currentIdentity: AgeIdentity?
   private var loaded = false
-
-  // 固定头：8 字节 magic + 1 字节版本 + 36 字节 UUID。整段原始头字节参与认证。
-  private let magic: Data
-  private let version: UInt8
   private let maximumSize: Int
-  private let legacyFileName: String
+  private let legacyFileNames: [String]
   private let makeDefault: () -> Value
   private let encode: (Value) throws -> Data
   private let decode: (Data) throws -> Value
-  private var headerSize: Int { 45 }
   var isLoaded: Bool { loaded }
 
+  // 为 age 分块标签、文件头和 armor 换行预留空间；明文仍单独检查原有上限。
+  private var maximumFileSize: Int {
+    let binary = maximumSize + (maximumSize / 65536 + 1) * 16 + 16384
+    let base64 = (binary + 2) / 3 * 4
+    return base64 + base64 / 64 * 2 + 1024
+  }
+
   init(
-    keys: MasterKeyStoring, magic: String, version: UInt8, maximumSize: Int,
-    legacyFileName: String, makeDefault: @escaping () -> Value,
+    keys: MasterKeyStoring, maximumSize: Int,
+    legacyFileNames: [String], makeDefault: @escaping () -> Value,
     encode: @escaping (Value) throws -> Data, decode: @escaping (Data) throws -> Value
   ) {
-    precondition(magic.utf8.count == 8)
     self.keys = keys
-    self.magic = Data(magic.utf8)
-    self.version = version
     self.maximumSize = maximumSize
-    self.legacyFileName = legacyFileName
+    self.legacyFileNames = legacyFileNames
     self.makeDefault = makeDefault
     self.encode = encode
     self.decode = decode
@@ -47,89 +46,124 @@ final class EncryptedFileStorage<Value> {
       throw EncryptedFileError.notLoaded
     }
     if FileManager.default.fileExists(atPath: url.path) {
-      let (document, key) = try read(at: url, allowingInteraction: allowingInteraction)
-      currentKey = key
+      let (document, identity) = try read(at: url, allowingInteraction: allowingInteraction)
+      currentIdentity = identity
       loaded = true
       return document
     }
-    let legacyURL = url.deletingLastPathComponent().appendingPathComponent(legacyFileName)
-    guard !FileManager.default.fileExists(atPath: legacyURL.path) else {
-      throw EncryptedFileError.unsupportedVersion
-    }
+    let directory = url.deletingLastPathComponent()
+    guard
+      !legacyFileNames.contains(where: {
+        FileManager.default.fileExists(atPath: directory.appendingPathComponent($0).path)
+      })
+    else { throw EncryptedFileError.unsupportedVersion }
     let document = makeDefault()
-    let key = try createKey(allowingInteraction: allowingInteraction)
-    try write(document, key: key, to: url)
-    currentKey = key
+    let identity = try createIdentity(allowingInteraction: allowingInteraction)
+    try write(document, identity: identity, to: url)
+    currentIdentity = identity
     loaded = true
     return document
   }
 
   func save(_ document: Value, at url: URL) throws {
-    guard loaded, let key = currentKey else { throw EncryptedFileError.notLoaded }
-    try write(document, key: key, to: url)
+    guard loaded, let identity = currentIdentity else { throw EncryptedFileError.notLoaded }
+    try write(document, identity: identity, to: url)
   }
 
   /// 调用方先取得用户的破坏性操作确认；成功写盘前不发布新状态。
   func reset(at url: URL) throws -> Value {
-    let key = try createKey(allowingInteraction: true)
+    let identity = try createIdentity(allowingInteraction: true)
     let document = makeDefault()
-    try write(document, key: key, to: url)
-    currentKey = key
+    try write(document, identity: identity, to: url)
+    currentIdentity = identity
     loaded = true
     return document
   }
 
-  private func createKey(allowingInteraction: Bool) throws -> (id: UUID, data: Data) {
+  private func createIdentity(allowingInteraction: Bool) throws -> AgeIdentity {
     let id = UUID()
-    let data = SymmetricKey(size: .bits256).withUnsafeBytes { Data($0) }
+    let identity = try AgeIdentity.generate()
+    let data = Data(identity.serialized.utf8)
     try keys.create(data, id: id, allowingInteraction: allowingInteraction)
     guard try keys.read(id, allowingInteraction: allowingInteraction) == data else {
       throw EncryptedFileError.keyUnavailable
     }
-    return (id, data)
+    return identity
   }
 
-  private func write(
-    _ document: Value,
-    key: (id: UUID, data: Data), to url: URL
-  ) throws {
+  private func write(_ document: Value, identity: AgeIdentity, to url: URL) throws {
     let payload = try encode(document)
     guard payload.count <= maximumSize else { throw EncryptedFileError.malformedFile }
-    let header = magic + Data([version]) + Data(key.id.uuidString.utf8)
-    let sealed = try AES.GCM.seal(
-      payload, using: SymmetricKey(data: key.data), authenticating: header)
-    guard let combined = sealed.combined else { throw EncryptedFileError.malformedFile }
-    try AtomicFileWriter.write(header + combined, to: url)
+    let ciphertext = try Age.encrypt(payload, recipients: [identity.recipient])
+    try AtomicFileWriter.write(ciphertext, to: url)
   }
 
-  private func read(
-    at url: URL, allowingInteraction: Bool
-  ) throws -> (Value, (id: UUID, data: Data)) {
-    let size = try url.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? 0
-    guard size >= headerSize + 28, size <= maximumSize + headerSize + 28 else {
-      throw EncryptedFileError.malformedFile
+  private func read(at url: URL, allowingInteraction: Bool) throws -> (Value, AgeIdentity) {
+    let data = try readBoundedFile(at: url)
+    if data.starts(with: Data("SSXNG2".utf8)) {
+      throw EncryptedFileError.unsupportedVersion
     }
-    let data = try Data(contentsOf: url)
-    guard data.starts(with: magic) else { throw EncryptedFileError.malformedFile }
-    guard data[8] == version else { throw EncryptedFileError.unsupportedVersion }
-    guard let idText = String(data: data[9..<headerSize], encoding: .utf8),
-      let id = UUID(uuidString: idText)
-    else { throw EncryptedFileError.malformedFile }
-    let cached = currentKey
-    let keyData: Data?
-    if cached?.id == id {
-      keyData = cached?.data
-    } else {
-      keyData = try keys.read(id, allowingInteraction: allowingInteraction)
+    if let identity = currentIdentity {
+      return (try decodePayload(data, identity: identity), identity)
     }
-    guard let keyData, keyData.count == 32 else { throw EncryptedFileError.keyUnavailable }
+    var accessError: (any Error)?
+    var triedIdentity = false
+    for id in try keys.ids() {
+      let identity: AgeIdentity
+      do {
+        guard let keyData = try keys.read(id, allowingInteraction: allowingInteraction),
+          let text = String(data: keyData, encoding: .utf8)
+        else { continue }
+        identity = try AgeIdentity(string: text)
+      } catch {
+        if accessError == nil { accessError = error }
+        continue
+      }
+      triedIdentity = true
+      let plain: Data
+      do {
+        plain = try Age.decrypt(data, identities: [identity])
+      } catch AgeError.noMatchingKey {
+        continue
+      } catch AgeError.invalidFormat {
+        throw EncryptedFileError.malformedFile
+      } catch {
+        throw EncryptedFileError.authenticationFailed
+      }
+      return (try decodeCheckedPayload(plain), identity)
+    }
+    if let accessError { throw accessError }
+    throw triedIdentity ? EncryptedFileError.authenticationFailed : .keyUnavailable
+  }
+
+  private func decodePayload(_ data: Data, identity: AgeIdentity) throws -> Value {
     let plain: Data
     do {
-      plain = try AES.GCM.open(
-        AES.GCM.SealedBox(combined: data.dropFirst(headerSize)),
-        using: SymmetricKey(data: keyData), authenticating: data.prefix(headerSize))
-    } catch { throw EncryptedFileError.authenticationFailed }
-    let document = try decode(plain)
-    return (document, (id, keyData))
+      plain = try Age.decrypt(data, identities: [identity])
+    } catch AgeError.invalidFormat {
+      throw EncryptedFileError.malformedFile
+    } catch {
+      throw EncryptedFileError.authenticationFailed
+    }
+    return try decodeCheckedPayload(plain)
+  }
+
+  private func decodeCheckedPayload(_ plain: Data) throws -> Value {
+    guard plain.count <= maximumSize else { throw EncryptedFileError.malformedFile }
+    return try decode(plain)
+  }
+
+  private func readBoundedFile(at url: URL) throws -> Data {
+    let handle = try FileHandle(forReadingFrom: url)
+    defer { try? handle.close() }
+    var data = Data()
+    while let chunk = try handle.read(upToCount: min(65536, maximumFileSize + 1 - data.count)),
+      !chunk.isEmpty
+    {
+      data.append(chunk)
+      guard data.count <= maximumFileSize else { throw EncryptedFileError.malformedFile }
+    }
+    guard !data.isEmpty else { throw EncryptedFileError.malformedFile }
+    return data
   }
 }

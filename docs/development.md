@@ -53,6 +53,8 @@ Scripts/fetch-external-binaries.sh
 task gen:prj
 ```
 
+Swift Package Manager 从 `project.yml` 固定的正式版本解析 AgeSwift，并校验其发布 XCFramework。首次解析需要网络，消费者无需安装 Rust。`Vendor/AgeSwift/LICENSE-MIT` 来自固定版本，随应用打包到 `Resources/ThirdParty/AgeSwift/`。加密存储互操作测试还需要 `brew install age` 和可访问的登录钥匙串；测试使用 UUID 隔离的 service 并清理，不修改真实应用配置。命令行调试方法见[加密格式文档](server-library-encryption-format.zh-CN.md)。
+
 无证书也能构建与跑单测：Debug 基线是 ad-hoc，不需要 `Configs/Signing.local.xcconfig`。只有要做 Developer ID 签名（发布，或让本机 Debug 产物过打包门槛）时才写该文件，内容见[签名与运行形态基线](distribution.md#签名与运行形态基线)。
 
 `Tests/Smoke/` 是真实进程冒烟（经 wrapper 拉起真实 sslocal 验证启动、握手、

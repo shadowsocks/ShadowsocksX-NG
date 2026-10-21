@@ -269,7 +269,7 @@ final class DiagnosticsWorkflow: ObservableObject {
       DiagnosticFileCollector.collect(
         label: "运行时目录", url: ApplicationSupportPaths.current.runtime.directoryURL),
       DiagnosticFileCollector.collect(
-        label: "catalog.enc", url: CatalogFileStore.defaultFileURL()),
+        label: "catalog.age", url: CatalogFileStore.defaultFileURL()),
       DiagnosticFileCollector.collect(
         label: "activation.json", url: ActivationStateFileStore.defaultFileURL()),
       DiagnosticFileCollector.collect(

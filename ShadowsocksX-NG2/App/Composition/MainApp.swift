@@ -331,7 +331,7 @@ private struct ApplicationDependencies {
     let listeningStore = ProxyListeningFileStore()
     let listening = ProxyListeningStartup.load(
       store: listeningStore, presentReset: ProxyListeningResetAlert.present)
-    let library = ServerLibraryStorage(keys: KeychainMasterKeyStore(namespace: "server-library"))
+    let library = ServerLibraryStorage()
     let catalogFileStore = CatalogFileStore(
       fileURL: CatalogFileStore.defaultFileURL(), library: library)
     let restoredSettings = RestoredProxyRuntimeSettings(

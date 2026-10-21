@@ -314,8 +314,8 @@ extension RuntimePublicationTests {
     let preserved = [
       paths.catalogFileURL, paths.proxyListeningFileURL, paths.customRulesFileURL,
       paths.activationStateFileURL, paths.pluginMappingFileURL, paths.agentLogURL,
-      paths.configurationDirectoryURL.appendingPathComponent(".catalog.enc.tmp-in-flight"),
-      root.appendingPathComponent("catalog.enc"),
+      paths.configurationDirectoryURL.appendingPathComponent(".catalog.age.tmp-in-flight"),
+      root.appendingPathComponent("catalog.age"),
     ]
     let sentinel = Data("must survive stopping the runtime".utf8)
     for file in preserved { try AtomicFileWriter.write(sentinel, to: file) }
@@ -346,7 +346,7 @@ extension RuntimePublicationTests {
     let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     defer { try? FileManager.default.removeItem(at: root) }
     let paths = ApplicationSupportPaths(rootURL: root)
-    let oldURL = root.appendingPathComponent("catalog.enc")
+    let oldURL = root.appendingPathComponent("catalog.age")
     let oldStore = makeTestCatalogStore(fileURL: oldURL)
     var catalog = ConfigurationCatalog()
     _ = try catalog.addTestServer("old-layout")
