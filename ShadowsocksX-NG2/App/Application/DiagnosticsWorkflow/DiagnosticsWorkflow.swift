@@ -81,6 +81,9 @@ extension RuntimeLogEvent {
       return "diagnostics report exported (redacted)"
     case .settingsUnreadable:
       return "settings unreadable, falling back to factory defaults"
+    // 前台应用 bundle id 等用户环境事实只进应用内日志查看器，不进共享报告。
+    case .launchActivationRetry, .windowAnchorAttached:
+      return nil
     }
   }
 }

@@ -112,7 +112,7 @@ struct ShadowsocksXNG2App: App {
   }
 }
 
-/// 随窗激活策略的真实 NSApp 落点。
+/// 随窗激活策略与激活重试的真实 NSApp 落点。
 @MainActor
 private final class NSAppWindowActivationApplier: WindowActivationPolicyApplying {
   func apply(_ policy: NSApplication.ActivationPolicy) {
@@ -121,6 +121,19 @@ private final class NSAppWindowActivationApplier: WindowActivationPolicyApplying
       // Window scene 会呈现窗口，但 LSUIElement 进程仍需显式激活才能置前。
       NSApp.activate(ignoringOtherApps: true)
     }
+  }
+
+  var isAppActive: Bool { NSApp.isActive }
+
+  var ownsMenuBar: Bool {
+    NSWorkspace.shared.menuBarOwningApplication?.bundleIdentifier
+      == Bundle.main.bundleIdentifier
+  }
+
+  var isPolicyRegular: Bool { NSApp.activationPolicy() == .regular }
+
+  func activateApp() {
+    NSApp.activate(ignoringOtherApps: true)
   }
 }
 

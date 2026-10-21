@@ -48,6 +48,23 @@ enum RuntimeLogEvent: Equatable, CustomStringConvertible, Sendable {
   /// 诊断日志由查看器呈现；完整日志查看器属于独立的诊断界面。
   case settingsUnreadable(detail: String)
 
+  /// 启动激活重试事实（键盘启动器场景诊断）：attempt 从 1 起；active 为该拍
+  /// 检查时的应用激活状态；policyRegular 为进程本地策略是否已 regular（本地
+  /// 为真而 Dock 图标缺失说明系统侧注册滞后）；frontmost 为当时前台应用
+  /// bundle id（无则 "-"）；menuBarOwner 为菜单栏实际归属应用（active=true 而
+  /// menuBarOwner 非本应用即激活假象，重试继续）；onActiveSpace 为主窗口是否
+  /// 在当前空间；windowVisible 为该拍窗口是否可见（首拍 false 说明链在窗口
+  /// 呈现完成前启动、已终结待 re-arm）。正常启动只有 attempt=1 一条且各信号
+  /// 一致。
+  case launchActivationRetry(
+    attempt: Int, active: Bool, policyRegular: Bool, frontmost: String,
+    menuBarOwner: String, onActiveSpace: Bool, windowVisible: Bool)
+
+  /// 窗口锚点附着事实（ADR 0017 激活协调）：锚点上交宿主窗口时记录当时的
+  /// 可见/key 状态——用于定位启动呈现路径下附着与可见化的先后次序（失败
+  /// 场景启动期无任何激活事件时由此排查附着是否发生、时机如何）。
+  case windowAnchorAttached(visible: Bool, key: Bool)
+
   case connectivityMeasurement(id: UUID, entry: ConnectivityTrace)
 
   /// stderr 行式输出（统一行格式，见 `LogLine`）；wrapper 侧收敛进
@@ -112,6 +129,16 @@ enum RuntimeLogEvent: Equatable, CustomStringConvertible, Sendable {
       return "diagnostics report exported (redacted)"
     case .settingsUnreadable(let detail):
       return "settings unreadable, falling back to factory defaults: \(detail)"
+    case .launchActivationRetry(
+      let attempt, let active, let policyRegular, let frontmost, let menuBarOwner,
+      let onActiveSpace, let windowVisible):
+      return
+        "launch activation retry #\(attempt) active=\(active)"
+        + " policy=\(policyRegular ? "regular" : "accessory")"
+        + " frontmost=\(frontmost) menubar=\(menuBarOwner)"
+        + " space=\(onActiveSpace ? "on" : "off") visible=\(windowVisible)"
+    case .windowAnchorAttached(let visible, let key):
+      return "window anchor attached visible=\(visible) key=\(key)"
     }
   }
 }
@@ -180,6 +207,11 @@ extension RuntimeLogEvent {
     case .diagnosticsExported:
       return SystemLogRoute(
         level: .default, category: "diagnostics", text: description, privateDetail: nil)
+    case .launchActivationRetry, .windowAnchorAttached:
+      // 前台应用 bundle id 等用户环境事实：进应用内日志查看器与统一日志，
+      // 不进共享诊断报告（白名单见诊断 module）。
+      return SystemLogRoute(
+        level: .default, category: "window", text: description, privateDetail: nil)
     }
   }
 }
