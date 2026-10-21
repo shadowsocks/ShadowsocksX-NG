@@ -173,7 +173,8 @@ struct HomeTargetCard: View {
         Button(
           activation.isPending
             ? String(localized: "激活中…", table: "HomeTargets")
-            : String(localized: "激活", table: "HomeTargets")
+            : String(localized: "激活", table: "HomeTargets"),
+          systemImage: "bolt.fill"
         ) {
           guard let selected else { return }
           Task { @MainActor in
@@ -181,6 +182,7 @@ struct HomeTargetCard: View {
             _ = try? await activation.activate(selected.id, via: workflow)
           }
         }
+        .buttonStyle(.borderedProminent)
         .disabled(activationDisabledReason != nil)
         .help(activationDisabledReason ?? String(localized: "激活所选目标", table: "HomeTargets"))
       }
