@@ -85,11 +85,34 @@ struct PluginManagementSection: View {
         HStack(alignment: .top, spacing: 16) {
           VStack(alignment: .leading, spacing: 3) {
             Text(entry.names.joined(separator: ", ")).font(.body)
-            Text(
-              entry.managedProgram != nil
-                ? String(localized: "内置")
-                : entry.overridesManaged ? String(localized: "用户覆盖") : String(localized: "用户添加")
-            ).font(.caption).foregroundStyle(.secondary)
+            if let program = entry.managedProgram,
+              let info = ManagedPluginCatalog.plugins.first(where: { $0.program == program })
+            {
+              HStack(alignment: .firstTextBaseline, spacing: 8) {
+                Text("内置").foregroundStyle(.secondary)
+                Text(verbatim: info.release).foregroundStyle(.secondary)
+                if let projectURL = URL(string: info.projectURL) {
+                  Link(destination: projectURL) {
+                    Text(verbatim: info.projectURL)
+                      .textSelection(.enabled)
+                      .fixedSize(horizontal: false, vertical: true)
+                  }
+                  .frame(maxWidth: .infinity, alignment: .leading)
+                } else {
+                  Text(verbatim: info.projectURL)
+                    .textSelection(.enabled)
+                    .fixedSize(horizontal: false, vertical: true)
+                }
+              }
+              .font(.caption)
+            } else {
+              Text(
+                entry.managedProgram != nil
+                  ? String(localized: "内置")
+                  : entry.overridesManaged
+                    ? String(localized: "用户覆盖") : String(localized: "用户添加")
+              ).font(.caption).foregroundStyle(.secondary)
+            }
           }
           .frame(maxWidth: .infinity, alignment: .leading)
           if let program = entry.managedProgram {
