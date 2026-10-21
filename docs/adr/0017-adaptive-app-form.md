@@ -32,3 +32,7 @@ The user-confirmed rule-browser simplification adds a single independent convers
 诊断从工作区移至唯一独立窗口，入口位于菜单栏“打开主窗口…”之后。诊断窗口共享既有窗口激活协调器，可在工作区关闭后独立存续；最后一个受管窗口关闭才回到 accessory。启动呈现被抑制，会话恢复被禁用，重复打开恢复并前置已有窗口。
 
 诊断轮询按宿主 NSWindow 的真实开关状态运行：打开立即采样，失焦、遮挡、隐藏或最小化时继续每秒刷新，关闭后停止；不依赖 SwiftUI scenePhase 或视图销毁。日志来源选择仅在进程内保留，关闭清理导出成功提示与错误弹窗。诊断功能和 ADR-0006 的原始日志与脱敏报告边界不变。
+
+## 2026-10-21 补充：启动窗口前置
+
+静默启动关闭时，`Window` scene 会自动呈现主窗口；窗口激活协调器切换应用为 `.regular` 后调用 `NSApp.activate(ignoringOtherApps:)`，确保应用与主窗口进入前台。静默启动开启时，窗口不呈现，不触发此激活，仍以 accessory 形态启动。
