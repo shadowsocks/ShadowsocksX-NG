@@ -204,12 +204,7 @@ struct AgeConfigurationStorageTests {
     let keys = KeychainMasterKeyStore(namespace: "age-tests.\(UUID().uuidString)")
     defer {
       try? FileManager.default.removeItem(at: directory)
-      SecItemDelete(
-        [
-          kSecClass as String: kSecClassGenericPassword,
-          kSecAttrService as String: keys.service,
-          kSecUseDataProtectionKeychain as String: false,
-        ] as CFDictionary)
+      cleanUpKeychainItems(for: keys)
     }
     let url = directory.appendingPathComponent("catalog.age")
     let store = CatalogFileStore(fileURL: url, library: ServerLibraryStorage(keys: keys))
@@ -243,5 +238,25 @@ struct AgeConfigurationStorageTests {
     process.waitUntilExit()
     #expect(process.terminationStatus == 0)
     guard process.terminationStatus == 0 else { throw EncryptedFileError.malformedFile }
+  }
+
+  private func cleanUpKeychainItems(for keys: KeychainMasterKeyStore) {
+    let ids = try? keys.ids()
+    #expect(ids != nil, "读取测试 Keychain 项时清理失败")
+    for id in ids ?? [] {
+      let status = SecItemDelete(
+        [
+          kSecClass as String: kSecClassGenericPassword,
+          kSecAttrService as String: keys.service,
+          kSecAttrAccount as String: id.uuidString,
+          kSecAttrSynchronizable as String: false,
+          kSecUseDataProtectionKeychain as String: false,
+        ] as CFDictionary)
+      #expect(
+        status == errSecSuccess || status == errSecItemNotFound,
+        "删除测试 Keychain 项失败：\(status)")
+    }
+    let remainingIDs = try? keys.ids()
+    #expect(remainingIDs?.isEmpty == true, "测试 Keychain 项未清理干净")
   }
 }
