@@ -29,7 +29,7 @@ final class DiagnosticsReportWorkflowTests: DiagnosticsWorkflowTestCase {
       },
       managedPlugins: {
         [
-          DiagnosticPluginFacts(program: "v2ray-plugin", version: "v1.3.2", present: true),
+          DiagnosticPluginFacts(program: "v2ray-plugin", version: "test-version", present: true),
           DiagnosticPluginFacts(program: "shadow-tls", version: "v3", present: false),
         ]
       },
@@ -50,7 +50,7 @@ final class DiagnosticsReportWorkflowTests: DiagnosticsWorkflowTestCase {
     XCTAssertTrue(report.contains("servers=1 protocols=socks mode=tcp_and_udp"))
     XCTAssertTrue(report.contains("服务器：2（配置插件 1；手动 1 / 订阅 1）"))
     XCTAssertTrue(report.contains("分组：2"))
-    XCTAssertTrue(report.contains("- v2ray-plugin v1.3.2：已提供"))
+    XCTAssertTrue(report.contains("- v2ray-plugin test-version：已提供"))
     XCTAssertTrue(report.contains("- shadow-tls v3：缺失"))
     XCTAssertTrue(report.contains("| sslocal-active.json | 是 | 0600 | 512 |"))
     XCTAssertTrue(report.contains("| agent.pid | 否 | — | — |"))

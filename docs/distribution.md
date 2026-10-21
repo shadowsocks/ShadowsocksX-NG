@@ -6,7 +6,7 @@
 
 ## 外部二进制供应链
 
-外部二进制只用固定版本的上游 release 构建产物：`sslocal`（[qiuyuzhou/shadowsocks-rust v1.26.0](https://github.com/qiuyuzhou/shadowsocks-rust/releases/tag/v1.26.0)，装于 `Contents/Helpers/`）、`v2ray-plugin`（v1.3.2）与 Cloak `ck-client`（v2.12.0，两个插件均装于 `Contents/Helpers/Plugins/`）。信任根是提交在库里的清单哈希；构建链如下（spec #21 D6/D10）：
+外部二进制只用固定版本的上游 release 构建产物：[`sslocal` 清单](../ShadowsocksX-NG2/Vendor/sslocal/manifest.json)（装于 `Contents/Helpers/`）、[`v2ray-plugin` 清单](../ShadowsocksX-NG2/Vendor/v2ray-plugin/manifest.json) 与 [`ck-client` 清单](../ShadowsocksX-NG2/Vendor/ck-client/manifest.json)（两个插件均装于 `Contents/Helpers/Plugins/`）。清单记录各 release 与哈希；构建链如下（spec #21 D6/D10）：
 
 1. **fetch** — `Scripts/fetch-external-binaries.sh` 下载清单固定 URL 的资产、逐字节校验 `archiveSHA256`，按 `assetFormat` 处理 tar 归档（默认，提取 `archiveMember`）或直接二进制（`binary`），并确认 arm64，落盘 `Vendor/<name>/` 并记录戳。资产哈希不符 → 立即失败；本地缓存漂移或清单变更 → 自动重新下载复验。
 2. **generate** — `xcodegen generate` 把清单对应二进制作为 Copy Files 项装入 `Contents/Helpers[/Plugins]`。注意顺序：**先 fetch 再 generate**，文件在生成时必须已存在，否则 Copy Files 阶段会被静默丢弃（generate 也会直接报缺文件）。

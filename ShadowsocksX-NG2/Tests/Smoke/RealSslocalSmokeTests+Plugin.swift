@@ -6,7 +6,7 @@ import XCTest
 final class RealSslocalPluginSmokeTests: RealSslocalSmokeTests {
   // MARK: - 受管插件端到端
 
-  /// v2ray-plugin v1.3.2 端到端边界：契约携带 bundle 内插件绝对路径 → sslocal
+  /// 受管插件端到端边界：契约携带 bundle 内插件绝对路径 → sslocal
   /// 拉起 → SIP003 插件进程建立 → 停止链随 sslocal 一并退出。插件进程退出会
   /// 连带 sslocal 退出（以 sslocal 信号为准）；真实服务器数据面验证属发布
   /// 真实服务器数据面验证属于发布门槛人工项；此处只验证进程边界。

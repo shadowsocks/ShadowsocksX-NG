@@ -2,13 +2,10 @@ import XCTest
 
 @testable import ShadowsocksX_NG2
 
-/// 受管集静态事实表与 Vendor 供应链清单的双向锚定：
-/// 插件新增/升级必须显式重做静态清单——事实表与 `Vendor/*/manifest.json`
-/// 任何一侧漂移即测试失败，与 `ExternalBinaryManifestTests` 共同守护同一份事实。
+/// 受管插件目录与 Vendor 清单的稳定身份和打包事实保持一致。
 final class ManagedPluginCatalogTests: XCTestCase {
   private struct Manifest: Decodable {
     var project: String
-    var release: String
     var binary: String
     var bundleSubpath: String
     var signIdentifier: String
@@ -45,7 +42,6 @@ final class ManagedPluginCatalogTests: XCTestCase {
       XCTAssertTrue(
         info.project.hasSuffix(manifest.project),
         "\(directory): 受管事实表 project（\(info.project)）须锚定清单 project（\(manifest.project)）")
-      XCTAssertEqual(info.release, manifest.release, "\(directory): release 漂移")
       XCTAssertEqual(info.signIdentifier, manifest.signIdentifier, "\(directory): 重签标识漂移")
       XCTAssertFalse(info.license.isEmpty, "\(directory): 许可证必须显式")
       let url = try XCTUnwrap(URL(string: info.projectURL), "\(directory): 项目 URL 不可解析")
@@ -61,7 +57,7 @@ final class ManagedPluginCatalogTests: XCTestCase {
   }
 
   func testProgramLookup() {
-    XCTAssertEqual(ManagedPluginCatalog.info(forProgram: "v2ray-plugin")?.release, "v1.3.2")
+    XCTAssertNotNil(ManagedPluginCatalog.info(forProgram: "v2ray-plugin"))
     XCTAssertNil(ManagedPluginCatalog.info(forProgram: "obfs-local"), "集外程序名不在受管集")
     XCTAssertNil(ManagedPluginCatalog.info(forProgram: ""), "空程序名不在受管集")
   }

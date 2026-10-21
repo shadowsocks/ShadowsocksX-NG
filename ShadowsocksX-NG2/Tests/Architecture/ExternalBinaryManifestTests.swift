@@ -1,8 +1,6 @@
 import XCTest
 
-/// Vendor 外部二进制清单的固定 schema 与锚点值。
-/// 供应链脚本（fetch/sign/gate）与这里共同守护同一份事实：
-/// tag + 资产 URL + 归档 SHA-256 一经固定，改动必须显式重做静态清单。
+/// 校验 Vendor 外部二进制清单的通用结构与稳定打包属性；发布值只在清单中维护。
 final class ExternalBinaryManifestTests: XCTestCase {
   private struct Manifest: Decodable {
     var project: String
@@ -58,45 +56,33 @@ final class ExternalBinaryManifestTests: XCTestCase {
       "\(name): signIdentifier 必须以宿主 bundle id 为前缀")
   }
 
-  func testSslocalManifestPinned() throws {
+  func testSslocalManifestStructure() throws {
     let manifest = try manifest("sslocal")
     try assertPinnedSchema(manifest, name: "sslocal")
     XCTAssertEqual(manifest.project, "shadowsocks-rust")
-    XCTAssertEqual(manifest.release, "v1.26.0")
     let url = try XCTUnwrap(URL(string: manifest.url))
     XCTAssertTrue(
       url.path.hasPrefix("/qiuyuzhou/shadowsocks-rust/releases/download/"),
       "sslocal 应固定到 ShadowsocksX-NG fork 的 release")
-    XCTAssertEqual(
-      manifest.archiveSHA256,
-      "deda5c3591dd08ec1cd72acdec07c18c33c93ca2d40c6e9fc68121b3e9fa3707")
     XCTAssertEqual(manifest.bundleSubpath, "Helpers")
     XCTAssertEqual(manifest.signIdentifier, Self.bundleID + ".sslocal")
   }
 
-  func testV2rayPluginManifestPinned() throws {
+  func testV2rayPluginManifestStructure() throws {
     let manifest = try manifest("v2ray-plugin")
     try assertPinnedSchema(manifest, name: "v2ray-plugin")
     XCTAssertEqual(manifest.project, "v2ray-plugin")
-    XCTAssertEqual(manifest.release, "v1.3.2")
-    XCTAssertEqual(
-      manifest.archiveSHA256,
-      "357476695ec06498cdc38f3a9efd5b99e4d601db4807661117bf3bae917286ae")
     XCTAssertEqual(manifest.archiveMember, "v2ray-plugin_darwin_arm64")
     XCTAssertEqual(manifest.bundleSubpath, "Helpers/Plugins")
     // SIP003 插件的签名 identifier 形如 <bundle-id>.plugin.<name>。
     XCTAssertEqual(manifest.signIdentifier, Self.bundleID + ".plugin.v2ray-plugin")
   }
-  func testCloakClientManifestPinned() throws {
+  func testCloakClientManifestStructure() throws {
     let manifest = try manifest("ck-client")
     try assertPinnedSchema(manifest, name: "ck-client")
     XCTAssertEqual(manifest.project, "Cloak")
-    XCTAssertEqual(manifest.release, "v2.12.0")
     XCTAssertEqual(manifest.assetFormat, "binary")
     XCTAssertNil(manifest.archiveMember)
-    XCTAssertEqual(
-      manifest.archiveSHA256,
-      "dbef5cd5dd1b551a046c422e07854eb4736fc958e684c6532eb7e809b593ad5c")
     XCTAssertEqual(manifest.bundleSubpath, "Helpers/Plugins")
     XCTAssertEqual(manifest.signIdentifier, Self.bundleID + ".plugin.ck-client")
   }

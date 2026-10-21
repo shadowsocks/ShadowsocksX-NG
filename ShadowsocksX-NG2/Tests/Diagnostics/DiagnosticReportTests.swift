@@ -123,14 +123,14 @@ final class DiagnosticReportTests: XCTestCase {
   func testManagedPluginSectionListsNameAndVersionWithoutOptions() throws {
     var snapshot = poisonedSnapshot(catalog: try poisonedCatalog())
     snapshot.managedPlugins = [
-      DiagnosticPluginFacts(program: "v2ray-plugin", version: "v1.3.2", present: true),
+      DiagnosticPluginFacts(program: "v2ray-plugin", version: "test-version", present: true),
       DiagnosticPluginFacts(program: "shadow-tls", version: "v3", present: false),
     ]
 
     let report = DiagnosticReportBuilder.markdown(from: snapshot)
 
     XCTAssertTrue(report.contains("## 受管插件"), "缺少受管插件清单：\n\(report)")
-    XCTAssertTrue(report.contains("- v2ray-plugin v1.3.2：已提供"))
+    XCTAssertTrue(report.contains("- v2ray-plugin test-version：已提供"))
     XCTAssertTrue(report.contains("- shadow-tls v3：缺失"))
     assertNoSecrets(report)
   }
