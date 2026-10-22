@@ -62,20 +62,28 @@ ACL 路由与插件监管），不在默认 `task test` 内，由独立 scheme �
 
 ## 代码风格工具
 
-- `swift format` 随 Xcode/Swift 工具链提供，无需单独安装（基线：Apple Swift 6.4）；SwiftLint 需 `brew install swiftlint`（基线 0.65.0）。工具缺失时，含工程目录 Swift 文件的提交会被 pre-commit 钩子拒绝而不是放行。
+- `swift format` 随 Xcode/Swift 工具链提供，无需单独安装（基线：Apple Swift 6.4）；SwiftLint 需 `brew install swiftlint`（基线 0.65.0），钩子管理器需 `brew install pre-commit`。缺少必需工具时，暂存了 NG2 Swift 文件的提交会被拒绝。
 - 配置文件：`.swift-format` 是 Swift 6.4 工具链默认规则的快照（固定成文件，工具链升级不漂移）；`.swiftlint.yml` 默认规则起步，只声明排除项与个别和 format 基线冲突的关闭项（文件内有触发案例注释）。
-- 仓库级 `pre-commit` 钩子的启用方式和检查范围见下节「开发钩子」。
+- 仓库级 hook 配置位于 `.pre-commit-config.yaml`；安装方式和检查范围见下节「开发钩子」。
 - 调整规则只针对实际痛点：修改 `.swift-format` / `.swiftlint.yml` 的 PR 须给出触发案例，并同步更新本节中的基线版本。
 
 ## 开发钩子
 
-新 clone 后，在仓库根目录启用 Git hooks：
+新 clone 后，在仓库根目录安装 hooks：
 
 ```bash
-git config core.hooksPath .githooks
+brew install pre-commit  # 已安装时跳过
+pre-commit install
 ```
 
-启用后，`pre-commit` 只检查暂存区中 `ShadowsocksX-NG2/` 下的 `.swift` 文件：`swift format` 的结果写回暂存区、不修改工作区；SwiftLint 的 error 级违规拒绝提交，warning 仅提示。其他文件跳过；没有 NG2 Swift 文件时直接放行。含有 NG2 Swift 文件但缺少工具时，提交检查失败。两关都把「工具没能执行」与「查出问题」分开报告：看到「执行失败」应查工具与配置环境，而不是去改代码。工具安装与版本见上节「代码风格工具」。
+如果之前启用过旧版 `.githooks`，先清除本地 Git 设置，再安装新 hook：
+
+```bash
+git config --local --unset core.hooksPath
+pre-commit install
+```
+
+配置只检查暂存区中 `ShadowsocksX-NG2/` 下的 `.swift` 文件，其他文件跳过。`swift format` 会在工作区格式化这些文件；格式发生变化时，本次提交会被 pre-commit 拦下。检查并暂存格式化结果后再提交。SwiftLint 的 error 级违规拒绝提交，warning 会显示但不阻止提交。没有 NG2 Swift 文件时两个 hook 都跳过；暂存了 NG2 Swift 文件但缺少必需工具时，对应 hook 会失败。工具安装与版本见上节「代码风格工具」。
 
 ## 领域文档语言
 

@@ -61,20 +61,28 @@ You can build and run unit tests without a certificate: the Debug baseline uses 
 
 ## Code style tools
 
-- `swift format` is included with the Xcode/Swift toolchain and does not need a separate installation (baseline: Apple Swift 6.4). Install SwiftLint with `brew install swiftlint` (baseline: 0.65.0). If either tool is missing, the pre-commit hook rejects a commit that contains Swift files under the project directory instead of allowing it.
+- `swift format` is included with the Xcode/Swift toolchain and does not need a separate installation (baseline: Apple Swift 6.4). Install SwiftLint with `brew install swiftlint` (baseline: 0.65.0), and install the hook manager with `brew install pre-commit`. If a required tool is missing, pre-commit rejects a commit that contains NG2 Swift files.
 - `.swift-format` is a snapshot of the Swift 6.4 toolchain's default rules, checked in so the rules do not drift on toolchain upgrades. `.swiftlint.yml` starts with the default rules and declares only exclusions and individual opt-outs that conflict with the format baseline; comments in the file show triggering examples.
-- See [Development hooks](#development-hooks) for how to enable the repository-level `pre-commit` hook and what it checks.
+- The repository-level hook configuration is `.pre-commit-config.yaml`. See [Development hooks](#development-hooks) for how to install it and what it checks.
 - Adjust rules only to address concrete problems. A PR that changes `.swift-format` or `.swiftlint.yml` must include a triggering example and update the baseline versions in this section.
 
 ## Development hooks
 
-After cloning, enable Git hooks from the repository root:
+After cloning, install the hooks from the repository root:
 
 ```bash
-git config core.hooksPath .githooks
+brew install pre-commit  # Skip if already installed.
+pre-commit install
 ```
 
-Once enabled, `pre-commit` checks only staged `.swift` files under `ShadowsocksX-NG2/`. `swift format` writes its result back to the index without changing the working tree. SwiftLint errors reject the commit; warnings are informational. Other files are skipped. If there are no NG2 Swift files, the hook passes. If NG2 Swift files are present and a required tool is missing, the check fails. Both checks distinguish “tool execution failed” from “issues found”: when you see “execution failed,” investigate the tool or configuration environment instead of changing code. See [Code style tools](#code-style-tools) for installation and versions.
+If you previously enabled the old `.githooks` setup, remove its local Git setting before installing the new hook:
+
+```bash
+git config --local --unset core.hooksPath
+pre-commit install
+```
+
+The configuration checks only staged `.swift` files under `ShadowsocksX-NG2/`; other files are skipped. `swift format` formats those files in the working tree, and pre-commit stops that commit when formatting changes them. Review and stage the formatting changes, then commit again. SwiftLint errors reject the commit; warnings are shown but do not block it. If there are no NG2 Swift files, both hooks are skipped. If NG2 Swift files are staged and a required tool is missing, the corresponding hook fails. See [Code style tools](#code-style-tools) for tool installation and versions.
 
 ## Language of domain documents
 
