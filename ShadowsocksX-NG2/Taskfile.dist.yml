@@ -22,14 +22,14 @@ tasks:
     dir: '{{.TASKFILE_DIR}}'
     silent: true
     vars:
-      GATES: '{{default "lint test test:smoke build" .CLI_ARGS | trim}}'
+      GATES: '{{default "lint test build" .CLI_ARGS | trim}}'
       RUN_DIR:
         sh: |
           mkdir -p {{.BUILD_DIR | shellQuote}}/validation
           mktemp -d {{.BUILD_DIR | shellQuote}}/validation/$(date -u +%Y%m%dT%H%M%SZ)-XXXXXX
     preconditions:
-      - sh: '{{if regexMatch "^(lint|test|test:smoke|build)( (lint|test|test:smoke|build))*$" .GATES}}true{{else}}false{{end}}'
-        msg: 'Choose validation gates: lint, test, test:smoke, build (space separated).'
+      - sh: '{{if regexMatch "^(format:check|lint|test|test:smoke|build)( (format:check|lint|test|test:smoke|build))*$" .GATES}}true{{else}}false{{end}}'
+        msg: 'Choose validation gates: format:check, lint, test, test:smoke, build (space separated).'
       - sh: '{{if eq (len (splitList " " .GATES)) (len (uniq (splitList " " .GATES)))}}true{{else}}false{{end}}'
         msg: 'Choose each validation gate at most once.'
     cmds:
@@ -75,7 +75,7 @@ tasks:
         if [ {{.CODE | shellQuote}} = 0 ]; then status=passed; fi
         echo "[{{.GATE}}] $status; exit={{.CODE}}" > {{.GATE_DIR | shellQuote}}/status.txt
       - cmd: |
-          {{if ne .GATE "lint"}}
+          {{if and (ne .GATE "lint") (ne .GATE "format:check")}}
           if [ ! -d {{.GATE_DIR | shellQuote}}/result.xcresult ]; then
             echo '[{{.GATE}}] evidence incomplete: result bundle missing; test counts unknown' >> {{.GATE_DIR | shellQuote}}/status.txt
           {{if ne .GATE "build"}}
@@ -161,7 +161,12 @@ tasks:
   format:
     desc: 'Format the code by swift-format'
     cmds:
-      - swift format format --in-place -r App Tests Domain Agent
+      - swift format format --in-place --recursive --configuration .swift-format App Tests Domain Agent
+
+  format:check:
+    desc: 'Check Swift formatting without modifying files'
+    cmds:
+      - swift format lint --strict --recursive --configuration .swift-format App Tests Domain Agent
 
   lint:
     desc: 'Lint the swift code by swiftlint'

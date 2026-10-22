@@ -11,12 +11,12 @@ Run the unified validation workflow from the repository root:
 ```bash
 task --exit-code --taskfile ShadowsocksX-NG2/Taskfile.dist.yml validate
 # Run only the requested stages, in the specified order:
-task --exit-code --taskfile ShadowsocksX-NG2/Taskfile.dist.yml validate -- lint test
+task --exit-code --taskfile ShadowsocksX-NG2/Taskfile.dist.yml validate -- format:check lint test
 ```
 
 From the project directory, use `task --exit-code validate`. From any directory, use `task --exit-code --taskfile /path/to/ShadowsocksX-NG/ShadowsocksX-NG2/Taskfile.dist.yml validate`. The entry point locates the project directory relative to the Taskfile and invokes individual tasks from the distribution Taskfile.
 
-By default, stages run in this order: `lint → test → test:smoke → build`. You can select a subset in a specified order; each stage can appear at most once. Execution stops on the first failure, marks later stages `not_run`, and exits nonzero. `--exit-code` makes Task pass through the stage's exit code. Without it, Task still exits nonzero but may use its own error code. The entry point does not retry automatically, change test parallelism, or run formatters that modify source files.
+By default, stages run in this order: `lint → test → build`. Real-process smoke tests remain available as the explicit `test:smoke` stage. Formatting is not part of the default validation loop; pre-commit controls local formatting, and CI invokes `task format:check` separately on the Xcode 27 arm64 runner to match the Swift 6.4 formatter baseline. You can select a subset in a specified order; each stage can appear at most once. Execution stops on the first failure, marks later stages `not_run`, and exits nonzero. `--exit-code` makes Task pass through the stage's exit code. Without it, Task still exits nonzero but may use its own error code. The entry point does not retry automatically, change test parallelism, or run formatters that modify source files.
 
 ### Validation artifacts and evidence
 
@@ -34,6 +34,7 @@ For routine formatting, static checks, project generation, builds, and tests, pr
 
 ```bash
 task format
+task format:check  # Check formatting without modifying source files.
 task lint
 task lint:fix  # Use for automatic SwiftLint fixes; run task lint afterward.
 task gen:prj   # Generate the Xcode project.
@@ -42,7 +43,7 @@ task test      # Run unit tests (without real-process smoke tests).
 task test:smoke  # Run real-process smoke tests (launches real sslocal; see the release gate in the signing and distribution guide).
 ```
 
-`task format` formats Swift files under `App/`, `Tests/`, `Domain/`, and `Agent/`. `task lint:fix` modifies source files; inspect and review the diff afterward.
+`task format` formats Swift files under `App/`, `Tests/`, `Domain/`, and `Agent/`. `task format:check` runs the same configuration in strict, read-only mode. `task lint:fix` modifies source files; inspect and review the diff afterward.
 
 ## First-time setup and test scope
 
@@ -82,7 +83,7 @@ git config --local --unset core.hooksPath
 pre-commit install
 ```
 
-The configuration checks only staged `.swift` files under `ShadowsocksX-NG2/`; other files are skipped. `swift format` formats those files in the working tree, and pre-commit stops that commit when formatting changes them. Review and stage the formatting changes, then commit again. SwiftLint errors reject the commit; warnings are shown but do not block it. If there are no NG2 Swift files, both hooks are skipped. If NG2 Swift files are staged and a required tool is missing, the corresponding hook fails. See [Code style tools](#code-style-tools) for tool installation and versions.
+The hooks run when a commit stages `.swift` files under `ShadowsocksX-NG2/`; other files are skipped. `swift format` formats those staged files in the working tree, and pre-commit stops that commit when formatting changes them. Review and stage the formatting changes, then commit again. The read-only `task format:check` hook then checks all NG2 Swift source directories, including lint-only rules the formatter cannot fix automatically. SwiftLint checks the staged files; errors reject the commit and warnings do not. If no NG2 Swift files are staged, these hooks are skipped. If NG2 Swift files are staged and a required tool is missing, the corresponding hook fails. See [Code style tools](#code-style-tools) for tool installation and versions.
 
 ## Language of domain documents
 

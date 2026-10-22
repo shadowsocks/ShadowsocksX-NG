@@ -11,12 +11,12 @@
 ```bash
 task --exit-code --taskfile ShadowsocksX-NG2/Taskfile.dist.yml validate
 # 按指定顺序只运行所需关卡：
-task --exit-code --taskfile ShadowsocksX-NG2/Taskfile.dist.yml validate -- lint test
+task --exit-code --taskfile ShadowsocksX-NG2/Taskfile.dist.yml validate -- format:check lint test
 ```
 
 在工程目录内可用 `task --exit-code validate`。从任意目录可用 `task --exit-code --taskfile /path/to/ShadowsocksX-NG/ShadowsocksX-NG2/Taskfile.dist.yml validate`。入口按 Taskfile 所在位置定位工程目录，内部调用发行 Taskfile 中的单项任务。
 
-默认按 `lint → test → test:smoke → build` 执行，也可按指定顺序选择子集，每关最多一次；任一关失败立即停止，后续关标记 `not_run`，进程返回非零。`--exit-code` 让 Task 透传关卡退出码；省略时 Task 仍返回非零，但可能使用自己的错误码。入口不自动重试，不修改测试并行设置，也不执行会修改源码的格式化。
+默认按 `lint → test → build` 执行；真实进程冒烟测试仍可显式选择 `test:smoke`。格式检查不属于默认验证循环：本地由 pre-commit 控制格式；CI 在 Xcode 27 arm64 runner 上单独运行 `task format:check`，与 Swift 6.4 格式工具基线一致。也可按指定顺序选择子集，每关最多一次；任一关失败立即停止，后续关标记 `not_run`，进程返回非零。`--exit-code` 让 Task 透传关卡退出码；省略时 Task 仍返回非零，但可能使用自己的错误码。入口不自动重试，不修改测试并行设置，也不执行会修改源码的格式化。
 
 ### 验证产物与证据
 
@@ -34,6 +34,7 @@ task --exit-code --taskfile ShadowsocksX-NG2/Taskfile.dist.yml validate -- lint 
 
 ```bash
 task format
+task format:check  # 只检查格式，不改写源文件
 task lint
 task lint:fix  # 需要自动修复 SwiftLint 违规时使用；执行后再运行 task lint
 task gen:prj   # 生成 Xcode 工程
@@ -42,7 +43,7 @@ task test      # 运行单元测试（不含真实进程冒烟）
 task test:smoke  # 运行真实进程冒烟测试（拉起真实 sslocal，见签名与分发文档的发布门槛）
 ```
 
-`task format` 会格式化 `App/`、`Tests/`、`Domain/` 和 `Agent/` 下的 Swift 文件；`task lint:fix` 会修改源文件，执行后检查并复核 diff。
+`task format` 会格式化 `App/`、`Tests/`、`Domain/` 和 `Agent/` 下的 Swift 文件；`task format:check` 使用同一配置严格检查且不修改文件。`task lint:fix` 会修改源文件，执行后检查并复核 diff。
 
 ## 首次准备与测试范围
 
@@ -83,7 +84,7 @@ git config --local --unset core.hooksPath
 pre-commit install
 ```
 
-配置只检查暂存区中 `ShadowsocksX-NG2/` 下的 `.swift` 文件，其他文件跳过。`swift format` 会在工作区格式化这些文件；格式发生变化时，本次提交会被 pre-commit 拦下。检查并暂存格式化结果后再提交。SwiftLint 的 error 级违规拒绝提交，warning 会显示但不阻止提交。没有 NG2 Swift 文件时两个 hook 都跳过；暂存了 NG2 Swift 文件但缺少必需工具时，对应 hook 会失败。工具安装与版本见上节「代码风格工具」。
+提交中包含 `ShadowsocksX-NG2/` 下的 `.swift` 文件时才会运行这些 hook，其他文件跳过。`swift format` 会在工作区格式化暂存的文件；如果文件发生变化，pre-commit 会拦下本次提交。检查并暂存格式化结果后再提交。随后只读的 `task format:check` 会检查全部 NG2 Swift 源码目录，也会覆盖 formatter 无法自动修复的 lint-only 规则。SwiftLint 检查暂存文件；error 级违规拒绝提交，warning 不阻止提交。没有暂存 NG2 Swift 文件时这些 hook 会跳过；暂存了 NG2 Swift 文件但缺少必需工具时，对应 hook 会失败。工具安装与版本见上节「代码风格工具」。
 
 ## 领域文档语言
 

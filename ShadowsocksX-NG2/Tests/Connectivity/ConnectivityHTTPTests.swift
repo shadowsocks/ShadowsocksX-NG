@@ -109,7 +109,7 @@ struct ConnectivityHTTPTests {
     #expect(result.outcome == .network)
   }
 
-  @Test func HTTPSIsRejectedBeforeOpeningProxyConnection() async throws {
+  @Test func httpsIsRejectedBeforeOpeningProxyConnection() async throws {
     let proxy = try HeaderProxy(status: 204)
     defer { proxy.stop() }
     let port = try await proxy.start()
@@ -234,6 +234,8 @@ private final class HeaderProxy: @unchecked Sendable {
     listener.cancel()
     listener.newConnectionHandler = nil
     let connections = lock.withLock { self.connections }
-    connections.forEach { $0.cancel() }
+    for connection in connections {
+      connection.cancel()
+    }
   }
 }

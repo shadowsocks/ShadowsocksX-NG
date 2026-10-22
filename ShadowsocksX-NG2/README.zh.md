@@ -25,10 +25,10 @@ Debug 默认使用 ad-hoc 签名，无需证书；Developer ID 配置与发布�
 ```bash
 task --exit-code --taskfile ShadowsocksX-NG2/Taskfile.dist.yml validate
 # 按指定顺序只运行所需关卡：
-task --exit-code --taskfile ShadowsocksX-NG2/Taskfile.dist.yml validate -- lint test
+task --exit-code --taskfile ShadowsocksX-NG2/Taskfile.dist.yml validate -- format:check lint test
 ```
 
-默认顺序为 `lint → test → test:smoke → build`，失败即停止，日志与结果保存在 `ShadowsocksX-NG2/.build/validation/`。在本目录内可直接运行 `task --exit-code validate`。单项任务、证据读取与测试边界见[开发指南](../docs/development.zh.md)。
+默认顺序为 `lint → test → build`，失败即停止；真实进程冒烟测试仍可通过显式运行 `test:smoke` 使用。格式检查可单独运行 `task format:check`，不会改写文件。日志与结果保存在 `ShadowsocksX-NG2/.build/validation/`。在本目录内可直接运行 `task --exit-code validate`。单项任务、证据读取与测试边界见[开发指南](../docs/development.zh.md)。
 
 ## 文档导航
 

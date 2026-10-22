@@ -30,7 +30,9 @@ final class FakeCatalogRuntime: CatalogRuntimeSyncing {
 
   func openGate() {
     armedGateCount = 0
-    gateWaiters.forEach { $0.resume() }
+    for waiter in gateWaiters {
+      waiter.resume()
+    }
     gateWaiters.removeAll()
   }
 

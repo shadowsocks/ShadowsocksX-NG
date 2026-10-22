@@ -219,7 +219,11 @@ struct ConnectivityRuntime {
       posix_spawn_file_actions_addopen(&actions, descriptor, "/dev/null", O_RDWR, 0)
     }
     let strings = [executable.path, "-c", config.path].map { strdup($0) }
-    defer { strings.forEach { free($0) } }
+    defer {
+      for string in strings {
+        free(string)
+      }
+    }
     var argv = strings + [nil]
     var pid: pid_t = 0
     let status = argv.withUnsafeMutableBufferPointer {

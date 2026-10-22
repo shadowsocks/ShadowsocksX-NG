@@ -103,7 +103,9 @@ final class AsyncGate: @unchecked Sendable {
     let waiters = self.waiters
     self.waiters.removeAll()
     lock.unlock()
-    waiters.forEach { $0.resume() }
+    for waiter in waiters {
+      waiter.resume()
+    }
   }
 }
 

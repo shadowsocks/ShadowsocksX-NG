@@ -31,7 +31,7 @@ struct DiagnosticLogIntakeTests {
 
   // MARK: - 行归一与归并
 
-  @Test func CRLFOutputKeepsFollowingErrorsVisible() throws {
+  @Test func crlfOutputKeepsFollowingErrorsVisible() throws {
     let pipe = Pipe()
     let intake = SslocalOutputIntake(
       destinations: [SslocalStandardErrorDestination(handle: pipe.fileHandleForWriting)])

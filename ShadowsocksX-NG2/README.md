@@ -25,10 +25,10 @@ Run the unified validation workflow from the repository root:
 ```bash
 task --exit-code --taskfile ShadowsocksX-NG2/Taskfile.dist.yml validate
 # Run only the requested stages, in the specified order:
-task --exit-code --taskfile ShadowsocksX-NG2/Taskfile.dist.yml validate -- lint test
+task --exit-code --taskfile ShadowsocksX-NG2/Taskfile.dist.yml validate -- format:check lint test
 ```
 
-The default order is `lint → test → test:smoke → build`; execution stops on the first failure. Logs and results are saved in `ShadowsocksX-NG2/.build/validation/`. From this directory, you can run `task --exit-code validate`. See the [development guide](../docs/development.md) for individual tasks, evidence, and test boundaries.
+The default order is `lint → test → build`; execution stops on the first failure. Real-process smoke tests remain available through the explicit `test:smoke` task. Run `task format:check` separately to check formatting without modifying files. Logs and results are saved in `ShadowsocksX-NG2/.build/validation/`. From this directory, you can run `task --exit-code validate`. See the [development guide](../docs/development.md) for individual tasks, evidence, and test boundaries.
 
 ## Documentation
 

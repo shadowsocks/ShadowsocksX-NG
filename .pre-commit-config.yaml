@@ -10,6 +10,14 @@ repos:
         files: ^ShadowsocksX-NG2/.*\.swift$
         stages: [pre-commit]
 
+      - id: ng2-swift-format-check
+        name: Check NG2 Swift formatting and style
+        entry: task --dir ShadowsocksX-NG2 format:check
+        language: system
+        files: ^ShadowsocksX-NG2/.*\.swift$
+        pass_filenames: false
+        stages: [pre-commit]
+
       - id: ng2-swiftlint
         name: Lint staged NG2 Swift files
         entry: swiftlint lint --config ShadowsocksX-NG2/.swiftlint.yml --no-cache --quiet

@@ -122,7 +122,7 @@ struct ServerConnectivityTests {
     #expect(!module.summary(for: ids, at: now).hasResults)
   }
 
-  @Test func URLAndNetworkChangesSuppressInFlightAndShutdownDrainsQueuedWork() async {
+  @Test func urlAndNetworkChangesSuppressInFlightAndShutdownDrainsQueuedWork() async {
     let ids = (0..<5).map { _ in NodeID.fresh() }
     let gate = AsyncGate()
     let module = ServerConnectivity(
@@ -169,7 +169,7 @@ struct ServerConnectivityTests {
     #expect(module.isCooling(ids[3]))
   }
 
-  @Test func URLValidationAllowsHTTPOnly() {
+  @Test func urlValidationAllowsHTTPOnly() {
     #expect(ServerConnectivity.validURL("http://example.com/check") != nil)
     #expect(ServerConnectivity.validURL("https://example.com/check?q=secret") == nil)
     for value in [

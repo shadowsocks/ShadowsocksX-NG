@@ -8,7 +8,7 @@
 
 外部二进制只用固定版本的上游 release 构建产物：[`sslocal` 清单](../ShadowsocksX-NG2/Vendor/sslocal/manifest.json)（装于 `Contents/Helpers/`）、[`v2ray-plugin` 清单](../ShadowsocksX-NG2/Vendor/v2ray-plugin/manifest.json) 与 [`ck-client` 清单](../ShadowsocksX-NG2/Vendor/ck-client/manifest.json)（两个插件均装于 `Contents/Helpers/Plugins/`）。清单记录各 release 与哈希；构建链如下（spec #21 D6/D10）：
 
-1. **fetch** — `Scripts/fetch-external-binaries.sh` 下载清单固定 URL 的资产、逐字节校验 `archiveSHA256`，按 `assetFormat` 处理 tar 归档（默认，提取 `archiveMember`）或直接二进制（`binary`），并确认 arm64，落盘 `Vendor/<name>/` 并记录戳。资产哈希不符 → 立即失败；本地缓存漂移或清单变更 → 自动重新下载复验。
+1. **fetch** — `Scripts/fetch-external-binaries.sh` 获取清单固定 URL 的资产、逐字节校验 `archiveSHA256`，按 `assetFormat` 处理 tar 归档（默认，提取 `archiveMember`）或直接二进制（`binary`），并确认 arm64，落盘 `Vendor/<name>/` 并记录戳。资产哈希不符 → 立即失败；本地二进制缓存漂移 → 自动重新下载复验。CI 可设置 `EXTERNAL_BINARY_CACHE_DIR` 复用已下载归档；每个缓存归档使用前都会按清单哈希校验，缓存损坏时会删除并重新下载。
 2. **generate** — `xcodegen generate` 把清单对应二进制作为 Copy Files 项装入 `Contents/Helpers[/Plugins]`。注意顺序：**先 fetch 再 generate**，文件在生成时必须已存在，否则 Copy Files 阶段会被静默丢弃（generate 也会直接报缺文件）。
 3. **verify on every build** — 预构建脚本阶段重跑 fetch 脚本（缓存命中时只对本地戳快速复验），哈希或清单漂移使构建即失败。
 4. **sign** — `Scripts/sign-embedded-helpers.sh`（post-build 阶段）对每个二进制 Developer ID 重签：`--options runtime --timestamp --identifier <清单 signIdentifier>`（插件形如 `<bundle-id>.plugin.<name>`）；随后 Xcode 完成 app 外层签名，封存重签后的嵌套代码。

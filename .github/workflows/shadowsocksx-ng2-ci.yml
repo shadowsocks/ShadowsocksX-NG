@@ -1,0 +1,71 @@
+name: ShadowsocksX-NG2 CI
+
+on:
+  pull_request:
+    branches: [develop, master]
+  push:
+    branches: [develop, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ng2-ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate (Xcode 27 arm64)
+    runs-on: xcode-27
+    timeout-minutes: 60
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install build tools and test dependencies
+        run: brew install age go-task xcodegen swiftlint
+
+      - name: Restore external binary archive cache
+        id: external-binary-cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ShadowsocksX-NG2/.build/external-binary-archives
+          key: ng2-external-binaries-macos-arm64-${{ hashFiles('ShadowsocksX-NG2/Vendor/sslocal/manifest.json', 'ShadowsocksX-NG2/Vendor/v2ray-plugin/manifest.json', 'ShadowsocksX-NG2/Vendor/ck-client/manifest.json') }}
+          restore-keys: |
+            ng2-external-binaries-macos-arm64-
+
+      - name: Fetch and verify external binaries
+        id: fetch-external-binaries
+        working-directory: ShadowsocksX-NG2
+        env:
+          EXTERNAL_BINARY_CACHE_DIR: ${{ github.workspace }}/ShadowsocksX-NG2/.build/external-binary-archives
+        run: Scripts/fetch-external-binaries.sh
+
+      - name: Save external binary archive cache
+        if: steps.fetch-external-binaries.outcome == 'success' && steps.external-binary-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ShadowsocksX-NG2/.build/external-binary-archives
+          key: ng2-external-binaries-macos-arm64-${{ hashFiles('ShadowsocksX-NG2/Vendor/sslocal/manifest.json', 'ShadowsocksX-NG2/Vendor/v2ray-plugin/manifest.json', 'ShadowsocksX-NG2/Vendor/ck-client/manifest.json') }}
+
+      - name: Check Swift formatting
+        working-directory: ShadowsocksX-NG2
+        run: task format:check
+
+      - name: Run validation gates
+        working-directory: ShadowsocksX-NG2
+        run: task --exit-code validate
+
+      - name: Upload validation evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ng2-validation-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ShadowsocksX-NG2/.build/validation/**
+          include-hidden-files: true
+          if-no-files-found: ignore
+          retention-days: 14
