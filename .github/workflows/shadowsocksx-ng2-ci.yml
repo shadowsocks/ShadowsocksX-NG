@@ -15,8 +15,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  validate:
-    name: Validate (Xcode 27 arm64)
+  checks:
+    name: Lint, test, build (Xcode 27 arm64)
     runs-on: xcode-27
     timeout-minutes: 60
 
@@ -56,22 +56,14 @@ jobs:
         working-directory: ShadowsocksX-NG2
         run: task format:check
 
-      - name: Run validation gates
+      - name: Lint
         working-directory: ShadowsocksX-NG2
-        run: task --exit-code validate
+        run: task --exit-code lint
 
-      - name: Upload validation evidence
-        if: always()
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: ng2-validation-${{ github.run_id }}-${{ github.run_attempt }}
-          path: |
-            ShadowsocksX-NG2/.build/validation/**/summary.txt
-            ShadowsocksX-NG2/.build/validation/**/status.txt
-            ShadowsocksX-NG2/.build/validation/**/raw.log
-            ShadowsocksX-NG2/.build/validation/**/test-summary.json
-            ShadowsocksX-NG2/.build/validation/**/test-summary.stderr.log
-            ShadowsocksX-NG2/.build/validation/**/count-reader.log
-          include-hidden-files: true
-          if-no-files-found: ignore
-          retention-days: 14
+      - name: Test
+        working-directory: ShadowsocksX-NG2
+        run: task --exit-code test
+
+      - name: Build
+        working-directory: ShadowsocksX-NG2
+        run: task --exit-code build
