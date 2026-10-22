@@ -18,7 +18,10 @@ tasks:
         msg: 'MARKETING_VERSION must be a release version (for example, 2.1.0 or v2.0.0-alpha-1).'
       - sh: '{{if regexMatch "^[0-9]+(\\.[0-9]+){0,2}$" .CURRENT_PROJECT_VERSION}}true{{else}}false{{end}}'
         msg: 'CURRENT_PROJECT_VERSION must have one to three numeric components.'
+      - sh: 'test ! -e {{.RELEASE_PATH | shellQuote}} && test ! -L {{.RELEASE_PATH | shellQuote}}'
+        msg: 'This release already exists in dist; existing releases are never overwritten: {{.RELEASE_PATH}}'
     vars:
+      RELEASE_PATH: '{{.DIST_DIR}}/ShadowsocksX-NG2-{{.MARKETING_VERSION}}-{{.CURRENT_PROJECT_VERSION}}-arm64.dmg'
       RUN_DIR:
         sh: |
           mkdir -p {{.BUILD_DIR | shellQuote}}/packaging
