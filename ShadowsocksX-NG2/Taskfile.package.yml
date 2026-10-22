@@ -1,0 +1,191 @@
+# https://taskfile.dev/
+version: '3'
+
+vars:
+  DIST_DIR: '{{.TASKFILE_DIR}}/dist'
+  DMG_REQUIREMENT: '=anchor apple generic and certificate leaf[field.1.2.840.113635.100.6.1.13] exists'
+
+tasks:
+  package:
+    desc: Build, sign, notarize and publish an arm64 Release DMG
+    dir: '{{.TASKFILE_DIR}}'
+    requires:
+      vars: [NOTARY_PROFILE]
+    preconditions:
+      - sh: 'test -n {{.NOTARY_PROFILE | shellQuote}}'
+        msg: 'NOTARY_PROFILE must name credentials stored by notarytool store-credentials.'
+      - sh: '{{if or (empty .MARKETING_VERSION) (regexMatch "^[0-9]+\\.[0-9]+\\.[0-9]+$" .MARKETING_VERSION)}}true{{else}}false{{end}}'
+        msg: 'MARKETING_VERSION must have three numeric components (for example, 2.1.0).'
+      - sh: '{{if or (empty .CURRENT_PROJECT_VERSION) (regexMatch "^[0-9]+(\\.[0-9]+){0,2}$" .CURRENT_PROJECT_VERSION)}}true{{else}}false{{end}}'
+        msg: 'CURRENT_PROJECT_VERSION must have one to three numeric components.'
+    vars:
+      RUN_DIR:
+        sh: |
+          mkdir -p {{.BUILD_DIR | shellQuote}}/packaging
+          mktemp -d {{.BUILD_DIR | shellQuote}}/packaging/run-XXXXXX
+    cmds:
+      - 'printf "Packaging workspace: %s\n" {{.RUN_DIR | shellQuote}}'
+      - for: [xcodebuild, xcodegen, hdiutil, codesign, ditto, plutil, shasum, spctl, link]
+        cmd: 'command -v {{.ITEM}} > /dev/null'
+      - xcrun --find stapler
+      - >-
+        xcrun notarytool history --keychain-profile {{.NOTARY_PROFILE | shellQuote}}
+        --output-format json > {{.RUN_DIR | shellQuote}}/notary-history.json
+      - Scripts/fetch-external-binaries.sh
+      - task: test:smoke
+        vars:
+          DERIVED_DATA_DIR: '{{.RUN_DIR}}/derivedData'
+          RESULT_BUNDLE_PATH: '{{.RUN_DIR}}/smoke.xcresult'
+      - task: build:release
+        vars:
+          DERIVED_DATA_DIR: '{{.RUN_DIR}}/derivedData'
+      - task: package:image
+        vars:
+          RUN_DIR: '{{.RUN_DIR}}'
+          APP_PATH: '{{.RUN_DIR}}/derivedData/Build/Products/Release/ShadowsocksX-NG2.app'
+
+  package:image:
+    internal: true
+    dir: '{{.TASKFILE_DIR}}'
+    vars:
+      APP_VERSION:
+        sh: plutil -extract CFBundleShortVersionString raw -expect string -o - {{.APP_PATH | shellQuote}}/Contents/Info.plist
+      APP_BUILD:
+        sh: plutil -extract CFBundleVersion raw -expect string -o - {{.APP_PATH | shellQuote}}/Contents/Info.plist
+      IMAGE_NAME: 'ShadowsocksX-NG2-{{.APP_VERSION}}-{{.APP_BUILD}}-arm64.dmg'
+      IMAGE_PATH: '{{.RUN_DIR}}/{{.IMAGE_NAME}}'
+    preconditions:
+      - sh: '{{if regexMatch "^[0-9]+\\.[0-9]+\\.[0-9]+$" .APP_VERSION}}true{{else}}false{{end}}'
+        msg: 'Built App has an invalid CFBundleShortVersionString.'
+      - sh: '{{if regexMatch "^[0-9]+(\\.[0-9]+){0,2}$" .APP_BUILD}}true{{else}}false{{end}}'
+        msg: 'Built App has an invalid CFBundleVersion.'
+      - sh: 'test ! -e {{printf "%s/%s" .DIST_DIR .IMAGE_NAME | shellQuote}} && test ! -L {{printf "%s/%s" .DIST_DIR .IMAGE_NAME | shellQuote}}'
+        msg: 'This release already exists in dist; existing releases are never overwritten.'
+    cmds:
+      - Scripts/packaging-gate.sh {{.APP_PATH | shellQuote}}
+      - mkdir {{.RUN_DIR | shellQuote}}/stage
+      - ditto {{.APP_PATH | shellQuote}} {{.RUN_DIR | shellQuote}}/stage/ShadowsocksX-NG2.app
+      - ln -s /Applications {{.RUN_DIR | shellQuote}}/stage/Applications
+      - >-
+        hdiutil create -volname ShadowsocksX-NG2 -format UDZO
+        -srcfolder {{.RUN_DIR | shellQuote}}/stage {{.IMAGE_PATH | shellQuote}}
+      - codesign --display {{printf "--extract-certificates=%s/signing-" .RUN_DIR | shellQuote}} {{.APP_PATH | shellQuote}}
+      - task: package:sign
+        vars:
+          RUN_DIR: '{{.RUN_DIR}}'
+          DMG_PATH: '{{.IMAGE_PATH}}'
+      - task: package:notarize
+        vars:
+          DMG_PATH: '{{.IMAGE_PATH}}'
+
+  package:sign:
+    internal: true
+    vars:
+      CERTIFICATE_HASH:
+        sh: shasum -a 1 {{.RUN_DIR | shellQuote}}/signing-0
+      IDENTITY: '{{first (splitList " " .CERTIFICATE_HASH)}}'
+    preconditions:
+      - sh: '{{if regexMatch "^[0-9a-fA-F]{40}$" .IDENTITY}}true{{else}}false{{end}}'
+        msg: 'Cannot identify the certificate that signed the App.'
+    cmds:
+      - >-
+        codesign --sign {{.IDENTITY | shellQuote}} --timestamp
+        --identifier com.qiuyuzhou.ShadowsocksX-NG2.dmg {{.DMG_PATH | shellQuote}}
+
+  package:notarize:
+    desc: Notarize a signed DMG, staple its ticket and publish after verification
+    dir: '{{.TASKFILE_DIR}}'
+    requires:
+      vars: [DMG_PATH, NOTARY_PROFILE]
+    preconditions:
+      - sh: 'test -n {{.NOTARY_PROFILE | shellQuote}}'
+        msg: 'NOTARY_PROFILE must name credentials stored by notarytool store-credentials.'
+      - sh: '{{if and (hasPrefix "/" .DMG_PATH) (hasSuffix ".dmg" .DMG_PATH)}}true{{else}}false{{end}}'
+        msg: 'DMG_PATH must be an absolute path ending in .dmg.'
+      - sh: 'test -f {{.DMG_PATH | shellQuote}}'
+        msg: 'DMG_PATH does not name a file.'
+      - sh: 'test ! -e {{printf "%s/%s" .DIST_DIR (base .DMG_PATH) | shellQuote}} && test ! -L {{printf "%s/%s" .DIST_DIR (base .DMG_PATH) | shellQuote}}'
+        msg: 'This release already exists in dist; existing releases are never overwritten.'
+    vars:
+      LOG_DIR:
+        sh: |
+          mkdir -p {{.BUILD_DIR | shellQuote}}/notarization
+          mktemp -d {{.BUILD_DIR | shellQuote}}/notarization/run-XXXXXX
+    cmds:
+      - 'printf "Notarization evidence: %s\n" {{.LOG_DIR | shellQuote}}'
+      - codesign --verify --strict -R {{.DMG_REQUIREMENT | shellQuote}} {{.DMG_PATH | shellQuote}}
+      - shasum -a 256 {{.DMG_PATH | shellQuote}} > {{.LOG_DIR | shellQuote}}/input.sha256
+      - >-
+        xcrun notarytool submit {{.DMG_PATH | shellQuote}}
+        --keychain-profile {{.NOTARY_PROFILE | shellQuote}} --output-format json
+        > {{.LOG_DIR | shellQuote}}/submission.json
+        2> {{.LOG_DIR | shellQuote}}/submission.stderr.log
+      - task: package:wait
+        vars:
+          LOG_DIR: '{{.LOG_DIR}}'
+      - xcrun stapler staple {{.DMG_PATH | shellQuote}}
+      - xcrun stapler validate {{.DMG_PATH | shellQuote}}
+      - codesign --verify --strict -R {{.DMG_REQUIREMENT | shellQuote}} {{.DMG_PATH | shellQuote}}
+      - spctl --assess --type open --context context:primary-signature --verbose {{.DMG_PATH | shellQuote}}
+      - task: package:publish
+        vars:
+          DMG_PATH: '{{.DMG_PATH}}'
+
+  package:wait:
+    internal: true
+    vars:
+      SUBMISSION_ID:
+        sh: plutil -extract id raw -expect string -o - {{.LOG_DIR | shellQuote}}/submission.json
+    preconditions:
+      - sh: '{{if regexMatch "^[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}$" .SUBMISSION_ID}}true{{else}}false{{end}}'
+        msg: 'No valid notarization submission ID; inspect submission.json and submission.stderr.log.'
+    cmds:
+      - defer:
+          task: package:notary-log
+          vars:
+            SUBMISSION_ID: '{{.SUBMISSION_ID}}'
+            LOG_DIR: '{{.LOG_DIR}}'
+      - >-
+        xcrun notarytool wait {{.SUBMISSION_ID | shellQuote}} --timeout 30m
+        --keychain-profile {{.NOTARY_PROFILE | shellQuote}} --output-format json
+        > {{.LOG_DIR | shellQuote}}/result.json
+        2> {{.LOG_DIR | shellQuote}}/wait.stderr.log
+      - task: package:accepted
+        vars:
+          LOG_DIR: '{{.LOG_DIR}}'
+
+  package:accepted:
+    internal: true
+    vars:
+      NOTARY_STATUS:
+        sh: plutil -extract status raw -expect string -o - {{.LOG_DIR | shellQuote}}/result.json
+    preconditions:
+      - sh: '{{if eq .NOTARY_STATUS "Accepted"}}true{{else}}false{{end}}'
+        msg: 'Apple did not accept this submission; inspect result.json and notary-log.json.'
+    cmds:
+      - 'printf "Notarization status: %s\n" {{.NOTARY_STATUS | shellQuote}}'
+
+  package:notary-log:
+    internal: true
+    cmds:
+      - cmd: >-
+          xcrun notarytool log {{.SUBMISSION_ID | shellQuote}}
+          --keychain-profile {{.NOTARY_PROFILE | shellQuote}}
+          {{.LOG_DIR | shellQuote}}/notary-log.json
+          2> {{.LOG_DIR | shellQuote}}/notary-log.stderr.log
+        ignore_error: true
+
+  package:publish:
+    internal: true
+    vars:
+      PUBLISH_DIR:
+        sh: |
+          mkdir -p {{.DIST_DIR | shellQuote}}
+          mktemp -d {{.DIST_DIR | shellQuote}}/.package-XXXXXX
+      OUTPUT_PATH: '{{.DIST_DIR}}/{{base .DMG_PATH}}'
+    cmds:
+      - defer: 'rm -rf {{.PUBLISH_DIR | shellQuote}}'
+      - ditto {{.DMG_PATH | shellQuote}} {{.PUBLISH_DIR | shellQuote}}/release.dmg
+      # Linking within dist publishes a complete file atomically and refuses replacement.
+      - link {{.PUBLISH_DIR | shellQuote}}/release.dmg {{.OUTPUT_PATH | shellQuote}}
+      - 'printf "Release DMG: %s\n" {{.OUTPUT_PATH | shellQuote}}'

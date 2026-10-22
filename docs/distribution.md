@@ -37,13 +37,62 @@
 
 ## 发布门槛
 
-发布前运行发布门槛检查：
+### 签名并公证的 DMG
+
+从 `ShadowsocksX-NG2/` 执行。首次准备外部二进制及 Developer ID 签名配置的方法见上文。钥匙串中必须有对应证书及私钥。
+
+先用 Apple 的工具保存公证凭据。此命令交互输入 App 专用密码；凭据保存在钥匙串中，不写入仓库或 Taskfile：
+
+```bash
+xcrun notarytool store-credentials shadowsocks-release \
+  --apple-id YOUR_APPLE_ID --team-id YOUR_TEAM_ID
+```
+
+完整发布入口：
+
+```bash
+task package NOTARY_PROFILE=shadowsocks-release \
+  MARKETING_VERSION=2.1.0 CURRENT_PROJECT_VERSION=21
+```
+
+`MARKETING_VERSION` 和 `CURRENT_PROJECT_VERSION` 分别可选。未传的参数使用工程默认值；传入的参数只覆盖本次 Release 构建，不改写 `project.yml`。`MARKETING_VERSION` 接受三个以点分隔的数字，`CURRENT_PROJECT_VERSION` 接受一至三个以点分隔的数字。单独运行 `task build:release` 也支持这两个覆盖参数。
+
+流程由 `Taskfile.package.yml` 编排：检查公证凭据 → 获取外部二进制 → 真实进程冒烟 → Release 构建 → App 打包门槛 → 制作压缩 DMG → DMG 签名 → Apple 公证 → 装订票据 → 签名、票据及 Gatekeeper 检查 → 发布到 `dist/`。构建只支持 arm64。DMG 只包含 App 和指向 `/Applications` 的快捷方式，不增加背景图或 Finder 自动化依赖。
+
+DMG 复用 App 实际签名证书的 SHA-1 指纹选择签名身份，使用安全时间戳。公证仅接收 `NOTARY_PROFILE` 指定的钥匙串配置名称。发布产物示例为 `dist/ShadowsocksX-NG2-2.1.0-21-arm64.dmg`，名称中的版本从构建产物的 Info.plist 读取。已有同名发布产物时明确失败，不覆盖文件。
+
+每次构建使用独立的 `.build/packaging/run-*/`，其中保留签名 DMG、构建产物与冒烟结果。每次公证在 `.build/notarization/run-*/` 保存提交响应、提交编号、等待结果与 Apple 诊断日志。控制台打印这两个目录。提交和等待分别执行，等待中断时仍保留提交编号。公证等待上限为 30 分钟；本地等待结束后 Apple 仍可能继续处理。
+
+公证失败后，可以直接重跑保留的签名 DMG，无须重新构建：
+
+```bash
+task package:notarize \
+  DMG_PATH=/absolute/path/to/ShadowsocksX-NG2-2.1.0-21-arm64.dmg \
+  NOTARY_PROFILE=shadowsocks-release
+```
+
+此入口会重新提交公证。若此前仅等待超时，可以先用保留的提交编号查询 Apple 状态，避免重复提交：
+
+```bash
+xcrun notarytool info SUBMISSION_ID --keychain-profile shadowsocks-release
+```
+
+`package:notarize` 仅在 Apple 返回 `Accepted` 后装订 DMG 票据。签名、票据和 Gatekeeper 检查全部通过后，才发布完整文件到 `dist/`。失败时不发布新文件。此流程只装订 DMG 票据，不另外分发独立 App。公证重跑入口不代替完整入口中的冒烟和 App 打包门槛；它接收此前完整入口生成的签名 DMG。
+
+`task clean` 删除 `.build/` 中间产物及日志，保留 `dist/`。仓库忽略这两类产物。此流程不上传 GitHub Release。
+
+工具用法见 Apple 的[公证流程](https://developer.apple.com/documentation/security/customizing-the-notarization-workflow)与[分发打包说明](https://developer.apple.com/documentation/xcode/packaging-mac-software-for-distribution)。
+
+### 单独检查 App
+
+已有构建产物时，可以单独运行发布门槛检查：
 
 ```bash
 # 发布门槛（必须全绿）：真实进程冒烟 + 打包门槛
 task test:smoke
+task build:release
 Scripts/packaging-gate.sh \
-  .build/derivedData/Build/Products/Debug/ShadowsocksX-NG2.app
+  .build/derivedData/Build/Products/Release/ShadowsocksX-NG2.app
 ```
 
 打包门槛只接受 Developer ID 签名的产物：Team 期望值取自 `Configs/Signing.local.xcconfig`（可用 `EXPECTED_TEAM_ID=<Team ID>` 显式覆盖），两者都没有时该断言直接失败，不静默跳过。无证书的 ad-hoc Debug 产物会在此明确失败（`gate: hint` 会说明原因），这是预期行为。
