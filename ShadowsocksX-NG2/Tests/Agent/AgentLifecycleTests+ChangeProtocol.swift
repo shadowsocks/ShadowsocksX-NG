@@ -247,7 +247,7 @@ final class AgentLifecycleListenDeadlineTests: AgentLifecycleTests {
         }
         return log.contains("listen not established within deadline")
       },
-      "3 秒未建立监听应以 error 日志点名（D10），实际 agent.log：\(agentLog())")
+      "5 秒未建立监听应以 error 日志点名（D10），实际 agent.log：\(agentLog())")
     XCTAssertEqual(try waitForExit(wrapper), 0)
     XCTAssertNotNil(RuntimeFileStore(fileURL: contractURL).readFailure())
     XCTAssertTrue(stateLog().contains("SIGTERM"))
