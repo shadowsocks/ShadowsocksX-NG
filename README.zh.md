@@ -4,7 +4,7 @@
 
 面向 Apple Silicon Mac 的原生 Shadowsocks 客户端。通过菜单栏管理服务器、订阅和代理规则，并为 Mac 应用提供 SOCKS5 与 HTTP 代理入口。
 
-> **下载**：NG2 安装包尚未发布。发布后请从 [GitHub Releases](https://github.com/shadowsocks/ShadowsocksX-NG/releases) 下载，并选择 ShadowsocksX-NG2 发行条目。发布页也会保留旧版 1.x。
+> **下载**：请从 [GitHub Releases](https://github.com/shadowsocks/ShadowsocksX-NG/releases) 下载最新的 ShadowsocksX-NG2 版本。发布页也会保留旧版 1.x。
 
 ## 系统要求
 

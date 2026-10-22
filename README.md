@@ -4,7 +4,7 @@ English | [简体中文](README.zh.md)
 
 A native Shadowsocks client for Apple Silicon Macs. Manage servers, subscriptions, and routing from the menu bar, and provide SOCKS5 and HTTP proxy endpoints for Mac apps.
 
-> **Download:** ShadowsocksX-NG2 is not available yet. After release, download it from [GitHub Releases](https://github.com/shadowsocks/ShadowsocksX-NG/releases) and choose the ShadowsocksX-NG2 release. The page also hosts legacy 1.x releases.
+> **Download:** Download the latest ShadowsocksX-NG2 release from [GitHub Releases](https://github.com/shadowsocks/ShadowsocksX-NG/releases). The page also hosts legacy 1.x releases.
 
 ## System requirements
 
