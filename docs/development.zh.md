@@ -1,6 +1,6 @@
 # 开发、构建与测试
 
-[English](development.md) | [返回工程首页](../ShadowsocksX-NG2/README.zh-CN.md)
+[English](development.md) | [返回工程首页](../ShadowsocksX-NG2/README.zh.md)
 
 除特别说明外，命令从 `ShadowsocksX-NG2/` 执行，文中工程路径也相对于该目录。
 
@@ -24,7 +24,7 @@ task --exit-code --taskfile ShadowsocksX-NG2/Taskfile.dist.yml validate -- lint 
 
 测试关通过本机 `xcrun xcresulttool get test-results summary` 和系统 `plutil` 尽力读取计数，无需新增脚本或工具依赖。`test-summary.json` 保存原始摘要，`test-summary.stderr.log` 保存 xcresulttool 错误，`count-reader.log` 保存计数读取错误。汇总展示通过、失败、跳过、预期失败及总数（Xcode 汇总口径，参数化测试的实际执行次数可能不同）。关卡与总体退出码由原命令决定，命令失败始终保留失败。结果包缺失或摘要不可读时显著标注 `evidence incomplete`（证据不完整）、计数未知，不改变命令结果，也不把缺失计数写成零。构建关不读取测试计数；未执行的关卡不等同于测试跳过。
 
-统一入口成功表示所选关卡的命令通过，仍需核对证据是否完整；hostless、真实进程 smoke、原生 UI 和真实系统代理的验收边界仍分别成立，发布打包门槛见[签名与分发](distribution.zh-CN.md#发布门槛)。
+统一入口成功表示所选关卡的命令通过，仍需核对证据是否完整；hostless、真实进程 smoke、原生 UI 和真实系统代理的验收边界仍分别成立，发布打包门槛见[签名与分发](distribution.zh.md#发布门槛)。
 
 `task test` 与 `task test:smoke` 显式启用 Xcode 单测试超时：默认 120 秒，上限 300 秒。这是 runner 兜底，不保证测试任务正常清理，也不是性能门槛。规则阶段等待失败会抛错退出测试体；受保护的测试任务先释放夹具，再取消并等待结束。规则延迟 gate 和同步阻塞夹具的默认等待上限为 10 秒，超时必须报告失败。共享 `AsyncGate` 保留由用例控制的取消语义。Swift Testing 的 detached worker 超时报告保留创建用例名称和源码位置；应同时核对命令退出码与测试计数，不能仅凭单例通过数判断成功。
 
@@ -53,9 +53,9 @@ Scripts/fetch-external-binaries.sh
 task gen:prj
 ```
 
-Swift Package Manager 从 `project.yml` 固定的正式版本解析 AgeSwift，并校验其发布 XCFramework。首次解析需要网络，消费者无需安装 Rust。`Vendor/AgeSwift/LICENSE-MIT` 来自固定版本，随应用打包到 `Resources/ThirdParty/AgeSwift/`。加密存储互操作测试还需要 `brew install age` 和可访问的登录钥匙串；测试使用 UUID 隔离的 service 并清理，不修改真实应用配置。命令行调试方法见[加密格式文档](server-library-encryption-format.zh-CN.md)。
+Swift Package Manager 从 `project.yml` 固定的正式版本解析 AgeSwift，并校验其发布 XCFramework。首次解析需要网络，消费者无需安装 Rust。`Vendor/AgeSwift/LICENSE-MIT` 来自固定版本，随应用打包到 `Resources/ThirdParty/AgeSwift/`。加密存储互操作测试还需要 `brew install age` 和可访问的登录钥匙串；测试使用 UUID 隔离的 service 并清理，不修改真实应用配置。命令行调试方法见[加密格式文档](server-library-encryption-format.zh.md)。
 
-无证书也能构建与跑单测：Debug 基线是 ad-hoc，不需要 `Configs/Signing.local.xcconfig`。只有要做 Developer ID 签名（发布，或让本机 Debug 产物过打包门槛）时才写该文件，内容见[签名与运行形态基线](distribution.zh-CN.md#签名与运行形态基线)。
+无证书也能构建与跑单测：Debug 基线是 ad-hoc，不需要 `Configs/Signing.local.xcconfig`。只有要做 Developer ID 签名（发布，或让本机 Debug 产物过打包门槛）时才写该文件，内容见[签名与运行形态基线](distribution.zh.md#签名与运行形态基线)。
 
 `Tests/Smoke/` 是真实进程冒烟（经 wrapper 拉起真实 sslocal 验证启动、握手、
 ACL 路由与插件监管），不在默认 `task test` 内，由独立 scheme 按需运行。

@@ -1,6 +1,6 @@
 # Bundled Rule Snapshots
 
-[Project home](../ShadowsocksX-NG2/README.md) | [简体中文](rule-snapshots.zh-CN.md)
+[Project home](../ShadowsocksX-NG2/README.md) | [简体中文](rule-snapshots.zh.md)
 
 Bundled snapshots used by rule mode are explicitly maintained artifacts:
 

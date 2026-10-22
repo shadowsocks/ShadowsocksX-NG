@@ -1,6 +1,6 @@
 # Sensitive Configuration Encryption with age
 
-English | [简体中文](server-library-encryption-format.zh-CN.md)
+English | [简体中文](server-library-encryption-format.zh.md)
 
 The server library and proxy listening configuration use standard [age v1](https://age-encryption.org/v1) files through [AgeSwift](https://github.com/qiuyuzhou/AgeSwift). See [ADR-0050](adr/0050-age-encrypted-configuration-storage.md) for the decision and recovery boundaries.
 

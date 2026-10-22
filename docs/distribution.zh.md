@@ -1,6 +1,6 @@
 # 外部二进制、签名与分发
 
-[English](distribution.md) | [返回工程首页](../ShadowsocksX-NG2/README.zh-CN.md)
+[English](distribution.md) | [返回工程首页](../ShadowsocksX-NG2/README.zh.md)
 
 除特别说明外，命令从 `ShadowsocksX-NG2/` 执行，文中工程路径也相对于该目录。
 

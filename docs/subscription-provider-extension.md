@@ -2,7 +2,7 @@
 
 This guide describes the SIP-008 fields and private extensions currently supported by ShadowsocksX-NG. It is intended for subscription providers generating compatible responses. It reflects the current implementation.
 
-[简体中文](subscription-provider-extension.zh-CN.md)
+[简体中文](subscription-provider-extension.zh.md)
 
 `x_shadowsocksx_ng`, `expires_at`, and `traffic_reset_at` are private extensions recognized by ShadowsocksX-NG; they are not SIP-008 standard fields. Ordinary SIP-008 clients may not recognize them, and clients without extension support should still read the servers from the standard `servers` array. SIP-008 allows custom fields but does not guarantee that all clients support them. See the [SIP-008 Online Configuration Delivery specification](https://shadowsocks.org/doc/sip008.html).
 

@@ -1,6 +1,6 @@
 # ShadowsocksX-NG2
 
-English | [简体中文](README.zh-CN.md)
+English | [简体中文](README.zh.md)
 
 ShadowsocksX-NG2 is a modern rewrite of ShadowsocksX-NG for macOS 15+ and Apple Silicon (arm64). Its source code and build configuration are in this directory. The archived legacy version is described on the [repository home page](../README.md#旧版归档).
 

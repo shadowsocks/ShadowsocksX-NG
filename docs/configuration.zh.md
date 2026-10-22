@@ -1,10 +1,10 @@
 # 订阅、插件与监听配置
 
-[English](configuration.md) | [返回工程首页](../ShadowsocksX-NG2/README.zh-CN.md)
+[English](configuration.md) | [返回工程首页](../ShadowsocksX-NG2/README.zh.md)
 
 ## 订阅资料
 
-面向订阅服务提供方的字段格式、嵌套分组扩展和响应要求见 [SIP-008 订阅扩展说明](subscription-provider-extension.zh-CN.md)。
+面向订阅服务提供方的字段格式、嵌套分组扩展和响应要求见 [SIP-008 订阅扩展说明](subscription-provider-extension.zh.md)。
 
 订阅可在 SIP-008 JSON 根级提供 `bytes_used`、`bytes_remaining`（非负整数，最大为 UInt64），以及自定义的 `expires_at`（服务到期时间）、`traffic_reset_at`（流量重置时间）。日期值使用 RFC 3339 字符串，省略或 `null` 表示未提供；无效资料仅忽略该项，不影响有效服务器或分组资料。
 

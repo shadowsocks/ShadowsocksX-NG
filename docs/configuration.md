@@ -1,6 +1,6 @@
 # Subscriptions, Plugins, and Listener Configuration
 
-[Project home](../ShadowsocksX-NG2/README.md) | [简体中文](configuration.zh-CN.md)
+[Project home](../ShadowsocksX-NG2/README.md) | [简体中文](configuration.zh.md)
 
 ## Subscription information
 

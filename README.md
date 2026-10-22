@@ -2,14 +2,14 @@
 
 > 🚧 重新实现进行中 —— 本仓库正在使用现代技术栈重写 ShadowsocksX-NG macOS 客户端。
 
-新实现位于 [`ShadowsocksX-NG2/`](ShadowsocksX-NG2/README.zh-CN.md)，面向 macOS 15+ / Apple Silicon（arm64）。外部二进制使用上游发布产物，不再通过 git 子模块在仓库内构建。
+新实现位于 [`ShadowsocksX-NG2/`](ShadowsocksX-NG2/README.zh.md)，面向 macOS 15+ / Apple Silicon（arm64）。外部二进制使用上游发布产物，不再通过 git 子模块在仓库内构建。
 
 ## 开发入口
 
-- [首次构建与常用命令](ShadowsocksX-NG2/README.zh-CN.md#开发构建与测试)
-- [开发指南](docs/development.zh-CN.md)：统一验证、测试证据、代码风格工具与 Git hooks。
-- [工程与专题文档](ShadowsocksX-NG2/README.zh-CN.md#文档导航)：源码布局、供应链与签名、规则快照、配置说明。
-- [术语表](GLOSSARY.md)与[架构决策记录（ADR）](docs/adr/)；文档语言约定见[开发指南](docs/development.zh-CN.md#领域文档语言)。
+- [首次构建与常用命令](ShadowsocksX-NG2/README.zh.md#开发构建与测试)
+- [开发指南](docs/development.zh.md)：统一验证、测试证据、代码风格工具与 Git hooks。
+- [工程与专题文档](ShadowsocksX-NG2/README.zh.md#文档导航)：源码布局、供应链与签名、规则快照、配置说明。
+- [术语表](GLOSSARY.md)与[架构决策记录（ADR）](docs/adr/)；文档语言约定见[开发指南](docs/development.zh.md#领域文档语言)。
 
 ## 旧版归档
 

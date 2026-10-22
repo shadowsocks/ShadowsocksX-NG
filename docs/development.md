@@ -1,6 +1,6 @@
 # Development, Build, and Testing
 
-[Project home](../ShadowsocksX-NG2/README.md) | [简体中文](development.zh-CN.md)
+[Project home](../ShadowsocksX-NG2/README.md) | [简体中文](development.zh.md)
 
 Unless noted otherwise, run commands from `ShadowsocksX-NG2/`; paths in this document are relative to that directory.
 

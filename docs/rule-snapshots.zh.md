@@ -1,6 +1,6 @@
 # 内置规则快照
 
-[English](rule-snapshots.md) | [返回工程首页](../ShadowsocksX-NG2/README.zh-CN.md)
+[English](rule-snapshots.md) | [返回工程首页](../ShadowsocksX-NG2/README.zh.md)
 
 除特别说明外，命令从 `ShadowsocksX-NG2/` 执行，文中工程路径也相对于该目录。
 

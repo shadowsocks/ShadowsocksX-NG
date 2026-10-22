@@ -1,6 +1,6 @@
 # 工程结构与源码搜索
 
-[English](project-structure.md) | [返回工程首页](../ShadowsocksX-NG2/README.zh-CN.md)
+[English](project-structure.md) | [返回工程首页](../ShadowsocksX-NG2/README.zh.md)
 
 除特别说明外，命令从 `ShadowsocksX-NG2/` 执行，文中工程路径也相对于该目录。
 
@@ -43,7 +43,7 @@
 - `Vendor/rules/geolocation-cn/` — 内置中国域名规则快照（issue #63）：`snapshot.json`（规范化规则 + 元数据 + 损失报告）、`manifest.json`（上游版本与快照 SHA-256）、`NOTICE`（许可证与归属）。普通构建只读本地快照，绝不抓取或转换。
 - `Vendor/rules/china-ipv4/` — 内置中国 IPv4 CIDR 直连候选快照（issue #64）：同上三件套，来源为 [gaoyifan/china-operator-ip](https://github.com/gaoyifan/china-operator-ip) `china.txt` 固定 commit。规则模式的 `proxy_all` ACL 同时编入中国域名与 IPv4 CIDR 直连候选。
 - `Vendor/rules/gfwlist/` — 内置 GFWList 代理候选快照（issue #65）：同上三件套，来源为 [gfwlist/gfwlist](https://github.com/gfwlist/gfwlist) 官方 Base64 AutoProxy `gfwlist.txt` 固定 commit。域名锚点转换为后缀匹配，满足条件的空路径或根路径 URL 前缀转换为精确域名匹配；「未匹配时直连」的 `bypass_all` ACL 编入这些代理候选。
-- `Scripts/` — 供应链脚本（见[外部二进制供应链](distribution.zh-CN.md#外部二进制供应链)）与打包门槛断言；另有 `update-geolocation-cn.sh` / `update-china-ipv4.sh` / `update-gfwlist.sh`（显式维护动作，抓取固定版上游并转换）与 `verify-rule-snapshots.sh`（构建前离线校验快照完整性）。
+- `Scripts/` — 供应链脚本（见[外部二进制供应链](distribution.zh.md#外部二进制供应链)）与打包门槛断言；另有 `update-geolocation-cn.sh` / `update-china-ipv4.sh` / `update-gfwlist.sh`（显式维护动作，抓取固定版上游并转换）与 `verify-rule-snapshots.sh`（构建前离线校验快照完整性）。
 
 ### 源码搜索
 
