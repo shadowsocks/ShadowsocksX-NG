@@ -6,7 +6,7 @@ typealias ServerLibraryError = EncryptedFileError
 final class ServerLibraryStorage {
   private let encrypted: EncryptedFileStorage<CatalogDocument>
 
-  init(keys: MasterKeyStoring = KeychainMasterKeyStore(namespace: "server-library.age")) {
+  init(keys: CredentialKeyStoring = KeychainCredentialKeyStore(namespace: "server-library.age")) {
     encrypted = EncryptedFileStorage(
       keys: keys, maximumSize: 64 * 1024 * 1024,
       legacyFileNames: ["catalog.enc", "catalog.json"], makeDefault: { CatalogDocument() },

@@ -237,32 +237,6 @@ final class CustomRuleEditingWorkflowTests: XCTestCase {
     )
   }
 
-  func testStaleDraftCannotOverwriteAnotherSavedChangeAndDiscardingDraftDoesNothing() async throws {
-    let rule = CustomRule(action: .direct, match: try RuleMatch(domainExact: "kept.example"))
-    var commits = 0
-    let workflow = RulesWorkflow(
-      loadDocument: { CustomRuleDocument(rules: [rule]) },
-      commitDocument: {
-        commits += 1
-        return RuleDocumentCommit(outcome: .saved, document: $0)
-      },
-      builtinSnapshots: BuiltinRuleSnapshots(loader: { rulesFixture($0) }))
-    await workflow.refresh()
-    var discarded = try XCTUnwrap(workflow.makeCustomRuleDraft(editing: rule.id))
-    discarded.content = "discarded.example"
-    _ = await workflow.previewCustomRule(discarded)
-    XCTAssertEqual(commits, 0)
-    XCTAssertEqual(
-      workflow.snapshot.rows.first { $0.customIDs.contains(rule.id) }?.identity, rule.identity)
-    var stale = try XCTUnwrap(workflow.makeCustomRuleDraft())
-    stale.content = "new.example"
-    await workflow.setEnabled(false, identities: [rule.identity])
-    let result = await workflow.saveCustomRule(stale)
-    XCTAssertEqual(result, .unavailable(.staleDraft))
-    XCTAssertEqual(commits, 1)
-    XCTAssertFalse(workflow.snapshot.rows.contains { $0.customIDs.contains(stale.id) })
-  }
-
 }
 
 extension CustomRuleEditingWorkflowTests {
@@ -360,5 +334,33 @@ extension CustomRuleEditingWorkflowTests {
     guard case .unavailable = result else { return XCTFail("Must reject fixed-policy disablement") }
     XCTAssertEqual(commits, 0)
     XCTAssertFalse(workflow.snapshot.rows.filter(\.isFixed).contains { !$0.isEnabled })
+  }
+}
+
+extension CustomRuleEditingWorkflowTests {
+  func testStaleDraftCannotOverwriteAnotherSavedChangeAndDiscardingDraftDoesNothing() async throws {
+    let rule = CustomRule(action: .direct, match: try RuleMatch(domainExact: "kept.example"))
+    var commits = 0
+    let workflow = RulesWorkflow(
+      loadDocument: { CustomRuleDocument(rules: [rule]) },
+      commitDocument: {
+        commits += 1
+        return RuleDocumentCommit(outcome: .saved, document: $0)
+      },
+      builtinSnapshots: BuiltinRuleSnapshots(loader: { rulesFixture($0) }))
+    await workflow.refresh()
+    var discarded = try XCTUnwrap(workflow.makeCustomRuleDraft(editing: rule.id))
+    discarded.content = "discarded.example"
+    _ = await workflow.previewCustomRule(discarded)
+    XCTAssertEqual(commits, 0)
+    XCTAssertEqual(
+      workflow.snapshot.rows.first { $0.customIDs.contains(rule.id) }?.identity, rule.identity)
+    var stale = try XCTUnwrap(workflow.makeCustomRuleDraft())
+    stale.content = "new.example"
+    await workflow.setEnabled(false, identities: [rule.identity])
+    let result = await workflow.saveCustomRule(stale)
+    XCTAssertEqual(result, .unavailable(.staleDraft))
+    XCTAssertEqual(commits, 1)
+    XCTAssertFalse(workflow.snapshot.rows.contains { $0.customIDs.contains(stale.id) })
   }
 }

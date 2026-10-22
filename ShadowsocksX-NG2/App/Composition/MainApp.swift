@@ -194,14 +194,7 @@ private struct AppComposition {
       dependencies: dependencies,
       controller: controller,
       bootstrap: catalogBootstrap, plugins: plugins)
-    plugins.connect(
-      invalidateRuntime: { [weak controller] in controller?.pluginMappingsDidPublish() },
-      revalidate: { [weak catalogWorkflow] in catalogWorkflow?.republishCommittedState() },
-      converge: { [weak controller] in
-        guard let controller else { return }
-        _ = await controller.catalogDidCommit(
-          snapshot: controller.catalogSnapshotReader.catalogSnapshot)
-      })
+    connectPluginCatalog(plugins, controller: controller, workflow: catalogWorkflow)
     // 代理控制工作流 module：状态菜单等 UI 表面的唯一代理控制
     // seam，组合根接线一次。生产 runtime adapter 包装既有控制器（不复制运行
     // 时语义）；目录目标事实经窄缝从目录工作流读取；本机接口事实经独立缝
@@ -214,55 +207,16 @@ private struct AppComposition {
     // 写入侧经窄缝 SettingsCommitting，运行时控制器薄扩展即生产实现。
     let settingsWorkflow = SettingsWorkflow(
       committing: controller)
-    let testRuntime = ConnectivityRuntime(
-      executable: Bundle.main.bundleURL.appendingPathComponent("Contents/Helpers/sslocal"))
-    let connectivity = ServerConnectivity(
-      configuration: { [weak catalogWorkflow] id in
-        guard let catalogWorkflow else { throw ServerFormLoadError.notFound }
-        return try catalogWorkflow.connectivityConfiguration(for: id)
-      },
-      revision: { [weak catalogWorkflow] in
-        catalogWorkflow?.connectivityRevision(for: $0) ?? "missing"
-      },
-      measure: testRuntime.measure)
+    let (connectivity, connectivityLifecycle) = makeConnectivity(
+      workflow: catalogWorkflow, settings: settingsWorkflow)
     catalogWorkflow.connectivity = connectivity
-    connectivity.setURL(
-      ServerConnectivity.validURL(settingsWorkflow.beginConnectivityURLEditing()))
-    settingsWorkflow.connectivityURLDidChange = { [weak connectivity] in connectivity?.setURL($0) }
-    let connectivityLifecycle = ConnectivityLifecycle(module: connectivity)
-    // 诊断工作流 module：诊断区唯一 seam，组合根接线一次；进程期
-    // 实例供独立诊断窗口使用。
-    let diagnosticsWorkflow = DiagnosticsWorkflow(
-      runtimeFacts: controller,
-      catalogFacts: { catalogWorkflow.diagnosticCatalogFacts },
-      managedPlugins: {
-        plugins.catalogSnapshot().entries.map { entry in
-          DiagnosticPluginFacts(
-            program: entry.program, version: entry.managedInfo?.release ?? "",
-            present: entry.availability == .available, source: entry.source)
-        }
-      })
-    let workspaceRoute = WorkspaceRoute()
-    let silentLaunch = SilentLaunchController(store: dependencies.silentLaunchStore)
-    let expansion = CatalogExpansionState()
-    let rulesWorkflow = RulesWorkflow(
-      loadDocument: { try controller.ruleDocuments.load() },
-      commitDocument: { await controller.commitRuleDocument($0) },
-      builtinSnapshots: controller.ruleSnapshots)
-    let workspaceContent = MainWindowView(
-      rulesWorkflow: rulesWorkflow,
-      route: workspaceRoute,
-      workflow: catalogWorkflow,
-      control: proxyControl,
-      plugins: PluginManagementModel(catalog: plugins),
-      settingsWorkflow: settingsWorkflow,
-      loginController: loginController,
-      silentLaunch: silentLaunch,
-      expansion: expansion,
-      clipboard: textClipboard,
-      imageClipboard: dependencies.imageClipboard,
-      configurationGroupFileExporter: dependencies.configurationGroupFileExporter,
-      qrImageSaver: dependencies.qrImageSaver)
+    let diagnosticsWorkflow = makeDiagnosticsWorkflow(
+      controller: controller, workflow: catalogWorkflow, plugins: plugins)
+    let workspace = makeWorkspace(
+      WorkspaceCompositionContext(
+        dependencies: dependencies, controller: controller, workflow: catalogWorkflow,
+        control: proxyControl, plugins: plugins, settings: settingsWorkflow,
+        login: loginController, clipboard: textClipboard))
     return AppComposition(
       connectivityLifecycle: connectivityLifecycle,
       controller: controller,
@@ -271,14 +225,87 @@ private struct AppComposition {
       loginController: loginController,
       settingsWorkflow: settingsWorkflow,
       diagnosticsWorkflow: diagnosticsWorkflow,
-      workspaceRoute: workspaceRoute,
-      silentLaunch: silentLaunch,
-      expansion: expansion,
+      workspaceRoute: workspace.route,
+      silentLaunch: workspace.silentLaunch,
+      expansion: workspace.expansion,
       textClipboard: textClipboard,
       diagnosticReportExporter: dependencies.diagnosticReportExporter,
       imageClipboard: dependencies.imageClipboard,
+      rulesWorkflow: workspace.rulesWorkflow,
+      workspaceContent: workspace.content)
+  }
+
+  private static func connectPluginCatalog(
+    _ plugins: PluginCatalog, controller: ProxyRuntimeController, workflow: CatalogWorkflow
+  ) {
+    plugins.connect(
+      invalidateRuntime: { [weak controller] in controller?.pluginMappingsDidPublish() },
+      revalidate: { [weak workflow] in workflow?.republishCommittedState() },
+      converge: { [weak controller] in
+        guard let controller else { return }
+        _ = await controller.catalogDidCommit(
+          snapshot: controller.catalogSnapshotReader.catalogSnapshot)
+      })
+  }
+
+  private static func makeConnectivity(
+    workflow: CatalogWorkflow, settings: SettingsWorkflow
+  ) -> (module: ServerConnectivity, lifecycle: ConnectivityLifecycle) {
+    let testRuntime = ConnectivityRuntime(
+      executable: Bundle.main.bundleURL.appendingPathComponent("Contents/Helpers/sslocal"))
+    let connectivity = ServerConnectivity(
+      configuration: { [weak workflow] id in
+        guard let workflow else { throw ServerFormLoadError.notFound }
+        return try workflow.connectivityConfiguration(for: id)
+      },
+      revision: { [weak workflow] in workflow?.connectivityRevision(for: $0) ?? "missing" },
+      measure: testRuntime.measure)
+    connectivity.setURL(ServerConnectivity.validURL(settings.beginConnectivityURLEditing()))
+    settings.connectivityURLDidChange = { [weak connectivity] in connectivity?.setURL($0) }
+    return (connectivity, ConnectivityLifecycle(module: connectivity))
+  }
+
+  private static func makeDiagnosticsWorkflow(
+    controller: ProxyRuntimeController, workflow: CatalogWorkflow, plugins: PluginCatalog
+  ) -> DiagnosticsWorkflow {
+    DiagnosticsWorkflow(
+      runtimeFacts: controller,
+      catalogFacts: { workflow.diagnosticCatalogFacts },
+      managedPlugins: {
+        plugins.catalogSnapshot().entries.map { entry in
+          DiagnosticPluginFacts(
+            program: entry.program, version: entry.managedInfo?.release ?? "",
+            present: entry.availability == .available, source: entry.source)
+        }
+      })
+  }
+
+  private static func makeWorkspace(_ context: WorkspaceCompositionContext) -> WorkspaceComposition
+  {
+    let route = WorkspaceRoute()
+    let silentLaunch = SilentLaunchController(store: context.dependencies.silentLaunchStore)
+    let expansion = CatalogExpansionState()
+    let rulesWorkflow = RulesWorkflow(
+      loadDocument: { try context.controller.ruleDocuments.load() },
+      commitDocument: { await context.controller.commitRuleDocument($0) },
+      builtinSnapshots: context.controller.ruleSnapshots)
+    let content = MainWindowView(
       rulesWorkflow: rulesWorkflow,
-      workspaceContent: workspaceContent)
+      route: route,
+      workflow: context.workflow,
+      control: context.control,
+      plugins: PluginManagementModel(catalog: context.plugins),
+      settingsWorkflow: context.settings,
+      loginController: context.login,
+      silentLaunch: silentLaunch,
+      expansion: expansion,
+      clipboard: context.clipboard,
+      imageClipboard: context.dependencies.imageClipboard,
+      configurationGroupFileExporter: context.dependencies.configurationGroupFileExporter,
+      qrImageSaver: context.dependencies.qrImageSaver)
+    return WorkspaceComposition(
+      route: route, silentLaunch: silentLaunch, expansion: expansion,
+      rulesWorkflow: rulesWorkflow, content: content)
   }
 
   /// 运行时控制器接线：读侧接目录提交协调器快照，写侧接各持久化 seam 与
@@ -325,53 +352,21 @@ private struct AppComposition {
   }
 }
 
-/// 组合根依赖集（仅生产形态）：单测不再以本 app 为宿主（去宿主化，ADR 0021），
-/// 装配永远面向真实存储、系统服务与用户默认域。
-@MainActor
-private struct ApplicationDependencies {
-  let catalogFileStore: CatalogFileStore
-  let activationFileStore: ActivationStateFileStore
-  let runtimeFileStore: RuntimeFileStore
-  let listeningStore: ProxyListeningFileStore
-  let settingsRestore: RestoredProxyRuntimeSettings
-  let legacyImportService: LegacyImportService
-  let launchAgent: LaunchAgentControlling
-  let loginService: LaunchAtLoginControlling
-  let silentLaunchStore: SilentLaunchStore
-  let textClipboard: any TextClipboard
-  let imageClipboard: any ImageClipboard
-  let diagnosticReportExporter: any DiagnosticReportExporter
-  let configurationGroupFileExporter: any ConfigurationGroupFileExporter
-  let qrImageSaver: any QrImageSaver
+private struct WorkspaceCompositionContext {
+  let dependencies: ApplicationDependencies
+  let controller: ProxyRuntimeController
+  let workflow: CatalogWorkflow
+  let control: ProxyControlWorkflow
+  let plugins: PluginCatalog
+  let settings: SettingsWorkflow
+  let login: LaunchAtLoginController
+  let clipboard: any TextClipboard
+}
 
-  static func make() -> ApplicationDependencies {
-    let listeningStore = ProxyListeningFileStore()
-    let listening = ProxyListeningStartup.load(
-      store: listeningStore, presentReset: ProxyListeningResetAlert.present)
-    let library = ServerLibraryStorage()
-    let catalogFileStore = CatalogFileStore(
-      fileURL: CatalogFileStore.defaultFileURL(), library: library)
-    let restoredSettings = RestoredProxyRuntimeSettings(
-      settings: ProxyRuntimeSettings(
-        listen: listening, preferences: ProxyControlPreferences()),
-      unreadableError: nil)
-    return ApplicationDependencies(
-      catalogFileStore: catalogFileStore,
-      activationFileStore: ActivationStateFileStore(
-        fileURL: ActivationStateFileStore.defaultFileURL()),
-      runtimeFileStore: RuntimeFileStore(),
-      listeningStore: listeningStore,
-      settingsRestore: restoredSettings,
-      legacyImportService: LegacyImportService(
-        catalogStore: catalogFileStore),
-      launchAgent: SMAppLaunchAgentService(),
-      loginService: SMAppLaunchAtLoginService(),
-      silentLaunchStore: SilentLaunchStore(),
-      textClipboard: AppKitTextClipboard(),
-      imageClipboard: AppKitImageClipboard(),
-      diagnosticReportExporter: AppKitDiagnosticReportExporter(),
-      configurationGroupFileExporter: AppKitConfigurationGroupFileExporter(),
-      qrImageSaver: AppKitQrImageSaver())
-  }
-
+private struct WorkspaceComposition {
+  let route: WorkspaceRoute
+  let silentLaunch: SilentLaunchController
+  let expansion: CatalogExpansionState
+  let rulesWorkflow: RulesWorkflow
+  let content: MainWindowView
 }

@@ -177,6 +177,59 @@ struct LANListeningWorkflowTests {
       })
   }
 
+  @Test func ownLANPortExceptionUsesLANRuntimePortAndMode() async throws {
+    let committing = FakeSettingsCommitter()
+    committing.committedSettings.listen.lan.isEnabled = true
+    committing.committedSettings.listen.lan.mode = .allIPv4AndIPv6Interfaces
+    committing.runtimeListenFacts = RuntimeListenFacts(listen: committing.committedSettings.listen)
+    committing.runtimeListenerProcessID = 123
+    let probe = FakeOccupancyProbe(
+      occupiedPorts: [11088], occupierIPv6ProcessIDs: [123], occupiedFamilies: [.ipv4])
+    let workflow = SettingsWorkflow(
+      committing: committing, occupancyProbe: probe)
+    var draft = workflow.beginLANListeningEditing()
+    draft.isEnabled = true
+    draft.mode = .allIPv4Interfaces
+    workflow.refreshPortEditorOccupancy(for: draft.ports)
+    await waitForPortEditorOccupancy(workflow, draft: draft.ports, port: .socks)
+    #expect(workflow.portFieldState(for: .socks, editorDraft: draft.ports).isRuntimePortException)
+    #expect(await workflow.saveLANListening(draft) == .persisted)
+  }
+
+  @Test func matchingPIDCannotExemptAChangedLANPort() async throws {
+    let committing = FakeSettingsCommitter()
+    committing.committedSettings.listen.lan.isEnabled = true
+    committing.committedSettings.listen.lan.mode = .allIPv4Interfaces
+    committing.runtimeListenFacts = RuntimeListenFacts(listen: committing.committedSettings.listen)
+    committing.runtimeListenerProcessID = 123
+    let probe = FakeOccupancyProbe(occupiedPorts: [13001], occupierProcessIDs: [123])
+    let workflow = SettingsWorkflow(
+      committing: committing, occupancyProbe: probe)
+    var draft = workflow.beginLANListeningEditing()
+    draft.ports.socksPort = 13001
+    workflow.refreshPortEditorOccupancy(for: draft.ports)
+    await waitForPortEditorOccupancy(workflow, draft: draft.ports, port: .socks)
+    #expect(!workflow.portFieldState(for: .socks, editorDraft: draft.ports).isRuntimePortException)
+    #expect(await workflow.saveLANListening(draft) == .rejected(.occupied([.socks])))
+  }
+
+  @Test func invalidOtherGroupStillBlocksSavingWithoutMarkingLocalFields() async {
+    let committing = FakeSettingsCommitter()
+    committing.committedSettings.listen.lan.socksPort = 0
+    let workflow = SettingsWorkflow(committing: committing, occupancyProbe: FakeOccupancyProbe())
+    let draft = workflow.beginPortSettingsEditing()
+    workflow.refreshPortEditorOccupancy(for: draft)
+    await waitForPortEditorOccupancy(workflow, draft: draft, port: .http)
+    #expect(workflow.portFieldState(for: .socks, editorDraft: draft).issues.isEmpty)
+    #expect(workflow.portFieldState(for: .http, editorDraft: draft).issues.isEmpty)
+    #expect(!workflow.canSavePortSettings(draft))
+    #expect(await workflow.savePortSettings(draft) == .rejected(.validation([])))
+    #expect(committing.updateCalls.isEmpty)
+  }
+
+}
+
+extension LANListeningWorkflowTests {
   @Test(arguments: [
     LANListenerMode.allIPv4Interfaces, .allIPv4AndIPv6Interfaces, .allIPv6Interfaces,
   ])
@@ -250,55 +303,4 @@ struct LANListeningWorkflowTests {
     await waitForPortEditorOccupancy(workflow, draft: draft, port: .http)
     #expect(!workflow.canSavePortSettings(draft))
   }
-
-  @Test func ownLANPortExceptionUsesLANRuntimePortAndMode() async throws {
-    let committing = FakeSettingsCommitter()
-    committing.committedSettings.listen.lan.isEnabled = true
-    committing.committedSettings.listen.lan.mode = .allIPv4AndIPv6Interfaces
-    committing.runtimeListenFacts = RuntimeListenFacts(listen: committing.committedSettings.listen)
-    committing.runtimeListenerProcessID = 123
-    let probe = FakeOccupancyProbe(
-      occupiedPorts: [11088], occupierIPv6ProcessIDs: [123], occupiedFamilies: [.ipv4])
-    let workflow = SettingsWorkflow(
-      committing: committing, occupancyProbe: probe)
-    var draft = workflow.beginLANListeningEditing()
-    draft.isEnabled = true
-    draft.mode = .allIPv4Interfaces
-    workflow.refreshPortEditorOccupancy(for: draft.ports)
-    await waitForPortEditorOccupancy(workflow, draft: draft.ports, port: .socks)
-    #expect(workflow.portFieldState(for: .socks, editorDraft: draft.ports).isRuntimePortException)
-    #expect(await workflow.saveLANListening(draft) == .persisted)
-  }
-
-  @Test func matchingPIDCannotExemptAChangedLANPort() async throws {
-    let committing = FakeSettingsCommitter()
-    committing.committedSettings.listen.lan.isEnabled = true
-    committing.committedSettings.listen.lan.mode = .allIPv4Interfaces
-    committing.runtimeListenFacts = RuntimeListenFacts(listen: committing.committedSettings.listen)
-    committing.runtimeListenerProcessID = 123
-    let probe = FakeOccupancyProbe(occupiedPorts: [13001], occupierProcessIDs: [123])
-    let workflow = SettingsWorkflow(
-      committing: committing, occupancyProbe: probe)
-    var draft = workflow.beginLANListeningEditing()
-    draft.ports.socksPort = 13001
-    workflow.refreshPortEditorOccupancy(for: draft.ports)
-    await waitForPortEditorOccupancy(workflow, draft: draft.ports, port: .socks)
-    #expect(!workflow.portFieldState(for: .socks, editorDraft: draft.ports).isRuntimePortException)
-    #expect(await workflow.saveLANListening(draft) == .rejected(.occupied([.socks])))
-  }
-
-  @Test func invalidOtherGroupStillBlocksSavingWithoutMarkingLocalFields() async {
-    let committing = FakeSettingsCommitter()
-    committing.committedSettings.listen.lan.socksPort = 0
-    let workflow = SettingsWorkflow(committing: committing, occupancyProbe: FakeOccupancyProbe())
-    let draft = workflow.beginPortSettingsEditing()
-    workflow.refreshPortEditorOccupancy(for: draft)
-    await waitForPortEditorOccupancy(workflow, draft: draft, port: .http)
-    #expect(workflow.portFieldState(for: .socks, editorDraft: draft).issues.isEmpty)
-    #expect(workflow.portFieldState(for: .http, editorDraft: draft).issues.isEmpty)
-    #expect(!workflow.canSavePortSettings(draft))
-    #expect(await workflow.savePortSettings(draft) == .rejected(.validation([])))
-    #expect(committing.updateCalls.isEmpty)
-  }
-
 }

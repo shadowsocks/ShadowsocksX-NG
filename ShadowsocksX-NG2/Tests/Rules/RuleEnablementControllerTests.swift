@@ -107,13 +107,10 @@ final class RuleEnablementControllerTests: ProxyRuntimeControllerTests {
           agent.registerCount, before + 1, "A new save cannot overlap rule deployments")
         try runtimeStore.writeRuntimeReceipt(for: XCTUnwrap(firstDocument), processID: 42)
         healthGate.resume()
-        await controller.ruleApplicationTask?.value
-        XCTAssertEqual(try store.load(), [latest])
-        XCTAssertEqual(agent.registerCount, before + 2)
-        let content = try activeACLContent(runtimeStore)
-        XCTAssertTrue(content.contains("after-flight.example"))
-        XCTAssertFalse(content.contains("in-flight.example"))
-        XCTAssertEqual(controller.state, .running)
+        try await assertLatestRuleDeployment(
+          LatestRuleDeploymentAssertion(
+            controller: controller, store: store, runtimeStore: runtimeStore,
+            expectedRule: latest, expectedRegistrations: before + 2, agent: agent))
       })
   }
 
@@ -257,29 +254,6 @@ final class RuleEnablementControllerTests: ProxyRuntimeControllerTests {
       })
   }
 
-  func testOffSaveUsesOwnedDocumentAndNewSessionRejectsCorruption() async throws {
-    let (store, _) = try makeCustomRuleStore()
-    let controller = makeRuleEnablementController(
-      store: store,
-      settings: ProxyRuntimeSettings(listen: ActivationFixture.listen, agentEnabled: false))
-    let identity = ProxyRule(action: .proxy, match: try RuleMatch(domainExact: "saved.example"))
-    let outcome = await controller.updateRuleDocument(
-      CustomRuleDocument(rules: [], disabledIdentities: [identity]))
-    XCTAssertEqual(outcome, .saved)
-    await controller.ruleApplicationTask?.value
-    XCTAssertEqual(agent.registerCount, 0)
-    XCTAssertEqual(try store.loadDocument().disabledIdentities, [identity])
-    let broken = Data("broken".utf8)
-    try broken.write(to: store.fileURL)
-    let newSession = makeRuleEnablementController(
-      store: store,
-      settings: ProxyRuntimeSettings(listen: ActivationFixture.listen, agentEnabled: false))
-    let rejected = await newSession.updateRuleDocument(CustomRuleDocument(rules: []))
-    XCTAssertEqual(rejected, .persistenceFailed)
-    XCTAssertEqual(try Data(contentsOf: store.fileURL), broken)
-    XCTAssertEqual(agent.registerCount, 0)
-  }
-
 }
 
 extension RuleEnablementControllerTests {
@@ -335,16 +309,10 @@ extension RuleEnablementControllerTests {
         let outcome = await pending.value
         XCTAssertEqual(outcome, .saved)
         await controller.ruleApplicationTask?.value
-        XCTAssertEqual(try store.loadDocument().disabledIdentities, [rule.identity])
-        XCTAssertEqual(agent.registerCount, registrations)
-        if switchMode {
-          XCTAssertEqual(controller.proxyMode, .global)
-          XCTAssertEqual(runtimeStore.loadDocument()?.aclRuntime?.summary, "global")
-        } else {
-          XCTAssertFalse(controller.settings.agentEnabled)
-          XCTAssertEqual(controller.state, .off)
-          XCTAssertNil(runtimeStore.loadDocument())
-        }
+        try assertInterruptedDeploymentState(
+          InterruptedDeploymentAssertion(
+            controller: controller, store: store, runtimeStore: runtimeStore, rule: rule,
+            switchMode: switchMode, expectedRegistrations: registrations, agent: agent))
       })
   }
 
@@ -387,5 +355,30 @@ extension RuleEnablementControllerTests {
     XCTAssertEqual(try store.loadDocument().disabledIdentities, [rule.identity])
     XCTAssertNotNil(controller.runtimeFacts.failure)
     XCTAssertNotEqual(controller.state, .running)
+  }
+}
+
+extension RuleEnablementControllerTests {
+  func testOffSaveUsesOwnedDocumentAndNewSessionRejectsCorruption() async throws {
+    let (store, _) = try makeCustomRuleStore()
+    let controller = makeRuleEnablementController(
+      store: store,
+      settings: ProxyRuntimeSettings(listen: ActivationFixture.listen, agentEnabled: false))
+    let identity = ProxyRule(action: .proxy, match: try RuleMatch(domainExact: "saved.example"))
+    let outcome = await controller.updateRuleDocument(
+      CustomRuleDocument(rules: [], disabledIdentities: [identity]))
+    XCTAssertEqual(outcome, .saved)
+    await controller.ruleApplicationTask?.value
+    XCTAssertEqual(agent.registerCount, 0)
+    XCTAssertEqual(try store.loadDocument().disabledIdentities, [identity])
+    let broken = Data("broken".utf8)
+    try broken.write(to: store.fileURL)
+    let newSession = makeRuleEnablementController(
+      store: store,
+      settings: ProxyRuntimeSettings(listen: ActivationFixture.listen, agentEnabled: false))
+    let rejected = await newSession.updateRuleDocument(CustomRuleDocument(rules: []))
+    XCTAssertEqual(rejected, .persistenceFailed)
+    XCTAssertEqual(try Data(contentsOf: store.fileURL), broken)
+    XCTAssertEqual(agent.registerCount, 0)
   }
 }

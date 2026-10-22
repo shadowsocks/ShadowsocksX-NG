@@ -201,7 +201,7 @@ struct AgeConfigurationStorageTests {
 
   @Test func realKeychainIdentityCanBeEnumeratedAndReopenedWithoutInteraction() throws {
     let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
-    let keys = KeychainMasterKeyStore(namespace: "age-tests.\(UUID().uuidString)")
+    let keys = KeychainCredentialKeyStore(namespace: "age-tests.\(UUID().uuidString)")
     defer {
       try? FileManager.default.removeItem(at: directory)
       cleanUpKeychainItems(for: keys)
@@ -240,7 +240,7 @@ struct AgeConfigurationStorageTests {
     guard process.terminationStatus == 0 else { throw EncryptedFileError.malformedFile }
   }
 
-  private func cleanUpKeychainItems(for keys: KeychainMasterKeyStore) {
+  private func cleanUpKeychainItems(for keys: KeychainCredentialKeyStore) {
     let ids = try? keys.ids()
     #expect(ids != nil, "读取测试 Keychain 项时清理失败")
     for id in ids ?? [] {

@@ -101,6 +101,14 @@ final class AgentLifecycleChangeProtocolTests: AgentLifecycleTests {
       to: workDir.appendingPathComponent("stub-sslocal.sh"), atomically: false, encoding: .utf8)
   }
 
+  private func probeCount(_ token: Int) throws -> Int {
+    let response = workDir.appendingPathComponent("probe-count-\(token)")
+    try AtomicFileWriter.write(
+      Data(String(token).utf8), to: workDir.appendingPathComponent("probe-count-request"))
+    XCTAssertTrue(try waitUntil { FileManager.default.fileExists(atPath: response.path) })
+    return try XCTUnwrap(Int(String(contentsOf: response, encoding: .utf8)))
+  }
+
   func testDeferredACLSignalSurvivesSubsequentServerOnlyPublication() throws {
     let runtimeStore = RuntimeFileStore(fileURL: contractURL)
     let socks = try TCPListenerFixture()
@@ -133,13 +141,6 @@ final class AgentLifecycleChangeProtocolTests: AgentLifecycleTests {
           && runtimeStore.readRuntimeReceipt()?.deploymentID
             == runtimeStore.receiptIdentity(for: final)
       })
-    func probeCount(_ token: Int) throws -> Int {
-      let response = workDir.appendingPathComponent("probe-count-\(token)")
-      try AtomicFileWriter.write(
-        Data(String(token).utf8), to: workDir.appendingPathComponent("probe-count-request"))
-      XCTAssertTrue(try waitUntil { FileManager.default.fileExists(atPath: response.path) })
-      return try XCTUnwrap(Int(String(contentsOf: response, encoding: .utf8)))
-    }
     let probesBeforeReload = try probeCount(1)
     let aclOnly = final.replacingACL(.global(at: runtimeStore.aclFileURL))
     try writeContract(aclOnly)

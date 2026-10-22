@@ -185,7 +185,7 @@ func makeTestCatalogStore(
   return store
 }
 
-private final class FixtureLibraryKeys: MasterKeyStoring {
+private final class FixtureLibraryKeys: CredentialKeyStoring {
   private static let lock = NSLock()
   nonisolated(unsafe) private static var values: [String: [UUID: Data]] = [:]
   private let namespace: String

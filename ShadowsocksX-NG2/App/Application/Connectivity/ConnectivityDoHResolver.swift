@@ -4,24 +4,27 @@ import Network
 
 /// HTTPS is confined to preparation. An ephemeral, proxy-required session has
 /// no shared connection/cache state, redirects, cookies or direct fallback.
+private struct ConnectivityDoHAnswer: Decodable {
+  let type: Int
+  let data: String
+}
+
+private struct ConnectivityDoHResponse: Decodable {
+  let status: Int
+  let answers: [ConnectivityDoHAnswer]?
+
+  enum CodingKeys: String, CodingKey {
+    case status = "Status"
+    case answers = "Answer"
+  }
+}
+
 struct ConnectivityDoHResolver: Sendable {
   var sessionConfiguration: @Sendable () -> URLSessionConfiguration = { .ephemeral }
 
   struct Resolution: Sendable {
     var addresses: [String] = []
     var trace: [ConnectivityTrace] = []
-  }
-  private struct Answer: Decodable {
-    let type: Int
-    let data: String
-  }
-  private struct Response: Decodable {
-    let status: Int
-    let answers: [Answer]?
-    enum CodingKeys: String, CodingKey {
-      case status = "Status"
-      case answers = "Answer"
-    }
   }
   enum Failure: Error { case invalidResponse, deadline }
 
@@ -134,7 +137,7 @@ struct ConnectivityDoHResolver: Sendable {
         guard data.count < 65536 else { return [] }
         data.append(byte)
       }
-      let answer = try JSONDecoder().decode(Response.self, from: data)
+      let answer = try JSONDecoder().decode(ConnectivityDoHResponse.self, from: data)
       guard answer.status == 0 else { return [] }
       return (answer.answers ?? []).filter {
         $0.type == type && ConnectivityAddress.family($0.data) == (type == 1 ? AF_INET : AF_INET6)

@@ -62,6 +62,23 @@ struct NodeDetailPresentation {
       descriptions.append(String(localized: "含活动目标", table: "ServerDetails"))
     }
     subtitle = descriptions.joined(separator: " · ")
+    activationMessages = Self.activationMessages(
+      for: node, server: server, eligibility: eligibility)
+    properties = []
+    if isRootSubscriptionGroup,
+      let subscriptionProperties = Self.subscriptionInformation(
+        summary: subscription, locale: locale, timeZone: timeZone)
+    {
+      properties.append(subscriptionProperties)
+    }
+    properties.append(Self.information(for: node, eligibility: eligibility))
+    if let server { properties.append(Self.connection(for: server)) }
+  }
+
+  private static func activationMessages(
+    for node: CatalogTreeNode, server: ServerDetailPresentation?,
+    eligibility: ActivationEligibility?
+  ) -> [String] {
     var messages: [String] = []
     if node.isGroup {
       if let reason = eligibility?.ineligibility {
@@ -87,16 +104,7 @@ struct NodeDetailPresentation {
           for: ActivationFailure.invalidLeaf(node: node.id, reason: reason))
       }
     }
-    activationMessages = messages
-    properties = []
-    if isRootSubscriptionGroup,
-      let subscriptionProperties = Self.subscriptionInformation(
-        summary: subscription, locale: locale, timeZone: timeZone)
-    {
-      properties.append(subscriptionProperties)
-    }
-    properties.append(Self.information(for: node, eligibility: eligibility))
-    if let server { properties.append(Self.connection(for: server)) }
+    return messages
   }
 
   private static func subscriptionInformation(

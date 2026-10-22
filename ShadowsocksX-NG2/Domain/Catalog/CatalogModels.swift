@@ -68,14 +68,6 @@ struct CatalogEntry: Codable, Equatable, Sendable {
   /// 节点自身资料、或分组的直接子节点集合与顺序最后一次变化的时刻；未知为 nil。
   var updatedAt: Date?
 
-  init(id: NodeID, source: NodeSource, kind: Kind, createdAt: Date?, updatedAt: Date?) {
-    self.id = id
-    self.source = source
-    self.kind = kind
-    self.createdAt = createdAt
-    self.updatedAt = updatedAt
-  }
-
 }
 
 extension CatalogEntry {

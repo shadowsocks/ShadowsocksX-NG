@@ -45,6 +45,14 @@ final class RulesWorkflowTests: XCTestCase {
     await workflow.setEnabled(false, identities: workflow.actionableSelection)
     XCTAssertEqual(commits, 1)
     XCTAssertNotEqual(workflow.snapshot.version, version)
+    try await assertDisabledRowsAndOrphanCanBeEnabled(
+      workflow: workflow, store: store, broad: broad, narrow: narrow, orphan: orphan)
+  }
+
+  private func assertDisabledRowsAndOrphanCanBeEnabled(
+    workflow: RulesWorkflow, store: CustomRuleStore, broad: CustomRule,
+    narrow: CustomRule, orphan: ProxyRule
+  ) async throws {
     let disabled = try XCTUnwrap(workflow.snapshot.rows.first { $0.identity == broad.identity })
     XCTAssertFalse(disabled.isEnabled)
     XCTAssertEqual(disabled.sources, [.custom, .gfwlist])

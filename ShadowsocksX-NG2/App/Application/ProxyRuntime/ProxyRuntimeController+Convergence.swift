@@ -1,8 +1,7 @@
 import Foundation
 
 /// 一次计划执行的结果:动作是否全部按序成功,以及本次执行占用的并发流
-/// 代际。占用代际供收敛票据推进 flow 分量,取代调用方对 execute 内部
-/// 「恰好自增一次」时序的依赖(原 `flowGeneration + 1` 手算)。
+/// 代际;收敛票据用它推进 flow,避免调用方手算 `flowGeneration + 1`。
 struct RuntimeExecutionOutcome {
   /// 本次执行占用的 `flowGeneration`。
   let flow: Int
@@ -155,19 +154,83 @@ extension ProxyRuntimeController {
     return result
   }
 
+  /// 三种意图的执行差异只在 module 内选择，不能由调用者拼成任意组合。
+  private enum DeploymentPolicy {
+    case deployment
+    case modeTransition
+    case savedRules
+  }
+
+  private enum ChangedIntentSource {
+    case ready(SslocalRuntimeDocument)
+    case completed(ConvergenceResult)
+  }
+
+  private struct PreparedChangedIntent {
+    let document: SslocalRuntimeDocument
+    let contract: PreparedRuntimeContract
+    let ticket: ConvergenceTicket
+  }
+
+  private enum ChangedIntentPreparation {
+    case ready(PreparedChangedIntent)
+    case completed(ConvergenceResult)
+  }
+
+  private struct RuntimeApplyAttempt {
+    let document: SslocalRuntimeDocument
+    let contract: PreparedRuntimeContract?
+    let policy: DeploymentPolicy
+    let reloadingProcessID: Int32?
+    let reloadID: UUID
+  }
+
+  private enum ApplyPreparation {
+    case ready(RuntimeApplyAttempt)
+    case completed(ConvergenceResult)
+  }
+
   /// 模式与规则变更从同一份已保存资料重新展开，不以输出配置作为派生输入。
   private func convergeChangedIntent(policy: DeploymentPolicy) async -> ConvergenceResult {
+    switch await changedIntentSource(policy) {
+    case .completed(let result): return result
+    case .ready(let source): return await prepareAndConverge(source, policy: policy)
+    }
+  }
+
+  private func changedIntentSource(_ policy: DeploymentPolicy) async -> ChangedIntentSource {
     guard settings.agentEnabled, state != .off else {
       if policy == .modeTransition { systemProxyObserver.modeTransitionAwaitingRuntime() }
-      return .unchanged
+      return .completed(.unchanged)
     }
-    let source: SslocalRuntimeDocument
     switch reexpand(in: catalogSnapshotReader.catalogSnapshot) {
-    case .deployed(let configuration): source = configuration.document
+    case .deployed(let configuration): return .ready(configuration.document)
     case .clearedAndStopped(let failure):
-      return await handleCleared(failure)
-    case nil: source = SslocalRuntimeDocument(servers: [], listen: settings.listen)
+      return .completed(await handleCleared(failure))
+    case nil: return .ready(SslocalRuntimeDocument(servers: [], listen: settings.listen))
     }
+  }
+
+  private func prepareAndConverge(
+    _ source: SslocalRuntimeDocument, policy: DeploymentPolicy
+  ) async -> ConvergenceResult {
+    let intent: PreparedChangedIntent
+    switch await prepareChangedIntent(source, policy: policy) {
+    case .completed(let result): return result
+    case .ready(let prepared): intent = prepared
+    }
+    if let unchanged = await unchangedIntentResult(intent, policy: policy) { return unchanged }
+    var ticket = intent.ticket
+    if policy == .savedRules {
+      modeChangeGeneration += 1
+      ticket = convergenceTicket()
+    }
+    return await apply(intent.document, ticket: &ticket, policy: policy)
+  }
+
+  private func prepareChangedIntent(
+    _ source: SslocalRuntimeDocument, policy: DeploymentPolicy
+  ) async -> ChangedIntentPreparation {
     var ticket = convergenceTicket()
     let next: SslocalRuntimeDocument
     let contract: PreparedRuntimeContract
@@ -175,7 +238,7 @@ extension ProxyRuntimeController {
       next = try await runtimeDocument(source, for: proxyMode)
       contract = try PreparedRuntimeContract(next)
     } catch RulePreparationError.superseded {
-      return .superseded
+      return .completed(.superseded)
     } catch {
       RuntimeLog.emit(.runtimePersistFailed(detail: String(describing: error)))
       if policy == .savedRules {
@@ -183,40 +246,33 @@ extension ProxyRuntimeController {
       } else {
         state = .serviceFailed(.runtimeFile)
       }
-      return .failed
+      return .completed(.failed)
     }
     ticket.preparation = runtimePreparationGeneration
-    let alreadyRunning: Bool
-    switch state {
-    case .running, .firewallBlocked: alreadyRunning = true
-    default: alreadyRunning = false
-    }
-    let unchanged = runtimeFileStore.contains(contract)
-    if policy == .savedRules, unchanged, ruleApplicationFailure == nil,
-      runtimeFileStore.readFailure() == nil
-    {
-      return .unchanged
-    }
-    if policy == .modeTransition, unchanged,
-      runtimeFileStore.readFailure() == nil, alreadyRunning,
-      aclReloadProcessID(for: next) != nil
-    {
-      guard settings.systemProxyEnabled else { return .unchanged }
-      await systemProxyObserver.convergeSystemProxy()
-      return .applied
-    }
-    if policy == .savedRules {
-      modeChangeGeneration += 1
-      ticket = convergenceTicket()
-    }
-    return await apply(next, ticket: &ticket, policy: policy)
+    return .ready(PreparedChangedIntent(document: next, contract: contract, ticket: ticket))
   }
 
-  /// 三种意图的执行差异只在 module 内选择，不能由调用者拼成任意组合。
-  private enum DeploymentPolicy {
-    case deployment
-    case modeTransition
-    case savedRules
+  private func unchangedIntentResult(
+    _ intent: PreparedChangedIntent, policy: DeploymentPolicy
+  ) async -> ConvergenceResult? {
+    let unchanged = runtimeFileStore.contains(intent.contract)
+    let hasNoDeploymentFailure = runtimeFileStore.readFailure() == nil
+    if policy == .savedRules, unchanged, ruleApplicationFailure == nil, hasNoDeploymentFailure {
+      return .unchanged
+    }
+    guard policy == .modeTransition, unchanged, hasNoDeploymentFailure,
+      runtimeIsAlreadyRunning, aclReloadProcessID(for: intent.document) != nil
+    else { return nil }
+    guard settings.systemProxyEnabled else { return .unchanged }
+    await systemProxyObserver.convergeSystemProxy()
+    return .applied
+  }
+
+  private var runtimeIsAlreadyRunning: Bool {
+    switch state {
+    case .running, .firewallBlocked: return true
+    default: return false
+    }
   }
 
   /// 仅 ACL 变化且原有子进程仍健康时，继续沿用监听事实。
@@ -239,39 +295,66 @@ extension ProxyRuntimeController {
     ticket: inout ConvergenceTicket,
     policy: DeploymentPolicy
   ) async -> ConvergenceResult {
+    let preparation = await prepareApply(document, ticket: ticket, policy: policy)
+    let attempt: RuntimeApplyAttempt
+    switch preparation {
+    case .completed(let result): return result
+    case .ready(let prepared): attempt = prepared
+    }
+    defer { runtimeReloadProcesses.removeValue(forKey: attempt.reloadID) }
+    let execution = await execute(
+      .run(document), document: document, preparedContract: attempt.contract)
+    ticket.flow = execution.flow
+    return await completeApply(execution, attempt: attempt, ticket: &ticket)
+  }
+
+  private func prepareApply(
+    _ document: SslocalRuntimeDocument, ticket: ConvergenceTicket,
+    policy: DeploymentPolicy
+  ) async -> ApplyPreparation {
     let contract = try? PreparedRuntimeContract(document)
     if runtimeFileStore.blocksDeployment(document) {
       state = .serviceFailed(.agent)
       await systemProxyObserver.holdSystemProxyIntent()
-      return .failed
+      return .completed(.failed)
     }
     if convergencePlanIsEmpty(document, preparedContract: contract) {
       RuntimeLog.emit(.contractUnchanged)
       ruleApplicationFailure = nil
-      return .unchanged
+      return .completed(.unchanged)
     }
-    guard convergenceIsCurrent(ticket) else { return .superseded }
+    guard convergenceIsCurrent(ticket) else { return .completed(.superseded) }
     let reloadingProcessID = aclReloadProcessID(for: document)
     let reloadID = UUID()
     if let reloadingProcessID { runtimeReloadProcesses[reloadID] = reloadingProcessID }
-    defer { runtimeReloadProcesses.removeValue(forKey: reloadID) }
     runtimeObservation = RuntimeDeploymentFacts(document)
     if reloadingProcessID == nil { state = .starting }
-    let execution = await execute(.run(document), document: document, preparedContract: contract)
+    return .ready(
+      RuntimeApplyAttempt(
+        document: document, contract: contract, policy: policy,
+        reloadingProcessID: reloadingProcessID, reloadID: reloadID))
+  }
+
+  private func completeApply(
+    _ execution: RuntimeExecutionOutcome, attempt: RuntimeApplyAttempt,
+    ticket: inout ConvergenceTicket
+  ) async -> ConvergenceResult {
     ticket.flow = execution.flow
     guard convergenceIsCurrent(ticket) else { return .superseded }
     guard execution.succeeded else {
-      if state != .requiresApproval, runtimeFileStore.receiptIdentity(for: document) != nil {
+      if state != .requiresApproval,
+        runtimeFileStore.receiptIdentity(for: attempt.document) != nil
+      {
         await failDeployment(ticket: &ticket)
       }
       return .failed
     }
     let healthy = await presentLaunchHealth(
-      document,
-      requiresReceipt: policy != .deployment || document.aclRuntime != nil,
-      convergeProxyOnSuccess: policy == .deployment,
-      preserveProxyOnFailure: false, preparedContract: contract,
-      reloadingProcessID: reloadingProcessID)
+      attempt.document,
+      requiresReceipt: attempt.policy != .deployment || attempt.document.aclRuntime != nil,
+      convergeProxyOnSuccess: attempt.policy == .deployment,
+      preserveProxyOnFailure: false, preparedContract: attempt.contract,
+      reloadingProcessID: attempt.reloadingProcessID)
     guard convergenceIsCurrent(ticket) else { return .superseded }
     guard healthy else {
       await failDeployment(ticket: &ticket)
@@ -282,14 +365,18 @@ extension ProxyRuntimeController {
       await failDeployment(ticket: &ticket)
       return .failed
     }
-    runtimeObservation = RuntimeDeploymentFacts(document)
+    runtimeObservation = RuntimeDeploymentFacts(attempt.document)
     ruleApplicationFailure = nil
+    await convergeProxyAfterApply(attempt.policy)
+    return .applied
+  }
+
+  private func convergeProxyAfterApply(_ policy: DeploymentPolicy) async {
     switch policy {
     case .modeTransition: await systemProxyObserver.convergeSystemProxy(forceApply: true)
     case .savedRules: await systemProxyObserver.convergeSystemProxy()
     case .deployment: break
     }
-    return .applied
   }
 
   /// 发布后失败保留配置及失败身份，停止服务但不改写两个开关意图。

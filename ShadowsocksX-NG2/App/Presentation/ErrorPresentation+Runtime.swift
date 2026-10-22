@@ -41,9 +41,12 @@ extension AppPresentation {
     switch facts {
     case .missingRuntimeDocument: return String(localized: "缺少运行时文档")
     case .localEndpoint(let endpoint, let host, let port, let cause):
+      let endpointName = endpoint.uppercased()
+      let portText = port.formatted(.number.grouping(.never))
+      let failureText = endpointFailure(cause)
       return String(
         localized:
-          "本地代理 \(endpoint.uppercased()) 端点 \(host):\(port.formatted(.number.grouping(.never))) 未就绪（\(endpointFailure(cause))）"
+          "本地代理 \(endpointName) 端点 \(host):\(portText) 未就绪（\(failureText)）"
       )
     case .unreadableSettings: return String(localized: "本地代理配置无法读取，未应用新的代理配置")
     }

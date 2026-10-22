@@ -1,5 +1,6 @@
 # 默认规则起步：只声明排除项，遇到实际痛点再调规则（见本目录 AGENTS.md）。
 # 路径相对本文件所在目录。
+strict: true
 excluded:
   # 构建产物。注意 build/ 与 .build/ 是两回事：不带 -derivedDataPath 的
   # xcodebuild 会把构建落进项目内的 build/，其中 DerivedSources/ 下的生成源码

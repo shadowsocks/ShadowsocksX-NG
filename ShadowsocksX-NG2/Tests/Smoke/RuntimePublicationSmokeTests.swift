@@ -63,6 +63,24 @@ final class RuntimePublicationSmokeTests: RealSslocalSmokeTests {
     let aclURL = workDir.appendingPathComponent(acl.file)
     let inode =
       try FileManager.default.attributesOfItem(atPath: aclURL.path)[.systemFileNumber] as? NSNumber
+    try assertACLModeReloads(
+      ACLModeReloadContext(
+        wrapper: wrapper, store: store, source: source, listen: listen,
+        echo: echo, proxy: proxy, acl: acl, aclURL: aclURL, inode: inode, large: large))
+    stopWrapperAndAssertCleanExit(wrapper, description: "mode wrapper exits")
+  }
+
+  private func assertACLModeReloads(_ context: ACLModeReloadContext) throws {
+    let wrapper = context.wrapper
+    let store = context.store
+    let source = context.source
+    let listen = context.listen
+    let echo = context.echo
+    let proxy = context.proxy
+    let acl = context.acl
+    let aclURL = context.aclURL
+    let inode = context.inode
+    let large = context.large
     for _ in 0..<2 {
       let oldPID = try XCTUnwrap(store.readRuntimeReceipt()?.processID)
       let direct = source.replacingACL(.direct(at: aclFileURL))
@@ -101,7 +119,6 @@ final class RuntimePublicationSmokeTests: RealSslocalSmokeTests {
           as? NSNumber, inode)
       XCTAssertEqual(try Data(contentsOf: aclURL), Data(large.content.utf8))
     }
-    stopWrapperAndAssertCleanExit(wrapper, description: "mode wrapper exits")
   }
 
   func testCombinedServerAndRuleReloadAndDefaultActionChangesKeepChild() throws {
@@ -110,23 +127,40 @@ final class RuntimePublicationSmokeTests: RealSslocalSmokeTests {
     let secondExit = try ConnectionCountingServer()
     let ports = try grabThreeListenPorts(excluding: [echo.port, firstExit.port, secondExit.port])
     let listen = ProxyListeningConfiguration(socksPort: ports[0], httpPort: ports[1])
-    func document(_ port: Int, _ acl: ProxyACLDocument) -> SslocalRuntimeDocument {
-      SslocalRuntimeDocument(
-        servers: [
-          .init(
-            id: "rules", server: "127.0.0.1", serverPort: port,
-            password: "smoke", method: "aes-256-gcm", plugin: nil, pluginOpts: nil)
-        ], listen: listen, acl: acl)
-    }
-    let source = document(
-      firstExit.port, ruleProbeACL(defaultAction: .directWhenUnmatched, rules: []))
+    let source = ruleProbeDocument(
+      port: firstExit.port, listen: listen,
+      acl: ruleProbeACL(defaultAction: .directWhenUnmatched, rules: []))
     let wrapper = try launchWrapper(source)
     let store = RuntimeFileStore(fileURL: contractURL)
     try assertReceiptOwnsListeners(document: source)
-    let pid = try XCTUnwrap(store.readRuntimeReceipt()?.processID)
-    let custom = document(
-      secondExit.port,
-      ruleProbeACL(
+    let pid = try assertRuleInsertionAndRemoval(
+      wrapper: wrapper, store: store, listen: listen, echo: echo, secondExit: secondExit)
+    try assertRuleDefaultActionReloads(
+      RuleReloadContext(
+        wrapper: wrapper, store: store, listen: listen, echo: echo,
+        secondExit: secondExit, processID: pid))
+    stopWrapperAndAssertCleanExit(wrapper, description: "rule reload wrapper exits")
+  }
+
+  private func ruleProbeDocument(
+    port: Int, listen: ProxyListeningConfiguration, acl: ProxyACLDocument
+  ) -> SslocalRuntimeDocument {
+    SslocalRuntimeDocument(
+      servers: [
+        .init(
+          id: "rules", server: "127.0.0.1", serverPort: port,
+          password: "smoke", method: "aes-256-gcm", plugin: nil, pluginOpts: nil)
+      ], listen: listen, acl: acl)
+  }
+
+  private func assertRuleInsertionAndRemoval(
+    wrapper: Process, store: RuntimeFileStore, listen: ProxyListeningConfiguration,
+    echo: LoopbackEchoServer, secondExit: ConnectionCountingServer
+  ) throws -> Int {
+    let processID = try XCTUnwrap(store.readRuntimeReceipt()?.processID)
+    let custom = ruleProbeDocument(
+      port: secondExit.port, listen: listen,
+      acl: ruleProbeACL(
         defaultAction: .directWhenUnmatched,
         rules: [ProxyRule(action: .proxy, match: try RuleMatch(domainSuffix: "blocked.example"))]))
     try store.write(custom)
@@ -138,9 +172,11 @@ final class RuntimePublicationSmokeTests: RealSslocalSmokeTests {
           httpPort: listen.httpPort, targetHost: "blocked.example", targetPort: echo.port)
         return secondExit.connectionCount > 0
       })
-    XCTAssertEqual(store.readRuntimeReceipt()?.processID, pid)
-    let removed = document(
-      secondExit.port, ruleProbeACL(defaultAction: .directWhenUnmatched, rules: []))
+    XCTAssertEqual(store.readRuntimeReceipt()?.processID, processID)
+
+    let removed = ruleProbeDocument(
+      port: secondExit.port, listen: listen,
+      acl: ruleProbeACL(defaultAction: .directWhenUnmatched, rules: []))
     try store.write(removed)
     XCTAssertEqual(kill(wrapper.processIdentifier, SIGUSR1), 0)
     try assertReceiptOwnsListeners(document: removed)
@@ -154,11 +190,21 @@ final class RuntimePublicationSmokeTests: RealSslocalSmokeTests {
       try performDirectHTTPEcho(
         httpPort: listen.httpPort, targetHost: "blocked.example", targetPort: echo.port,
         payload: payload), payload)
+    return processID
+  }
+
+  private func assertRuleDefaultActionReloads(_ context: RuleReloadContext) throws {
+    let wrapper = context.wrapper
+    let store = context.store
+    let listen = context.listen
+    let echo = context.echo
+    let secondExit = context.secondExit
+    let processID = context.processID
     for (acl, proxiesDomain) in [
       (ruleProbeACL(defaultAction: .proxyWhenUnmatched, rules: []), true),
       (ProxyACLDocument.global(at: aclFileURL), false),
     ] {
-      let next = document(secondExit.port, acl)
+      let next = ruleProbeDocument(port: secondExit.port, listen: listen, acl: acl)
       let before = secondExit.connectionCount
       try store.write(next)
       XCTAssertEqual(kill(wrapper.processIdentifier, SIGUSR1), 0)
@@ -173,11 +219,35 @@ final class RuntimePublicationSmokeTests: RealSslocalSmokeTests {
           return self.performSocksConnectReply(
             socksPort: listen.socksPort, targetHost: "blocked.example", targetPort: echo.port) == 0
         })
-      XCTAssertEqual(store.readRuntimeReceipt()?.processID, pid)
+      XCTAssertEqual(store.readRuntimeReceipt()?.processID, processID)
     }
-    stopWrapperAndAssertCleanExit(wrapper, description: "rule reload wrapper exits")
   }
 
+}
+
+private struct ACLModeReloadContext {
+  let wrapper: Process
+  let store: RuntimeFileStore
+  let source: SslocalRuntimeDocument
+  let listen: ProxyListeningConfiguration
+  let echo: LoopbackEchoServer
+  let proxy: ConnectionCountingServer
+  let acl: RuntimePublication.ACL
+  let aclURL: URL
+  let inode: NSNumber?
+  let large: ProxyACLDocument
+}
+
+private struct RuleReloadContext {
+  let wrapper: Process
+  let store: RuntimeFileStore
+  let listen: ProxyListeningConfiguration
+  let echo: LoopbackEchoServer
+  let secondExit: ConnectionCountingServer
+  let processID: Int32
+}
+
+extension RuntimePublicationSmokeTests {
   func testRejectedACLReloadKeepsPreviousRulesWithoutReplacingChild() throws {
     let echo = try LoopbackEchoServer()
     let ports = try grabThreeListenPorts(excluding: [echo.port])

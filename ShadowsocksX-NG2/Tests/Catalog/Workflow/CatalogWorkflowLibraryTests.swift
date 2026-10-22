@@ -184,11 +184,11 @@ struct CatalogWorkflowLibraryTests {
     #expect(try workflow.subscriptionURL(for: subscription.id) == "https://old.example/sub")
     #expect(fetcher.requestCount == requests)
     #expect(runtime.convergeCount == 0)
+    let updatedDocument = try #require(String(bytes: SubscriptionDocs.tree(), encoding: .utf8))
     fetcher.setBehavior(
       .success(
         Data(
-          String(decoding: SubscriptionDocs.tree(), as: UTF8.self)
-            .replacingOccurrences(of: "\"pa\"", with: "\"changed-password\"").utf8)))
+          updatedDocument.replacingOccurrences(of: "\"pa\"", with: "\"changed-password\"").utf8)))
     await workflow.refreshSubscription(subscription.id)
     let after = try #require(try workflow.serverEditForm(for: server.id))
     #expect(after.password == before.password)
