@@ -22,7 +22,7 @@ func makeHealthCheckSupersessionController(
   let plugins = context.plugins
   let agent = context.agent
   let probe = context.probe
-  ProxyRuntimeController(
+  return ProxyRuntimeController(
     controlPreferences: makeTestProxyControlPreferences(),
     catalogSnapshotReader: ProxyRuntimeFixture.catalogSnapshotReader(at: catalogFile),
     activationFileStore: ActivationStateFileStore(

@@ -265,7 +265,7 @@ extension SystemProxyObserver {
 // MARK: - 失败事实映射
 
 extension SystemProxyObserver {
-  private func systemProxyFacts(for error: Error) -> SystemProxyFailureFacts {
+  func systemProxyFacts(for error: Error) -> SystemProxyFailureFacts {
     if let error = error as? SystemProxyError {
       return .operation(SystemProxyOperationFailure(error))
     }
