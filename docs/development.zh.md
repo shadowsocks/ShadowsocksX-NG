@@ -20,7 +20,7 @@ task --exit-code --taskfile ShadowsocksX-NG2/Taskfile.dist.yml validate -- forma
 
 ### 验证产物与证据
 
-每次运行创建独立的 `.build/validation/<UTC时间>-<随机后缀>/`，开始与结束均输出结果绝对路径。`summary.txt` 保存各关状态、退出码与证据状态；每个已执行关卡在同名子目录下保留合并 stdout/stderr 的 `raw.log` 和 `status.txt`（`test:smoke` 对应 `test-smoke/`），Xcode 关卡显式保存 `result.xcresult`。控制台只显示进度和摘要，需要完整错误时直接读取对应日志。所有产物均在现有忽略目录内；`task clean` 会删除它们，需要长期留存时先复制出去。
+每次运行创建独立的 `.build/validation/<UTC时间>-<随机后缀>/`，开始与结束均输出结果绝对路径。`summary.txt` 保存各关状态、退出码与证据状态；每个已执行关卡在同名子目录下保留合并 stdout/stderr 的 `raw.log` 和 `status.txt`（`test:smoke` 对应 `test-smoke/`），Xcode 关卡显式保存 `result.xcresult`。CI artifact 上传摘要、状态、日志和测试计数诊断文件，不上传 `.xcresult` 结果包，以减少下载体积；完整结果包在 job 运行期间仍保留于 runner 工作区。本地验证仍在验证目录保留全部证据。控制台只显示进度和摘要，需要完整错误时直接读取对应日志。所有产物均在现有忽略目录内；`task clean` 会删除它们，需要长期留存时先复制出去。
 
 测试关通过本机 `xcrun xcresulttool get test-results summary` 和系统 `plutil` 尽力读取计数，无需新增脚本或工具依赖。`test-summary.json` 保存原始摘要，`test-summary.stderr.log` 保存 xcresulttool 错误，`count-reader.log` 保存计数读取错误。汇总展示通过、失败、跳过、预期失败及总数（Xcode 汇总口径，参数化测试的实际执行次数可能不同）。关卡与总体退出码由原命令决定，命令失败始终保留失败。结果包缺失或摘要不可读时显著标注 `evidence incomplete`（证据不完整）、计数未知，不改变命令结果，也不把缺失计数写成零。构建关不读取测试计数；未执行的关卡不等同于测试跳过。
 
