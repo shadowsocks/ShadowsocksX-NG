@@ -1,0 +1,8 @@
+Cloak v2.12.0 — cbeuw/Cloak
+https://github.com/cbeuw/Cloak/tree/v2.12.0
+
+The bundled ck-client is the unmodified official darwin-arm64 release binary,
+re-signed for this application. Cloak is distributed under GPL-3.0; see LICENSE.
+Corresponding source: https://github.com/cbeuw/Cloak/archive/refs/tags/v2.12.0.tar.gz
+Build instructions: https://github.com/cbeuw/Cloak/blob/v2.12.0/release.sh
+Additional upstream copyright notices are included in THIRD-PARTY-NOTICES.

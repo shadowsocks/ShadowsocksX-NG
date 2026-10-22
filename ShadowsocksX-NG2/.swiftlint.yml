@@ -1,0 +1,19 @@
+# 默认规则起步：只声明排除项，遇到实际痛点再调规则（见本目录 AGENTS.md）。
+# 路径相对本文件所在目录。
+excluded:
+  # 构建产物。注意 build/ 与 .build/ 是两回事：不带 -derivedDataPath 的
+  # xcodebuild 会把构建落进项目内的 build/，其中 DerivedSources/ 下的生成源码
+  # （如 GeneratedAssetSymbols.swift）会进 lint 范围并报出与手写代码无关的违规
+  # ——这是补上 build 这条的触发案例。
+  - DerivedData
+  - .build
+  - build
+disabled_rules:
+  # 与 .swift-format 基线冲突：SwiftFormat 的多元素集合尾逗号和
+  # 多行条件/签名的换行规则会被 SwiftLint 的自动修正规则改回去。
+  # 触发案例：Domain/CredentialStore.swift 的 Keychain 查询字典由
+  # multiElementCollectionTrailingCommas=true 保留尾逗号；
+  # App/SettingsView.swift 的多行条件由 SwiftFormat 保留独立的 {。
+  # pre-commit 先 format 再 lint；关闭冲突规则以 .swift-format 为准。
+  - trailing_comma
+  - opening_brace

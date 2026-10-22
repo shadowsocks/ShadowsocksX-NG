@@ -1,0 +1,14 @@
+// Release 签名基线：发布产物必须是 Developer ID 真签名（Hardened Runtime、公证与
+// Gatekeeper 的前提），因此这里不给免证书路径。
+//
+// Team 只能来自本机注入的 Configs/Signing.local.xcconfig（gitignore）。缺失时
+// DEVELOPMENT_TEAM 为空，Xcode 以「Signing for ... requires selecting either a
+// development team or a provisioning profile」使构建明确失败，不会静默降级成
+// ad-hoc。
+//
+// `#include?` 放在 Developer ID 之前：本机文件可以补 Team（另一个键），但不能把
+// 发布身份改成 ad-hoc 或开发证书——Release 基线在这里是硬约束，后赋值者胜。
+#include? "Signing.local.xcconfig"
+CODE_SIGN_IDENTITY = Developer ID Application
+// 普通 Release build 也必须为主程序和两个原生工具请求公证所需的安全时间戳。
+OTHER_CODE_SIGN_FLAGS = $(inherited) --timestamp

@@ -1,0 +1,19 @@
+gfwlist rule snapshot
+=====================
+
+Upstream: gfwlist/gfwlist gfwlist.txt
+Upstream commit: c19292511da4c5af8f6193fd32d666eaaa0312f9
+Upstream URL: https://raw.githubusercontent.com/gfwlist/gfwlist/c19292511da4c5af8f6193fd32d666eaaa0312f9/gfwlist.txt
+Upstream archive SHA-256: 750d34564363075fafa12d8ab9739f269e2fbd2bf3c5f4ab8cfd859bfd3441df
+
+License: LGPL-2.1
+
+GFWList AutoProxy rules derived from gfwlist/gfwlist gfwlist.txt at commit c19292511da4c5af8f6193fd32d666eaaa0312f9. Official Base64 AutoProxy 0.2.9 list. Only rules losslessly expressible as target domains are converted; URL-path, protocol, wildcard, and regex conditions are reported as losses and never expanded into whole-domain rules. List is candidate routing data, not a guarantee of reachability or completeness.
+
+This list is candidate routing data. It is not a guarantee of network
+reachability, geographic ownership, or privacy. Rules that cannot be expressed
+losslessly as target domains (URL paths, protocol conditions, wildcards, regex)
+are counted and reported as conversion losses and are never expanded into
+whole-domain proxy rules. `@@` exceptions shadowed by a broader proxy rule are
+reported item by item and omitted from the generated ACL because sslocal would
+ignore them.

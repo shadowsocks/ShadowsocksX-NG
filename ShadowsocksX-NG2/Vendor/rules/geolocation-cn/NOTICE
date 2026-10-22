@@ -1,0 +1,19 @@
+geolocation-cn rule snapshot
+============================
+
+Upstream: Loyalsoldier/domain-list-custom geosite.dat 20260925234224
+Upstream URL: https://github.com/Loyalsoldier/domain-list-custom/releases/download/20260925234224/geosite.dat
+Upstream archive SHA-256: db12e746ef387c34c9e1be8194d772a0606ef09c236815555af5ba2595f3741f
+
+Based on v2fly/domain-list-community data. The upstream geosite.dat export of
+domain-list-custom already omits @ads and @!cn attribute rules from
+geolocation-cn; this distribution consumes that filtered export.
+
+License: MIT
+
+geolocation-cn derived from Loyalsoldier/domain-list-custom geosite.dat
+20260925234224 (based on v2fly/domain-list-community). The upstream export
+applies domain-list-custom attribute filtering (@ads and @!cn omitted).
+
+This list is candidate routing data. It is not a guarantee of network
+reachability, geographic ownership, or privacy.

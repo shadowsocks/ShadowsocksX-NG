@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>KeepAlive</key>
+	<dict>
+		<key>SuccessfulExit</key>
+		<false/>
+	</dict>
+	<key>Label</key>
+	<string>com.qiuyuzhou.ShadowsocksX-NG2.agent</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>Contents/MacOS/ShadowsocksX-NG2Agent</string>
+	</array>
+	<key>ThrottleInterval</key>
+	<integer>2</integer>
+</dict>
+</plist>

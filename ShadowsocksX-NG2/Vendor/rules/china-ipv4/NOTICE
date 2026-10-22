@@ -1,0 +1,19 @@
+china-ipv4 rule snapshot
+========================
+
+Upstream: gaoyifan/china-operator-ip china.txt (ip-lists branch)
+Upstream commit: 75f2eb035cb53a7a4af3437e2c2110d0f73cf14a
+Upstream URL: https://raw.githubusercontent.com/gaoyifan/china-operator-ip/75f2eb035cb53a7a4af3437e2c2110d0f73cf14a/china.txt
+Upstream archive SHA-256: 98493d3ec7f2c77b9f191600dc741df731cfbaef775201594d0bda66b0181479
+
+License: MIT
+
+China mainland IPv4 CIDR derived from gaoyifan/china-operator-ip china.txt
+(ip-lists branch) at commit 75f2eb035cb53a7a4af3437e2c2110d0f73cf14a.
+BGP/ASN-derived candidate routing data; not a guarantee of geographic
+ownership or reachability.
+
+This list is candidate routing data. It is not a guarantee of network
+reachability, geographic ownership, or privacy. IP-CIDR matching may cause
+sslocal to issue local DNS queries for unmatched hostnames; the product does
+not promise that all DNS queries travel through the remote Shadowsocks server.

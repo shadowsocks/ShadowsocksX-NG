@@ -1,0 +1,3 @@
+# Delegate timeout and log level to sslocal defaults
+
+NG2 removes the user settings that overrode `sslocal`'s connection timeout and log level, omits those values from its runtime document, and no longer injects `RUST_LOG=warn` or `debug`; an explicitly inherited `RUST_LOG` remains effective. Stale `timeoutSeconds` and `verboseLogging` preference keys are ignored on load and omitted by later saves, with no migration. This keeps these controls with the bundled `sslocal` version while internal application timeouts and the diagnostic log view remain independent; upstream default logs may include server addresses in the raw `agent.log`.

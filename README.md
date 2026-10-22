@@ -1,63 +1,42 @@
-# ShadowsocksX-NG
+# ShadowsocksX-NG2
 
-[Download](https://github.com/shadowsocks/ShadowsocksX-NG/releases/latest)
+English | [简体中文](README.zh.md)
 
-[![Actions Status](https://github.com/shadowsocks/ShadowsocksX-NG/workflows/CI/badge.svg)](https://github.com/shadowsocks/ShadowsocksX-NG/actions)
+A native Shadowsocks client for Apple Silicon Macs. Manage servers, subscriptions, and routing from the menu bar, and provide SOCKS5 and HTTP proxy endpoints for Mac apps.
 
-Next Generation of [ShadowsocksX](https://github.com/shadowsocks/shadowsocks-iOS)
+> **Download:** ShadowsocksX-NG2 is not available yet. After release, download it from [GitHub Releases](https://github.com/shadowsocks/ShadowsocksX-NG/releases) and choose the ShadowsocksX-NG2 release. The page also hosts legacy 1.x releases.
 
-## Why a new implementation?
+## System requirements
 
-It's hard to maintain the original implementation as there is too much unused code in it.
-It also embeds the `ss-local` source code. It's crazy to maintain dependencies of `ss-local`.
-So it's hard to update the `ss-local` version.
+- macOS 15 or later
+- An Apple Silicon (arm64) Mac
+- A Shadowsocks server configuration or SIP-008 subscription URL
 
-Now I just copied the `ss-local` from Homebrew. Run `ss-local` executable as a Launch Agent in the background.
-So there is only some source code related to GUI left.
-Then I have rewrited the GUI code in Swift.
-
-## Requirements
-
-### Running
-
-macOS 10.12+
-
-### Building
-
-- Xcode 11.1+
-- CocoaPods 1.5.3+
-
-## Download
-
-From [here](https://github.com/shadowsocks/ShadowsocksX-NG/releases/)
+This project provides a client. It does not provide servers or subscription services.
 
 ## Features
 
-- `ss-local` from shadowsocks-libev 3.2.5.
-- Support SIP003 plugins. Embed `kcptun`,  `simple-obfs` and `v2ray-plugin`.
-- Could update PAC by download GFW List from GitHub.
-- Share your server profiles by qrcode or url.
-- Import server profile urls from pasteboard.
-- Import server profile by scan QRCode on screen.
-- Custom rules for PAC.
-- Support for [AEAD Ciphers](https://shadowsocks.org/en/spec/AEAD-Ciphers.html)
-- HTTP Proxy by [privoxy](http://www.privoxy.org/)
+- **Manage servers and subscriptions:** Add or import Shadowsocks configurations, organize servers into groups, and mark favorites. Add HTTPS SIP-008 subscriptions and view traffic and expiry information provided by the service provider.
+- **Choose how traffic is routed:** Use global, rules, or direct mode. In rules mode, review the bundled rules, write custom rules, and choose whether destinations use the proxy or connect directly.
+- **Connect Mac apps and LAN devices:** Provide local SOCKS5 and HTTP proxies. You can enable LAN listeners and set access credentials when needed; LAN listeners are off by default.
+- **Use proxy plugins:** `v2ray-plugin` and Cloak are included. The bundled `v2ray-plugin` also provides a [Hysteria2 transport mode](https://github.com/shadowsocks/v2ray-plugin#shadowsocks-over-hysteria2-transport) for Shadowsocks TCP traffic. Both ends must use this mode; ordinary Hysteria2 proxy nodes are not compatible. You can also configure your own plugins.
+- **Protect local configuration and export diagnostics:** The server library and listener configuration are encrypted on your Mac using age. Diagnostic reports exclude sensitive data such as passwords, plugin options, and subscription URLs.
+- **Use a familiar interface:** A native macOS menu bar app with Simplified Chinese and English interfaces. You can also launch it at login.
 
-## Difference from original ShadowsocksX
+## How NG2 differs from Legacy
 
-`ss-local` is run as a background service through launchd, not as an in-app process.
-So after you quit the app, the `ss-local` might be still running.
+| | ShadowsocksX-NG2 | Legacy 1.x |
+| --- | --- | --- |
+| System requirements | macOS 15 or later, Apple Silicon | The legacy project documentation lists macOS 10.12 or later |
+| Routing | Global, rules, and direct modes in the app; manage bundled and custom rules | PAC, GFWList, and manual modes |
+| Installation and configuration | Separate app and configuration directory; can coexist with Legacy | The legacy app and its configuration can remain installed separately |
+| Importing legacy settings | Can import legacy server configurations | Legacy preferences, routing mode, rules, and login item are not migrated automatically |
 
-Added a manual mode which won't configure the system proxy settings,
-so that you could configure your apps to use the SOCKS5 proxy manually.
+NG2 is a separate new app, not an in-place upgrade. Both apps can be installed side by side, and importing server configurations does not change Legacy data. macOS system proxy settings are shared by both apps, so check which app manages them when switching clients.
 
-## Contributing
+## Project and documentation
 
-Contributions must be available on a separately named branch based on the latest version of the main branch `develop`.
-
-ref: [GitFlow](http://nvie.com/posts/a-successful-git-branching-model/)
-
-## License
-
-The project is released under the terms of the GPLv3.
-
+- [Legacy source archive](https://github.com/shadowsocks/ShadowsocksX-NG/tree/legacy-v1)
+- [NG2 developer documentation](ShadowsocksX-NG2/README.md)
+- [Development and validation guide](docs/development.md)
+- [GPL-3.0 license](LICENSE)

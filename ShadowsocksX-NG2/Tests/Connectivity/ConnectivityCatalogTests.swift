@@ -1,0 +1,44 @@
+import Foundation
+import Testing
+
+@testable import ShadowsocksX_NG2
+
+@MainActor
+struct ConnectivityCatalogTests {
+  @Test func groupConnectivityIDsExpandAndConfigurationReadsCommittedCatalog() throws {
+    let subscription = try CatalogFixtures.makeSubscriptionFixture(prefix: UUID().uuidString)
+    var catalog = subscription.catalog
+    let group = try catalog.addGroup("Local")
+    let nested = try catalog.addGroup("Nested", to: group)
+    let firstTarget = try ActivationFixture.addPlainServer(
+      "A", to: group, in: &catalog)
+    let secondTarget = try ActivationFixture.addPlainServer(
+      "B", to: nested, in: &catalog)
+    let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+    defer { try? FileManager.default.removeItem(at: directory) }
+    let store = makeTestCatalogStore(fileURL: directory.appendingPathComponent("catalog.json"))
+    try store.save(CatalogDocument(catalog: catalog))
+    let runtime = FakeCatalogRuntime()
+    let coordinator = CatalogCommitCoordinator(fileStore: store, runtime: runtime)
+    let workflow = makeCatalogWorkflow(coordinator: coordinator)
+    #expect(
+      workflow.tree.node(withID: group)?.connectivityServerIDs == [secondTarget, firstTarget])
+    let before = try Data(contentsOf: store.fileURL)
+    let tree = workflow.tree
+    let version = workflow.connectivityRevision(for: firstTarget)
+    let derived = try workflow.connectivityConfiguration(for: firstTarget)
+    #expect(derived.id == firstTarget.rawValue)
+    #expect(derived.password == "pw-A")
+    #expect(runtime.convergeCount == 0)
+    #expect(workflow.tree == tree)
+    #expect(try Data(contentsOf: store.fileURL) == before)
+    let fields = try #require(catalog.entry(for: firstTarget))
+    guard case .server(var connection) = fields.kind else { return }
+    connection.password = "different"
+    try coordinator.commit { catalog, _ in
+      try catalog.updateServer(firstTarget, with: connection)
+    }
+    #expect(workflow.connectivityRevision(for: firstTarget) != version)
+    #expect(try workflow.connectivityConfiguration(for: firstTarget).password == "different")
+  }
+}

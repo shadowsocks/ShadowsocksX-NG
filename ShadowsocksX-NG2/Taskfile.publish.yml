@@ -1,0 +1,241 @@
+# https://taskfile.dev/
+version: '3'
+
+vars:
+  PUBLISH_TAG: 'v{{trimPrefix "v" (default "" .MARKETING_VERSION)}}'
+  PUBLISH_DMG: '{{.TASKFILE_DIR}}/dist/ShadowsocksX-NG2-{{default "" .MARKETING_VERSION}}-{{default "" .CURRENT_PROJECT_VERSION}}-arm64.dmg'
+  PUBLISH_MERGE_MESSAGE: 'chore(release): merge {{.PUBLISH_TAG}} into master'
+
+tasks:
+  publish:
+    desc: Push a release tag, merge develop into master, and open a GitHub draft with the packaged DMG
+    dir: '{{.TASKFILE_DIR}}'
+    requires:
+      vars: [MARKETING_VERSION, CURRENT_PROJECT_VERSION]
+    vars:
+      GIT_COMMON_DIR:
+        sh: git rev-parse --git-common-dir
+    preconditions:
+      - sh: '{{regexMatch .RELEASE_VERSION_PATTERN .MARKETING_VERSION}}'
+        msg: 'MARKETING_VERSION must be a release version, such as 2.1.0 or v2.1.0-rc.1.'
+      - sh: '{{regexMatch "^[0-9]+(\\.[0-9]+){0,2}$" .CURRENT_PROJECT_VERSION}}'
+        msg: 'CURRENT_PROJECT_VERSION must have one to three numeric components.'
+      - sh: 'test -f {{.PUBLISH_DMG | shellQuote}} && test ! -L {{.PUBLISH_DMG | shellQuote}}'
+        msg: 'Run package with exactly the same version parameters first.'
+      - sh: '{{if default "" .RELEASE_NOTES_FILE}}test -f {{.RELEASE_NOTES_FILE | shellQuote}} && test -r {{.RELEASE_NOTES_FILE | shellQuote}}{{else}}true{{end}}'
+        msg: 'RELEASE_NOTES_FILE must name a readable file.'
+      - sh: 'test "$(git branch --show-current)" = develop && test -z "$(git status --porcelain)"'
+        msg: 'Run publish from a clean develop branch, including no untracked files.'
+      - sh: |
+          for state in MERGE_HEAD CHERRY_PICK_HEAD REVERT_HEAD rebase-merge rebase-apply; do
+            test ! -e "$(git rev-parse --git-path "$state")" || exit 1
+          done
+        msg: 'Finish or abort the existing Git operation before publishing.'
+    cmds:
+      - for: [git, gh, shasum, cmp]
+        cmd: 'command -v {{.ITEM}} > /dev/null'
+      - 'mkdir {{printf "%s/ng2-publish.lock" .GIT_COMMON_DIR | shellQuote}}'
+      - defer: 'rmdir {{printf "%s/ng2-publish.lock" .GIT_COMMON_DIR | shellQuote}}'
+      - git fetch --no-tags origin +refs/heads/develop:refs/remotes/origin/develop +refs/heads/master:refs/remotes/origin/master
+      - task: publish:inspect-git
+
+  publish:inspect-git:
+    internal: true
+    dir: '{{.TASKFILE_DIR}}'
+    vars:
+      COMMIT:
+        sh: git rev-parse refs/heads/develop
+      MASTER:
+        sh: git rev-parse refs/remotes/origin/master
+      FETCH_URL:
+        sh: git remote get-url origin
+      PUSH_URL:
+        sh: git remote get-url --push --all origin
+      REPO: '{{.FETCH_URL | trimPrefix "https://" | trimPrefix "ssh://git@" | trimPrefix "git@" | replace ":" "/" | trimSuffix ".git" | lower}}'
+      PUSH_REPO: '{{.PUSH_URL | trimPrefix "https://" | trimPrefix "ssh://git@" | trimPrefix "git@" | replace ":" "/" | trimSuffix ".git" | lower}}'
+      REMOTE_TAGS:
+        sh: git ls-remote --tags origin {{printf "refs/tags/%s" .PUBLISH_TAG | shellQuote}} {{printf "refs/tags/%s^{}" .PUBLISH_TAG | shellQuote}}
+      # Annotated tags have a final peeled line; lightweight tags have only one line.
+      REMOTE_TAG: '{{regexFind "^[0-9a-f]+" (last (splitList "\n" .REMOTE_TAGS))}}'
+      WORKTREES:
+        sh: git worktree list --porcelain
+      STATE:
+        map:
+          commit: '{{.COMMIT}}'
+          remote_tag: '{{.REMOTE_TAG}}'
+          repo: '{{.REPO}}'
+    preconditions:
+      - sh: '{{and (regexMatch "^[A-Za-z0-9.-]+/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$" .REPO) (eq .REPO .PUSH_REPO)}}'
+        msg: 'origin fetch and push URLs must identify the same single GitHub repository.'
+      - sh: 'test {{.COMMIT | shellQuote}} = "$(git rev-parse refs/remotes/origin/develop)"'
+        msg: 'develop must match origin/develop; synchronize it before publishing.'
+      - sh: '! git show-ref --verify --quiet {{printf "refs/tags/%s" .PUBLISH_TAG | shellQuote}} || test "$(git rev-parse {{printf "refs/tags/%s^{commit}" .PUBLISH_TAG | shellQuote}})" = {{.COMMIT | shellQuote}}'
+        msg: 'The local release tag points to a different commit.'
+      - sh: '{{or (empty .REMOTE_TAG) (eq .REMOTE_TAG .COMMIT)}}'
+        msg: 'The remote release tag points to a different commit.'
+      - sh: |
+          if git show-ref --verify --quiet refs/heads/master; then
+            test "$(git rev-parse master)" = {{.MASTER | shellQuote}} || {
+              test "$(git show -s --format=%P master)" = {{printf "%s %s" .MASTER .COMMIT | shellQuote}} &&
+              test "$(git show -s --format=%B master)" = {{.PUBLISH_MERGE_MESSAGE | shellQuote}}
+            }
+          fi
+        msg: 'Local master must match origin/master or be the pending release merge from a failed push.'
+      - sh: '{{not (regexMatch "(?m)^branch refs/heads/master$" .WORKTREES)}}'
+        msg: 'master is checked out in another worktree; release it before publishing.'
+    cmds:
+      - gh auth status --hostname {{first (splitList "/" .REPO) | shellQuote}}
+      - task: publish:inspect-release
+        vars:
+          STATE:
+            ref: .STATE
+
+  publish:inspect-release:
+    internal: true
+    dir: '{{.TASKFILE_DIR}}'
+    vars:
+      RELEASE_PAGES_JSON:
+        sh: >-
+          gh api --hostname {{first (splitList "/" .STATE.repo) | shellQuote}} --paginate --slurp
+          {{printf "repos/%s/releases?per_page=100" (join "/" (rest (splitList "/" .STATE.repo))) | shellQuote}}
+      RELEASE_JSON: |
+        {{- $release := dict -}}
+        {{- range $page := mustFromJson .RELEASE_PAGES_JSON -}}
+          {{- range $page -}}
+            {{- if eq .tag_name $.PUBLISH_TAG -}}
+              {{- if $release -}}{{fail "Duplicate releases"}}{{- end -}}
+              {{- $release = . -}}
+            {{- end -}}
+          {{- end -}}
+        {{- end -}}
+        {{- $dmgs := list -}}
+        {{- range $release.assets -}}
+          {{- if hasSuffix ".dmg" (lower .name) -}}
+            {{- $dmgs = append $dmgs . -}}
+          {{- end -}}
+        {{- end -}}
+        {{- $_ := set $release "dmgs" $dmgs -}}
+        {{- mustToJson $release -}}
+      RELEASE:
+        ref: mustFromJson .RELEASE_JSON
+      ASSET:
+        ref: first .RELEASE.dmgs
+      DMG_CHECKSUM:
+        sh: shasum -a 256 {{.PUBLISH_DMG | shellQuote}}
+    preconditions:
+      # Existing tags determine the released commit; target_commitish is only used to create new tags.
+      - sh: '{{or (not .RELEASE.tag_name) (eq .STATE.remote_tag .STATE.commit) (eq .RELEASE.target_commitish .STATE.commit)}}'
+        msg: 'The existing release targets a different commit.'
+      - sh: '{{or (not .RELEASE.tag_name) (eq .RELEASE.prerelease (contains "-" .MARKETING_VERSION))}}'
+        msg: 'The existing release has a different prerelease flag.'
+      - sh: '{{le (len .RELEASE.dmgs) 1}}'
+        msg: 'The existing release contains conflicting DMG assets.'
+      - sh: '{{or (not .ASSET) (eq .ASSET.name (base .PUBLISH_DMG))}}'
+        msg: 'The existing release contains a different DMG.'
+      - sh: '{{or (not .ASSET) (eq .ASSET.state "uploaded")}}'
+        msg: 'The existing DMG upload is incomplete; resolve it manually.'
+      - sh: '{{or (not .RELEASE.tag_name) .RELEASE.draft (not (empty .ASSET))}}'
+        msg: 'The published release is missing the expected DMG.'
+      - sh: '{{if and .RELEASE.tag_name (not .RELEASE.draft)}}test {{.STATE.remote_tag | shellQuote}} = {{.STATE.commit | shellQuote}} && git merge-base --is-ancestor {{.STATE.commit | shellQuote}} origin/master{{else}}true{{end}}'
+        msg: 'The published release has incomplete Git state; resolve it manually.'
+    cmds:
+      - task: publish:verify-asset
+        if: '{{not (empty .ASSET)}}'
+        vars: &release-context
+          STATE:
+            ref: .STATE
+          RELEASE:
+            ref: .RELEASE
+          ASSET:
+            ref: .ASSET
+          DMG_CHECKSUM: '{{.DMG_CHECKSUM}}'
+      - task: '{{if and (not .RELEASE.tag_name) (not (default "" .RELEASE_NOTES_FILE))}}publish:confirm-generated-notes{{else}}publish:execute{{end}}'
+        vars: *release-context
+
+  publish:verify-asset:
+    internal: true
+    dir: '{{.TASKFILE_DIR}}'
+    vars:
+      DOWNLOAD_DIR:
+        sh: mktemp -d "${TMPDIR:-/tmp}/ng2-release-verify.XXXXXX"
+    cmds:
+      - defer: 'rm -rf {{.DOWNLOAD_DIR | shellQuote}}'
+      - gh release download {{.PUBLISH_TAG | shellQuote}} --repo {{.STATE.repo | shellQuote}} --pattern {{base .PUBLISH_DMG | shellQuote}} --dir {{.DOWNLOAD_DIR | shellQuote}}
+      - cmp {{.PUBLISH_DMG | shellQuote}} {{printf "%s/%s" .DOWNLOAD_DIR (base .PUBLISH_DMG) | shellQuote}}
+
+  publish:confirm-generated-notes:
+    internal: true
+    prompt: 'No RELEASE_NOTES_FILE supplied. Use GitHub-generated notes and proceed with tag/master pushes?'
+    cmds:
+      - task: publish:execute
+        vars: *release-context
+
+  publish:execute:
+    internal: true
+    dir: '{{.TASKFILE_DIR}}'
+    cmds:
+      - task: publish:tag
+        vars: *release-context
+      - task: publish:master
+        vars: *release-context
+      - 'printf "%s\n" {{.DMG_CHECKSUM | shellQuote}} | shasum -a 256 --check'
+      - task: publish:create-draft
+        vars: *release-context
+      - task: publish:upload
+        vars: *release-context
+      - cmd: 'printf "Release already published and matches this package: %s\n" {{.PUBLISH_TAG | shellQuote}}'
+        if: '{{and .RELEASE.tag_name (not .RELEASE.draft)}}'
+      - gh release view {{.PUBLISH_TAG | shellQuote}} --repo {{.STATE.repo | shellQuote}} --web
+
+  publish:tag:
+    internal: true
+    dir: '{{.TASKFILE_DIR}}'
+    status:
+      - '{{not (empty .STATE.remote_tag)}}'
+    cmds:
+      - cmd: git tag -a {{.PUBLISH_TAG | shellQuote}} {{.STATE.commit | shellQuote}} -m {{printf "Release %s" .PUBLISH_TAG | shellQuote}}
+        if: '! git show-ref --verify --quiet {{printf "refs/tags/%s" .PUBLISH_TAG | shellQuote}}'
+      - git push origin {{printf "refs/tags/%s:refs/tags/%s" .PUBLISH_TAG .PUBLISH_TAG | shellQuote}}
+
+  publish:master:
+    internal: true
+    dir: '{{.TASKFILE_DIR}}'
+    status:
+      - git merge-base --is-ancestor {{.STATE.commit | shellQuote}} origin/master
+    cmds:
+      - defer: |
+          if [ "$(git branch --show-current)" = master ]; then
+            if [ -z "$(git status --porcelain)" ] && [ ! -e "$(git rev-parse --git-path MERGE_HEAD)" ]; then
+              git switch develop
+            else
+              printf '%s\n' 'Merge state retained on master. Resolve it or run git merge --abort, then git switch develop.' >&2
+            fi
+          fi
+      - cmd: git switch --track -c master origin/master
+        if: '! git show-ref --verify --quiet refs/heads/master'
+      - cmd: git switch master
+        if: 'test "$(git branch --show-current)" != master'
+      - cmd: git merge --no-ff --no-edit -m {{.PUBLISH_MERGE_MESSAGE | shellQuote}} {{.STATE.commit | shellQuote}}
+        if: '! git merge-base --is-ancestor {{.STATE.commit | shellQuote}} master'
+      - git push origin refs/heads/master:refs/heads/master
+      - git switch develop
+
+  publish:create-draft:
+    internal: true
+    dir: '{{.TASKFILE_DIR}}'
+    status:
+      - '{{not (empty .RELEASE.tag_name)}}'
+    cmds:
+      - >-
+        gh release create {{.PUBLISH_TAG | shellQuote}} --repo {{.STATE.repo | shellQuote}}
+        --draft --verify-tag --target {{.STATE.commit | shellQuote}} --title {{.PUBLISH_TAG | shellQuote}}
+        {{if contains "-" .MARKETING_VERSION}}--prerelease{{end}}
+        {{if default "" .RELEASE_NOTES_FILE}}--notes-file {{.RELEASE_NOTES_FILE | shellQuote}}{{else}}--generate-notes{{end}}
+
+  publish:upload:
+    internal: true
+    dir: '{{.TASKFILE_DIR}}'
+    status:
+      - '{{not (empty .ASSET)}}'
+    cmds:
+      - gh release upload {{.PUBLISH_TAG | shellQuote}} {{.PUBLISH_DMG | shellQuote}} --repo {{.STATE.repo | shellQuote}}

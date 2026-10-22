@@ -1,0 +1,17 @@
+// Debug 签名基线：无证书即可构建（贡献者与 CI）。
+//
+// 基线是 ad-hoc（`-`）。arm64 上代码至少要有一层有效签名才会被加载，所以「免证书」
+// 不能靠不签名，只能靠 ad-hoc。ad-hoc 产物可以构建、可以跑 app、可以跑全部单测，
+// 但过不了 Scripts/packaging-gate.sh —— 那是有证书的发布门槛。
+//
+// 有证书的人（含维护者）在 Configs/Signing.local.xcconfig 里显式升级，例如：
+//
+//     DEVELOPMENT_TEAM = <10 位 Apple Developer Team ID>
+//     CODE_SIGN_IDENTITY = Developer ID Application
+//
+// 该本机文件在 .gitignore 中，不入库；CI 不需要它。
+//
+// `#include?` 必须留在最后一行：xcconfig 中后出现的赋值优先，本机文件才能盖掉
+// 上面的 ad-hoc 基线。
+CODE_SIGN_IDENTITY = -
+#include? "Signing.local.xcconfig"

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- 可执行路径用 BundleProgram（SMAppService 专用键，bundle 相对）：
+	     ProgramArguments[0] 的相对路径按 _PATH_STDPATH（PATH）解析而非
+	     bundle，launchd 找不到程序会以 EX_CONFIG 循环 spawn 失败。 -->
+	<key>BundleProgram</key>
+	<string>Contents/MacOS/ShadowsocksX-NG2SystemProxyHelper</string>
+	<key>Label</key>
+	<string>com.qiuyuzhou.ShadowsocksX-NG2.systemproxy</string>
+	<key>MachServices</key>
+	<dict>
+		<key>com.qiuyuzhou.ShadowsocksX-NG2.systemproxy</key>
+		<true/>
+	</dict>
+</dict>
+</plist>

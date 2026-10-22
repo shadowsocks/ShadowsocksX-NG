@@ -1,0 +1,8 @@
+{
+  "converterVersion": "2.0.0",
+  "name": "gfwlist",
+  "snapshotSHA256": "dc79a7205cbfd04e598aba9db6dd97ce75a618709111175b20a0aeec5bde58f8",
+  "upstreamArchiveSHA256": "750d34564363075fafa12d8ab9739f269e2fbd2bf3c5f4ab8cfd859bfd3441df",
+  "upstreamURL": "https://raw.githubusercontent.com/gfwlist/gfwlist/c19292511da4c5af8f6193fd32d666eaaa0312f9/gfwlist.txt",
+  "upstreamVersion": "c19292511da4c5af8f6193fd32d666eaaa0312f9"
+}

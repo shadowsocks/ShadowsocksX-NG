@@ -1,0 +1,8 @@
+{
+  "converterVersion": "2.0.0",
+  "name": "geolocation-cn",
+  "snapshotSHA256": "c3157d61e7bb25f39486974a937c97967872ffe82d79e91364ee5db5022e7f39",
+  "upstreamArchiveSHA256": "db12e746ef387c34c9e1be8194d772a0606ef09c236815555af5ba2595f3741f",
+  "upstreamURL": "https://github.com/Loyalsoldier/domain-list-custom/releases/download/20260925234224/geosite.dat",
+  "upstreamVersion": "20260925234224"
+}

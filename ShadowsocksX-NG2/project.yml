@@ -1,0 +1,344 @@
+name: ShadowsocksX-NG2
+options:
+  createIntermediateGroups: true
+  developmentLanguage: zh-Hans
+  deploymentTarget:
+    macOS: "15.0"
+settings:
+  base:
+    ARCHS: arm64
+    SWIFT_VERSION: "6.0"
+    # 关闭所有源码本地化抽取路径及构建后的 String Catalog 自动同步。
+    # 本地化目录由仓库手工维护。
+    LOCALIZATION_EXPORT_SUPPORTED: NO
+    CODE_SIGN_STYLE: Manual
+    ENABLE_HARDENED_RUNTIME: YES
+  configs:
+    Release:
+      # 发布基线：签名 entitlements 必须只来自项目 entitlements 文件（保持最小）。
+      CODE_SIGN_INJECT_BASE_ENTITLEMENTS: NO
+# 签名身份注入：证书与 Team 都不入库（开源仓库；写死会让 fork 与贡献者的构建去
+# 找维护者的证书）。Debug 基线是 ad-hoc，无证书即可构建并跑单测；Release 基线是
+# Developer ID，发布产物必须真签名。两者的本机 Team / 身份都来自 gitignore 的
+# Configs/Signing.local.xcconfig，见 Configs/Signing-Debug.xcconfig 与
+# Configs/Signing-Release.xcconfig。
+# 所有 target 一律不设置 CODE_SIGN_IDENTITY：pbxproj 构建设置优先于 project
+# xcconfig，写在 target 上会静默盖掉两个基线（实测）。该约束由
+# Tests/Architecture/SigningConfigurationTests.swift 守卫。
+configFiles:
+  Debug: Configs/Signing-Debug.xcconfig
+  Release: Configs/Signing-Release.xcconfig
+packages:
+  AgeSwift:
+    url: https://github.com/qiuyuzhou/AgeSwift
+    exactVersion: 0.1.0
+targets:
+  ShadowsocksX-NG2:
+    type: application
+    platform: macOS
+    sources:
+      # 目录即分层：Composition（组合根）/ Application（工作流与运行时适配）/
+      # Presentation（跨功能表现层）/ UI（视图，按子视图分目录）/
+      # PlatformEffects（平台效应 seam）/ Resources（plist、entitlements、资源）。
+      # 分层边界由 Tests/Architecture/SkeletonTests.swift 的 UI 圈定守卫断言；
+      # 取舍与约束见 ADR 0029。
+      - path: App
+        excludes:
+          # 文档不属于 target 源码：App/ 下任何非源码文件都会被 XcodeGen 收进
+          # Resources 阶段并封进签名后的 app bundle（实测），因此显式排除。
+          - "**/*.md"
+          - "**/*.xcstrings-mcp.lock"
+      # 领域核心。目录即主题，根下不留平铺文件，子目录按
+      # GLOSSARY.md 的章节口径命名：Catalog（配置目录树与身份）/
+      # Subscription（订阅）/ Rules（代理规则，自定义规则在 Rules/Custom）/
+      # Runtime（代理运行服务：运行时文档、路径、日志、端点与探针）/
+      # Activation（激活候选与状态机）/ Settings（用户设置持久化）/
+      # SystemProxy（系统代理 typed 配置与特权 helper 契约）/
+      # Plugin（托管插件与用户映射）/ Credentials / LegacyImport / Diagnostics。
+      # 该约定由 Tests/Architecture/SkeletonTests.swift 的 Domain 布局守卫断言，
+      # 取舍与约束见 ADR 0029。
+      - path: Domain
+      # LaunchAgent 注册清单：SMAppService.agent(plistName:) 从 bundle 内
+      # Contents/Library/LaunchAgents/ 读取；ProgramArguments 用 bundle 相对路径
+      - path: LaunchAgent/com.qiuyuzhou.ShadowsocksX-NG2.agent.plist
+        buildPhase:
+          copyFiles:
+            destination: wrapper
+            subpath: Contents/Library/LaunchAgents
+      # 特权系统代理 helper 的 LaunchDaemon 注册清单：
+      # SMAppService.daemon(plistName:) 从 bundle 内
+      # Contents/Library/LaunchDaemons/ 读取；可执行路径用 BundleProgram 键
+      # （bundle 相对；ProgramArguments 的相对路径按 PATH 解析会 spawn 失败）；
+      # MachServices 键支撑 on-demand 激活。
+      - path: LaunchDaemons/com.qiuyuzhou.ShadowsocksX-NG2.systemproxy.plist
+        buildPhase:
+          copyFiles:
+            destination: wrapper
+            subpath: Contents/Library/LaunchDaemons
+      # 外部二进制（Vendor/<name>/manifest.json 固定 tag+URL+SHA-256）。必须先跑
+      # Scripts/fetch-external-binaries.sh 再 xcodegen generate：文件在生成时必须已存在，
+      # 否则 Copy Files 阶段会被静默丢弃。构建内的 preBuildScripts 只做增量复验，
+      # 哈希或清单漂移会在构建时失败。
+      - path: Vendor/sslocal/sslocal
+        buildPhase:
+          copyFiles:
+            destination: wrapper
+            subpath: Contents/Helpers
+      - path: Vendor/v2ray-plugin/v2ray-plugin
+        buildPhase:
+          copyFiles:
+            destination: wrapper
+            subpath: Contents/Helpers/Plugins
+      - path: Vendor/ck-client/ck-client
+        buildPhase:
+          copyFiles:
+            destination: wrapper
+            subpath: Contents/Helpers/Plugins
+      - path: Vendor/ck-client/LICENSE
+        buildPhase:
+          copyFiles:
+            destination: resources
+            subpath: ThirdParty/Cloak
+      - path: Vendor/ck-client/NOTICE
+        buildPhase:
+          copyFiles:
+            destination: resources
+            subpath: ThirdParty/Cloak
+      - path: Vendor/AgeSwift/LICENSE-MIT
+        buildPhase:
+          copyFiles:
+            destination: resources
+            subpath: ThirdParty/AgeSwift
+      - path: Vendor/ck-client/THIRD-PARTY-NOTICES
+        buildPhase:
+          copyFiles:
+            destination: resources
+            subpath: ThirdParty/Cloak
+      # 内置规则快照：普通构建只读本地已固定快照，离线且不重新
+      # 抓取或转换；缺失、损坏或版本不匹配时 verify-rule-snapshots.sh 使构建失败。
+      # folder reference 保留 rules/<source>/snapshot.json 结构，避免多个
+      # snapshot.json 在 bundle 根目录撞名。
+      - path: Vendor/rules
+        buildPhase: resources
+        type: folder
+    preBuildScripts:
+      - name: Fetch & verify external binaries
+        basedOnDependencyAnalysis: false
+        script: |
+          set -e
+          "$SRCROOT/Scripts/fetch-external-binaries.sh"
+      - name: Verify rule snapshots
+        basedOnDependencyAnalysis: false
+        script: |
+          set -e
+          "$SRCROOT/Scripts/verify-rule-snapshots.sh"
+    postBuildScripts:
+      # 必须在 app 自身签名之前逐二进制 DevID 重签；Xcode 在所有脚本阶段之后
+      # 完成 app 外层签名，封存重签后的嵌套代码。
+      - name: Sign embedded helpers
+        basedOnDependencyAnalysis: false
+        script: |
+          set -e
+          "$SRCROOT/Scripts/sign-embedded-helpers.sh"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.qiuyuzhou.ShadowsocksX-NG2
+        PRODUCT_NAME: ShadowsocksX-NG2
+        # 模块名让位给 Core 镜像库（ShadowsocksX_NG2）：两者 swiftmodule 都落
+        # 共享 Products 目录，重名会互相覆盖；app 可执行自身不 import 任何
+        # 消费方，改名零影响。
+        SWIFT_OBJC_BRIDGING_HEADER: App/Application/Connectivity/ConnectivityHTTPTransport.h
+        PRODUCT_MODULE_NAME: ShadowsocksX_NG2App
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        MARKETING_VERSION: "2.0.0"
+        # 必须 > 旧版 1.x 已发布构建的 CFBundleVersion（始终为 1），保证 build 号严格递增。
+        CURRENT_PROJECT_VERSION: 2
+    info:
+      path: App/Resources/Info.plist
+      properties:
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        LSMinimumSystemVersion: "15.0"
+        LSUIElement: true
+        NSPrincipalClass: NSApplication
+        LSApplicationCategoryType: public.app-category.utilities
+    entitlements:
+      path: App/Resources/ShadowsocksX-NG2.entitlements
+      properties: {}
+    dependencies:
+      - package: AgeSwift
+      # 代理运行时 wrapper（BundleProgram）：以独立可执行文件装入
+      # Contents/MacOS，由 LaunchAgent plist 以 bundle 相对路径引用。
+      - target: ShadowsocksX-NG2Agent
+        copy:
+          destination: wrapper
+          subpath: Contents/MacOS
+      # 特权系统代理 helper：独立可执行文件装入 Contents/MacOS，
+      # 由 LaunchDaemon plist 以 bundle 相对路径引用，SMAppService.daemon 注册。
+      - target: ShadowsocksX-NG2SystemProxyHelper
+        copy:
+          destination: wrapper
+          subpath: Contents/MacOS
+  ShadowsocksX-NG2Core:
+    type: library.static
+    platform: macOS
+    # 测试专用 app 源码镜像（去宿主化，ADR 0021）：与 app target 同源编译
+    # （除 @main 组合根 MainApp.swift），模块名沿用 ShadowsocksX_NG2，全部
+    # 测试的 @testable import 零改动。测试 bundle 改链本库后不再生成
+    # TEST_HOST：xcodebuild test 只构建 app、不再启动 app 进程，与安装版
+    # 运行实例零接触。同源双编译沿用 Agent/Helper 共享 Domain 文件的既定
+    # 模式；Core 只被测试 target 依赖，发布链与普通构建不编译它。
+    sources:
+      - path: App
+        excludes:
+          # 递归 glob（`**/`）而非裸文件名：XcodeGen 的 exclude 不跨 `/`，裸名只
+          # 匹配 App 根层。文件下移后裸名会静默失效，把 @main 组合根编进测试镜像。
+          - "**/MainApp.swift"
+          - "**/Info.plist"
+          - "**/ShadowsocksX-NG2.entitlements"
+          - "**/Assets.xcassets"
+          - "**/*.xcstrings-mcp.lock"
+      - path: Domain
+    settings:
+      base:
+        PRODUCT_NAME: ShadowsocksX-NG2Core
+        SWIFT_OBJC_BRIDGING_HEADER: App/Application/Connectivity/ConnectivityHTTPTransport.h
+        PRODUCT_MODULE_NAME: ShadowsocksX_NG2
+        # 静态库产物不签名（app 的 DevID 身份不适用）。
+        CODE_SIGNING_ALLOWED: NO
+    dependencies:
+      - package: AgeSwift
+  ShadowsocksX-NG2Agent:
+    type: tool
+    platform: macOS
+    sources:
+      - path: Agent
+      # Agent 只共享非秘密监管协议、路径、探针、统一日志发射单元与
+      # sslocal 输出 intake，不编译 sslocal 配置或凭据类型。显式文件路径
+      # 变动必须同步本清单并重新生成工程。
+      - path: Domain/Settings/ApplicationSupportPaths.swift
+      - path: Domain/Runtime/RuntimePaths.swift
+      - path: Domain/Runtime/AtomicFileWriter.swift
+      - path: Domain/Runtime/RuntimeSupervision.swift
+      - path: Domain/Runtime/RuntimeLog.swift
+      - path: Domain/Runtime/SystemLog.swift
+      - path: Domain/Runtime/LogLine.swift
+      - path: Domain/Runtime/SslocalOutputIntake.swift
+      - path: Domain/Runtime/EndpointHealthProbe.swift
+      - path: Domain/Runtime/RuntimeSocketOwnershipProbe.swift
+    settings:
+      base:
+        PRODUCT_NAME: ShadowsocksX-NG2Agent
+        PRODUCT_BUNDLE_IDENTIFIER: com.qiuyuzhou.ShadowsocksX-NG2.agent
+  ShadowsocksX-NG2SystemProxyHelper:
+    type: tool
+    platform: macOS
+    sources:
+      - path: SystemProxyHelper
+      # helper 与 GUI 共享的 typed 契约与纯逻辑：closed typed 配置、property
+      # list 映射、计划器、XPC 协议、请求引擎、helper 侧日志事件与统一日志
+      # 发射单元（helper 日志只进统一日志，ADR-0047）。helper 不含产品
+      # 策略：不在这些文件之外做任何域判断。以下 8 条同为显式路径，移动需同步。
+      - path: Domain/SystemProxy/SystemProxyConfiguration.swift
+      - path: Domain/SystemProxy/SystemProxyPlan.swift
+      - path: Domain/SystemProxy/SystemProxyPropertyList.swift
+      - path: Domain/SystemProxy/SystemProxyHelperContract.swift
+      - path: Domain/SystemProxy/SystemProxyHelperEngine.swift
+      - path: Domain/SystemProxy/SystemProxyHelperListenerDelegate.swift
+      - path: Domain/SystemProxy/SystemProxyHelperLog.swift
+      - path: Domain/Runtime/SystemLog.swift
+    settings:
+      base:
+        PRODUCT_NAME: ShadowsocksX-NG2SystemProxyHelper
+        PRODUCT_BUNDLE_IDENTIFIER: com.qiuyuzhou.ShadowsocksX-NG2.systemproxy.helper
+  ShadowsocksX-NG2Tests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: Tests
+        # 真实进程冒烟归 SmokeTests target，不进默认 task test 快车道。
+        excludes:
+          - "Smoke"
+          - "Fixtures"
+      - path: Tests/Fixtures/RuleSnapshots
+        type: folder
+        buildPhase: resources
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.qiuyuzhou.ShadowsocksX-NG2.Tests
+        # 身份随 config 基线走（Debug ad-hoc / Release DevID，见 configFiles）：
+        # 去宿主化（ADR 0021）后 xctest 包不再注入宿主 app，ad-hoc 可加载执行
+        # （实测），因此测试不再需要证书，CI 无需签名密钥。
+    info:
+      path: Tests/Info.plist
+      properties: {}
+    dependencies:
+      # 去宿主化（ADR 0021）：单测链 Core 静态库镜像而非 app 可执行，测试在
+      # 独立 xctest runner 中运行，宿主 app 不再被启动。
+      - target: ShadowsocksX-NG2Core
+      - package: AgeSwift
+  ShadowsocksX-NG2SmokeTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: Tests/Smoke
+      # app 产物定位 helper（与单测 target 共享，见 Tests/Support/AppArtifact.swift）。
+      # 同样是显式文件路径：移动它必须同步此处，否则 xcodegen 以缺文件失败。
+      - path: Tests/Support/AppArtifact.swift
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.qiuyuzhou.ShadowsocksX-NG2.SmokeTests
+        # 身份理由同 ShadowsocksX-NG2Tests：随 config 基线，Debug 无证书可跑。
+    info:
+      path: Tests/Smoke/Info.plist
+      properties: {}
+    dependencies:
+      # 去宿主化（ADR 0021）：smoke 同样链 Core 镜像库；真实 sslocal/agent 从
+      # scheme 构建的 app 产物取（AppArtifact），宿主 app 不再被启动。
+      - target: ShadowsocksX-NG2Core
+      - package: AgeSwift
+schemes:
+  # app 主 scheme。测试动作注入 SSXNG_SYSTEM_LOG=0 关闭统一日志写入：
+  # 测试进程与其拉起的子进程不把测试日志灌进系统日志 store（stderr 与
+  # agent.log 不受影响）。Run/Profile 不带该变量——从 Xcode 调试运行时
+  # 系统日志照常输出。开关实现见 RuntimeLog.systemLogEnabled。
+  ShadowsocksX-NG2:
+    build:
+      targets:
+        ShadowsocksX-NG2: [run, test, profile, archive, analyze]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        # 单测多 runner 并行执行：夹具均为进程私有资源（运行时空闲端口、
+        # UUID 后缀的 UserDefaults suite 与 Keychain service、匿名 XPC
+        # listener、临时目录），跨 runner 无共享状态。
+        - name: ShadowsocksX-NG2Tests
+          parallelizable: true
+      environmentVariables:
+        - variable: SSXNG_SYSTEM_LOG
+          value: "0"
+          isEnabled: true
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release
+  # 真实进程冒烟独立 scheme（task test:smoke）：拉起真实 sslocal，按需执行；
+  # 发布门槛要求与 packaging-gate 一起全绿。
+  ShadowsocksX-NG2Smoke:
+    build:
+      targets:
+        ShadowsocksX-NG2: [run, test]
+        ShadowsocksX-NG2SmokeTests: [test]
+    test:
+      targets:
+        - name: ShadowsocksX-NG2SmokeTests
+          parallelizable: true
+      # 同主 scheme：冒烟进程与其拉起的真实 sslocal/agent 关闭统一日志写入。
+      environmentVariables:
+        - variable: SSXNG_SYSTEM_LOG
+          value: "0"
+          isEnabled: true

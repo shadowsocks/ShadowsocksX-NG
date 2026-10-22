@@ -69,3 +69,38 @@ profile
 Carthage/Build
 
 IDEWorkspaceChecks.plist
+
+####
+# Local agent scratch space (local-markdown issue tracker; see docs/agents/issue-tracker.md)
+.scratch/
+
+####
+# New project build artifacts
+ShadowsocksX-NG2/.build/
+ShadowsocksX-NG2/dist/
+ShadowsocksX-NG2/DerivedData/
+
+####
+# NG2 generated build files (project.yml is the source of truth; run `xcodegen generate`)
+ShadowsocksX-NG2/*.xcodeproj
+# 本机签名身份（DEVELOPMENT_TEAM），构建期由 Configs/Signing.xcconfig 可选包含
+ShadowsocksX-NG2/Configs/Signing.local.xcconfig
+ShadowsocksX-NG2/App/Resources/Info.plist
+ShadowsocksX-NG2/App/Resources/ShadowsocksX-NG2.entitlements
+ShadowsocksX-NG2/Tests/Info.plist
+ShadowsocksX-NG2/Tests/Smoke/Info.plist
+
+####
+# NG2 external binary cache (fetched & hash-verified by
+# ShadowsocksX-NG2/Scripts/fetch-external-binaries.sh; manifests are committed)
+ShadowsocksX-NG2/Vendor/sslocal/sslocal
+ShadowsocksX-NG2/Vendor/sslocal/.fetched.sha256
+ShadowsocksX-NG2/Vendor/v2ray-plugin/v2ray-plugin
+ShadowsocksX-NG2/Vendor/v2ray-plugin/.fetched.sha256
+ShadowsocksX-NG2/Vendor/ck-client/ck-client
+ShadowsocksX-NG2/Vendor/ck-client/.fetched.sha256
+
+###
+# dotenv file
+.env
+
