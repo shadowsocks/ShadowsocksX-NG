@@ -6,6 +6,14 @@ A native Shadowsocks client for Apple Silicon Macs. Manage servers, subscription
 
 > **Download:** Download the latest ShadowsocksX-NG2 release from [GitHub Releases](https://github.com/shadowsocks/ShadowsocksX-NG/releases). The page also hosts legacy 1.x releases.
 
+## Project status
+
+ShadowsocksX-NG is undergoing a major rewrite. The legacy version is no longer maintained, and ShadowsocksX-NG 2 is still in development.
+
+We will close all remaining legacy issues. We will also temporarily restrict new Issues and PRs from all users until the v2 code is stable and officially released.
+
+In the meantime, please use [Discussions](https://github.com/shadowsocks/ShadowsocksX-NG/discussions) for usage questions and bug reports. Thanks for your understanding and support. Feedback and suggestions are welcome there too.
+
 ## System requirements
 
 - macOS 15 or later

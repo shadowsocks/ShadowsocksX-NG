@@ -6,6 +6,14 @@
 
 > **下载**：请从 [GitHub Releases](https://github.com/shadowsocks/ShadowsocksX-NG/releases) 下载最新的 ShadowsocksX-NG2 版本。发布页也会保留旧版 1.x。
 
+## 项目状态
+
+ShadowsocksX-NG 正在进行大规模重构。旧版已停止维护，ShadowsocksX-NG 2 仍在开发中。
+
+我们会关闭旧版遗留的所有 Issue。v2 代码稳定并正式发布前，我们暂不接受新的 Issue 和 PR。
+
+这段时间里，如果你有使用问题或发现 Bug，欢迎到 [Discussions](https://github.com/shadowsocks/ShadowsocksX-NG/discussions) 交流。感谢大家的理解与支持，也欢迎在那里分享反馈和建议。
+
 ## 系统要求
 
 - macOS 15 或更新版本
