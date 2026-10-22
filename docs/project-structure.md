@@ -1,63 +1,63 @@
-# 工程结构与源码搜索
+# Project Structure and Source Search
 
-[返回工程首页](../ShadowsocksX-NG2/README.md)
+[Project home](../ShadowsocksX-NG2/README.md) | [简体中文](project-structure.zh-CN.md)
 
-除特别说明外，命令从 `ShadowsocksX-NG2/` 执行，文中工程路径也相对于该目录。
+Unless noted otherwise, run commands from `ShadowsocksX-NG2/`; paths in this document are relative to that directory.
 
-## 工程结构
+## Project structure
 
-- `project.yml` — XcodeGen 工程定义，唯一事实来源。`.xcodeproj` 与 `App/Resources/Info.plist`、`*.entitlements`、`Tests/Info.plist` 都是生成物（已 gitignore），改工程结构一律改 `project.yml` 后重新生成。
-- `App/` — app target 源码（SwiftUI 菜单栏 app，LSUIElement）。目录即分层，层内按功能分组：
-  - `Composition/` — 组合根与进程生命周期：`@main`、依赖装配、应用形态与窗口激活策略。
-  - `Application/` — 应用层（无 SwiftUI 视图）：`*Workflow/` 工作流 module（UI-facing interface 与实现协作者）、`ProxyRuntime/` 运行时控制器家族与事实投影、`Services/` LaunchAgent/登录项/helper/防火墙。
-  - `Presentation/` — 跨功能表现层：错误呈现、被多个界面共用的状态模型。
-  - `UI/` — 视图层，按子视图分目录（`Workspace/`、`Home/`、`Servers/`、`Subscriptions/`、`Rules/`、`Settings/`、`Diagnostics/`、`StatusMenu/`，`Servers/Plugin/` 为插件管理子视图）。
-  - `PlatformEffects/` — 平台效应 seam（协议 + AppKit adapter；测试替身在 `Tests/Support/`），系统框架访问集中于此。
-  - `Resources/` — `Info.plist`、`entitlements`（生成物）与 `Assets.xcassets`、`*.xcstrings`（入库）。
+- `project.yml` — XcodeGen project definition and single source of truth. `.xcodeproj`, `App/Resources/Info.plist`, `*.entitlements`, and `Tests/Info.plist` are generated and gitignored. Change the project structure in `project.yml`, then regenerate the project.
+- `App/` — app target source code (a SwiftUI menu bar app with `LSUIElement`). Directories define layers; files within each layer are grouped by feature:
+  - `Composition/` — composition root and process lifecycle: `@main`, dependency assembly, app form, and window activation strategy.
+  - `Application/` — application layer without SwiftUI views: `*Workflow/` workflow modules (UI-facing interfaces and implementation collaborators), the `ProxyRuntime/` runtime-controller family and fact projections, and `Services/` for LaunchAgent, login item, helper, and firewall.
+  - `Presentation/` — cross-feature presentation: error presentation and state models shared by multiple views.
+  - `UI/` — view layer, organized by subview (`Workspace/`, `Home/`, `Servers/`, `Subscriptions/`, `Rules/`, `Settings/`, `Diagnostics/`, and `StatusMenu/`); `Servers/Plugin/` contains plugin-management views.
+  - `PlatformEffects/` — platform-effect seams (protocols and AppKit adapters; test doubles are in `Tests/Support/`); access to system frameworks is centralized here.
+  - `Resources/` — generated `Info.plist` and entitlements, plus checked-in `Assets.xcassets` and `*.xcstrings`.
 
-  分层边界由 `Tests/Architecture/SkeletonTests.swift` 的正向圈定守卫断言：只扫描 `App/UI/`，视图层不得引用运行时控制器、工作流实现协作者或原始目录/凭据存储类型；新增运行时适配器放进 `Application/` 即自动落在扫描范围外，无需登记豁免。注意 `App/` 下任何非源码文件都会被 XcodeGen 收进 Resources 阶段并封进签名后的 bundle，因此文档不放 `App/`（`project.yml` 已排除 `**/*.md`）。分层与主题的组织方式、守卫为何取正面圈定、以及 XcodeGen 的上述约束见 [ADR-0029](adr/0029-source-layout-declares-layer-and-theme.md)。
-- `Agent/` — 独立的后台监管可执行文件，装入 `Contents/MacOS/`，由 LaunchAgent 常驻。只读取非秘密 `agent-supervision.json`，切换稳定配置与 ACL 链接，启动和监管 sslocal；不解析 sslocal 配置或 LAN 凭据。发布与失败处理见 ADR-0037、ADR-0038，GUI 单向配置输出见 ADR-0043。
-- `LaunchAgent/` — `SMAppService.agent(plistName:)` 的注册清单，装入 `Contents/Library/LaunchAgents/`；`ProgramArguments` 用 bundle 相对路径，由 launchd 按注册 app 的 bundle 位置解析。
-- `Domain/` — 领域核心（配置目录树、凭据引用与持久化，spec #21 D3/D5），与 UI 无关。目录即主题，根下不留平铺文件，子目录口径取自 [术语表](../GLOSSARY.md) 的章节划分：
-  - `Catalog/` — 配置目录树、结构不变量错误、目录文件存储、节点与凭据身份，以及 `ss://` 编解码 `SsUri`。
-  - `Subscription/` — 订阅文档解析、抓取、订阅记录与刷新失败。
-  - `Rules/` — 代理模式、规则身份与匹配、内置规则快照、规则集合/浏览/分析、离线规则测试；`Rules/Custom/` 为用户自定义规则的编辑草稿、校验与存储。
-  - `Runtime/` — 代理运行服务：运行时文档与监听设置、ACL 与部署收据、路径、原子写入、文件存储、日志与事件（统一日志发射单元 `SystemLog`、统一日志行 `LogLine`、sslocal 输出 intake）、端点/端口/socket 探针。
-  - `Activation/` — 激活候选校验、激活状态机与 `RuntimeConfiguration`。
-  - `Settings/` — 代理监听配置文件、独立代理控制偏好、运行计算的内存快照与静默启动偏好。
-  - `SystemProxy/` — 系统代理 typed 配置、property list 映射、计划器、特权 helper 的 XPC 契约/请求引擎与 helper 侧日志事件。
-  - `Plugin/` — 托管插件、用户插件映射与插件安全校验。
-  - `Credentials/`、`LegacyImport/`、`Diagnostics/` — 主密钥存储与加密文件提交、旧版导入、诊断报告。
+  `Tests/Architecture/SkeletonTests.swift` enforces layer boundaries with an allowlist guard that scans only `App/UI/`. The view layer must not reference runtime controllers, workflow implementation collaborators, or raw directory/credential storage types. New runtime adapters belong in `Application/`, which is outside the scan scope and needs no exemption. Note that XcodeGen includes any non-source file under `App/` in the Resources build phase and signs it into the bundle, so do not put documents there (`project.yml` excludes `**/*.md`). See [ADR-0029](adr/0029-source-layout-declares-layer-and-theme.md) for the layer and theme organization, why the guard uses an allowlist, and the XcodeGen constraint.
+- `Agent/` — standalone background-supervision executable, installed in `Contents/MacOS/` and kept running by a LaunchAgent. It reads only non-secret `agent-supervision.json`, switches stable configuration and ACL links, and launches and supervises `sslocal`; it does not parse sslocal configuration or LAN credentials. See ADR-0037 and ADR-0038 for release and failure handling, and ADR-0043 for one-way configuration output from the GUI.
+- `LaunchAgent/` — registration manifest for `SMAppService.agent(plistName:)`, installed in `Contents/Library/LaunchAgents/`. `ProgramArguments` uses bundle-relative paths, which launchd resolves from the registered app's bundle location.
+- `Domain/` — domain core for the configuration catalog tree, credential references, and persistence (spec #21 D3/D5), independent of the UI. Directories define topics; there are no flat files at the root. Child-directory boundaries follow the sections in the [glossary](../GLOSSARY.md):
+  - `Catalog/` — configuration catalog tree, structural invariant errors, catalog file storage, node and credential identities, and `SsUri` for `ss://` encoding and decoding.
+  - `Subscription/` — subscription document parsing, fetching, subscription records, and refresh failures.
+  - `Rules/` — proxy modes, rule identity and matching, bundled rule snapshots, rule collections/browsing/analysis, and offline rule tests; `Rules/Custom/` contains edit drafts, validation, and storage for user-defined rules.
+  - `Runtime/` — proxy runtime services: runtime documents and listener settings, ACLs and deployment receipts, paths, atomic writes, file storage, logs and events (`SystemLog` unified-log emitter, `LogLine` unified-log line, and sslocal-output intake), plus endpoint/port/socket probes.
+  - `Activation/` — activation-candidate validation, activation state machine, and `RuntimeConfiguration`.
+  - `Settings/` — proxy-listening configuration file, independent proxy-control preferences, in-memory snapshots of runtime calculations, and silent-launch preference.
+  - `SystemProxy/` — typed system-proxy configuration, property-list mapping, planner, privileged-helper XPC contract/request engine, and helper-side log events.
+  - `Plugin/` — managed plugins, user-plugin mappings, and plugin security inspection.
+  - `Credentials/`, `LegacyImport/`, and `Diagnostics/` — master-key storage and encrypted-file commits, legacy import, and diagnostic reports.
 
-  跨进程契约按**文件**编入其它 target：`Runtime/` 的 9 个文件和 `Settings/ApplicationSupportPaths.swift` 同时编入 wrapper（`RuntimePaths`、`RuntimeSupervision`、`RuntimeLog`、`SystemLog`、`LogLine`、`SslocalOutputIntake` 等），`SystemProxy/` 全部 7 个文件连同 `Runtime/SystemLog.swift` 编入特权 helper（helper 侧日志只进统一日志，ADR-0047）。`project.yml` 里这 18 条是显式路径，在 `Domain/` 内移动文件必须同步，漏改会让 `xcodegen generate` 以缺文件直接失败。布局守卫（`Tests/Architecture/SkeletonTests.swift` 的 `DomainLayoutTests`）断言根下无平铺 `.swift`、树下只有 `.swift`（非源码文件会被 XcodeGen 收进 Resources 阶段并封进签名后的 bundle）。
-- `Tests/` — 单元测试 target，随 `ShadowsocksX-NG2` scheme 运行。目录即主题，根下不留平铺测试文件：
-  - `Architecture/` — 跨切面工程约束守卫（分层与布局、平台效应 seam、开窗落点、清单完整性），扫源码或构建产物而不驱动行为。
-  - `TestSupport/` — 测试等待与清理 helper 的故障回归用例。
-  - `Support/` — 夹具、替身与 helper，不含用例（`CatalogFixtures`、`ProxyRuntimeFixture`、`SystemProxyFakes`、`AppArtifact`、`TestSourceTree` 等）。
-  - `Agent/`、`Activation/`、`Catalog/`（工作流用例在 `Catalog/Workflow/`）、`Subscription/`、`Rules/`（自定义规则在 `Rules/Custom/`）、`ProxyRuntime/`、`ProxyControl/`、`Runtime/`、`Settings/`、`SystemProxy/`、`Plugin/`、`Diagnostics/`、`Credentials/`、`Workspace/`、`Servers/` — 按功能领域的用例，与生产代码的领域主题和 `*Workflow` 同名同界。
-  - `Smoke/` — 真实进程冒烟，独立 target 与 scheme（`task test:smoke`）。
-  - `Fixtures/RuleSnapshots/` — 生成的内置规则快照夹具，作为 folder resource 随测试 bundle 发布（`GeneratedRuleSnapshotTests` 按 `subdirectory:` 读）。
+  Cross-process contracts are compiled into other targets file by file: nine files from `Runtime/` and `Settings/ApplicationSupportPaths.swift` are also compiled into the wrapper (`RuntimePaths`, `RuntimeSupervision`, `RuntimeLog`, `SystemLog`, `LogLine`, `SslocalOutputIntake`, and others); all seven files from `SystemProxy/`, together with `Runtime/SystemLog.swift`, are compiled into the privileged helper (helper logs go only to the unified log; see ADR-0047). These 18 entries are explicit paths in `project.yml`. Moving a file under `Domain/` requires updating the project definition too; otherwise, `xcodegen generate` fails immediately because a file is missing. The layout guard (`DomainLayoutTests` in `Tests/Architecture/SkeletonTests.swift`) asserts that there are no flat `.swift` files at the root and that the tree contains only `.swift` files. XcodeGen would otherwise include non-source files in the Resources build phase and sign them into the bundle.
+- `Tests/` — unit-test target, run with the `ShadowsocksX-NG2` scheme. Directories define topics; there are no flat test files at the root:
+  - `Architecture/` — guards for cross-cutting project constraints (layers and layout, platform-effect seams, window entry points, and manifest completeness). They scan source or build artifacts without driving behavior.
+  - `TestSupport/` — regression tests for test-wait and cleanup helpers.
+  - `Support/` — fixtures, doubles, and helpers, with no test cases (`CatalogFixtures`, `ProxyRuntimeFixture`, `SystemProxyFakes`, `AppArtifact`, `TestSourceTree`, and others).
+  - `Agent/`, `Activation/`, `Catalog/` (workflow tests are in `Catalog/Workflow/`), `Subscription/`, `Rules/` (custom rules are in `Rules/Custom/`), `ProxyRuntime/`, `ProxyControl/`, `Runtime/`, `Settings/`, `SystemProxy/`, `Plugin/`, `Diagnostics/`, `Credentials/`, `Workspace/`, and `Servers/` — feature-domain tests aligned with production domain topics and `*Workflow` boundaries.
+  - `Smoke/` — real-process smoke tests in a separate target and scheme (`task test:smoke`).
+  - `Fixtures/RuleSnapshots/` — generated fixtures for bundled rule snapshots, distributed as folder resources in the test bundle and read by `GeneratedRuleSnapshotTests` with `subdirectory:`.
 
-  断言需要读源码树（`Vendor/` 清单、`App/`、`Domain/`）时一律经 `Support/TestSourceTree.swift` 从 `#filePath` 沿父目录上溯定位 `ShadowsocksX-NG2/`，不写死父目录层数——测试文件处于不同深度，写死层数会在文件移动后静默指错。布局守卫 `TestsLayoutTests` 只断言根层无平铺 `.swift`（比 `Domain/` 那条弱一档：根层的 `Info.plist` 与 `Fixtures/` 下的 JSON 都必须在）。`Tests/Support/AppArtifact.swift` 同时编入 Smoke target，是 `project.yml` 里的显式文件路径，移动需同步。
-- `Vendor/<name>/manifest.json` — 外部二进制的固定供应链清单（tag + 资产 URL + 资产 SHA-256 + bundle 内位置 + 签名 identifier）；二进制本体与 `.fetched.sha256` 戳是构建缓存，不入库。
-- `Vendor/rules/geolocation-cn/` — 内置中国域名规则快照（issue #63）：`snapshot.json`（规范化规则 + 元数据 + 损失报告）、`manifest.json`（上游版本与快照 SHA-256）、`NOTICE`（许可证与归属）。普通构建只读本地快照，绝不抓取或转换。
-- `Vendor/rules/china-ipv4/` — 内置中国 IPv4 CIDR 直连候选快照（issue #64）：同上三件套，来源为 [gaoyifan/china-operator-ip](https://github.com/gaoyifan/china-operator-ip) `china.txt` 固定 commit。规则模式的 `proxy_all` ACL 同时编入中国域名与 IPv4 CIDR 直连候选。
-- `Vendor/rules/gfwlist/` — 内置 GFWList 代理候选快照（issue #65）：同上三件套，来源为 [gfwlist/gfwlist](https://github.com/gfwlist/gfwlist) 官方 Base64 AutoProxy `gfwlist.txt` 固定 commit。域名锚点转换为后缀匹配，满足条件的空路径或根路径 URL 前缀转换为精确域名匹配；「未匹配时直连」的 `bypass_all` ACL 编入这些代理候选。
-- `Scripts/` — 供应链脚本（见[外部二进制供应链](distribution.md#外部二进制供应链)）与打包门槛断言；另有 `update-geolocation-cn.sh` / `update-china-ipv4.sh` / `update-gfwlist.sh`（显式维护动作，抓取固定版上游并转换）与 `verify-rule-snapshots.sh`（构建前离线校验快照完整性）。
+  When an assertion needs to read the source tree (`Vendor/` manifests, `App/`, or `Domain/`), use `Support/TestSourceTree.swift` to locate `ShadowsocksX-NG2/` by walking up from `#filePath`. Do not hard-code the number of parent directories: test files are at different depths, and a move could make the path silently point elsewhere. `TestsLayoutTests` only asserts that there are no flat `.swift` files at the root. This is weaker than the `Domain/` guard because the root `Info.plist` and JSON under `Fixtures/` are required. `Tests/Support/AppArtifact.swift` is also compiled into the Smoke target and is an explicit file path in `project.yml`; update it when moving the file.
+- `Vendor/<name>/manifest.json` — pinned supply-chain manifest for an external binary (tag, asset URL, asset SHA-256, location inside the bundle, and signing identifier). The binary itself and `.fetched.sha256` stamp are build cache and are not checked in.
+- `Vendor/rules/geolocation-cn/` — bundled snapshot of Chinese domain rules (issue #63): `snapshot.json` (normalized rules, metadata, and loss report), `manifest.json` (upstream version and snapshot SHA-256), and `NOTICE` (license and attribution). Normal builds read only the local snapshot; they never fetch or convert rules.
+- `Vendor/rules/china-ipv4/` — bundled snapshot of Chinese IPv4 CIDRs considered for direct routing (issue #64): the same three files, sourced from a pinned commit of `china.txt` in [gaoyifan/china-operator-ip](https://github.com/gaoyifan/china-operator-ip). The rule-mode `proxy_all` ACL includes both Chinese-domain and IPv4-CIDR direct-routing candidates.
+- `Vendor/rules/gfwlist/` — bundled snapshot of GFWList proxy candidates (issue #65): the same three files, sourced from the official Base64 AutoProxy `gfwlist.txt` in [gfwlist/gfwlist](https://github.com/gfwlist/gfwlist) at a pinned commit. Domain anchors are converted to suffix matching. Eligible URL prefixes with an empty or root path are converted to exact-domain matching. The `bypass_all` ACL for “direct when unmatched” includes these proxy candidates.
+- `Scripts/` — supply-chain scripts (see [External binary supply chain](distribution.md#external-binary-supply-chain)) and packaging-gate assertions. `update-geolocation-cn.sh`, `update-china-ipv4.sh`, and `update-gfwlist.sh` are explicit maintenance actions that fetch pinned upstream versions and convert them. `verify-rule-snapshots.sh` checks snapshot integrity offline before a build.
 
-### 源码搜索
+## Source search
 
-先按上面的目录分层用 `rg --files` 定位，再限定目录或文件类型搜索内容；未找到时逐步扩大范围。以下命令从 `ShadowsocksX-NG2/` 执行：
+First use `rg --files` to locate files based on the directory layers above, then search content in the relevant directory or file type. If there are no matches, expand the search gradually. Run these commands from `ShadowsocksX-NG2/`:
 
 ```sh
-# 查外部二进制版本与来源，先定位对应清单
+# Find the external-binary version and source by locating its manifest first.
 rg --files Vendor/sslocal -g 'manifest.json'
-# 查运行职责，限定相关 Swift 源码
+# Search relevant Swift source for runtime responsibilities.
 rg -n -g '*.swift' 'sslocal|reload' Agent Domain/Runtime App/Application/ProxyRuntime
-# 查规则内容时先只列出命中文件
-rg -l '关键词' Vendor/rules Tests/Fixtures/RuleSnapshots
-# 需要显示匹配行时，省略超长行并保留命中提示
-rg -n -M 300 '关键词' Vendor/rules
+# List files matching a rule term before displaying matches.
+rg -l 'keyword' Vendor/rules Tests/Fixtures/RuleSnapshots
+# Display matching lines while limiting long lines and retaining match context.
+rg -n -M 300 'keyword' Vendor/rules
 ```
 
-`Vendor/rules/*/snapshot.json` 与 `Tests/Fixtures/RuleSnapshots/*.json` 是生成的单行 JSON。`-M 300` 按字节限制长行显示，不限制总输出量；`-m` 和 `head -n` 只限制行数，不能防止单条长行撑大输出。需要完整规则时，定位具体快照后按 JSON 字段读取。清单与 `NOTICE` 也保留在各自的 Vendor 目录中，可按需单独搜索。
+`Vendor/rules/*/snapshot.json` and `Tests/Fixtures/RuleSnapshots/*.json` are generated, single-line JSON files. `-M 300` limits the displayed length of a line in bytes; it does not limit total output. `-m` and `head -n` limit line counts but do not prevent one long line from producing too much output. To inspect complete rules, locate the specific snapshot and read the relevant JSON fields. Manifests and `NOTICE` files remain in their respective `Vendor` directories and can be searched separately as needed.

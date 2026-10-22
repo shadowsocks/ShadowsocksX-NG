@@ -128,4 +128,4 @@ The client handles the extension as follows:
 - Use the SIP-008 standard fields for traffic information; use RFC 3339 strings for expiration and reset dates.
 - Verify that a standard SIP-008 client that does not support `x_shadowsocksx_ng` still receives all servers in the flat `servers` list.
 
-For details about how the application presents subscription fields and handles refreshes, see [“Subscription information” in the configuration guide](configuration.md#订阅资料).
+For details about how the application presents subscription fields and handles refreshes, see [“Subscription information” in the configuration guide](configuration.md#subscription-information).

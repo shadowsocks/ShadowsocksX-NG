@@ -1,84 +1,83 @@
-# 开发、构建与测试
+# Development, Build, and Testing
 
-[返回工程首页](../ShadowsocksX-NG2/README.md)
+[Project home](../ShadowsocksX-NG2/README.md) | [简体中文](development.zh-CN.md)
 
-除特别说明外，命令从 `ShadowsocksX-NG2/` 执行，文中工程路径也相对于该目录。
+Unless noted otherwise, run commands from `ShadowsocksX-NG2/`; paths in this document are relative to that directory.
 
-## 统一验证
+## Unified validation
 
-统一验证入口（从仓库根目录调用）：
+Run the unified validation workflow from the repository root:
 
 ```bash
 task --exit-code --taskfile ShadowsocksX-NG2/Taskfile.dist.yml validate
-# 按指定顺序只运行所需关卡：
+# Run only the requested stages, in the specified order:
 task --exit-code --taskfile ShadowsocksX-NG2/Taskfile.dist.yml validate -- lint test
 ```
 
-在工程目录内可用 `task --exit-code validate`。从任意目录可用 `task --exit-code --taskfile /path/to/ShadowsocksX-NG/ShadowsocksX-NG2/Taskfile.dist.yml validate`。入口按 Taskfile 所在位置定位工程目录，内部调用发行 Taskfile 中的单项任务。
+From the project directory, use `task --exit-code validate`. From any directory, use `task --exit-code --taskfile /path/to/ShadowsocksX-NG/ShadowsocksX-NG2/Taskfile.dist.yml validate`. The entry point locates the project directory relative to the Taskfile and invokes individual tasks from the distribution Taskfile.
 
-默认按 `lint → test → test:smoke → build` 执行，也可按指定顺序选择子集，每关最多一次；任一关失败立即停止，后续关标记 `not_run`，进程返回非零。`--exit-code` 让 Task 透传关卡退出码；省略时 Task 仍返回非零，但可能使用自己的错误码。入口不自动重试，不修改测试并行设置，也不执行会修改源码的格式化。
+By default, stages run in this order: `lint → test → test:smoke → build`. You can select a subset in a specified order; each stage can appear at most once. Execution stops on the first failure, marks later stages `not_run`, and exits nonzero. `--exit-code` makes Task pass through the stage's exit code. Without it, Task still exits nonzero but may use its own error code. The entry point does not retry automatically, change test parallelism, or run formatters that modify source files.
 
-### 验证产物与证据
+### Validation artifacts and evidence
 
-每次运行创建独立的 `.build/validation/<UTC时间>-<随机后缀>/`，开始与结束均输出结果绝对路径。`summary.txt` 保存各关状态、退出码与证据状态；每个已执行关卡在同名子目录下保留合并 stdout/stderr 的 `raw.log` 和 `status.txt`（`test:smoke` 对应 `test-smoke/`），Xcode 关卡显式保存 `result.xcresult`。控制台只显示进度和摘要，需要完整错误时直接读取对应日志。所有产物均在现有忽略目录内；`task clean` 会删除它们，需要长期留存时先复制出去。
+Each run creates a separate `.build/validation/<UTC time>-<random suffix>/` directory and prints its absolute path at the start and end. `summary.txt` records each stage's status, exit code, and evidence status. For every executed stage, the corresponding subdirectory contains a combined stdout/stderr `raw.log` and a `status.txt` (`test:smoke` uses `test-smoke/`); Xcode stages also save `result.xcresult`. The console shows progress and a summary. Read the corresponding logs for complete errors. All artifacts are inside existing ignored directories. `task clean` deletes them, so copy anything you need to keep.
 
-测试关通过本机 `xcrun xcresulttool get test-results summary` 和系统 `plutil` 尽力读取计数，无需新增脚本或工具依赖。`test-summary.json` 保存原始摘要，`test-summary.stderr.log` 保存 xcresulttool 错误，`count-reader.log` 保存计数读取错误。汇总展示通过、失败、跳过、预期失败及总数（Xcode 汇总口径，参数化测试的实际执行次数可能不同）。关卡与总体退出码由原命令决定，命令失败始终保留失败。结果包缺失或摘要不可读时显著标注 `evidence incomplete`（证据不完整）、计数未知，不改变命令结果，也不把缺失计数写成零。构建关不读取测试计数；未执行的关卡不等同于测试跳过。
+For test stages, the workflow uses the local `xcrun xcresulttool get test-results summary` and system `plutil` to read test counts on a best-effort basis; it adds no scripts or tool dependencies. `test-summary.json` stores the raw summary, `test-summary.stderr.log` stores xcresulttool errors, and `count-reader.log` stores count-reading errors. The summary shows passed, failed, skipped, expected-failure, and total counts using Xcode's summary semantics; parameterized tests may have a different actual execution count. Stage and overall exit codes come from the original command, and a failed command always remains a failure. A missing result bundle or unreadable summary is marked `evidence incomplete`, with counts shown as unknown. This does not change the command result, and missing counts are never reported as zero. Build stages do not read test counts; a stage that did not run is not the same as a skipped test.
 
-统一入口成功表示所选关卡的命令通过，仍需核对证据是否完整；hostless、真实进程 smoke、原生 UI 和真实系统代理的验收边界仍分别成立，发布打包门槛见[签名与分发](distribution.md#发布门槛)。
+A successful unified run means the selected stage commands passed; still check that the evidence is complete. Acceptance boundaries remain separate for hostless tests, real-process smoke tests, native UI, and the real system proxy. See [Signing and distribution](distribution.md#release-gate) for release packaging requirements.
 
-`task test` 与 `task test:smoke` 显式启用 Xcode 单测试超时：默认 120 秒，上限 300 秒。这是 runner 兜底，不保证测试任务正常清理，也不是性能门槛。规则阶段等待失败会抛错退出测试体；受保护的测试任务先释放夹具，再取消并等待结束。规则延迟 gate 和同步阻塞夹具的默认等待上限为 10 秒，超时必须报告失败。共享 `AsyncGate` 保留由用例控制的取消语义。Swift Testing 的 detached worker 超时报告保留创建用例名称和源码位置；应同时核对命令退出码与测试计数，不能仅凭单例通过数判断成功。
+`task test` and `task test:smoke` explicitly enable the Xcode per-test timeout: 120 seconds by default, with a 300-second maximum. This is a runner fallback. It does not guarantee normal test-task cleanup and is not a performance threshold. If a rule-stage wait fails, the test body throws and exits. Protected test tasks release their fixtures before cancellation and wait for task completion. Rule-delay gates and synchronous blocking fixtures have a default wait limit of 10 seconds and must report a failure on timeout. The shared `AsyncGate` preserves cancellation semantics controlled by each test. Swift Testing detached-worker timeout reports retain the creating test's name and source location. Check both the command exit code and test counts; a passing count for one test alone does not establish success.
 
-## 常用任务
+## Common tasks
 
-在工程目录内，日常格式化、静态检查、工程生成、构建和测试优先使用 `Taskfile.dist.yml` 定义的任务：
+For routine formatting, static checks, project generation, builds, and tests, prefer the tasks defined in `Taskfile.dist.yml` and run them from the project directory:
 
 ```bash
 task format
 task lint
-task lint:fix  # 需要自动修复 SwiftLint 违规时使用；执行后再运行 task lint
-task gen:prj   # 生成 Xcode 工程
-task build     # 构建 Debug 版本 app
-task test      # 运行单元测试（不含真实进程冒烟）
-task test:smoke  # 运行真实进程冒烟测试（拉起真实 sslocal，见签名与分发文档的发布门槛）
+task lint:fix  # Use for automatic SwiftLint fixes; run task lint afterward.
+task gen:prj   # Generate the Xcode project.
+task build     # Build the Debug app.
+task test      # Run unit tests (without real-process smoke tests).
+task test:smoke  # Run real-process smoke tests (launches real sslocal; see the release gate in the signing and distribution guide).
 ```
 
-`task format` 会格式化 `App/`、`Tests/`、`Domain/` 和 `Agent/` 下的 Swift 文件；`task lint:fix` 会修改源文件，执行后检查并复核 diff。
+`task format` formats Swift files under `App/`, `Tests/`, `Domain/`, and `Agent/`. `task lint:fix` modifies source files; inspect and review the diff afterward.
 
-## 首次准备与测试范围
+## First-time setup and test scope
 
-新 clone 或清单变更后，在工程目录内先取外部二进制，再生成工程（顺序不可颠倒）：
+After a fresh clone or a manifest change, fetch the external binaries before generating the project. Run these commands from the project directory, in this order:
 
 ```bash
 Scripts/fetch-external-binaries.sh
 task gen:prj
 ```
 
-Swift Package Manager 从 `project.yml` 固定的正式版本解析 AgeSwift，并校验其发布 XCFramework。首次解析需要网络，消费者无需安装 Rust。`Vendor/AgeSwift/LICENSE-MIT` 来自固定版本，随应用打包到 `Resources/ThirdParty/AgeSwift/`。加密存储互操作测试还需要 `brew install age` 和可访问的登录钥匙串；测试使用 UUID 隔离的 service 并清理，不修改真实应用配置。命令行调试方法见[加密格式文档](server-library-encryption-format.zh-CN.md)。
+Swift Package Manager resolves the pinned release of AgeSwift from `project.yml` and verifies its release XCFramework. Network access is needed for the first resolution; consumers do not need to install Rust. `Vendor/AgeSwift/LICENSE-MIT` comes from the pinned release and is bundled in the app at `Resources/ThirdParty/AgeSwift/`. Encryption-storage interoperability tests also require `brew install age` and an accessible login keychain. Tests use a UUID-isolated service and clean it up without changing real app configuration. See the [encryption format guide](server-library-encryption-format.md) for command-line debugging.
 
-无证书也能构建与跑单测：Debug 基线是 ad-hoc，不需要 `Configs/Signing.local.xcconfig`。只有要做 Developer ID 签名（发布，或让本机 Debug 产物过打包门槛）时才写该文件，内容见[签名与运行形态基线](distribution.md#签名与运行形态基线)。
+You can build and run unit tests without a certificate: the Debug baseline uses ad-hoc signing and does not require `Configs/Signing.local.xcconfig`. Create that file only when signing with Developer ID, either for release or to make a local Debug build pass the packaging gate. See [Signing and runtime baseline](distribution.md#signing-and-runtime-baseline) for its contents.
 
-`Tests/Smoke/` 是真实进程冒烟（经 wrapper 拉起真实 sslocal 验证启动、握手、
-ACL 路由与插件监管），不在默认 `task test` 内，由独立 scheme 按需运行。
+`Tests/Smoke/` contains real-process smoke tests. A wrapper launches real `sslocal` to verify startup, handshake, ACL routing, and plugin supervision. These tests are not part of the default `task test`; run them on demand with their separate scheme.
 
-## 代码风格工具
+## Code style tools
 
-- `swift format` 随 Xcode/Swift 工具链提供，无需单独安装（基线：Apple Swift 6.4）；SwiftLint 需 `brew install swiftlint`（基线 0.65.0）。工具缺失时，含工程目录 Swift 文件的提交会被 pre-commit 钩子拒绝而不是放行。
-- 配置文件：`.swift-format` 是 Swift 6.4 工具链默认规则的快照（固定成文件，工具链升级不漂移）；`.swiftlint.yml` 默认规则起步，只声明排除项与个别和 format 基线冲突的关闭项（文件内有触发案例注释）。
-- 仓库级 `pre-commit` 钩子的启用方式和检查范围见下节「开发钩子」。
-- 调整规则只针对实际痛点：修改 `.swift-format` / `.swiftlint.yml` 的 PR 须给出触发案例，并同步更新本节中的基线版本。
+- `swift format` is included with the Xcode/Swift toolchain and does not need a separate installation (baseline: Apple Swift 6.4). Install SwiftLint with `brew install swiftlint` (baseline: 0.65.0). If either tool is missing, the pre-commit hook rejects a commit that contains Swift files under the project directory instead of allowing it.
+- `.swift-format` is a snapshot of the Swift 6.4 toolchain's default rules, checked in so the rules do not drift on toolchain upgrades. `.swiftlint.yml` starts with the default rules and declares only exclusions and individual opt-outs that conflict with the format baseline; comments in the file show triggering examples.
+- See [Development hooks](#development-hooks) for how to enable the repository-level `pre-commit` hook and what it checks.
+- Adjust rules only to address concrete problems. A PR that changes `.swift-format` or `.swiftlint.yml` must include a triggering example and update the baseline versions in this section.
 
-## 开发钩子
+## Development hooks
 
-新 clone 后，在仓库根目录启用 Git hooks：
+After cloning, enable Git hooks from the repository root:
 
 ```bash
 git config core.hooksPath .githooks
 ```
 
-启用后，`pre-commit` 只检查暂存区中 `ShadowsocksX-NG2/` 下的 `.swift` 文件：`swift format` 的结果写回暂存区、不修改工作区；SwiftLint 的 error 级违规拒绝提交，warning 仅提示。其他文件跳过；没有 NG2 Swift 文件时直接放行。含有 NG2 Swift 文件但缺少工具时，提交检查失败。两关都把「工具没能执行」与「查出问题」分开报告：看到「执行失败」应查工具与配置环境，而不是去改代码。工具安装与版本见上节「代码风格工具」。
+Once enabled, `pre-commit` checks only staged `.swift` files under `ShadowsocksX-NG2/`. `swift format` writes its result back to the index without changing the working tree. SwiftLint errors reject the commit; warnings are informational. Other files are skipped. If there are no NG2 Swift files, the hook passes. If NG2 Swift files are present and a required tool is missing, the check fails. Both checks distinguish “tool execution failed” from “issues found”: when you see “execution failed,” investigate the tool or configuration environment instead of changing code. See [Code style tools](#code-style-tools) for installation and versions.
 
-## 领域文档语言
+## Language of domain documents
 
-本项目的 [术语表](../GLOSSARY.md) 和新建 [架构决策记录（ADR）](adr/) 使用简体中文，代码标识符与必要的英文术语保留原文；已有 ADR 保留原文，不作语言迁移。
+The project's [glossary](../GLOSSARY.md) and new [architecture decision records (ADRs)](adr/) are written in Simplified Chinese, while code identifiers and necessary English technical terms remain in English. Existing ADRs retain their original language and are not translated.
 
-AI 生成大量文档后，人与机器之间的沟通成为协作瓶颈：人的阅读、理解和审阅速度决定了文档能否有效推动开发。使用简体中文可以降低维护者的认知负荷，提高沟通与审阅效率。
+As AI generates more documents, communication between people and machines can become a collaboration bottleneck: people's reading, comprehension, and review speed determines whether documentation can support development effectively. Simplified Chinese reduces the cognitive load for maintainers and makes communication and review more efficient.
