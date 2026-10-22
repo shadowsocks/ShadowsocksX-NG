@@ -2,7 +2,7 @@
 
 English | [简体中文](README.zh.md)
 
-ShadowsocksX-NG2 is a modern rewrite of ShadowsocksX-NG for macOS 15+ and Apple Silicon (arm64). Its source code and build configuration are in this directory. The archived legacy version is described on the [repository home page](../README.md#旧版归档).
+ShadowsocksX-NG2 is a modern rewrite of ShadowsocksX-NG for macOS 15+ and Apple Silicon (arm64). Its source code and build configuration are in this directory. The archived legacy version is described on the [repository home page](../README.md).
 
 The app uses upstream releases of `sslocal`, `v2ray-plugin`, and Cloak `ck-client`. HTTP inbound traffic is handled directly by shadowsocks-rust; Legacy Privoxy is no longer bundled.
 

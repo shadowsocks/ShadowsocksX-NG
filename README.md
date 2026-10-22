@@ -1,16 +1,42 @@
-# ShadowsocksX-NG
+# ShadowsocksX-NG2
 
-> 🚧 重新实现进行中 —— 本仓库正在使用现代技术栈重写 ShadowsocksX-NG macOS 客户端。
+English | [简体中文](README.zh.md)
 
-新实现位于 [`ShadowsocksX-NG2/`](ShadowsocksX-NG2/README.zh.md)，面向 macOS 15+ / Apple Silicon（arm64）。外部二进制使用上游发布产物，不再通过 git 子模块在仓库内构建。
+A native Shadowsocks client for Apple Silicon Macs. Manage servers, subscriptions, and routing from the menu bar, and provide SOCKS5 and HTTP proxy endpoints for Mac apps.
 
-## 开发入口
+> **Download:** ShadowsocksX-NG2 is not available yet. After release, download it from [GitHub Releases](https://github.com/shadowsocks/ShadowsocksX-NG/releases) and choose the ShadowsocksX-NG2 release. The page also hosts legacy 1.x releases.
 
-- [首次构建与常用命令](ShadowsocksX-NG2/README.zh.md#开发构建与测试)
-- [开发指南](docs/development.zh.md)：统一验证、测试证据、代码风格工具与 Git hooks。
-- [工程与专题文档](ShadowsocksX-NG2/README.zh.md#文档导航)：源码布局、供应链与签名、规则快照、配置说明。
-- [术语表](GLOSSARY.md)与[架构决策记录（ADR）](docs/adr/)；文档语言约定见[开发指南](docs/development.zh.md#领域文档语言)。
+## System requirements
 
-## 旧版归档
+- macOS 15 or later
+- An Apple Silicon (arm64) Mac
+- A Shadowsocks server configuration or SIP-008 subscription URL
 
-旧版工程源码已从本仓库移除，归档在 [shadowsocks/ShadowsocksX-NG 的 legacy-v1 分支](https://github.com/shadowsocks/ShadowsocksX-NG/tree/legacy-v1)，仅供参考，不保证可构建。旧版功能说明与使用文档见 [legacy-v1 的 README](https://github.com/shadowsocks/ShadowsocksX-NG/blob/legacy-v1/README.md)。
+This project provides a client. It does not provide servers or subscription services.
+
+## Features
+
+- **Manage servers and subscriptions:** Add or import Shadowsocks configurations, organize servers into groups, and mark favorites. Add HTTPS SIP-008 subscriptions and view traffic and expiry information provided by the service provider.
+- **Choose how traffic is routed:** Use global, rules, or direct mode. In rules mode, review the bundled rules, write custom rules, and choose whether destinations use the proxy or connect directly.
+- **Connect Mac apps and LAN devices:** Provide local SOCKS5 and HTTP proxies. You can enable LAN listeners and set access credentials when needed; LAN listeners are off by default.
+- **Use proxy plugins:** `v2ray-plugin` and Cloak are included. The bundled `v2ray-plugin` also provides a [Hysteria2 transport mode](https://github.com/shadowsocks/v2ray-plugin#shadowsocks-over-hysteria2-transport) for Shadowsocks TCP traffic. Both ends must use this mode; ordinary Hysteria2 proxy nodes are not compatible. You can also configure your own plugins.
+- **Protect local configuration and export diagnostics:** The server library and listener configuration are encrypted on your Mac using age. Diagnostic reports exclude sensitive data such as passwords, plugin options, and subscription URLs.
+- **Use a familiar interface:** A native macOS menu bar app with Simplified Chinese and English interfaces. You can also launch it at login.
+
+## How NG2 differs from Legacy
+
+| | ShadowsocksX-NG2 | Legacy 1.x |
+| --- | --- | --- |
+| System requirements | macOS 15 or later, Apple Silicon | The legacy project documentation lists macOS 10.12 or later |
+| Routing | Global, rules, and direct modes in the app; manage bundled and custom rules | PAC, GFWList, and manual modes |
+| Installation and configuration | Separate app and configuration directory; can coexist with Legacy | The legacy app and its configuration can remain installed separately |
+| Importing legacy settings | Can import legacy server configurations | Legacy preferences, routing mode, rules, and login item are not migrated automatically |
+
+NG2 is a separate new app, not an in-place upgrade. Both apps can be installed side by side, and importing server configurations does not change Legacy data. macOS system proxy settings are shared by both apps, so check which app manages them when switching clients.
+
+## Project and documentation
+
+- [Legacy source archive](https://github.com/shadowsocks/ShadowsocksX-NG/tree/legacy-v1)
+- [NG2 developer documentation](ShadowsocksX-NG2/README.md)
+- [Development and validation guide](docs/development.md)
+- [GPL-3.0 license](LICENSE)

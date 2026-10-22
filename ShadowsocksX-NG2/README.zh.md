@@ -2,7 +2,7 @@
 
 [English](README.md) | 简体中文
 
-ShadowsocksX-NG 的现代化重写版本，面向 macOS 15+ / Apple Silicon（arm64）。新工程的源码与构建配置位于本目录，旧版归档见[仓库首页](../README.md#旧版归档)。
+ShadowsocksX-NG 的现代化重写版本，面向 macOS 15+ / Apple Silicon（arm64）。新工程的源码与构建配置位于本目录，旧版归档见[仓库首页](../README.zh.md)。
 
 依赖的 `sslocal`、`v2ray-plugin` 与 Cloak `ck-client` 使用上游发布的可执行文件。HTTP 入站由 shadowsocks-rust 直接提供，不再携带 Legacy Privoxy。
 
