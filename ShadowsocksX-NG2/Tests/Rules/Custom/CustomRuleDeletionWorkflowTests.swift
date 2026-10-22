@@ -136,11 +136,11 @@ extension CustomRuleDeletionWorkflowTests {
 
   func testIncompleteCollectionRejectsDeletionFromPreviouslyLoadedFacts() async throws {
     let rule = CustomRule(action: .proxy, match: try RuleMatch(domainExact: "kept.example"))
-    var failed = false
+    let loadState = DocumentLoadState()
     var commits = 0
     let workflow = RulesWorkflow(
       loadDocument: {
-        if failed { throw CustomRuleStoreError.corrupt(detail: "fixture") }
+        if loadState.shouldFail { throw CustomRuleStoreError.corrupt(detail: "fixture") }
         return CustomRuleDocument(rules: [rule])
       },
       commitDocument: {
@@ -150,11 +150,15 @@ extension CustomRuleDeletionWorkflowTests {
     await workflow.refresh()
     workflow.select(Set(workflow.snapshot.rows.map(\.id)))
     let confirmation = try XCTUnwrap(workflow.prepareCustomRuleDeletion())
-    failed = true
+    loadState.shouldFail = true
     await workflow.refresh()
     XCTAssertNil(workflow.prepareCustomRuleDeletion())
     await workflow.deleteCustomRules(confirmation)
     XCTAssertEqual(workflow.snapshot.commitFeedback?.outcome, .superseded)
     XCTAssertEqual(commits, 0)
+  }
+  @MainActor
+  private final class DocumentLoadState {
+    var shouldFail = false
   }
 }

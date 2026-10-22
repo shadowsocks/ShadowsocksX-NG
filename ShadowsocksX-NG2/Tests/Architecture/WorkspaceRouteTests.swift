@@ -16,6 +16,7 @@ final class WorkspaceRouteTests: XCTestCase {
     let route = WorkspaceRoute()
     var changeCount = 0
     let cancellable = route.objectWillChange.sink { _ in changeCount += 1 }
+    defer { cancellable.cancel() }
 
     route.navigate(to: .home)
     XCTAssertEqual(changeCount, 0)

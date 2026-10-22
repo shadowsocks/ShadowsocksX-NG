@@ -15,12 +15,12 @@ final class SystemProxyObserver {
   }
 
   /// Current configuration or operation result, independent of persisted intent.
-  internal(set) var systemProxyState: SystemProxyApplicationFacts = .idle {
+  var systemProxyState: SystemProxyApplicationFacts = .idle {
     didSet { factChanges.markChanged() }
   }
   /// Approval remains actionable even after an off-intent clear failure.
-  internal(set) var systemProxyApprovalRequired = false { didSet { factChanges.markChanged() } }
-  internal(set) var systemProxyInspection = SystemProxyInspectionFacts() {
+  var systemProxyApprovalRequired = false { didSet { factChanges.markChanged() } }
+  var systemProxyInspection = SystemProxyInspectionFacts() {
     didSet { factChanges.markChanged() }
   }
   /// 呈现事实变化通道（didChange 语义）：三个事实属性的 didSet 汇集于此。
@@ -31,21 +31,21 @@ final class SystemProxyObserver {
   private var knownSystemProxyServices: Set<SystemProxyServiceIdentifier> = []
   private var systemProxyOperationInProgress = false
   /// 读面：健康循环体在 launch 重同步抑制期跳过巡检。
-  internal(set) var systemProxyStartupInProgress = false
+  var systemProxyStartupInProgress = false
   /// 读面：健康循环的收敛条件。
-  internal(set) var systemProxyInitialApplyPending = false
+  var systemProxyInitialApplyPending = false
   /// 读面：健康循环的收敛条件。
-  internal(set) var systemProxyWasUnavailable = false
+  var systemProxyWasUnavailable = false
   /// Read-only task handle lets observers await cancellation completion.
-  internal(set) var systemProxyHealthTask: Task<Void, Never>?
+  var systemProxyHealthTask: Task<Void, Never>?
   var systemProxyReadGeneration = 0
   /// 读面：观察机测试。
-  internal(set) var systemProxyObservationMode = SystemProxyObservationMode.stopped
+  var systemProxyObservationMode = SystemProxyObservationMode.stopped
   var systemProxyCleanupRescanRequested = false
   var systemProxyCleanupTask: Task<SystemProxyApplicationFacts, Never>?
   var systemProxyInspectionScheduled = false
   /// Last passive inspection; awaiting it observes event convergence without a timing guess.
-  internal(set) var systemProxyInspectionTask: Task<Void, Never>?
+  var systemProxyInspectionTask: Task<Void, Never>?
 
   let systemProxy: SystemProxyControlling
   let systemProxyHelper: SystemProxyHelperServicing

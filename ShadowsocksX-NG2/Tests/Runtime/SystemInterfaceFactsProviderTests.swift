@@ -42,7 +42,7 @@ final class SystemInterfaceFactsProviderTests: XCTestCase {
   func testInterfaceTypeMappingCoversRealSystemInterfaces() {
     let mapped = interfaces.filter { $0.interfaceType != nil }
     XCTAssertFalse(
-      mapped.isEmpty, "真实主机至少有一个 SystemConfiguration 可见接口：\(interfaces)")
+      mapped.isEmpty, "真实主机至少有一个 SystemConfiguration 可见接口：\(String(describing: interfaces))")
     for interface in mapped {
       if let localizedName = interface.localizedName {
         XCTAssertFalse(localizedName.isEmpty, "\(interface.bsdName) 本地化名称非空")

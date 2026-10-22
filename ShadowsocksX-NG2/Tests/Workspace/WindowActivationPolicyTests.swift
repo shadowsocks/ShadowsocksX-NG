@@ -14,8 +14,8 @@ final class WindowActivationPolicyTests: XCTestCase {
   private var window: NSWindow!
   private var foreignWindow: NSWindow!
 
-  override func setUpWithError() throws {
-    try super.setUpWithError()
+  override func setUp() async throws {
+    try await super.setUp()
     spy = SpyApplier()
     tickScheduler = SpyTickScheduler()
     coordinator = WindowActivationPolicyCoordinator(
@@ -31,10 +31,10 @@ final class WindowActivationPolicyTests: XCTestCase {
     tickScheduler.drainOne()
   }
 
-  override func tearDownWithError() throws {
+  override func tearDown() async throws {
     window = nil
     foreignWindow = nil
-    try super.tearDownWithError()
+    try await super.tearDown()
   }
 
   /// 策略与激活落点 spy（ADR 0017）：只记录调用，不触碰真实 NSApp。
