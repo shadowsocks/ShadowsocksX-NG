@@ -3,8 +3,9 @@
 #
 # Standalone assertion over a built app bundle; exits nonzero on any failure:
 #   1. Nested code signatures pass strict verification (incl. every helper).
-#   2. The main app is Developer ID signed with Hardened Runtime and carries
-#      NO App Sandbox entitlement (and no network.server entitlement).
+#   2. The main app and native tools are Developer ID signed with Hardened
+#      Runtime and secure timestamps. The app carries NO App Sandbox
+#      entitlement (and no network.server entitlement).
 #   3. Every Vendor manifest binary is embedded at Contents/<bundleSubpath>,
 #      is arm64-only, and is re-signed by our Developer ID with Hardened
 #      Runtime, a secure timestamp and the pinned code-signing identifier
@@ -72,6 +73,11 @@ check_devid_and_runtime() {
         *runtime*) pass "$1: Hardened Runtime" ;;
         *) fail "$1: Hardened Runtime (flags: ${flags:-none})" ;;
     esac
+    if [ -n "$(dv_value "$2" Timestamp)" ]; then
+        pass "$1: secure timestamp present"
+    else
+        fail "$1: secure timestamp present"
+    fi
 }
 
 # --- 1. strict nested signature verification -------------------------------
@@ -100,6 +106,18 @@ else
         fail "main app TeamIdentifier is $EXPECTED_TEAM_ID (got: ${app_team:-none})"
 fi
 check_devid_and_runtime "main app" "$app_dv"
+for binary in ShadowsocksX-NG2Agent ShadowsocksX-NG2SystemProxyHelper; do
+    target="$CONTENTS/MacOS/$binary"
+    if [ ! -f "$target" ]; then
+        fail "$binary: embedded in Contents/MacOS"
+        continue
+    fi
+    native_dv=$(dv_of "$target")
+    check_devid_and_runtime "$binary" "$native_dv"
+    native_team=$(dv_value "$native_dv" TeamIdentifier)
+    [ "$native_team" = "$app_team" ] ||
+        fail "$binary: TeamIdentifier matches the app (got: ${native_team:-none})"
+done
 case "$app_authority" in
     "Developer ID Application:"*) ;;
     *)
@@ -172,10 +190,8 @@ for manifest in $manifests; do
     dv=$(dv_of "$target")
     team=$(dv_value "$dv" TeamIdentifier)
     actual_identifier=$(dv_value "$dv" Identifier)
-    timestamp=$(dv_value "$dv" Timestamp)
 
     check_devid_and_runtime "$name" "$dv"
-    [ -n "$timestamp" ] || fail "$name: secure timestamp present"
     [ "$team" = "$app_team" ] ||
         fail "$name: TeamIdentifier matches the app (got: ${team:-none})"
     [ "$actual_identifier" = "$identifier" ] ||

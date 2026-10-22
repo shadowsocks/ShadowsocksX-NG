@@ -34,6 +34,7 @@
   - 测试 target（单测与冒烟）身份随同一基线：去宿主化（ADR-0021）后 xctest 包不再注入宿主 app，ad-hoc 也能加载执行（实测），因此测试无需证书。
   - 注意 `project.yml` 一旦重新设置这两个键，pbxproj 构建设置会盖掉 xcconfig（`Tests/Architecture/SigningConfigurationTests.swift` 守卫该约束）。
 - Release 配置关闭 `CODE_SIGN_INJECT_BASE_ENTITLEMENTS`，保证发布产物 entitlements 只来自项目文件。
+- Release 配置通过 `OTHER_CODE_SIGN_FLAGS = $(inherited) --timestamp` 为 Xcode 签名的主程序和两个原生工具请求安全时间戳。打包门槛在上传公证前检查这些时间戳；DMG 的时间戳不能替代包内可执行文件的时间戳。
 
 ## 发布门槛
 

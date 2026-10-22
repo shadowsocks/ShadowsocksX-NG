@@ -10,3 +10,5 @@
 // 发布身份改成 ad-hoc 或开发证书——Release 基线在这里是硬约束，后赋值者胜。
 #include? "Signing.local.xcconfig"
 CODE_SIGN_IDENTITY = Developer ID Application
+// 普通 Release build 也必须为主程序和两个原生工具请求公证所需的安全时间戳。
+OTHER_CODE_SIGN_FLAGS = $(inherited) --timestamp
