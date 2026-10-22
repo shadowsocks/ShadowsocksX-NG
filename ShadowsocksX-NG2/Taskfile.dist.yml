@@ -133,16 +133,17 @@ tasks:
 
   build:release:
     desc: Build the ShadowsocksX-NG2 macOS application with Release Config
+    requires:
+      vars: [MARKETING_VERSION, CURRENT_PROJECT_VERSION]
     vars:
       BUNDLE_MARKETING_VERSION: '{{regexFind "[0-9]+\\.[0-9]+\\.[0-9]+" (default "" .MARKETING_VERSION)}}'
     preconditions:
-      - sh: '{{if or (empty .MARKETING_VERSION) (regexMatch .RELEASE_VERSION_PATTERN .MARKETING_VERSION)}}true{{else}}false{{end}}'
+      - sh: '{{if regexMatch .RELEASE_VERSION_PATTERN .MARKETING_VERSION}}true{{else}}false{{end}}'
         msg: 'MARKETING_VERSION must be a release version (for example, 2.1.0 or v2.0.0-alpha-1).'
-      - sh: '{{if or (empty .CURRENT_PROJECT_VERSION) (regexMatch "^[0-9]+(\\.[0-9]+){0,2}$" .CURRENT_PROJECT_VERSION)}}true{{else}}false{{end}}'
+      - sh: '{{if regexMatch "^[0-9]+(\\.[0-9]+){0,2}$" .CURRENT_PROJECT_VERSION}}true{{else}}false{{end}}'
         msg: 'CURRENT_PROJECT_VERSION must have one to three numeric components.'
-    deps:
-      - gen:prj
     cmds:
+      - task: gen:prj
       - >-
         xcodebuild
         -project ShadowsocksX-NG2.xcodeproj
@@ -150,8 +151,8 @@ tasks:
         -configuration Release
         -destination 'platform=macOS,arch=arm64'
         -derivedDataPath {{.DERIVED_DATA_DIR | shellQuote}}
-        {{if .MARKETING_VERSION}}{{printf "MARKETING_VERSION=%s" .BUNDLE_MARKETING_VERSION | shellQuote}}{{end}}
-        {{if .CURRENT_PROJECT_VERSION}}{{printf "CURRENT_PROJECT_VERSION=%s" .CURRENT_PROJECT_VERSION | shellQuote}}{{end}}
+        {{printf "MARKETING_VERSION=%s" .BUNDLE_MARKETING_VERSION | shellQuote}}
+        {{printf "CURRENT_PROJECT_VERSION=%s" .CURRENT_PROJECT_VERSION | shellQuote}}
         build
 
   format:

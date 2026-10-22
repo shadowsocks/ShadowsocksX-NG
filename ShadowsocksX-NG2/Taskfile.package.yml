@@ -10,13 +10,13 @@ tasks:
     desc: Build, sign, notarize and publish an arm64 Release DMG
     dir: '{{.TASKFILE_DIR}}'
     requires:
-      vars: [NOTARY_PROFILE]
+      vars: [NOTARY_PROFILE, MARKETING_VERSION, CURRENT_PROJECT_VERSION]
     preconditions:
       - sh: 'test -n {{.NOTARY_PROFILE | shellQuote}}'
         msg: 'NOTARY_PROFILE must name credentials stored by notarytool store-credentials.'
-      - sh: '{{if or (empty .MARKETING_VERSION) (regexMatch .RELEASE_VERSION_PATTERN .MARKETING_VERSION)}}true{{else}}false{{end}}'
+      - sh: '{{if regexMatch .RELEASE_VERSION_PATTERN .MARKETING_VERSION}}true{{else}}false{{end}}'
         msg: 'MARKETING_VERSION must be a release version (for example, 2.1.0 or v2.0.0-alpha-1).'
-      - sh: '{{if or (empty .CURRENT_PROJECT_VERSION) (regexMatch "^[0-9]+(\\.[0-9]+){0,2}$" .CURRENT_PROJECT_VERSION)}}true{{else}}false{{end}}'
+      - sh: '{{if regexMatch "^[0-9]+(\\.[0-9]+){0,2}$" .CURRENT_PROJECT_VERSION}}true{{else}}false{{end}}'
         msg: 'CURRENT_PROJECT_VERSION must have one to three numeric components.'
     vars:
       RUN_DIR:
@@ -47,12 +47,14 @@ tasks:
   package:image:
     internal: true
     dir: '{{.TASKFILE_DIR}}'
+    requires:
+      vars: [MARKETING_VERSION]
     vars:
       APP_VERSION:
         sh: plutil -extract CFBundleShortVersionString raw -expect string -o - {{.APP_PATH | shellQuote}}/Contents/Info.plist
       APP_BUILD:
         sh: plutil -extract CFBundleVersion raw -expect string -o - {{.APP_PATH | shellQuote}}/Contents/Info.plist
-      IMAGE_VERSION: '{{default .APP_VERSION .MARKETING_VERSION}}'
+      IMAGE_VERSION: '{{.MARKETING_VERSION}}'
       IMAGE_NAME: 'ShadowsocksX-NG2-{{.IMAGE_VERSION}}-{{.APP_BUILD}}-arm64.dmg'
       IMAGE_PATH: '{{.RUN_DIR}}/{{.IMAGE_NAME}}'
     preconditions:
