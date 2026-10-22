@@ -101,8 +101,8 @@ jobs:
 
       - name: Test
         working-directory: ShadowsocksX-NG2
-        run: task --exit-code test
+        run: task --exit-code test STRICT=true
 
       - name: Build
         working-directory: ShadowsocksX-NG2
-        run: task --exit-code build
+        run: task --exit-code build STRICT=true
