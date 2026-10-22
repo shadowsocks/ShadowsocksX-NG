@@ -163,7 +163,11 @@ final class FakeOccupancyProbe: PortOccupancyProbing, @unchecked Sendable {
     answerOverride = answer
   }
 
-  func occupancy(for request: PortOccupancyProbeRequest) -> PortOccupancy {
+  func occupancy(for request: PortOccupancyProbeRequest) async -> PortOccupancy {
+    occupancySynchronously(for: request)
+  }
+
+  private func occupancySynchronously(for request: PortOccupancyProbeRequest) -> PortOccupancy {
     lock.lock()
     defer { lock.unlock() }
     requestedPorts.append(request.port)
@@ -199,8 +203,14 @@ final class FakeOccupancyProbe: PortOccupancyProbing, @unchecked Sendable {
 /// 被扣住，`passThrough` 之后的调用立即返回新应答。用于把「旧一轮」结果钉在
 /// 新一轮之后落盘，验证过期结果不得覆盖。
 final class GatedOccupancyProbe: PortOccupancyProbing, @unchecked Sendable {
+  private struct Invocation {
+    let isFirstEntry: Bool
+    let isGated: Bool
+    let answer: PortOccupancy
+  }
+
   private let lock = NSLock()
-  private let gate = TestBlockingGate("occupancy probe release")
+  private let gate = TestAsyncGate("occupancy probe release")
   private var isGated = true
   private var enteredCount = 0
   private let entry = XCTestExpectation(description: "occupancy probe entered")
@@ -239,17 +249,22 @@ final class GatedOccupancyProbe: PortOccupancyProbing, @unchecked Sendable {
     gate.release()
   }
 
-  func occupancy(for request: PortOccupancyProbeRequest) -> PortOccupancy {
+  func occupancy(for request: PortOccupancyProbeRequest) async -> PortOccupancy {
+    let invocation = record(request)
+    if invocation.isFirstEntry { entry.fulfill() }
+    if invocation.isGated, !(await gate.wait()) {
+      return .unknown(detail: "Test fixture release timed out")
+    }
+    return invocation.answer
+  }
+
+  private func record(_ request: PortOccupancyProbeRequest) -> Invocation {
     lock.lock()
     enteredCount += 1
     let firstEntry = enteredCount == 1
     let gated = isGated
     let answer = gated ? gatedAnswer : passThroughAnswer
     lock.unlock()
-    if firstEntry { entry.fulfill() }
-    if gated, !gate.wait() {
-      return .unknown(detail: "Test fixture release timed out")
-    }
-    return answer
+    return Invocation(isFirstEntry: firstEntry, isGated: gated, answer: answer)
   }
 }

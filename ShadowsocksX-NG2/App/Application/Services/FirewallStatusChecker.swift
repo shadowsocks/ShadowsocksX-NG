@@ -7,7 +7,7 @@ enum FirewallBlockStatus: Equatable, Sendable {
 }
 
 protocol FirewallStatusChecking: Sendable {
-  func status(for executableURL: URL) -> FirewallBlockStatus
+  func status(for executableURL: URL) async -> FirewallBlockStatus
 }
 
 /// `socketfilterfw --getappblocked` 是应用防火墙拒绝态的只读系统边界。
@@ -23,7 +23,11 @@ struct SocketFilterFirewallChecker: FirewallStatusChecking, @unchecked Sendable 
     self.runCommand = runCommand
   }
 
-  func status(for executableURL: URL) -> FirewallBlockStatus {
+  func status(for executableURL: URL) async -> FirewallBlockStatus {
+    statusSynchronously(for: executableURL)
+  }
+
+  private func statusSynchronously(for executableURL: URL) -> FirewallBlockStatus {
     guard
       let output = try? runCommand(
         Self.toolURL, ["--getappblocked", executableURL.path])

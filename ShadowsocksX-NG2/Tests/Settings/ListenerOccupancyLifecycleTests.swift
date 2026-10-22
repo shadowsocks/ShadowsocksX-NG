@@ -155,7 +155,7 @@ struct ListenerOccupancyLifecycleTests {
 private final class SuggestionProbe: PortOccupancyProbing, Sendable {
   let gate = GatedOccupancyProbe(gatedAnswer: .free, passThroughAnswer: .free)
 
-  func occupancy(for request: PortOccupancyProbeRequest) -> PortOccupancy {
-    request.port >= PortSuggestion.range.lowerBound ? gate.occupancy(for: request) : .free
+  func occupancy(for request: PortOccupancyProbeRequest) async -> PortOccupancy {
+    request.port >= PortSuggestion.range.lowerBound ? await gate.occupancy(for: request) : .free
   }
 }

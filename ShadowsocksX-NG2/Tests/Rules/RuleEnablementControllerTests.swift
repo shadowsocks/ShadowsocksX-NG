@@ -124,7 +124,7 @@ final class RuleEnablementControllerTests: ProxyRuntimeControllerTests {
       store: store,
       settings: ProxyRuntimeSettings(
         listen: ActivationFixture.listen, preferredMode: .global, agentEnabled: true),
-      proxyMode: .global, ruleSnapshots: BuiltinRuleSnapshots(loader: { loader.load($0) }))
+      proxyMode: .global, ruleSnapshots: BuiltinRuleSnapshots(loader: { await loader.load($0) }))
     try await controller.activate(seeded.server)
     let runtimeStore = RuntimeFileStore(fileURL: runtime.contract)
     let previous = try XCTUnwrap(runtimeStore.loadDocument())
@@ -164,7 +164,7 @@ final class RuleEnablementControllerTests: ProxyRuntimeControllerTests {
       store: store,
       settings: ProxyRuntimeSettings(
         listen: ActivationFixture.listen, preferredMode: .global, agentEnabled: true),
-      proxyMode: .global, ruleSnapshots: BuiltinRuleSnapshots(loader: { loader.load($0) }))
+      proxyMode: .global, ruleSnapshots: BuiltinRuleSnapshots(loader: { await loader.load($0) }))
     try await controller.activate(seeded.server)
     let modeSwitch = Task { await controller.setProxyMode(.rule) }
     try await withTestTask(
@@ -187,7 +187,7 @@ final class RuleEnablementControllerTests: ProxyRuntimeControllerTests {
     let started = expectation(description: "background source preparation")
     let loader = PausedRuntimeRuleSource(started: started)
     defer { loader.resume() }
-    let snapshots = BuiltinRuleSnapshots(loader: { loader.load($0) })
+    let snapshots = BuiltinRuleSnapshots(loader: { await loader.load($0) })
     let settings = ProxyRuntimeSettings(
       listen: ActivationFixture.listen, preferredMode: .global, agentEnabled: true)
     let controller = makeRuleEnablementController(
@@ -237,7 +237,7 @@ final class RuleEnablementControllerTests: ProxyRuntimeControllerTests {
       store: store,
       settings: ProxyRuntimeSettings(
         listen: ActivationFixture.listen, preferredMode: .global, agentEnabled: true),
-      proxyMode: .global, ruleSnapshots: BuiltinRuleSnapshots(loader: { loader.load($0) }))
+      proxyMode: .global, ruleSnapshots: BuiltinRuleSnapshots(loader: { await loader.load($0) }))
     try await controller.activate(seeded.server)
     let old = Task { await controller.setProxyMode(.rule) }
     try await withTestTask(

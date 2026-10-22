@@ -46,11 +46,16 @@ func withTestTask<Value: Sendable>(
   await finish()
 }
 
-/// Broadcast release is remembered, including when cleanup runs before a worker enters.
-final class TestBlockingGate: @unchecked Sendable {
-  private let group = DispatchGroup()
+/// Broadcast async release is remembered, and timed-out waiters do not occupy a worker thread.
+final class TestAsyncGate: @unchecked Sendable {
+  private struct Waiter {
+    let continuation: CheckedContinuation<Bool, Never>
+    var timeoutTask: Task<Void, Never>?
+  }
+
   private let lock = NSLock()
   private var released = false
+  private var waiters: [UUID: Waiter] = [:]
   private let onTimeout: @Sendable () -> Void
 
   init(
@@ -61,7 +66,6 @@ final class TestBlockingGate: @unchecked Sendable {
     if let onTimeout {
       self.onTimeout = onTimeout
     } else if let test = Test.current {
-      // Detached workers have no current test; retain the creating test and source location.
       let message = Comment(
         rawValue: "Timed out waiting for \(description) (created by \(test.name))")
       let location = SourceLocation(
@@ -70,22 +74,64 @@ final class TestBlockingGate: @unchecked Sendable {
     } else {
       self.onTimeout = { XCTFail("Timed out waiting for \(description)", file: file, line: line) }
     }
-    group.enter()
   }
 
-  func wait(timeout: TimeInterval = 10) -> Bool {
-    guard group.wait(timeout: .now() + timeout) == .success else {
-      onTimeout()
-      return false
+  func wait(timeout: Duration = .seconds(10)) async -> Bool {
+    let id = UUID()
+    return await withCheckedContinuation { continuation in
+      lock.lock()
+      guard !released else {
+        lock.unlock()
+        continuation.resume(returning: true)
+        return
+      }
+      waiters[id] = Waiter(continuation: continuation)
+      lock.unlock()
+
+      let timeoutTask = Task { [weak self] in
+        do {
+          try await Task.sleep(for: timeout)
+          self?.expire(id)
+        } catch {
+          // Release cancels the timer after resuming the waiter.
+        }
+      }
+
+      lock.lock()
+      if var waiter = waiters[id] {
+        waiter.timeoutTask = timeoutTask
+        waiters[id] = waiter
+        lock.unlock()
+      } else {
+        lock.unlock()
+        timeoutTask.cancel()
+      }
     }
-    return true
   }
 
   func release() {
     lock.lock()
-    let shouldRelease = !released
+    guard !released else {
+      lock.unlock()
+      return
+    }
     released = true
+    let pending = Array(waiters.values)
+    waiters.removeAll()
     lock.unlock()
-    if shouldRelease { group.leave() }
+
+    for waiter in pending {
+      waiter.timeoutTask?.cancel()
+      waiter.continuation.resume(returning: true)
+    }
+  }
+
+  private func expire(_ id: UUID) {
+    lock.lock()
+    let waiter = waiters.removeValue(forKey: id)
+    lock.unlock()
+    guard let waiter else { return }
+    onTimeout()
+    waiter.continuation.resume(returning: false)
   }
 }

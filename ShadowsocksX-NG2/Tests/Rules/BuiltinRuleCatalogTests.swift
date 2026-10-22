@@ -9,11 +9,12 @@ final class BuiltinRuleCatalogTests: XCTestCase {
   func testConcurrentConsumersShareOneSourceLoad() async throws {
     let started = expectation(description: "source read")
     let loader = SharedRuleSourceLoader(started: started)
-    let snapshots = BuiltinRuleSnapshots(loader: { try loader.load($0) })
+    defer { loader.release.release() }
+    let snapshots = BuiltinRuleSnapshots(loader: { try await loader.load($0) })
     async let first = snapshots.load(.gfwlist)
     await fulfillment(of: [started], timeout: 3)
     async let second = snapshots.load(.gfwlist)
-    loader.release.signal()
+    loader.release.release()
     let (one, two) = try await (first, second)
     XCTAssertEqual(one, two)
     _ = try await snapshots.load(.gfwlist)
@@ -22,7 +23,7 @@ final class BuiltinRuleCatalogTests: XCTestCase {
 
   func testRetryReadsOnlyFailedSourcesAndSuccessNeverExpires() async throws {
     let loader = SharedRuleSourceLoader()
-    let snapshots = BuiltinRuleSnapshots(loader: { try loader.load($0) })
+    let snapshots = BuiltinRuleSnapshots(loader: { try await loader.load($0) })
     let first = await snapshots.browsingSources()
     XCTAssertThrowsError(try first[.chinaIPv4]?.get())
     _ = await snapshots.browsingSources()
@@ -37,7 +38,7 @@ final class BuiltinRuleCatalogTests: XCTestCase {
   @MainActor
   func testFirstBrowsingRetainsRuntimeSourceFailureUntilExplicitRetry() async throws {
     let loader = SharedRuleSourceLoader()
-    let snapshots = BuiltinRuleSnapshots(loader: { try loader.load($0) })
+    let snapshots = BuiltinRuleSnapshots(loader: { try await loader.load($0) })
     do {
       _ = try await snapshots.load(.chinaIPv4)
       XCTFail("The first runtime source request should fail")
@@ -187,17 +188,17 @@ private final class SharedRuleSourceLoader: @unchecked Sendable {
   private let lock = NSLock()
   private var counts: [RulesSource: Int] = [:]
   private let started: XCTestExpectation?
-  let release = DispatchSemaphore(value: 0)
+  let release = TestAsyncGate("shared rule source release")
   init(started: XCTestExpectation? = nil) { self.started = started }
   func count(_ source: RulesSource) -> Int { lock.withLock { counts[source, default: 0] } }
-  func load(_ source: RulesSource) throws -> RuleSnapshot {
+  func load(_ source: RulesSource) async throws -> RuleSnapshot {
     let count = lock.withLock {
       counts[source, default: 0] += 1
       return counts[source, default: 0]
     }
     if let started {
       started.fulfill()
-      release.wait()
+      _ = await release.wait()
     } else if source == .chinaIPv4 && count == 1 {
       throw RuleSnapshotError.missing
     }

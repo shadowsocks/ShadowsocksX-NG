@@ -39,6 +39,15 @@ enum PortSuggestion {
     }
     return nil
   }
+
+  static func firstFreeAsync(
+    excluding excludedPorts: Set<Int>, isFree: (Int) async -> Bool
+  ) async -> Int? {
+    for candidate in range where !excludedPorts.contains(candidate) {
+      if await isFree(candidate) { return candidate }
+    }
+    return nil
+  }
 }
 
 extension ProxyListeningConfiguration {

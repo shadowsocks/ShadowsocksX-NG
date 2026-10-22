@@ -148,7 +148,7 @@ struct PortOccupancyProbeRequest: Equatable, Sendable {
 /// 端口占用探测缝：设置编辑期的即时占用校验。激活是否成功
 /// 仍以 runtime 实际绑定为准（健康门禁），本探测不构成权威判定。
 protocol PortOccupancyProbing: Sendable {
-  func occupancy(for request: PortOccupancyProbeRequest) -> PortOccupancy
+  func occupancy(for request: PortOccupancyProbeRequest) async -> PortOccupancy
 }
 
 /// 系统实现：对 `bindAddress:port` 做一次不带复用选项的 TCP bind + listen，
@@ -156,7 +156,7 @@ protocol PortOccupancyProbing: Sendable {
 /// 允许共存，到 listen 阶段才报告冲突，因此两步都要覆盖。占用时尽力以
 /// `lsof` 解析监听进程名。探测不设置 SO_REUSEADDR/SO_REUSEPORT，避免假空闲。
 struct SystemPortOccupancyProbe: PortOccupancyProbing {
-  func occupancy(for request: PortOccupancyProbeRequest) -> PortOccupancy {
+  func occupancy(for request: PortOccupancyProbeRequest) async -> PortOccupancy {
     occupancy(port: request.port, listenerMode: request.listenerMode)
   }
 

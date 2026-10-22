@@ -52,7 +52,7 @@ struct BuiltinRuleCatalog {
 /// App-process source facts. Concurrent consumers share one attempt per source;
 /// successful bundled snapshots never expire, failed attempts require explicit retry.
 actor BuiltinRuleSnapshots {
-  typealias Loader = @Sendable (RulesSource) throws -> RuleSnapshot
+  typealias Loader = @Sendable (RulesSource) async throws -> RuleSnapshot
   private struct Attempt {
     let id: UUID
     let task: Task<RuleSnapshot, Error>
@@ -81,7 +81,7 @@ actor BuiltinRuleSnapshots {
       attempt = Attempt(
         id: UUID(),
         task: Task.detached(priority: .userInitiated) {
-          let snapshot = try loader(source)
+          let snapshot = try await loader(source)
           guard let kind = source.sourceKind, kind != .custom else {
             throw RuleSnapshotError.missing
           }
