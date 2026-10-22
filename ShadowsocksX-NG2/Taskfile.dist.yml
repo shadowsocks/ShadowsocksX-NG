@@ -5,6 +5,9 @@ includes:
   packaging:
     taskfile: ./Taskfile.package.yml
     flatten: true
+  publishing:
+    taskfile: ./Taskfile.publish.yml
+    flatten: true
 
 vars:
   PROJECT_NAME: "ShadowsocksX-NG2"

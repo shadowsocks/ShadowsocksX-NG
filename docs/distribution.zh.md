@@ -49,7 +49,7 @@ xcrun notarytool store-credentials shadowsocks-release \
   --apple-id YOUR_APPLE_ID --team-id YOUR_TEAM_ID
 ```
 
-完整发布入口：
+完整打包入口：
 
 ```bash
 task package NOTARY_PROFILE=shadowsocks-release \
@@ -91,9 +91,34 @@ xcrun notarytool info SUBMISSION_ID --keychain-profile shadowsocks-release
 
 `package:notarize` 仅在 Apple 返回 `Accepted` 后装订 DMG 票据。签名、票据和 Gatekeeper 检查全部通过后，才发布完整文件到 `dist/`。失败时不发布新文件。此流程只装订 DMG 票据，不另外分发独立 App。公证重跑入口不代替完整入口中的冒烟和 App 打包门槛；它接收此前完整入口生成的签名 DMG。
 
-`task clean` 删除 `.build/` 中间产物及日志，保留 `dist/`。仓库忽略这两类产物。此流程不上传 GitHub Release。
+`task clean` 删除 `.build/` 中间产物及日志，保留 `dist/`。仓库忽略这两类产物。`task package` 完成后使用下面的独立入口上传 GitHub Release。
 
 工具用法见 Apple 的[公证流程](https://developer.apple.com/documentation/security/customizing-the-notarization-workflow)与[分发打包说明](https://developer.apple.com/documentation/xcode/packaging-mac-software-for-distribution)。
+
+### 创建 GitHub Release 草稿
+
+打包完成后，从干净且与 `origin/develop` 同步的 `develop` 分支执行。需要 Git、Task 3.47+（使用命令级 `if`）和已登录的 GitHub CLI（`gh auth login`）。发布目标取自 `origin`，其 fetch 与 push URL 必须指向同一个 GitHub 仓库。
+
+```bash
+task publish MARKETING_VERSION=2.1.0 CURRENT_PROJECT_VERSION=21 \
+  RELEASE_NOTES_FILE=/absolute/path/to/release-notes.md
+```
+
+两个版本参数必须与 package 时完全相同。入口只接受对应的 `dist/ShadowsocksX-NG2-{MARKETING_VERSION}-{CURRENT_PROJECT_VERSION}-arm64.dmg`，不会重新打包或猜测最新文件。Release note 文件可省略：
+
+```bash
+task publish MARKETING_VERSION=v2.1.0-rc.1 CURRENT_PROJECT_VERSION=22
+```
+
+创建新草稿且省略 `RELEASE_NOTES_FILE` 时，Task 的 `prompt` 会在任何推送之前询问是否使用 GitHub 自动生成的说明。拒绝则取消；无终端时确认失败。显式使用 `task --yes publish ...` 会自动确认，符合 Task 的标准行为。提供文件或复用已有 Release 时不再询问。
+
+流程由 `Taskfile.publish.yml` 编排，按顺序执行内部任务：核对工作区、分支、tag、既有 Release 与 DMG → 在 `develop` 提交上创建并推送 tag → 将 `develop` 以 `--no-ff` 合并到 `master` 并推送 → 使用 `gh release create --draft` 创建草稿并上传 DMG → 打开浏览器审核。成功后回到 `develop`。本地没有 `master` 时从 `origin/master` 创建跟踪分支；已有本地 `master` 必须与远端同步，或恰好是本流程在推送失败后留下的待推送合并提交。
+
+Tag 始终只有一个 `v` 前缀，不包含 build number，例如 `v2.1.0`、`v2.1.0-beta.2`、`v2.1.0-rc.1`。任何预发布后缀都会设置 GitHub prerelease 标记。草稿说明来自显式文件或 `gh --generate-notes`；浏览器打开后，维护者审核说明、DMG 和预发布标记，再手动正式发布。
+
+Task 用 `preconditions` 检查冲突、`status` 跳过已完成步骤、`if` 选择需要执行的命令、`defer` 清理下载目录及发布锁并恢复分支。中途失败可以使用相同参数重跑。指向本次 `develop` 提交的 tag、已经包含该提交的远端 `master` 和目标一致的 draft 可复用。已有同名 DMG 会下载到临时目录并用 `cmp` 逐字节比较；仅缺少 DMG 时补传，保留草稿中已编辑的说明。同 tag 的正式 Release 若目标与资产都匹配，报告已完成。Tag 指向、Release 目标、预发布标记或 DMG 不匹配时停止，不覆盖资产或强推历史。合并冲突会保留在 `master`，需先解决冲突或执行 `git merge --abort`，再回到 `develop` 重跑。
+
+发布锁位于 Git 公共目录下的 `ng2-publish.lock/`。若进程被强制终止而未执行清理，确认没有其他发布进程后，删除这个空目录即可重跑。
 
 ### 单独检查 App
 

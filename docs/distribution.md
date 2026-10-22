@@ -49,7 +49,7 @@ xcrun notarytool store-credentials shadowsocks-release \
   --apple-id YOUR_APPLE_ID --team-id YOUR_TEAM_ID
 ```
 
-Full release entry point:
+Full packaging entry point:
 
 ```bash
 task package NOTARY_PROFILE=shadowsocks-release \
@@ -91,9 +91,34 @@ xcrun notarytool info SUBMISSION_ID --keychain-profile shadowsocks-release
 
 `package:notarize` staples the DMG ticket only after Apple returns `Accepted`. The complete file is published to `dist/` only after signature, ticket, and Gatekeeper checks pass. A failure does not publish a new file. This workflow staples a ticket to the DMG; it does not distribute a separate app. The retry entry point does not replace the smoke test or app packaging gate from the full release entry point; it accepts a signed DMG produced by that full flow.
 
-`task clean` deletes intermediate artifacts and logs under `.build/` but preserves `dist/`. Both output locations are ignored by Git. This workflow does not upload a GitHub Release.
+`task clean` deletes intermediate artifacts and logs under `.build/` but preserves `dist/`. Both output locations are ignored by Git. After `task package` completes, use the separate entry point below to upload a GitHub Release.
 
 See Apple's [notarization workflow](https://developer.apple.com/documentation/security/customizing-the-notarization-workflow) and [software packaging for distribution](https://developer.apple.com/documentation/xcode/packaging-mac-software-for-distribution) for tool usage.
+
+### Create a GitHub Release draft
+
+After packaging, run from a clean `develop` branch that matches `origin/develop`. Install Git, Task 3.47+ (for command-level `if`), and an authenticated GitHub CLI (`gh auth login`). The release repository comes from `origin`; its fetch and push URLs must identify the same GitHub repository.
+
+```bash
+task publish MARKETING_VERSION=2.1.0 CURRENT_PROJECT_VERSION=21 \
+  RELEASE_NOTES_FILE=/absolute/path/to/release-notes.md
+```
+
+Both version parameters must exactly match those used for package. This entry point selects only `dist/ShadowsocksX-NG2-{MARKETING_VERSION}-{CURRENT_PROJECT_VERSION}-arm64.dmg`. It does not rebuild the package or select the newest file. The release note file is optional:
+
+```bash
+task publish MARKETING_VERSION=v2.1.0-rc.1 CURRENT_PROJECT_VERSION=22
+```
+
+When creating a new draft with `RELEASE_NOTES_FILE` omitted, Task's `prompt` asks for confirmation before any push to use GitHub-generated notes. Declining cancels the task; confirmation fails without a terminal. An explicit `task --yes publish ...` accepts automatically, following Task's standard behavior. Supplying a file or reusing an existing Release skips this prompt.
+
+`Taskfile.publish.yml` orchestrates internal tasks in order: check the working tree, branches, tag, existing Release, and DMG → create and push a tag on the `develop` commit → merge `develop` into `master` with `--no-ff` and push → create a draft with `gh release create --draft` and upload the DMG → open the browser for review. Successful runs return to `develop`. If local `master` does not exist, it is created as a tracking branch from `origin/master`. An existing local `master` must match the remote, except for the exact pending merge left by this workflow after a failed push.
+
+Tags have exactly one `v` prefix and omit the build number: for example, `v2.1.0`, `v2.1.0-beta.2`, or `v2.1.0-rc.1`. Any prerelease suffix sets GitHub's prerelease flag. Notes come from the supplied file or `gh --generate-notes`. In the browser, review the notes, DMG, and prerelease flag, then publish the draft manually.
+
+Task uses `preconditions` to reject conflicts, `status` to skip completed steps, `if` to select commands, and `defer` to clean up downloads and the publish lock and restore the branch. Retry interrupted runs with the same parameters. Tags pointing to the current `develop` commit, a remote `master` that already contains that commit, and a draft with the same target can be reused. An existing DMG is downloaded to a temporary directory and compared byte for byte with `cmp`; only a missing DMG is uploaded, preserving notes already edited in the draft. A published Release with a matching target and asset is reported as complete. A conflicting tag, release target, prerelease flag, or DMG stops the task without overwriting assets or force-pushing history. Merge conflicts are retained on `master`; resolve them or run `git merge --abort`, then return to `develop` before retrying.
+
+The publish lock is the `ng2-publish.lock/` directory under the shared Git directory. If a process is forcibly terminated before cleanup, remove that empty directory after confirming no other publish process is running, then retry.
 
 ### Check an app separately
 
