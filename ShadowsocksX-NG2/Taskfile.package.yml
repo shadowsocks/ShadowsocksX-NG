@@ -14,8 +14,8 @@ tasks:
     preconditions:
       - sh: 'test -n {{.NOTARY_PROFILE | shellQuote}}'
         msg: 'NOTARY_PROFILE must name credentials stored by notarytool store-credentials.'
-      - sh: '{{if or (empty .MARKETING_VERSION) (regexMatch "^[0-9]+\\.[0-9]+\\.[0-9]+$" .MARKETING_VERSION)}}true{{else}}false{{end}}'
-        msg: 'MARKETING_VERSION must have three numeric components (for example, 2.1.0).'
+      - sh: '{{if or (empty .MARKETING_VERSION) (regexMatch .RELEASE_VERSION_PATTERN .MARKETING_VERSION)}}true{{else}}false{{end}}'
+        msg: 'MARKETING_VERSION must be a release version (for example, 2.1.0 or v2.0.0-alpha-1).'
       - sh: '{{if or (empty .CURRENT_PROJECT_VERSION) (regexMatch "^[0-9]+(\\.[0-9]+){0,2}$" .CURRENT_PROJECT_VERSION)}}true{{else}}false{{end}}'
         msg: 'CURRENT_PROJECT_VERSION must have one to three numeric components.'
     vars:
@@ -52,13 +52,16 @@ tasks:
         sh: plutil -extract CFBundleShortVersionString raw -expect string -o - {{.APP_PATH | shellQuote}}/Contents/Info.plist
       APP_BUILD:
         sh: plutil -extract CFBundleVersion raw -expect string -o - {{.APP_PATH | shellQuote}}/Contents/Info.plist
-      IMAGE_NAME: 'ShadowsocksX-NG2-{{.APP_VERSION}}-{{.APP_BUILD}}-arm64.dmg'
+      IMAGE_VERSION: '{{default .APP_VERSION .MARKETING_VERSION}}'
+      IMAGE_NAME: 'ShadowsocksX-NG2-{{.IMAGE_VERSION}}-{{.APP_BUILD}}-arm64.dmg'
       IMAGE_PATH: '{{.RUN_DIR}}/{{.IMAGE_NAME}}'
     preconditions:
       - sh: '{{if regexMatch "^[0-9]+\\.[0-9]+\\.[0-9]+$" .APP_VERSION}}true{{else}}false{{end}}'
         msg: 'Built App has an invalid CFBundleShortVersionString.'
       - sh: '{{if regexMatch "^[0-9]+(\\.[0-9]+){0,2}$" .APP_BUILD}}true{{else}}false{{end}}'
         msg: 'Built App has an invalid CFBundleVersion.'
+      - sh: '{{if and (regexMatch .RELEASE_VERSION_PATTERN .IMAGE_VERSION) (eq (regexFind "[0-9]+\\.[0-9]+\\.[0-9]+" .IMAGE_VERSION) .APP_VERSION)}}true{{else}}false{{end}}'
+        msg: 'Release version must be valid and match the built App version.'
       - sh: 'test ! -e {{printf "%s/%s" .DIST_DIR .IMAGE_NAME | shellQuote}} && test ! -L {{printf "%s/%s" .DIST_DIR .IMAGE_NAME | shellQuote}}'
         msg: 'This release already exists in dist; existing releases are never overwritten.'
     cmds:

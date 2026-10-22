@@ -55,11 +55,20 @@ task package NOTARY_PROFILE=shadowsocks-release \
   MARKETING_VERSION=2.1.0 CURRENT_PROJECT_VERSION=21
 ```
 
-`MARKETING_VERSION` 和 `CURRENT_PROJECT_VERSION` 分别可选。未传的参数使用工程默认值；传入的参数只覆盖本次 Release 构建，不改写 `project.yml`。`MARKETING_VERSION` 接受三个以点分隔的数字，`CURRENT_PROJECT_VERSION` 接受一至三个以点分隔的数字。单独运行 `task build:release` 也支持这两个覆盖参数。
+`MARKETING_VERSION` 和 `CURRENT_PROJECT_VERSION` 分别可选。未传的参数使用工程默认值；传入的参数只覆盖本次 Release 构建，不改写 `project.yml`。`MARKETING_VERSION` 接受三个以点分隔的数字、可选的 `v` 前缀和以 `-` 开头的预发布后缀。后缀中的标识符使用 ASCII 字母、数字或连字符，以点分隔，例如 `v2.0.0-alpha-1`、`2.0.0-beta.2` 和 `v2.0.0-rc.1`。`CURRENT_PROJECT_VERSION` 接受一至三个以点分隔的数字。单独运行 `task build:release` 也支持这两个覆盖参数。
+
+预发布构建示例：
+
+```bash
+task package NOTARY_PROFILE=shadowsocks-release \
+  MARKETING_VERSION=v2.0.0-alpha-1 CURRENT_PROJECT_VERSION=22
+```
+
+DMG 文件名保留完整发布版本：`ShadowsocksX-NG2-v2.0.0-alpha-1-22-arm64.dmg`。Task 用计算变量提取 `2.0.0` 传给 Xcode，因此 App 的 `CFBundleShortVersionString` 仍符合 Apple 的三段数字格式。预发布后缀不写入这个字段；App 内的预发布构建用递增的 `CURRENT_PROJECT_VERSION` 区分。不同 alpha、beta、rc 和正式构建都应继续递增构建号。
 
 流程由 `Taskfile.package.yml` 编排：检查公证凭据 → 获取外部二进制 → 真实进程冒烟 → Release 构建 → App 打包门槛 → 制作压缩 DMG → DMG 签名 → Apple 公证 → 装订票据 → 签名、票据及 Gatekeeper 检查 → 发布到 `dist/`。构建只支持 arm64。DMG 只包含 App 和指向 `/Applications` 的快捷方式，不增加背景图或 Finder 自动化依赖。
 
-DMG 复用 App 实际签名证书的 SHA-1 指纹选择签名身份，使用安全时间戳。公证仅接收 `NOTARY_PROFILE` 指定的钥匙串配置名称。发布产物示例为 `dist/ShadowsocksX-NG2-2.1.0-21-arm64.dmg`，名称中的版本从构建产物的 Info.plist 读取。已有同名发布产物时明确失败，不覆盖文件。
+DMG 复用 App 实际签名证书的 SHA-1 指纹选择签名身份，使用安全时间戳。公证仅接收 `NOTARY_PROFILE` 指定的钥匙串配置名称。发布产物示例为 `dist/ShadowsocksX-NG2-2.1.0-21-arm64.dmg`。名称优先保留传入的完整发布版本；未传版本时使用 App 的版本。构建号始终从 App 的 Info.plist 读取。打包前校验发布版本的数字部分与 App 版本一致，防止文件名与包内版本不符。已有同名发布产物时明确失败，不覆盖文件。
 
 每次构建使用独立的 `.build/packaging/run-*/`，其中保留签名 DMG、构建产物与冒烟结果。每次公证在 `.build/notarization/run-*/` 保存提交响应、提交编号、等待结果与 Apple 诊断日志。控制台打印这两个目录。提交和等待分别执行，等待中断时仍保留提交编号。公证等待上限为 30 分钟；本地等待结束后 Apple 仍可能继续处理。
 
