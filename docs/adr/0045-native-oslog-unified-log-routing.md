@@ -6,7 +6,7 @@
 
 `RuntimeLogEvent` 保持封闭枚举，脱敏由构造保证（延续 ADR-0006）。系统日志路由是枚举上的穷举 switch：level 三分（失败类 `.error`、里程碑 `.default`、冗长测量 `.info`），category 五分（runtime / supervision / system-proxy / connectivity / diagnostics），公开文本与 private detail 按 `text` + `privateDetail` == `description` 从 `description` 裁切派生，不手抄前缀。新增事件漏路由直接编译失败，privacy 决策必须显式作出。规则：枚举构造的文本标 public，自由形式的错误 detail 与连通性测量内容（含探测目标 IP）标 private；服务器地址与备注默认不进普通日志的基线不变。
 
-sslocal 的上游自由文本是进入统一日志的第二条流，不进 `RuntimeLogEvent`：`SslocalOutputIntake` 拥有 chunk-safe 分帧、密码脱敏与超长行丢弃，把脱敏后的行送两个去向——agent.log 文件（行格式见 ADR-0046，行正文为脱敏后的原始文本，供 ADR-0006 的本地查看面）与统一日志 category `sslocal`。上游行整行标 private（上游默认日志可能含服务器地址），级别按空白 token 探测 ERROR/WARN/WARNING，其余落 `.info`；统一日志只有五级、没有 warning，WARN/WARNING 落持久的 `.default`，级别名仍留在行文本里。上游改格式时优雅退化为全 `.info`，不丢行。agent.log 的保留策略（启动时超 1 MiB 截断）留在共写该文件的文件去向一侧，不并入 intake。
+sslocal 的上游自由文本是进入统一日志的第二条流，不进 `RuntimeLogEvent`：`SslocalOutputIntake` 拥有 chunk-safe 分帧、密码脱敏与超长行丢弃，把脱敏后的行送两个去向——agent.log 文件（行格式见 ADR-0046，行正文为脱敏后的原始文本，供 ADR-0006 的本地查看面）与统一日志 category `sslocal`。上游行整行标 private（上游默认日志可能含服务器地址），级别按空白 token 探测 ERROR/WARN/WARNING，忽略大小写并支持 token 外的一对方括号，其余落 `.info`；统一日志只有五级、没有 warning，WARN/WARNING 落持久的 `.default`，级别名仍留在行文本里。上游改格式时优雅退化为全 `.info`，不丢行。agent.log 的保留策略（启动时超 1 MiB 截断）留在共写该文件的文件去向一侧，不并入 intake。
 
 考虑过但拒绝的选项：把上游自由文本塞进封闭枚举（破坏脱敏由构造保证的基线）；密码脱敏后把上游行标 public（服务器地址进持久 store）；再加一层地址形态正则脱敏后标 public（会漂移的正则防线）；让 intake 拥有 agent.log 截断策略（该策略属于 wrapper 事件行与 sslocal 行共写的文件去向）。`.info`/`.debug` 只在 stream 可见、不落盘，统一日志的持久面只收探测到的警告与错误，agent.log 才是完整持久面；private 字段对普通 Console 用户显示 `<private>`，正文阅读继续走 app 内诊断查看面。诊断报告的白名单投影独立于本路由，新增事件仍须显式决策（ADR-0006）。
 

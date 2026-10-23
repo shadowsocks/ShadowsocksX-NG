@@ -7,12 +7,16 @@ import os
 enum LogLineLevel: String, Sendable {
   case error, warning, info
 
-  /// 上游自由文本的级别探测：只按空白分隔 token 匹配级别名
-  /// （tracing/env_logger 文本格式的 ERROR/WARN/WARNING），探测不到一律
-  /// `.info`。上游改格式时优雅退化，不丢行。
+  /// 上游自由文本的级别探测：按空白分隔 token 匹配级别名
+  /// （tracing/env_logger 文本格式的 ERROR/WARN/WARNING），忽略大小写，并支持
+  /// token 外的一对方括号。探测不到一律 `.info`；上游改格式时优雅退化，不丢行。
   static func detect(in line: String) -> LogLineLevel {
     for token in line.split(whereSeparator: \.isWhitespace) {
-      switch token {
+      let levelToken =
+        token.hasPrefix("[") && token.hasSuffix("]")
+        ? token.dropFirst().dropLast()
+        : token[...]
+      switch levelToken.uppercased() {
       case "ERROR": return .error
       case "WARN", "WARNING": return .warning
       default: continue
