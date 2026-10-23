@@ -18,7 +18,6 @@ In the meantime, please use [Discussions](https://github.com/shadowsocks/Shadows
 
 - macOS 15 or later
 - An Apple Silicon (arm64) Mac
-- A Shadowsocks server configuration or SIP-008 subscription URL
 
 This project provides a client. It does not provide servers or subscription services.
 
@@ -27,7 +26,7 @@ This project provides a client. It does not provide servers or subscription serv
 - **Manage servers and subscriptions:** Add or import Shadowsocks configurations, organize servers into groups, and mark favorites. Add HTTPS SIP-008 subscriptions and view traffic and expiry information provided by the service provider.
 - **Choose how traffic is routed:** Use global, rules, or direct mode. In rules mode, review the bundled rules, write custom rules, and choose whether destinations use the proxy or connect directly.
 - **Connect Mac apps and LAN devices:** Provide local SOCKS5 and HTTP proxies. You can enable LAN listeners and set access credentials when needed; LAN listeners are off by default.
-- **Use proxy plugins:** `v2ray-plugin` and Cloak are included. The bundled `v2ray-plugin` also provides a [Hysteria2 transport mode](https://github.com/shadowsocks/v2ray-plugin#shadowsocks-over-hysteria2-transport) for Shadowsocks TCP traffic. Both ends must use this mode; ordinary Hysteria2 proxy nodes are not compatible. You can also configure your own plugins.
+- **Use proxy plugins:** [v2ray-plugin](https://github.com/shadowsocks/v2ray-plugin) and [Cloak](https://github.com/cbeuw/Cloak) are included. The bundled `v2ray-plugin` also provides a [Hysteria2 transport mode](https://github.com/shadowsocks/v2ray-plugin#shadowsocks-over-hysteria2-transport) for Shadowsocks TCP traffic. Both ends must use this mode; ordinary Hysteria2 proxy nodes are not compatible. You can also configure your own plugins.
 - **Protect local configuration and export diagnostics:** The server library and listener configuration are encrypted on your Mac using age. Diagnostic reports exclude sensitive data such as passwords, plugin options, and subscription URLs.
 - **Use a familiar interface:** A native macOS menu bar app with Simplified Chinese and English interfaces. You can also launch it at login.
 
