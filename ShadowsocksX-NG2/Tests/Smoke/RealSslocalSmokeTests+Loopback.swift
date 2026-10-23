@@ -224,7 +224,13 @@ extension RealSslocalSmokeTests {
       return receipt.deploymentID == runtimeStore.receiptIdentity(for: document)
         && kill(receipt.processID, 0) == 0
     }
-    XCTAssertTrue(receiptPublished, "应发布仍存活的 sslocal 子进程回执")
+    guard receiptPublished else {
+      let logURL = workDir.appendingPathComponent("agent.log")
+      let log = (try? String(contentsOf: logURL, encoding: .utf8)) ?? "agent.log unavailable"
+      throw NSError(
+        domain: "RuntimePublicationSmoke", code: 1,
+        userInfo: [NSLocalizedDescriptionKey: "未发布当前部署的存活子进程回执；\(log)"])
+    }
     let receipt = try XCTUnwrap(runtimeStore.readRuntimeReceipt())
     for local in document.locals {
       XCTAssertTrue(
