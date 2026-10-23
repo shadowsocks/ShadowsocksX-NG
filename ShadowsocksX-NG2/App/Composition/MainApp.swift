@@ -115,19 +115,6 @@ struct ShadowsocksXNG2App: App {
   }
 }
 
-/// 应用名称菜单中的诊断窗口入口。
-private struct DiagnosticsCommands: Commands {
-  @Environment(\.openWindow) private var openWindow
-
-  var body: some Commands {
-    CommandGroup(after: .appInfo) {
-      Button("诊断…") {
-        openWindow(id: DiagnosticsWindowState.sceneID)
-      }
-    }
-  }
-}
-
 /// 随窗激活策略与激活重试的真实 NSApp 落点。
 @MainActor
 private final class NSAppWindowActivationApplier: WindowActivationPolicyApplying {

@@ -50,3 +50,7 @@ The user-confirmed rule-browser simplification adds a single independent convers
 GUI 日志的时序定位到启动路径的真正缺陷：重试链从未在启动时启动——首条 retry 事件距启动 8 秒（用户打开诊断窗口才由其锚点触发）；此前轮次观察到的事件均可能是诊断窗口触发的，工作区窗口在启动期一次参与事件都没发出，或链启动后首拍窗口尚未可见、被 isVisible 守卫静默终结且一次性标志已耗尽无法重启。据此三改：其一，链改为可 re-arm——未真正收敛（双信号齐备）前由任何参与/可见化事件重新拉起，收敛后永久闩死，防止会话中抢焦点；其二，锚点附着时尚未可见的窗口安排一次 0.5 秒兜底重扫，覆盖“可见化通知早于附着被错过”的次序（静默启动的窗口届时仍不可见，自然不触发）；其三，锚点附着本身发诊断事件（当时的可见/key 状态）、retry 事件补 visible 位，启动期次序从此可观测。
 
 再实测锁定真正根因：失败场景中 Dock 图标从未出现，进入调度中心才显示——启动早期的 `setActivationPolicy(.regular)` 未注册到 WindowServer/Dock（进程本地已 regular、系统侧仍视作 accessory），activate 因此全程被拒，此前观察到的“前台应用差异”只是该注册竞态的不同结果。重试序列据此两级设计：首拍仍走普通 activate（重开等点击上下文足以生效，避免无谓的 Dock 图标闪烁）；第二拍起走强制弹跳序列。同拍 accessory→regular 弹跳实测会被系统合并吞掉，故拆成有真实间隔的三跳（降 accessory → 沉淀 0.1s → 回 regular 迫使重新注册 → 沉淀 0.15s → 激活置前），末跳续排主链保持单线调度。窗口先于 attach/可见化成为 key 的呈现次序（didBecomeKey 首参路径）同样启动重试，否则失败场景弹跳永不执行；诊断事件补充进程本地策略位（本地 regular 而 Dock 图标缺失即系统侧注册滞后的直接证据）。行动拍用尽后追加一拍只检查拍记录终态。
+
+## 2026-10-24 补充：应用菜单诊断入口
+
+regular 形态的默认菜单栏在应用名称菜单（`CommandGroup(after: .appInfo)`）加入“诊断…”命令，与状态菜单入口同开唯一诊断窗口；应用处于 accessory 形态（无受管窗口）时不出现该菜单栏，入口自然缺席。诊断命令实现为独立视图文件（`App/UI/Diagnostics/DiagnosticsCommands.swift`）。同日移除按源码扫描 openWindow 调用点的守卫（原为文件豁免登记制）：豁免清单的维护成本高于其拦截价值。开窗纪律改由事实保证——全部 `Window` scene 集中在组合根（MainApp）一处声明，窗口激活协调只经 `.modifier(WindowActivationPolicy(...))` 挂在这些受管 scene 上。
