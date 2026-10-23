@@ -220,6 +220,7 @@ targets:
       - path: Domain/Runtime/RuntimePaths.swift
       - path: Domain/Runtime/AtomicFileWriter.swift
       - path: Domain/Runtime/RuntimeSupervision.swift
+      - path: Domain/Runtime/RuntimeReloadState.swift
       - path: Domain/Runtime/RuntimeLog.swift
       - path: Domain/Runtime/SystemLog.swift
       - path: Domain/Runtime/LogLine.swift

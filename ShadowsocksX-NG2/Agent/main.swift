@@ -87,7 +87,7 @@ private enum SupervisionOutcome { case stopped, restart }
 private struct SupervisionState {
   var current: RuntimeSupervision
   var processFiles: Set<String>
-  var reloadPending = Set<Int32>()
+  var reloadPending = RuntimeReloadState()
   var healthy = false
   var receiptPublished = false
   var readinessDeadline: Date
@@ -201,7 +201,7 @@ private func applyInPlaceReload(
   _ next: RuntimeSupervision, child: Process, state: inout SupervisionState
 ) -> SupervisionOutcome? {
   let needsDeferral = next.acl != nil && !state.healthy
-  state.reloadPending.formUnion(next.reloadSignals(from: state.current))
+  state.reloadPending.enqueue(next, from: state.current)
   guard selectDeployment(next),
     needsDeferral || sendReloadSignals(&state.reloadPending, to: child.processIdentifier)
   else {
@@ -217,10 +217,8 @@ private func applyInPlaceReload(
   return nil
 }
 
-private func sendReloadSignals(_ signals: inout Set<Int32>, to processID: Int32) -> Bool {
-  guard signals.sorted().allSatisfy({ kill(processID, $0) == 0 }) else { return false }
-  signals.removeAll()
-  return true
+private func sendReloadSignals(_ signals: inout RuntimeReloadState, to processID: Int32) -> Bool {
+  signals.flush { kill(processID, $0) == 0 }
 }
 
 /// 停止超时不得进入启动分支。保留 pid 文件供下次 Agent 拒绝重叠启动。
