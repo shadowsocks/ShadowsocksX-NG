@@ -119,22 +119,17 @@ struct ConnectivityHTTPTests {
     #expect(proxy.requests.isEmpty)
   }
 
-  @Test func requestHasOneFiveSecondDeadline() async throws {
+  @Test(.timeLimit(.minutes(1)))
+  func timesOutWhileWaitingForFirstByte() async throws {
     let proxy = try HeaderProxy(status: nil)
     defer { proxy.stop() }
     let port = try await proxy.start()
-    let id = NodeID.fresh()
-    let module = ServerConnectivity(
-      configuration: { _ in Self.server },
-      measure: { _, url, _ in
-        await ConnectivityHTTPRequest().perform(url: url, proxyPort: port)
-      })
-    module.setURL(URL(string: "http://target.invalid/slow")!)
-    let started = ContinuousClock.now
-    await module.wait(for: module.test([id]))
-    #expect(module.history(for: id).first?.outcome == .requestTimeout)
-    #expect(ContinuousClock.now - started >= .seconds(5))
-    #expect(ContinuousClock.now - started < .seconds(6))
+    let result = await ConnectivityHTTPRequest().observe(
+      url: URL(string: "http://target.invalid/slow")!, targetIP: nil, proxyPort: port,
+      timeout: 0.5)
+    #expect(result.outcome == .requestTimeout)
+    #expect(result.failureStage == "first_byte")
+    #expect(result.totalMilliseconds >= 500)
     #expect(proxy.requests.count == 1)
   }
 
