@@ -1,3 +1,4 @@
+import Darwin
 import Foundation
 
 /// 日志视图 intake（诊断日志查看器的唯一行来源）：把两个原始面——GUI 事件
@@ -8,47 +9,88 @@ enum DiagnosticLogIntake {
   /// agent.log 尾部读取（够诊断即可）：只取文件末尾有限字节并按行
   /// 对齐。文件缺失或不可读返回 nil；内容按 UTF-8 宽容解码，起始半行丢弃。
   static func readTail(of url: URL, maxBytes: Int = 64 * 1024) -> String? {
+    readTailSnapshot(of: url, maxBytes: maxBytes)?.text
+  }
+
+  /// 文件身份与每行的绝对字节位置随 tail 一起采样，窗口裁剪不改变保留行的身份。
+  static func readTailSnapshot(of url: URL, maxBytes: Int = 64 * 1024) -> DiagnosticLogTail? {
     guard let handle = try? FileHandle(forReadingFrom: url) else { return nil }
     defer { try? handle.close() }
+    var attributes = stat()
+    guard fstat(handle.fileDescriptor, &attributes) == 0 else { return nil }
     let size = (try? handle.seekToEnd()) ?? 0
     let window = min(UInt64(max(1, maxBytes)), size)
-    try? handle.seek(toOffset: size - window)
+    var offset = size - window
+    try? handle.seek(toOffset: offset)
     var data = (try? handle.read(upToCount: Int(window))) ?? Data()
     guard !data.isEmpty else { return nil }
     if window < size, let firstNewline = data.firstIndex(of: 10) {
+      offset += UInt64(firstNewline + 1)
       data.removeSubrange(...firstNewline)
     }
-    // 窗口边界可能切断多字节字符：有意宽容解码，坏字节替换而非丢弃整段。
-    // swiftlint:disable:next optional_data_string_conversion
-    return String(decoding: data, as: UTF8.self)
+    return DiagnosticLogTail(
+      data: data, fileID: UInt64(attributes.st_ino), offset: offset)
   }
 
   /// 归并行（旧→新）：GUI 事件行与 agent.log 尾部行统一按时间戳排序。
   /// 旧格式行（无法解析时间戳）排在最前并保持文件内顺序——它们来自升级前
   /// 落盘，时间未知。
   static func rows(events: [RuntimeEventStore.Entry], tail: String?) -> [LogLine] {
-    var merged: [LogLine] = events.map { entry in
-      LogLine(event: entry.event, timestamp: entry.timestamp, source: .gui)
+    entries(
+      events: events,
+      tail: tail.map { DiagnosticLogTail(text: $0, fileID: 0, offset: 0) }
+    ).map(\.line)
+  }
+
+  static func entries(
+    events: [RuntimeEventStore.Entry], tail: DiagnosticLogTail?
+  ) -> [DiagnosticLogEntry] {
+    var merged = events.map { entry in
+      DiagnosticLogEntry(
+        id: .gui(entry.id),
+        line: LogLine(event: entry.event, timestamp: entry.timestamp, source: .gui))
     }
-    merged.append(contentsOf: tailLines(tail))
+    merged.append(contentsOf: tailEntries(tail))
     return merged.enumerated()
       .sorted { lhs, rhs in
-        let left = lhs.element.timestamp ?? .distantPast
-        let right = rhs.element.timestamp ?? .distantPast
+        let left = lhs.element.line.timestamp ?? .distantPast
+        let right = rhs.element.line.timestamp ?? .distantPast
         return left == right ? lhs.offset < rhs.offset : left < right
       }
       .map(\.element)
   }
 
-  /// 尾部文本按行归一：统一行格式严格解析，旧格式行降级保留原文。空行是
-  /// 行内容（raw 保真），只把结尾行分隔符排除在外。
-  private static func tailLines(_ tail: String?) -> [LogLine] {
-    guard let tail, !tail.isEmpty else { return [] }
-    // 按 scalar 拆 LF：Swift Character 把 CRLF 合为一个字符，不能按单个 LF 匹配。
-    var lines = tail.unicodeScalars.split(separator: "\n", omittingEmptySubsequences: false)
-      .map(String.init)
-    if tail.unicodeScalars.last == "\n" { lines.removeLast() }
-    return lines.map { LogLine.parse($0) ?? LogLine.legacy($0) }
+  /// 按原始字节拆 LF，保留 CR 和空行；无效 UTF-8 不影响后续行的文件位置。
+  private static func tailEntries(_ tail: DiagnosticLogTail?) -> [DiagnosticLogEntry] {
+    guard let tail, !tail.data.isEmpty else { return [] }
+    var lines = tail.data.split(separator: 10, omittingEmptySubsequences: false)
+    if tail.data.last == 10 { lines.removeLast() }
+    var offset = tail.offset
+    return lines.map { bytes in
+      // 坏字节替换而非丢弃整行；位置仍按原始字节计数。
+      // swiftlint:disable:next optional_data_string_conversion
+      let raw = String(decoding: bytes, as: UTF8.self)
+      defer { offset += UInt64(bytes.count + 1) }
+      return DiagnosticLogEntry(
+        id: .agent(file: tail.fileID, offset: offset, text: raw),
+        line: LogLine.parse(raw) ?? LogLine.legacy(raw))
+    }
+  }
+}
+
+/// 一次文件尾部采样，offset 是 data 首字节在文件中的绝对位置。
+struct DiagnosticLogTail: Sendable {
+  let data: Data
+  let fileID: UInt64
+  let offset: UInt64
+
+  // swiftlint:disable:next optional_data_string_conversion
+  var text: String { String(decoding: data, as: UTF8.self) }
+}
+
+extension DiagnosticLogTail {
+  init(text: String, fileID: UInt64, offset: UInt64) {
+    self.init(data: Data(text.utf8), fileID: fileID, offset: offset)
   }
 }
 
@@ -90,6 +132,10 @@ struct DiagnosticLogFilter: Equatable, Sendable {
   var source: Source = .all
 
   func apply(_ rows: [LogLine]) -> [LogLine] {
-    rows.filter { level.admits($0.level) && source.admits($0.source) }
+    rows.filter(admits)
+  }
+
+  func admits(_ line: LogLine) -> Bool {
+    level.admits(line.level) && source.admits(line.source)
   }
 }

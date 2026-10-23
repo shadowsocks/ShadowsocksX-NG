@@ -98,7 +98,20 @@ struct DiagnosticSummary: Equatable, Sendable {
 /// `agent.log` 尾部行经日志视图 intake 归一为同一种行，只经显式查看/复制
 /// 呈现，永不进入诊断报告。
 struct DiagnosticLogView: Equatable, Sendable {
-  var rows: [LogLine] = []
+  var entries: [DiagnosticLogEntry] = []
+  var rows: [LogLine] { entries.map(\.line) }
+}
+
+/// 日志行身份来自事实源，独立于排序、过滤与重复内容。
+struct DiagnosticLogEntry: Equatable, Identifiable, Sendable {
+  enum RowID: Hashable, Sendable {
+    case gui(Int)
+    // 原文也参与身份，避免文件原地截断重写后复用旧位置的选择。
+    case agent(file: UInt64, offset: UInt64, text: String)
+  }
+
+  let id: RowID
+  let line: LogLine
 }
 
 /// 报告准备的结构化产物：UI 只负责把 data 写入用户选择的文件。
@@ -138,7 +151,7 @@ final class DiagnosticsWorkflow: ObservableObject {
   private let runtimeFacts: any ProxyRuntimeDiagnosticFacts
   private let events: RuntimeEventStore
   private let catalogFacts: @MainActor () -> DiagnosticCatalogFacts?
-  private let agentLogTail: () -> String?
+  private let agentLogTail: () -> DiagnosticLogTail?
   private let fileFacts: @MainActor () -> [DiagnosticFileFacts]
   private let managedPlugins: @MainActor () -> [DiagnosticPluginFacts]
   private let homePath: () -> String?
@@ -153,8 +166,8 @@ final class DiagnosticsWorkflow: ObservableObject {
     runtimeFacts: any ProxyRuntimeDiagnosticFacts,
     events: RuntimeEventStore = .shared,
     catalogFacts: @escaping @MainActor () -> DiagnosticCatalogFacts?,
-    agentLogTail: @escaping () -> String? = {
-      DiagnosticLogIntake.readTail(of: ApplicationSupportPaths.current.agentLogURL)
+    agentLogTail: @escaping () -> DiagnosticLogTail? = {
+      DiagnosticLogIntake.readTailSnapshot(of: ApplicationSupportPaths.current.agentLogURL)
     },
     fileFacts: @escaping @MainActor () -> [DiagnosticFileFacts] =
       DiagnosticsWorkflow.productionFileFacts,
@@ -222,9 +235,9 @@ final class DiagnosticsWorkflow: ObservableObject {
     summary = DiagnosticSummary(
       proxyState: runtimeFacts.proxyState,
       hasActiveTarget: runtimeFacts.hasActiveTarget)
-    let rows = DiagnosticLogIntake.rows(events: events.snapshot, tail: agentLogTail())
+    let entries = DiagnosticLogIntake.entries(events: events.snapshot, tail: agentLogTail())
     guard generation == readGeneration, !Task.isCancelled else { return }
-    logView = DiagnosticLogView(rows: rows)
+    logView = DiagnosticLogView(entries: entries)
   }
 
   private func makeSnapshot() -> DiagnosticSnapshot {

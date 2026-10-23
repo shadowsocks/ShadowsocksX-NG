@@ -95,7 +95,7 @@ struct ShadowsocksXNG2App: App {
     .defaultLaunchBehavior(.suppressed)
     .restorationBehavior(.disabled)
     .commandsRemoved()
-    .defaultSize(width: 800, height: 600)
+    .defaultSize(width: 1200, height: 600)
     .windowToolbarLabelStyle($toolbarLabelStyle)
   }
 
