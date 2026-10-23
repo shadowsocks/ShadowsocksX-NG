@@ -153,7 +153,7 @@ struct TransientDelayGateTests {
 
   @Test func valueEqualToDisplayedCancelsPendingDisplay() async {
     let clock = SleepGateRecorder()
-    var now: TimeInterval = 0
+    let now: TimeInterval = 0
     var displayed: [String] = []
     let gate = TransientDelayGate<String>(
       interval: 0.4,

@@ -156,7 +156,7 @@ final class RuntimePublicationSmokeTests: RealSslocalSmokeTests {
   private func assertRuleInsertionAndRemoval(
     wrapper: Process, store: RuntimeFileStore, listen: ProxyListeningConfiguration,
     echo: LoopbackEchoServer, secondExit: ConnectionCountingServer
-  ) throws -> Int {
+  ) throws -> Int32 {
     let processID = try XCTUnwrap(store.readRuntimeReceipt()?.processID)
     let custom = ruleProbeDocument(
       port: secondExit.port, listen: listen,
@@ -232,7 +232,7 @@ private struct ACLModeReloadContext {
   let listen: ProxyListeningConfiguration
   let echo: LoopbackEchoServer
   let proxy: ConnectionCountingServer
-  let acl: RuntimePublication.ACL
+  let acl: RuntimeSupervision.ACL
   let aclURL: URL
   let inode: NSNumber?
   let large: ProxyACLDocument
@@ -268,7 +268,8 @@ extension RuntimePublicationSmokeTests {
     XCTAssertEqual(kill(wrapper.processIdentifier, SIGUSR1), 0)
     XCTAssertTrue(
       try waitForCondition(timeout: 8) {
-        let log = try String(contentsOf: self.workDir.appendingPathComponent("agent.log"))
+        let log = try String(
+          contentsOf: self.workDir.appendingPathComponent("agent.log"), encoding: .utf8)
         return log.contains("ACL reload failed") && log.contains("keeping the previous rules")
       })
     try assertReceiptOwnsListeners(document: next)

@@ -16,7 +16,7 @@ struct StatusDisplayModelTests {
     let snapshots = CurrentValueSubject<ProxyControlSnapshot, Never>(
       makeSnapshot(systemProxyApplication: .applied))
     let clock = SleepGateRecorder()
-    var now: TimeInterval = 0
+    let now: TimeInterval = 0
     let model = StatusDisplayModel(
       snapshots: snapshots, interval: 0.4, now: { now },
       sleep: { delay in await clock.sleep(delay) })
