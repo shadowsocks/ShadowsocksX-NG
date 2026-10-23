@@ -74,6 +74,9 @@ struct ShadowsocksXNG2App: App {
       workspaceContent
         .modifier(WindowActivationPolicy(coordinator: windowActivation))
     }
+    .commands {
+      DiagnosticsCommands()
+    }
     .defaultLaunchBehavior(launchPresentation)
     .defaultSize(width: 960, height: 640)
     .windowToolbarLabelStyle($toolbarLabelStyle)
@@ -109,6 +112,19 @@ struct ShadowsocksXNG2App: App {
     .commandsRemoved()
     .defaultSize(width: 680, height: 480)
     .windowToolbarLabelStyle($toolbarLabelStyle)
+  }
+}
+
+/// 应用名称菜单中的诊断窗口入口。
+private struct DiagnosticsCommands: Commands {
+  @Environment(\.openWindow) private var openWindow
+
+  var body: some Commands {
+    CommandGroup(after: .appInfo) {
+      Button("诊断…") {
+        openWindow(id: DiagnosticsWindowState.sceneID)
+      }
+    }
   }
 }
 
