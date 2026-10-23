@@ -66,6 +66,31 @@ You can build and run unit tests without a certificate: the Debug baseline uses 
 
 `Tests/Smoke/` contains real-process smoke tests. A wrapper launches real `sslocal` to verify startup, handshake, ACL routing, and plugin supervision. These tests are not part of the default `task test`; run them locally with their separate scheme. CI runs them as an independent job. Pending reload-signal accumulation is tested without child processes in `RuntimeReloadStateTests`; real signal delivery and combined server/ACL routing remain covered by `RuntimePublicationSmokeTests`.
 
+## Writing and optimizing tests
+
+### Hostless tests and packaged resources
+
+Unit tests run without the app as a host ([ADR-0021](adr/0021-hostless-unit-tests.md)):
+
+- Tests that need the app product, such as embedded binaries or packaged `Info.plist` assertions, locate it through `Tests/Support/AppArtifact.swift`.
+- Production code reads packaged resources, such as rule snapshots and LaunchDaemon manifests, through explicit dependency injection. Controllers use an `appBundle` parameter with `Bundle.main` as the production default; test fixtures inject `AppArtifact.bundle`.
+
+See ADR-0021 for the background and the three resource seams.
+
+### Test framework and isolation
+
+- Use Swift Testing (`import Testing`) for new tests by default. UI and performance tests continue to use XCTest for its exclusive APIs (`XCUIApplication` and `measure`). Existing XCTest cases stay in XCTest.
+- Unit tests run in parallel across multiple runners. New fixtures use process-private resources: dynamically allocated ports, temporary directories, and UUID-suffixed namespaces instead of shared paths or fixed names.
+
+### Fixtures and execution cost
+
+- Choose input size from the assertion's purpose. Behavior integration tests for starting, stopping, saving, deploying, rolling back, and state projection use small deterministic inputs while retaining the real workflow and compilation path. Prefer `ProxyRuntimeFixture.controlFlowRuleSnapshot` for rule behavior fixtures.
+- Dedicated tests for packaged resources, complete rule semantics, large-data boundaries, or performance explicitly inject complete data. Behavior tests reduce inputs through rule-data injection; retain `AppArtifact.bundle` when packaged resources such as manifests are still needed.
+- Small fixtures preserve scenario relationships, including overrides, shadowing, disabled entries, and orphaned records. Keep unrelated domains in shared fixtures outside the test's own rules, so accidental absorption or duplication does not turn an expected deployment into a no-op. Test doubles implement lifecycle behavior required by the tested workflow, including registration, exit, and receipts.
+- Observe asynchronous interleaving with expectations, gates, or controllable clocks. Shorten production delays unrelated to assertions through injection. Preserve timeouts, health windows, process-supervision waits, and data boundaries that a case deliberately tests.
+- Split existing XCTest cases by behavior into concrete classes that can be scheduled independently. Shared fixture base classes contain only state and factories; keep `test*` methods in concrete classes to avoid inherited cases running more than once. After splitting classes or changing fixtures, compare test inventories for omissions, duplicates, and newly skipped cases.
+- Before optimizing duration, record the full-suite wall time and the slowest classes and cases under the same configuration. Then measure individual segments to distinguish computation from waiting. First remove repeated computation outside the test's purpose; then assess parallel scheduling through class splits or separate production performance changes. Summed case durations divided by wall time measure execution overlap, not CPU utilization.
+
 ## Code style tools
 
 - `swift format` is included with the Xcode/Swift toolchain and does not need a separate installation (baseline: Apple Swift 6.4). Install SwiftLint with `brew install swiftlint` (baseline: 0.65.0), and install the hook manager with `brew install pre-commit`. If a required tool is missing, pre-commit rejects a commit that contains NG2 Swift files.
