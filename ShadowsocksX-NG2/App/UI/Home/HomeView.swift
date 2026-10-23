@@ -2,11 +2,13 @@ import SwiftUI
 
 /// 首页分区：代理模式切换、运行控制、终端代理环境变量命令。
 /// 模式与两个开关（agent/系统代理）走代理控制
-/// 工作流的整体 snapshot；命令复制是 UI 副作用。三种模式（规则/全局/直连）
+/// 工作流的整体 snapshot；运行控制卡的状态行走 statusDisplay 的瞬态门控
+/// 呈现；命令复制是 UI 副作用。三种模式（规则/全局/直连）
 /// 与规则子选项共用同一快照。
 struct HomeView: View {
   @ObservedObject var workflow: CatalogWorkflow
   @ObservedObject var control: ProxyControlWorkflow
+  let statusDisplay: StatusDisplayModel
   let browser: HomeTargetBrowser
   let activation: ActivationFeedbackState
   let showServers: () -> Void
@@ -23,7 +25,7 @@ struct HomeView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         VStack(spacing: 16) {
-          RuntimeControlCard(control: control)
+          RuntimeControlCard(control: control, statusDisplay: statusDisplay)
           ModeCard(control: control)
           TerminalProxyEnvironmentCard(control: control, clipboard: clipboard, errors: errors)
         }

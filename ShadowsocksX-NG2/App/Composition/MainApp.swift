@@ -8,6 +8,9 @@ struct ShadowsocksXNG2App: App {
   @NSApplicationDelegateAdaptor(ConnectivityApplicationDelegate.self) private var appDelegate
   private let connectivityLifecycle: ConnectivityLifecycle
   private let proxyController: ProxyRuntimeController
+  /// 状态显示 debounce 模型：进程期强持有（与首页/菜单栏两个表面共享同一
+  /// 门控状态机），body 不读它。
+  private let statusDisplay: StatusDisplayModel
   @StateObject private var catalogWorkflow: CatalogWorkflow
   @StateObject private var proxyControl: ProxyControlWorkflow
   @StateObject private var loginController: LaunchAtLoginController
@@ -32,6 +35,7 @@ struct ShadowsocksXNG2App: App {
     let composition = AppComposition.make()
     connectivityLifecycle = composition.connectivityLifecycle
     proxyController = composition.controller
+    statusDisplay = composition.statusDisplay
     _catalogWorkflow = StateObject(wrappedValue: composition.catalogWorkflow)
     _proxyControl = StateObject(wrappedValue: composition.proxyControl)
     _loginController = StateObject(wrappedValue: composition.loginController)
@@ -55,7 +59,7 @@ struct ShadowsocksXNG2App: App {
   var body: some Scene {
     MenuBarExtra {
       ProxyStatusMenu(
-        control: proxyControl)
+        control: proxyControl, statusDisplay: statusDisplay)
     } label: {
       StatusMenuLabel(control: proxyControl)
     }
@@ -169,6 +173,7 @@ private struct AppComposition {
   let controller: ProxyRuntimeController
   let catalogWorkflow: CatalogWorkflow
   let proxyControl: ProxyControlWorkflow
+  let statusDisplay: StatusDisplayModel
   let loginController: LaunchAtLoginController
   let settingsWorkflow: SettingsWorkflow
   let diagnosticsWorkflow: DiagnosticsWorkflow
@@ -206,6 +211,9 @@ private struct AppComposition {
       runtime: ControllerProxyRuntimeAdapter(controller: controller),
       targetFacts: catalogWorkflow,
       interfaceFacts: SystemInterfaceFactsProvider())
+    // 状态显示 debounce 模型：订阅代理控制工作流 snapshot，组合根接线一次，
+    // 首页运行控制卡与菜单栏状态卡共享同一门控状态机。
+    let statusDisplay = StatusDisplayModel(control: proxyControl)
     // 设置工作流 module（Candidate 02）：设置窗口的唯一 seam，组合根接线一次；
     // 写入侧经窄缝 SettingsCommitting，运行时控制器薄扩展即生产实现。
     let settingsWorkflow = SettingsWorkflow(
@@ -218,13 +226,15 @@ private struct AppComposition {
     let workspace = makeWorkspace(
       WorkspaceCompositionContext(
         dependencies: dependencies, controller: controller, workflow: catalogWorkflow,
-        control: proxyControl, plugins: plugins, settings: settingsWorkflow,
+        control: proxyControl, statusDisplay: statusDisplay, plugins: plugins,
+        settings: settingsWorkflow,
         login: loginController, clipboard: textClipboard))
     return AppComposition(
       connectivityLifecycle: connectivityLifecycle,
       controller: controller,
       catalogWorkflow: catalogWorkflow,
       proxyControl: proxyControl,
+      statusDisplay: statusDisplay,
       loginController: loginController,
       settingsWorkflow: settingsWorkflow,
       diagnosticsWorkflow: diagnosticsWorkflow,
@@ -297,6 +307,7 @@ private struct AppComposition {
       route: route,
       workflow: context.workflow,
       control: context.control,
+      statusDisplay: context.statusDisplay,
       plugins: PluginManagementModel(catalog: context.plugins),
       settingsWorkflow: context.settings,
       loginController: context.login,
@@ -360,6 +371,7 @@ private struct WorkspaceCompositionContext {
   let controller: ProxyRuntimeController
   let workflow: CatalogWorkflow
   let control: ProxyControlWorkflow
+  let statusDisplay: StatusDisplayModel
   let plugins: PluginCatalog
   let settings: SettingsWorkflow
   let login: LaunchAtLoginController

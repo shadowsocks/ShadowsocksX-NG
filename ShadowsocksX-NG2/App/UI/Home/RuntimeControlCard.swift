@@ -1,14 +1,15 @@
 import SwiftUI
 
 /// 「运行控制」卡：agent 与系统代理两个开关并排，绑定同一
-/// snapshot 的持久化意图；各自呈现运行状态/实际应用与点名原因。两个开关
+/// snapshot 的持久化意图；状态行经 StatusDisplayModel 的瞬态门控呈现——
+/// 快速切换模式这类瞬间成功的操作不再闪「应用中」等中间态。两个开关
 /// 互不代替：关闭系统代理清除全部系统代理配置，关闭 agent 会级联关闭仍开启
 /// 的系统代理意图并先清理再停止监听；helper 待批准时呈现登录项批准路径。
 struct RuntimeControlCard: View {
   @ObservedObject var control: ProxyControlWorkflow
+  let statusDisplay: StatusDisplayModel
 
   var body: some View {
-    let card = StatusCardModel.card(from: control.snapshot)
     HomeCard(
       title: String(localized: "运行控制"),
       subtitle: nil,
@@ -21,8 +22,8 @@ struct RuntimeControlCard: View {
               .frame(maxWidth: .infinity, alignment: .leading)
           }
           .toggleStyle(.switch)
-          statusRow(card.runtimeRow)
-          if let detail = card.runtimeDetail {
+          statusRow(statusDisplay.agent.row)
+          if let detail = statusDisplay.agent.detail {
             Text(detail.text)
               .font(.caption)
               .foregroundStyle(.orange)
@@ -37,8 +38,8 @@ struct RuntimeControlCard: View {
               .frame(maxWidth: .infinity, alignment: .leading)
           }
           .toggleStyle(.switch)
-          statusRow(card.systemProxyRow)
-          Text(systemProxyHint)
+          statusRow(statusDisplay.systemProxy.row)
+          Text(statusDisplay.systemProxy.hint)
             .font(.caption)
             .foregroundStyle(.secondary)
             .fixedSize(horizontal: false, vertical: true)
@@ -49,10 +50,9 @@ struct RuntimeControlCard: View {
             .controlSize(.small)
           }
           SystemProxyDifferenceView(control: control)
-          if let systemProxyDetail = card.systemProxyDetail,
-            control.snapshot.systemProxyApplication != .paused
+          if let systemProxyDetail = statusDisplay.systemProxy.detail,
+            !statusDisplay.systemProxy.isPaused
           {
-
             Text(systemProxyDetail.text)
               .font(.caption)
               .foregroundStyle(.orange)
@@ -98,36 +98,6 @@ struct RuntimeControlCard: View {
 
   private var systemProxyApprovalNeeded: Bool {
     control.snapshot.systemProxyApprovalRequired
-  }
-
-  private var systemProxyHint: String {
-    let exitRequirement =
-      control.snapshot.proxyMode == .direct
-      ? String(localized: "直连模式不依赖活动服务器")
-      : String(localized: "规则/全局模式需要可用的活动服务器")
-    if systemProxyApprovalNeeded {
-      return String(localized: "系统代理助手等待批准。请在系统设置 → 登录项与扩展中允许。")
-    }
-    return switch control.snapshot.systemProxyApplication {
-    case .idle:
-      String(localized: "开启后让 macOS 系统代理指向本地入口；\(exitRequirement)")
-    case .pending:
-      String(localized: "已请求应用系统代理，等待本地入口就绪；\(exitRequirement)")
-    case .applied:
-      String(localized: "系统代理已指向本地入口")
-    case .failed, .repairFailed, .clearFailed:
-      String(localized: "操作失败，原因见下方")
-    case .paused:
-      AppPresentation.systemProxyPausedNotice
-    case .changed:
-      String(localized: "当前系统代理配置与预期存在差异")
-    case .unreadable:
-      String(localized: "无法检查当前系统代理配置")
-    case .applying:
-      String(localized: "正在应用系统代理配置…")
-    case .repairing:
-      String(localized: "正在修复系统代理配置…")
-    }
   }
 }
 

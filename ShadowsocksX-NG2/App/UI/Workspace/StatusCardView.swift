@@ -1,17 +1,20 @@
 import SwiftUI
 
-/// 菜单栏面板代理状态卡
+/// 菜单栏面板代理状态卡。状态行经 StatusDisplayModel 的瞬态门控呈现
+/// （与首页运行控制卡同一 debounce 口径）；活动目标与模式行仍从 control
+/// 的整体 snapshot 直接派生。
 struct StatusCardView: View {
   @ObservedObject var control: ProxyControlWorkflow
+  let statusDisplay: StatusDisplayModel
 
   var body: some View {
     let card = StatusCardModel.card(from: control.snapshot)
-    row(card.runtimeRow)
-    if let detail = card.runtimeDetail {
+    row(statusDisplay.agent.row)
+    if let detail = statusDisplay.agent.detail {
       detailLine(detail)
     }
-    row(card.systemProxyRow)
-    if let detail = card.systemProxyDetail {
+    row(statusDisplay.systemProxy.row)
+    if let detail = statusDisplay.systemProxy.detail {
       detailLine(detail)
     }
 
