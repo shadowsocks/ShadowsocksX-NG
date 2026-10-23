@@ -8,7 +8,7 @@ struct RuntimeControlCard: View {
   @ObservedObject var control: ProxyControlWorkflow
 
   var body: some View {
-    let summary = StatusMenuModel.summary(from: control.snapshot)
+    let card = StatusCardModel.card(from: control.snapshot)
     HomeCard(
       title: String(localized: "运行控制"),
       subtitle: nil,
@@ -21,12 +21,9 @@ struct RuntimeControlCard: View {
               .frame(maxWidth: .infinity, alignment: .leading)
           }
           .toggleStyle(.switch)
-          Text(summary.status)
-            .font(.body.weight(.medium))
-            .foregroundStyle(.secondary)
-            .lineLimit(1)
-          if let detail = summary.detail {
-            Text(detail)
+          statusRow(card.runtimeRow)
+          if let detail = card.runtimeDetail {
+            Text(detail.text)
               .font(.caption)
               .foregroundStyle(.orange)
               .fixedSize(horizontal: false, vertical: true)
@@ -40,10 +37,7 @@ struct RuntimeControlCard: View {
               .frame(maxWidth: .infinity, alignment: .leading)
           }
           .toggleStyle(.switch)
-          Text(summary.systemProxyStateLabel)
-            .font(.body.weight(.medium))
-            .foregroundStyle(.secondary)
-            .lineLimit(1)
+          statusRow(card.systemProxyRow)
           Text(systemProxyHint)
             .font(.caption)
             .foregroundStyle(.secondary)
@@ -55,17 +49,39 @@ struct RuntimeControlCard: View {
             .controlSize(.small)
           }
           SystemProxyDifferenceView(control: control)
-          if let systemProxyDetail = summary.systemProxyDetail,
+          if let systemProxyDetail = card.systemProxyDetail,
             control.snapshot.systemProxyApplication != .paused
           {
 
-            Text(systemProxyDetail)
+            Text(systemProxyDetail.text)
               .font(.caption)
               .foregroundStyle(.orange)
               .fixedSize(horizontal: false, vertical: true)
           }
         }
       })
+  }
+
+  private func statusRow(_ row: StatusCardModel.Row) -> some View {
+    HStack(spacing: 6) {
+      Circle()
+        .fill(statusColor(row.tone))
+        .frame(width: 8, height: 8)
+        .accessibilityHidden(true)
+      Text(row.text)
+        .font(.body.weight(.medium))
+        .foregroundStyle(.secondary)
+        .lineLimit(1)
+    }
+  }
+
+  private func statusColor(_ tone: StatusCardModel.Tone) -> Color {
+    switch tone {
+    case .positive: .green
+    case .attention: .orange
+    case .failure: .red
+    case .neutral: .secondary
+    }
   }
 
   private var agentBinding: Binding<Bool> {
