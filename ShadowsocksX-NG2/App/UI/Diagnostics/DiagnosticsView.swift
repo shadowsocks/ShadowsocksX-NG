@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// 独立诊断窗口：状态摘要、可筛选的日志表格与选中行详情。
+/// 独立诊断窗口：可筛选的日志表格与选中行详情。
 /// 日志只在查看器中呈现；诊断导出继续通过 DiagnosticsWorkflow 准备脱敏报告。
 struct DiagnosticsView: View {
   @ObservedObject var diagnostics: DiagnosticsWorkflow
@@ -12,7 +12,6 @@ struct DiagnosticsView: View {
 
   var body: some View {
     VStack(alignment: .leading, spacing: 20) {
-      summaryRow
       logCard
       Text(
         "诊断导出只包含状态、存在性、权限和脱敏元数据，不包含密码、插件参数、订阅 URL 或运行时 JSON。"
@@ -67,43 +66,6 @@ struct DiagnosticsView: View {
     case .exportFailed(let failure):
       windowState.errors.present(failure)
     }
-  }
-
-  // MARK: - 状态摘要
-
-  private var summaryRow: some View {
-    HStack(alignment: .top, spacing: 14) {
-      statCard(
-        String(localized: "代理状态"),
-        value: AppPresentation.diagnosticStatus(diagnostics.summary.proxyState))
-      statCard(
-        String(localized: "活动目标"),
-        value: diagnostics.summary.hasActiveTarget
-          ? String(localized: "已设置") : String(localized: "未设置"))
-    }
-  }
-
-  private func statCard(_ label: String, value: String) -> some View {
-    VStack(alignment: .leading, spacing: 4) {
-      Text(label)
-        .font(.caption)
-        .foregroundStyle(.secondary)
-      Text(value)
-        .font(.callout.weight(.semibold))
-        .lineLimit(2)
-        .help(value)
-    }
-    .padding(.horizontal, 16)
-    .padding(.vertical, 12)
-    .frame(maxWidth: .infinity, alignment: .leading)
-    .background(
-      .background.secondary,
-      in: RoundedRectangle(cornerRadius: 12, style: .continuous)
-    )
-    .overlay(
-      RoundedRectangle(cornerRadius: 12, style: .continuous)
-        .strokeBorder(.quaternary)
-    )
   }
 
   // MARK: - 日志卡
