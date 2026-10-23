@@ -16,7 +16,11 @@ concurrency:
 
 jobs:
   checks:
-    name: Lint, test, build (Xcode 27 arm64)
+    name: ${{ matrix.gate == 'test' && 'Lint, test, build' || 'Smoke tests' }} (Xcode 27 arm64)
+    strategy:
+      fail-fast: false
+      matrix:
+        gate: [test, 'test:smoke']
     runs-on: xcode-27
     timeout-minutes: 60
 
@@ -92,17 +96,30 @@ jobs:
           key: ng2-external-binaries-macos-arm64-${{ hashFiles('ShadowsocksX-NG2/Vendor/sslocal/manifest.json', 'ShadowsocksX-NG2/Vendor/v2ray-plugin/manifest.json', 'ShadowsocksX-NG2/Vendor/ck-client/manifest.json') }}
 
       - name: Check Swift formatting
+        if: matrix.gate == 'test'
         working-directory: ShadowsocksX-NG2
         run: task format:check
 
       - name: Lint
+        if: matrix.gate == 'test'
         working-directory: ShadowsocksX-NG2
         run: task --exit-code lint
 
       - name: Test
         working-directory: ShadowsocksX-NG2
-        run: task --exit-code test STRICT=true
+        run: task --exit-code validate STRICT=true -- ${{ matrix.gate }}
 
       - name: Build
+        if: matrix.gate == 'test'
         working-directory: ShadowsocksX-NG2
         run: task --exit-code build STRICT=true
+
+      - name: Upload failed test evidence
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: validation-${{ strategy.job-index }}
+          path: ShadowsocksX-NG2/.build/validation/
+          include-hidden-files: true
+          retention-days: 7
+          if-no-files-found: warn

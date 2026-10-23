@@ -224,6 +224,7 @@ tasks:
         -derivedDataPath {{.DERIVED_DATA_DIR | shellQuote}}
         {{if .RESULT_BUNDLE_PATH}}-resultBundlePath {{.RESULT_BUNDLE_PATH | shellQuote}}{{end}}
         {{.TEST_TIMEOUT_ARGS}}
+        {{.STRICT_BUILD_ARGS}}
         test
 
   clean:
