@@ -66,8 +66,11 @@ class AgentLifecycleTests: XCTestCase {
         crash) exit 7 ;;
         exit0) exit 0 ;;
         drop-acl) rm -f "$SSXNG_RUNTIME_DIR"/acl-0*.ini
-          while :; do sleep 0.05; done ;;
-        ignore-term) trap 'echo "SIGTERM ignored" >> "$SSLOCAL_STUB_STATE"' TERM
+          exit 7 ;;
+        ignore-term-once) if [ ! -f "$SSLOCAL_STUB_PID_DIR/term-ignored" ]; then
+          touch "$SSLOCAL_STUB_PID_DIR/term-ignored"
+          trap 'echo "SIGTERM ignored" >> "$SSLOCAL_STUB_STATE"' TERM
+          fi
           while :; do sleep 0.05; done ;;
         *) while :; do sleep 0.05; done ;;
       esac

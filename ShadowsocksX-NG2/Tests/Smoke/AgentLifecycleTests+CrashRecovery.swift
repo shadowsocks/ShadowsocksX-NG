@@ -62,7 +62,7 @@ extension AgentLifecycleChangeProtocolTests {
 extension AgentLifecycleChangeProtocolTests {
   func testReloadWaitsForTermIgnoringChildBeforeStartingReplacement() throws {
     try writeContract(ProxyRuntimeFixture.makeDocument())
-    let wrapper = try launchWrapper(behavior: "ignore-term")
+    let wrapper = try launchWrapper(behavior: "ignore-term-once")
     XCTAssertTrue(try waitUntil { self.stateLog().contains("invoked:") })
     try writeContract(ProxyRuntimeFixture.makeDocument(localPort: 2086))
     kill(wrapper.processIdentifier, SIGUSR1)
@@ -88,6 +88,7 @@ extension AgentLifecycleChangeProtocolTests {
     let wrapper = try launchWrapper(behavior: "drop-acl")
     XCTAssertEqual(try waitForExit(wrapper), 0)
     XCTAssertNotNil(store.readFailure(), "资源丢失不能阻止明确失败落盘")
+    XCTAssertFalse(FileManager.default.fileExists(atPath: store.aclFileURL.path))
     let replay = try launchWrapper(behavior: "run")
     XCTAssertEqual(try waitForExit(replay), 0)
     XCTAssertEqual(stateLog().components(separatedBy: "invoked:").count, 2)

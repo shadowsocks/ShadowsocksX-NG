@@ -64,7 +64,7 @@ Swift Package Manager resolves the pinned release of AgeSwift from `project.yml`
 
 You can build and run unit tests without a certificate: the Debug baseline uses ad-hoc signing and does not require `Configs/Signing.local.xcconfig`. Create that file only when signing with Developer ID, either for release or to make a local Debug build pass the packaging gate. See [Signing and runtime baseline](distribution.md#signing-and-runtime-baseline) for its contents.
 
-`Tests/Smoke/` contains real-process smoke tests. A wrapper launches real `sslocal` to verify startup, handshake, ACL routing, and plugin supervision. These tests are not part of the default `task test`; run them locally with their separate scheme. CI runs them as an independent job. Pending reload-signal accumulation is tested without child processes in `RuntimeReloadStateTests`; real signal delivery and combined server/ACL routing remain covered by `RuntimePublicationSmokeTests`.
+`Tests/Smoke/` contains real-process smoke tests. A wrapper launches real `sslocal` to verify startup, handshake, ACL routing, and plugin supervision. Agent lifecycle tests use the packaged Agent with shell stubs to verify signals, restart ordering, startup deadlines, and persisted failures. Connectivity runtime cleanup tests also run here. These tests are not part of the default `task test`; run them locally with their separate scheme. CI runs them as an independent job. Pending reload-signal accumulation is tested without child processes in `RuntimeReloadStateTests`; real signal delivery and combined server/ACL routing remain covered by `RuntimePublicationSmokeTests`.
 
 ## Writing and optimizing tests
 
