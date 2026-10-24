@@ -8,6 +8,7 @@ final class GeneratedRuleSnapshotTests: XCTestCase {
   func testDisablingCNSuffixDoesNotRestoreOmittedOfflineRows() throws {
     let snapshot = try generatedSnapshot("geolocation-cn")
     let collection = RulesCollection.load(
+      preset: .chinaDirect,
       custom: { [] },
       builtin: { source in
         source == .geolocationCN ? snapshot : rulesFixture(source)
@@ -23,7 +24,7 @@ final class GeneratedRuleSnapshotTests: XCTestCase {
           ProxyRule(action: .direct, match: try RuleMatch(nationalDomainSuffix: "cn"))
         ]))
     let result = try OfflineRuleMatcher.test(collection: disabled, address: "foo.cn")
-    XCTAssertEqual(result.outcome, .unmatched)
+    XCTAssertEqual(result.outcome, .proxy)
     XCTAssertTrue(result.deciding.isEmpty)
   }
 
@@ -143,6 +144,7 @@ extension GeneratedRuleSnapshotTests {
     XCTAssertTrue(acl.content.contains("1.0.0.0/24"))
     XCTAssertFalse(acl.content.contains("||safe.example.com"))
     let collection = RulesCollection.load(
+      preset: .gfwlist,
       custom: { [] },
       builtin: { source in
         try XCTUnwrap(
@@ -165,6 +167,7 @@ extension GeneratedRuleSnapshotTests {
   func testDisablingBlockerDoesNotRestoreOmittedOfflineException() throws {
     let snapshot = try generatedSnapshot("gfwlist")
     let collection = RulesCollection.load(
+      preset: .gfwlist,
       custom: { [] },
       builtin: { source in
         source == .gfwlist ? snapshot : rulesFixture(source)
@@ -182,7 +185,7 @@ extension GeneratedRuleSnapshotTests {
           ProxyRule(action: .proxy, match: try RuleMatch(domainSuffix: "example.com"))
         ]))
     let result = try OfflineRuleMatcher.test(collection: disabled, address: "safe.example.com")
-    XCTAssertEqual(result.outcome, .unmatched)
+    XCTAssertEqual(result.outcome, .direct)
     XCTAssertTrue(result.deciding.isEmpty)
   }
 }

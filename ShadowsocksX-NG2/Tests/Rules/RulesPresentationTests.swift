@@ -7,15 +7,16 @@ final class RulesPresentationTests: XCTestCase {
   func testReportIsAnExplicitSnapshotUnaffectedByQueryOrRefresh() async throws {
     let loader = ReportFixtureLoader()
     let workflow = RulesWorkflow(
-      loadCustom: { [] }, builtinSnapshots: BuiltinRuleSnapshots(loader: { loader.load($0) }))
+      preset: .chinaDirect, loadCustom: { [] },
+      builtinSnapshots: BuiltinRuleSnapshots(loader: { loader.load($0) }))
     await workflow.refresh()
-    XCTAssertTrue(workflow.openSourceReport(.gfwlist))
+    XCTAssertTrue(workflow.openSourceReport(.geolocationCN))
     let opened = try XCTUnwrap(workflow.reportSource)
     workflow.query(RulesQuery(source: .chinaIPv4))
     loader.advance()
     await workflow.refresh()
     XCTAssertEqual(workflow.reportSource, opened)
-    XCTAssertTrue(workflow.openSourceReport(.gfwlist))
+    XCTAssertTrue(workflow.openSourceReport(.geolocationCN))
     XCTAssertEqual(workflow.reportSource, opened)
     XCTAssertTrue(workflow.openSourceReport(.chinaIPv4))
     XCTAssertEqual(workflow.reportSource?.id, .chinaIPv4)
@@ -27,7 +28,7 @@ final class RulesPresentationTests: XCTestCase {
     let narrow = CustomRule(action: .direct, match: try RuleMatch(domainExact: "a.example.com"))
     let independent = CustomRule(action: .direct, match: try RuleMatch(domainExact: "other.net"))
     let workflow = RulesWorkflow(
-      loadCustom: { [broad, narrow, independent] },
+      preset: .gfwlist, loadCustom: { [broad, narrow, independent] },
       builtinSnapshots: BuiltinRuleSnapshots(loader: { rulesFixture($0) }))
     await workflow.refresh()
     XCTAssertNil(workflow.selectedRelationshipRow)
@@ -47,7 +48,7 @@ final class RulesPresentationTests: XCTestCase {
     let narrow = CustomRule(action: .direct, match: try RuleMatch(domainExact: "a.example.net"))
     let local = CustomRule(action: .direct, match: try RuleMatch(domainExact: "device.local"))
     let workflow = RulesWorkflow(
-      loadCustom: { [broad, narrow, local] },
+      preset: .gfwlist, loadCustom: { [broad, narrow, local] },
       builtinSnapshots: BuiltinRuleSnapshots(loader: { rulesFixture($0) }))
     await workflow.refresh()
     workflow.select([.rule(narrow.identity)])

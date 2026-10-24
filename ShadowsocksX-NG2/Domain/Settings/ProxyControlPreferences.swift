@@ -14,12 +14,24 @@ struct ProxyControlPreferences {
     nonmutating set { defaults.set(newValue.rawValue, forKey: "proxyControl.preferredMode") }
   }
 
-  var ruleDefaultAction: RuleDefaultAction {
+  var rulePreset: RulePreset {
     get {
-      defaults.string(forKey: "proxyControl.ruleDefaultAction").flatMap(
-        RuleDefaultAction.init(rawValue:)) ?? .proxyWhenUnmatched
+      if let saved = defaults.string(forKey: "proxyControl.rulePreset").flatMap(
+        RulePreset.init(rawValue:))
+      {
+        return saved
+      }
+      let legacy =
+        defaults.string(forKey: "proxyControl.ruleDefaultAction")
+        .flatMap(RuleDefaultAction.init(rawValue:)) ?? .proxyWhenUnmatched
+      return RulePreset(legacy: legacy)
     }
-    nonmutating set { defaults.set(newValue.rawValue, forKey: "proxyControl.ruleDefaultAction") }
+    nonmutating set { defaults.set(newValue.rawValue, forKey: "proxyControl.rulePreset") }
+  }
+
+  var ruleDefaultAction: RuleDefaultAction {
+    get { rulePreset.defaultAction }
+    nonmutating set { rulePreset = RulePreset(legacy: newValue) }
   }
 
   var agentEnabled: Bool {

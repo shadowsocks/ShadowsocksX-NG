@@ -7,6 +7,7 @@ import Foundation
 /// once after every await.
 @MainActor
 final class RulesWorkflow: ObservableObject {
+  let preset: RulePreset
   @Published private(set) var snapshot = RulesPageSnapshot()
   @Published private(set) var reportSource: RulesSourceSnapshot?
   private let loadCustom: @Sendable () throws -> [CustomRule]
@@ -22,6 +23,7 @@ final class RulesWorkflow: ObservableObject {
   private let analysisDelay: @Sendable () async throws -> Void
 
   init(
+    preset: RulePreset = .chinaDirect,
     loadCustom: (@Sendable () throws -> [CustomRule])? = nil,
     loadDocument: (@MainActor () throws -> CustomRuleDocument)? = nil,
     commitDocument: (@MainActor (CustomRuleDocument) async -> RuleDocumentCommit)? = nil,
@@ -33,18 +35,20 @@ final class RulesWorkflow: ObservableObject {
     },
     builtinSnapshots: BuiltinRuleSnapshots = BuiltinRuleSnapshots()
   ) {
+    self.preset = preset
     if let loadDocument {
       self.loadDocument = loadDocument
     } else if loadCustom == nil {
-      self.loadDocument = { try CustomRuleStore().loadDocument() }
+      self.loadDocument = { try CustomRuleStore(preset: preset).loadDocument() }
     } else {
       self.loadDocument = nil
     }
     self.commitDocument = commitDocument
     self.feedbackDelay = feedbackDelay
     self.analysisDelay = analysisDelay
-    self.loadCustom = loadCustom ?? { try CustomRuleStore().load() }
+    self.loadCustom = loadCustom ?? { try CustomRuleStore(preset: preset).load() }
     self.builtinSnapshots = builtinSnapshots
+    snapshot.query.source = .custom
   }
 
   func refresh(retryFailedSources: Bool = false) async {
@@ -62,7 +66,9 @@ final class RulesWorkflow: ObservableObject {
     invalidateAddressTest()
     snapshot.isLoading = true
     let custom = loadCustom
-    let sources = await builtinSnapshots.browsingSources(retryFailures: retryFailedSources)
+    let preset = preset
+    let sources = await builtinSnapshots.browsingSources(
+      sources: preset.sources, retryFailures: retryFailedSources)
     let document: Result<CustomRuleDocument, Error>?
     if let loadDocument {
       do { document = .success(try loadDocument()) } catch { document = .failure(error) }
@@ -71,7 +77,7 @@ final class RulesWorkflow: ObservableObject {
     }
     let result = await Task.detached(priority: .userInitiated) {
       RulesCollection.load(
-        custom: custom,
+        preset: preset, custom: custom,
         builtin: { source in try sources[source, default: .failure(RuleSnapshotError.missing)].get()
         },
         document: document.map { saved in { try saved.get() } })
@@ -252,23 +258,18 @@ final class RulesWorkflow: ObservableObject {
     return true
   }
 
-  var selectedRelationshipRow: RulesRow? {
-    guard snapshot.selection.count == 1,
-      let row = snapshot.rows.first(where: { snapshot.selection.contains($0.id) }),
-      !row.relationships.isEmpty || row.fixedCoverage != nil
-    else { return nil }
-    return row
-  }
-
   private func applyingQuery(to page: RulesPageSnapshot) -> RulesPageSnapshot {
     guard let collection else { return page }
     let query = page.query
     let search = query.search.lowercased()
     let rows = collection.rows.filter { row in
       (query.action == nil || row.action == query.action)
-        && (query.source.map { row.sources.contains($0) } ?? true)
+        && (query.source.map {
+          row.sources.contains($0)
+            || ($0 == .custom && !row.hasCurrentSource && query.enabled == false)
+        } ?? true)
         && (query.enabled.map { row.isEnabled == $0 } ?? true)
-        && (row.hasCurrentSource || (query.source == nil && query.enabled == false))
+        && (row.hasCurrentSource || query.enabled == false)
         && (search.isEmpty || row.content.lowercased().contains(search))
     }
     var next = page
@@ -384,4 +385,15 @@ struct CustomRuleDeletion: Equatable, Sendable {
     self.customIDs = customIDs
     self.version = version
   }
+}
+
+extension RulesWorkflow {
+  var selectedRelationshipRow: RulesRow? {
+    guard snapshot.selection.count == 1,
+      let row = snapshot.rows.first(where: { snapshot.selection.contains($0.id) }),
+      !row.relationships.isEmpty || row.fixedCoverage != nil
+    else { return nil }
+    return row
+  }
+
 }

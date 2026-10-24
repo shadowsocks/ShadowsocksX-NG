@@ -16,6 +16,7 @@ final class CustomRuleDeletionWorkflowTests: XCTestCase {
       rules: [custom, other], disabledIdentities: [custom.identity, orphan])
     var commits = 0
     let workflow = RulesWorkflow(
+      preset: .gfwlist,
       loadDocument: { saved },
       commitDocument: {
         commits += 1
@@ -37,6 +38,7 @@ final class CustomRuleDeletionWorkflowTests: XCTestCase {
     XCTAssertEqual(commits, 1)
     XCTAssertTrue(saved.rules.isEmpty)
     XCTAssertEqual(saved.disabledIdentities, [custom.identity, orphan])
+    workflow.query(RulesQuery(source: .gfwlist))
     let merged = try XCTUnwrap(workflow.snapshot.rows.first { $0.identity == custom.identity })
     XCTAssertEqual(merged.sources, [.gfwlist])
     XCTAssertTrue(merged.customIDs.isEmpty)

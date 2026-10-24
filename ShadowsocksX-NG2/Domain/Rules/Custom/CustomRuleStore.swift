@@ -13,9 +13,19 @@ struct CustomRuleStore {
   static let currentSchemaVersion = 3
 
   let fileURL: URL
+  let baseURL: URL
 
   init(fileURL: URL = CustomRuleStore.defaultFileURL()) {
     self.fileURL = fileURL
+    self.baseURL = fileURL
+  }
+
+  init(preset: RulePreset, baseURL: URL = CustomRuleStore.defaultFileURL()) {
+    self.baseURL = baseURL
+    self.fileURL = baseURL.deletingLastPathComponent()
+      .appendingPathComponent("rule-presets", isDirectory: true)
+      .appendingPathComponent(preset.rawValue, isDirectory: true)
+      .appendingPathComponent(baseURL.lastPathComponent)
   }
 
   static func defaultFileURL() -> URL {

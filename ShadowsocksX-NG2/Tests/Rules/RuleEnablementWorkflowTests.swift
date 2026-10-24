@@ -13,7 +13,7 @@ final class RuleEnablementWorkflowTests: XCTestCase {
     let gate = RulesAnalysisGate(started: started)
     var documents: [CustomRuleDocument] = []
     let workflow = RulesWorkflow(
-      loadDocument: { CustomRuleDocument(rules: [broad, narrow]) },
+      preset: .gfwlist, loadDocument: { CustomRuleDocument(rules: [broad, narrow]) },
       commitDocument: {
         documents.append($0)
         return RuleDocumentCommit(outcome: .saved, document: $0)
@@ -37,7 +37,7 @@ final class RuleEnablementWorkflowTests: XCTestCase {
       oldRelationships)
     workflow.setTestTarget("other.pending.example")
     await workflow.testAddress()
-    XCTAssertEqual(workflow.snapshot.addressTest.result?.outcome, .unmatched)
+    XCTAssertEqual(workflow.snapshot.addressTest.result?.outcome, .direct)
     await workflow.setEnabled(true, identities: [broad.identity])
     await workflow.setEnabled(false, identities: [broad.identity])
     XCTAssertEqual(documents.count, 3)
@@ -84,6 +84,7 @@ final class RuleEnablementWorkflowTests: XCTestCase {
     await workflow.refresh()
     XCTAssertTrue(workflow.snapshot.isComplete)
     XCTAssertTrue(workflow.snapshot.sources.contains { $0.id == .geolocationCN })
+    workflow.query(RulesQuery())
     let rowIDs = workflow.snapshot.rows.map(\.id)
     let fixed = workflow.snapshot.rows.filter(\.isFixed)
     XCTAssertFalse(fixed.isEmpty)
@@ -118,7 +119,7 @@ final class RuleEnablementWorkflowTests: XCTestCase {
     await workflow.refresh()
     await workflow.setEnabled(false, identities: [rule.identity])
     XCTAssertEqual(reads.documentCount, 1)
-    XCTAssertEqual(reads.sourceCount, 3)
+    XCTAssertEqual(reads.sourceCount, 2)
     XCTAssertFalse(
       try XCTUnwrap(workflow.snapshot.rows.first { $0.identity == rule.identity }).isEnabled)
   }

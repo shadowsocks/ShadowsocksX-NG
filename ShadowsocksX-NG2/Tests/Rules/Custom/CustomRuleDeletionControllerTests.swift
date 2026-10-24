@@ -169,7 +169,8 @@ final class CustomRuleDeletionControllerTests: ProxyRuntimeControllerTests {
     let backupDirectory = directory.appendingPathExtension("backup")
     try FileManager.default.moveItem(at: directory, to: backupDirectory)
     try Data("blocks parent directory".utf8).write(to: directory)
-    let backup = backupDirectory.appendingPathComponent(store.fileURL.lastPathComponent)
+    let backup = backupDirectory.appendingPathComponent(
+      store.fileURL.path.replacingOccurrences(of: directory.path + "/", with: ""))
     await workflow.deleteCustomRules(confirmation)
     XCTAssertEqual(workflow.snapshot.commitOutcome, .persistenceFailed)
     XCTAssertEqual(controller.ruleDocuments.current, original)

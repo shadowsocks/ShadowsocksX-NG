@@ -64,7 +64,7 @@ final class StatusMenuModelTests: XCTestCase {
       systemProxyApplication: systemProxyApplication,
       systemProxyApprovalRequired: systemProxyApprovalRequired,
       proxyMode: mode,
-      ruleDefaultAction: .proxyWhenUnmatched,
+      rulePreset: .chinaDirect,
       availableModes: ProxyMode.availableModes,
       activeTarget: activeTarget,
       skippedInvalidServerCount: 0,

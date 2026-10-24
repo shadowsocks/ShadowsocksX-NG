@@ -137,7 +137,7 @@ struct StatusDisplayModelTests {
       systemProxyApplication: systemProxyApplication,
       systemProxyApprovalRequired: approvalRequired,
       proxyMode: .rule,
-      ruleDefaultAction: .proxyWhenUnmatched,
+      rulePreset: .chinaDirect,
       availableModes: ProxyMode.availableModes,
       activeTarget: nil,
       skippedInvalidServerCount: 0,

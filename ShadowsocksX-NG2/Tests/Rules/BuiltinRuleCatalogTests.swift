@@ -51,7 +51,7 @@ final class BuiltinRuleCatalogTests: XCTestCase {
     XCTAssertTrue(workflow.snapshot.isComplete)
     XCTAssertEqual(loader.count(.chinaIPv4), 2)
     XCTAssertEqual(loader.count(.geolocationCN), 1)
-    XCTAssertEqual(loader.count(.gfwlist), 1)
+    XCTAssertEqual(loader.count(.gfwlist), 0)
   }
 
   func testGeolocationCNSnapshotLoadsFromBundleOrSourceTree() throws {

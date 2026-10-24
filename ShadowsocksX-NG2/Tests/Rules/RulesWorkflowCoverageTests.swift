@@ -10,7 +10,7 @@ final class RulesWorkflowCoverageTests: XCTestCase {
     let duplicate = CustomRule(
       action: .direct, match: try RuleMatch(domainExact: "www.example.com"))
     let workflow = RulesWorkflow(
-      loadCustom: { [broad, narrow, duplicate] },
+      preset: .gfwlist, loadCustom: { [broad, narrow, duplicate] },
       builtinSnapshots: BuiltinRuleSnapshots(loader: { rulesFixture($0) }))
     await workflow.refresh()
     workflow.query(RulesQuery(action: .direct, source: .custom))
@@ -31,7 +31,7 @@ final class RulesWorkflowCoverageTests: XCTestCase {
     let lower = CustomRule(action: .direct, match: try RuleMatch(ipv4CIDR: "8.8.8.0/25"))
     let upper = CustomRule(action: .direct, match: try RuleMatch(ipv4CIDR: "8.8.8.128/25"))
     let workflow = RulesWorkflow(
-      loadCustom: { [proxy, lower, upper] },
+      preset: .gfwlist, loadCustom: { [proxy, lower, upper] },
       builtinSnapshots: BuiltinRuleSnapshots(loader: { rulesFixture($0) }))
     await workflow.refresh()
     workflow.query(RulesQuery(action: .proxy, source: .custom))
@@ -53,6 +53,7 @@ final class RulesWorkflowCoverageTests: XCTestCase {
     let nationalDirect = CustomRule(
       action: .direct, match: try RuleMatch(nationalDomainSuffix: "cn"))
     let workflow = RulesWorkflow(
+      preset: .gfwlist,
       loadCustom: { [localDirect, nationalDirect] },
       builtinSnapshots: BuiltinRuleSnapshots(loader: { requested in
         rulesFixture(
@@ -81,6 +82,7 @@ final class RulesWorkflowCoverageTests: XCTestCase {
     let direct = CustomRule(action: .direct, match: try RuleMatch(nationalDomainSuffix: "cn"))
     let proxy = ProxyRule(action: .proxy, match: try RuleMatch(domainExact: "cn"))
     let workflow = RulesWorkflow(
+      preset: .gfwlist,
       loadCustom: { [direct] },
       builtinSnapshots: BuiltinRuleSnapshots(loader: { requested in
         rulesFixture(requested, rules: requested == .gfwlist ? [proxy] : [])
