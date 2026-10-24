@@ -3,25 +3,15 @@ import Foundation
 @testable import ShadowsocksX_NG2
 
 @MainActor
-struct HealthCheckSupersessionControllerContext {
-  let directory: URL
-  let catalogFile: URL
-  let files: RuntimeFileStore
-  let plugins: PluginCatalog
-  let agent: ProxyRuntimeFixture.FakeLaunchAgent
-  let probe: ProxyRuntimeFixture.BlockingProbe
-}
-
-@MainActor
 func makeHealthCheckSupersessionController(
-  _ context: HealthCheckSupersessionControllerContext
+  runtime: ProxyRuntimeFixture.TemporaryRuntime, catalogFile: URL, plugins: PluginCatalog,
+  agent: ProxyRuntimeFixture.FakeLaunchAgent, probe: ProxyRuntimeFixture.BlockingProbe
 ) -> ProxyRuntimeController {
-  let directory = context.directory
-  let catalogFile = context.catalogFile
-  let files = context.files
-  let plugins = context.plugins
-  let agent = context.agent
-  let probe = context.probe
+  let directory = runtime.directory
+  let files = RuntimeFileStore(fileURL: runtime.contract)
+  agent.onRegister = {
+    try? files.writePublishedRuntimeReceipt(processID: 42)
+  }
   return ProxyRuntimeController(
     controlPreferences: makeTestProxyControlPreferences(),
     catalogSnapshotReader: ProxyRuntimeFixture.catalogSnapshotReader(at: catalogFile),

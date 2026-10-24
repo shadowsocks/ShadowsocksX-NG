@@ -73,6 +73,11 @@ static int response_status(const char *bytes, size_t length) {
 
 ConnectivityHTTPResult ConnectivityHTTPProbe(const char *request, int proxy_port,
   int timeout_ms, ConnectivityHTTPCancellation *token) {
+  return ConnectivityHTTPProbeWithReader(request, proxy_port, timeout_ms, token, NULL, NULL);
+}
+
+ConnectivityHTTPResult ConnectivityHTTPProbeWithReader(const char *request, int proxy_port,
+  int timeout_ms, ConnectivityHTTPCancellation *token, ConnectivityHTTPReader reader, void *context) {
   ConnectivityHTTPResult result = { .stage = 1, .local_tcp_ms = -1, .send_ms = -1,
     .first_byte_ms = -1, .headers_ms = -1 };
   int fd = -1;
@@ -109,7 +114,8 @@ ConnectivityHTTPResult ConnectivityHTTPProbe(const char *request, int proxy_port
   size_t used = 0, consumed = 0, cumulative = 0;
   while (used < sizeof(bytes)) {
     if (!ready(fd, POLLIN, deadline, token)) goto cleanup;
-    ssize_t count = recv(fd, bytes + used, sizeof(bytes) - used, 0);
+    ssize_t count = reader ? reader(bytes + used, sizeof(bytes) - used, context)
+      : recv(fd, bytes + used, sizeof(bytes) - used, 0);
     if (count <= 0) {
       if (count < 0 && (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR)) continue;
       goto cleanup;

@@ -208,38 +208,38 @@ struct PluginCatalogTests {
       inspector: QuietPluginInspector())
     try plugins.addPlugin(program: "tool", path: first.path)
     var catalog = ConfigurationCatalog()
-    let id = try ActivationFixture.addPlainServer("Plugin", in: &catalog)
-    var fields = try #require(catalog.entry(for: id)).serverFieldsForPluginTest
+    var fields = ActivationFixture.plainFields(remark: "Plugin")
     fields.pluginProgram = "tool"
-    try catalog.updateServer(id, with: fields)
+    let id = try catalog.addServer(fields, to: nil)
     let catalogFile = runtime.directory.appendingPathComponent("catalog.json")
     try makeTestCatalogStore(fileURL: catalogFile).save(CatalogDocument(catalog: catalog))
     let agent = ProxyRuntimeFixture.FakeLaunchAgent()
     let files = RuntimeFileStore(fileURL: runtime.contract)
-    agent.onRegister = {
-      try? files.writePublishedRuntimeReceipt(processID: 42)
-    }
     let probe = ProxyRuntimeFixture.BlockingProbe()
     let controller = makeHealthCheckSupersessionController(
-      HealthCheckSupersessionControllerContext(
-        directory: runtime.directory, catalogFile: catalogFile, files: files,
-        plugins: plugins, agent: agent, probe: probe))
+      runtime: runtime, catalogFile: catalogFile, plugins: plugins, agent: agent, probe: probe)
     let started = XCTestExpectation(description: "old runtime entered health check")
     probe.arm(started: started)
-    let oldActivation = Task { try await controller.activate(id) }
-    let wait = await XCTWaiter.fulfillment(of: [started], timeout: 3)
-    #expect(wait == .completed)
-    let applied = AsyncStream<Void>.makeStream()
     plugins.connect(
-      invalidateRuntime: { controller.pluginMappingsDidPublish() }, revalidate: {},
-      converge: {
-        _ = await controller.catalogDidCommit(snapshot: catalog)
-        applied.continuation.yield(())
-      })
-    try plugins.updatePlugin(program: "tool", path: second.path)
-    probe.release()
-    _ = try await oldActivation.value
-    for await _ in applied.stream { break }
+      invalidateRuntime: { controller.pluginMappingsDidPublish() }, revalidate: {}, converge: {})
+    let oldActivation = Task { try await controller.activate(id) }
+    do {
+      try await requireTestPhase([started])
+      try plugins.updatePlugin(program: "tool", path: second.path)
+      probe.release()
+      _ = try await oldActivation.value
+    } catch {
+      probe.release()
+      oldActivation.cancel()
+      _ = await oldActivation.result
+      throw error
+    }
+    // A later successful deployment must not hide stale health-check side effects.
+    #expect(controller.state == .starting)
+    #expect(files.readFailure() == nil)
+    #expect(agent.unregisterCount == 0)
+    let outcome = await controller.catalogDidCommit(snapshot: catalog)
+    #expect(outcome == .converged(skippedServers: []))
     #expect(files.loadDocument()?.servers.first?.plugin == second.path)
     #expect(controller.state == .running)
   }
@@ -325,13 +325,6 @@ struct PluginCatalogSecurityTests {
 private struct FailingMappingStore: PluginMappingStoring {
   func load() throws -> PluginConfiguration { PluginConfiguration() }
   func save(_ configuration: PluginConfiguration) throws { throw PluginMappingError.unreadable }
-}
-
-extension CatalogEntry {
-  fileprivate var serverFieldsForPluginTest: ServerFields {
-    guard case .server(let fields) = kind else { preconditionFailure("expected server") }
-    return fields
-  }
 }
 
 private actor HeldPluginInspector: PluginInspecting {
