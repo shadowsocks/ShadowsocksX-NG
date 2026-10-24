@@ -49,3 +49,7 @@ Current code, `GLOSSARY.md`, and `docs/adr/` define the current state and accept
 
 `docs/research/` contains research reports. Each report records upstream capabilities, candidate solutions, and conclusions at the time of writing. It does not describe the project's current state or establish that a design has been adopted.
 
+## Contribution Guidelines
+
+Follow the project's CONTRIBUTING.md for all contributions, including AI-assisted development.
+
