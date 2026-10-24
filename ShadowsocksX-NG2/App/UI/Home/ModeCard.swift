@@ -27,7 +27,6 @@ struct ModeCard: View {
                   Text(action.label).tag(action)
                 }
               }
-              .pickerStyle(.segmented)
               .labelsHidden()
               .frame(maxWidth: .infinity, alignment: .leading)
             }
