@@ -10,7 +10,7 @@ enum ProxyModeKind: String, Codable, CaseIterable, Equatable, Hashable, Sendable
 
 /// The mutually exclusive ways in which 2.0 exposes the local proxy to macOS.
 /// Hashable 供菜单栏模式选择的勾选态 Picker 使用。
-/// 规则模式另持久化 `RuleDefaultAction` 子选项。
+/// 规则模式另持久化 `RulePreset` 子选项。
 enum ProxyMode: Codable, Equatable, Hashable, Sendable {
   case rule
   case global

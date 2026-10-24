@@ -9042,6 +9042,74 @@
           }
         }
       }
+    },
+    "中国大陆目标直连": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Direct for Mainland China"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "中国大陆目标直连"
+          }
+        }
+      }
+    },
+    "仅GFW列表内目标代理": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Proxy GFWList Targets Only"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "仅GFW列表内目标代理"
+          }
+        }
+      }
+    },
+    "中国大陆目标代理": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Proxy Mainland China Targets"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "中国大陆目标代理"
+          }
+        }
+      }
+    },
+    "规则预设": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rule Preset"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "规则预设"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

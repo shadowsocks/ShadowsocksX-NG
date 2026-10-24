@@ -59,7 +59,16 @@ final class ProxyRuntimeController {
   var ruleApplicationGeneration = 0
   var ruleApplicationFailure: RuntimeFailureFacts? { didSet { factChanges.markChanged() } }
   let customRuleStore: CustomRuleStore
-  let ruleDocuments: RuleDocumentSession
+  private var presetDocuments: [RulePreset: RuleDocumentSession] = [:]
+  var ruleDocuments: RuleDocumentSession { documents(for: settings.rulePreset) }
+
+  func documents(for preset: RulePreset) -> RuleDocumentSession {
+    if let session = presetDocuments[preset] { return session }
+    let session = RuleDocumentSession(
+      store: CustomRuleStore(preset: preset, baseURL: customRuleStore.baseURL))
+    presetDocuments[preset] = session
+    return session
+  }
   let ruleSnapshots: BuiltinRuleSnapshots
   var runtimePreparationGeneration = 0
   /// 新版偏好不可读时禁止部署，不以出厂端口静默替代用户配置。
@@ -115,6 +124,7 @@ final class ProxyRuntimeController {
 
   /// 规则模式子选项：从设置快照投影。
   var ruleDefaultAction: RuleDefaultAction { settings.ruleDefaultAction }
+  var rulePreset: RulePreset { settings.rulePreset }
 
   init(
     controlPreferences: ProxyControlPreferences = ProxyControlPreferences(),
@@ -159,7 +169,6 @@ final class ProxyRuntimeController {
     self.controlPreferences = controlPreferences
     self.listeningStore = listeningStore
     self.customRuleStore = customRuleStore
-    self.ruleDocuments = RuleDocumentSession(store: customRuleStore)
     self.ruleSnapshots = ruleSnapshots ?? BuiltinRuleSnapshots(bundle: appBundle)
     self.appBundle = appBundle
     let restoredSettings =

@@ -14,7 +14,7 @@ private enum WorkspaceSheet: String, Identifiable {
 struct MainWindowView: View {
   /// 纯转发的分区工作流与控制器：壳 body 不读它们（分区视图自行观察），
   /// 用 let 转发，壳不重复订阅它们的发布。
-  let rulesWorkflow: RulesWorkflow
+  let rulesWorkflow: RulesWorkspaces
   @ObservedObject var route: WorkspaceRoute
   @ObservedObject var workflow: CatalogWorkflow
   @ObservedObject var control: ProxyControlWorkflow
@@ -148,7 +148,7 @@ struct MainWindowView: View {
         configurationGroupFileExporter: configurationGroupFileExporter,
         qrImageSaver: qrImageSaver)
     case .rules:
-      RulesView(workflow: rulesWorkflow)
+      RulesPresetView(workspaces: rulesWorkflow)
     case .settings:
       SettingsView(
         plugins: plugins, workflow: settingsWorkflow, loginController: loginController,

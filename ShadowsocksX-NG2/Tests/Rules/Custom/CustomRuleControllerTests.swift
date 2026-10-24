@@ -5,11 +5,14 @@ import XCTest
 
 /// Saved custom-rule intent and independent runtime application/recovery.
 extension ProxyRuntimeControllerTests {
-  func makeCustomRuleStore() throws -> (store: CustomRuleStore, directory: URL) {
+  func makeCustomRuleStore(preset: RulePreset = .chinaDirect) throws -> (
+    store: CustomRuleStore, directory: URL
+  ) {
     let directory = runtime.directory.appendingPathComponent(
       "custom-rules-\(UUID().uuidString)", isDirectory: true)
     try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-    let store = CustomRuleStore(fileURL: directory.appendingPathComponent("custom-rules.json"))
+    let store = CustomRuleStore(
+      preset: preset, baseURL: directory.appendingPathComponent("custom-rules.json"))
     return (store, directory)
   }
 
@@ -86,7 +89,7 @@ final class CustomRuleControllerTests: ProxyRuntimeControllerTests {
 
   func testOppositeActionsPersistAndReorderingDoesNotRedeploy() async throws {
     let seeded = try makeSeededCatalog()
-    let (store, _) = try makeCustomRuleStore()
+    let (store, _) = try makeCustomRuleStore(preset: .gfwlist)
     let settings = ProxyRuntimeSettings(
       listen: ActivationFixture.listen, preferredMode: .rule,
       ruleDefaultAction: .directWhenUnmatched, agentEnabled: true)

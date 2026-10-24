@@ -9,7 +9,8 @@ final class OfflineRuleMatcherTests: XCTestCase {
       CustomRule(action: .proxy, match: try RuleMatch(ipv4CIDR: "203.0.113.0/24")),
       CustomRule(action: .direct, match: try RuleMatch(ipv6CIDR: "2001:db8::/32")),
     ]
-    let collection = RulesCollection.load(custom: { rules }, builtin: { rulesFixture($0) })
+    let collection = RulesCollection.load(
+      preset: .gfwlist, custom: { rules }, builtin: { rulesFixture($0) })
     for input in [" A.Example.COM. \n", "https://A.Example.COM.:8443/path?q=203.0.113.8#fragment"] {
       let result = try OfflineRuleMatcher.test(collection: collection, address: input)
       XCTAssertEqual(result.target, "a.example.com")
@@ -34,7 +35,8 @@ final class OfflineRuleMatcherTests: XCTestCase {
     let secondProxy = CustomRule(action: .proxy, match: try RuleMatch(domainSuffix: "example.com"))
     let rules = [suffix, exact, secondProxy]
     for entries in [rules, Array(rules.reversed())] {
-      let collection = RulesCollection.load(custom: { entries }, builtin: { rulesFixture($0) })
+      let collection = RulesCollection.load(
+        preset: .gfwlist, custom: { entries }, builtin: { rulesFixture($0) })
       let result = try OfflineRuleMatcher.test(collection: collection, address: "a.example.com")
       XCTAssertEqual(result.outcome, .proxy)
       XCTAssertEqual(result.explanation, .domainProxy)
@@ -43,19 +45,21 @@ final class OfflineRuleMatcherTests: XCTestCase {
       XCTAssertEqual(result.otherMatches.map(\.identity), [suffix.identity])
       XCTAssertEqual(
         try OfflineRuleMatcher.test(collection: collection, address: "notexample.com").outcome,
-        .unmatched)
+        .direct)
     }
     let collection = RulesCollection.load(
+      preset: .gfwlist,
       custom: { [suffix, exact] }, builtin: { rulesFixture($0) })
     XCTAssertEqual(
       try OfflineRuleMatcher.test(collection: collection, address: "example.com").outcome, .direct)
     XCTAssertEqual(
       try OfflineRuleMatcher.test(collection: collection, address: "b.example.com").outcome, .direct
     )
-    let exactOnly = RulesCollection.load(custom: { [exact] }, builtin: { rulesFixture($0) })
+    let exactOnly = RulesCollection.load(
+      preset: .gfwlist, custom: { [exact] }, builtin: { rulesFixture($0) })
     XCTAssertEqual(
       try OfflineRuleMatcher.test(collection: exactOnly, address: "sub.a.example.com").outcome,
-      .unmatched)
+      .direct)
   }
 
   func testIPOverlapAndMappedAddressesPreferDirectWithoutLosingOtherRanges() throws {
@@ -67,6 +71,7 @@ final class OfflineRuleMatcherTests: XCTestCase {
         action: reverseActions ? .proxy : .direct,
         match: try RuleMatch(ipv6CIDR: "::ffff:203.0.113.8/128"))
       let collection = RulesCollection.load(
+        preset: .gfwlist,
         custom: { [broad, narrow] }, builtin: { rulesFixture($0) })
       for address in ["203.0.113.8", "::ffff:203.0.113.8"] {
         let result = try OfflineRuleMatcher.test(collection: collection, address: address)
@@ -82,16 +87,17 @@ final class OfflineRuleMatcherTests: XCTestCase {
         reverseActions ? .direct : .proxy)
       XCTAssertEqual(
         try OfflineRuleMatcher.test(collection: collection, address: "198.51.100.8").outcome,
-        .unmatched)
+        .direct)
       XCTAssertEqual(
         try OfflineRuleMatcher.test(collection: collection, address: "unresolved.example").outcome,
-        .unmatched)
+        .direct)
     }
   }
 
   func testFixedPolicyWinsAndSourceMembershipsRemainComplete() throws {
     let proxy = ProxyRule(action: .proxy, match: .localSuffix)
     let collection = RulesCollection.load(
+      preset: .gfwlist,
       custom: { [] },
       builtin: {
         rulesFixture($0, rules: $0 == .gfwlist ? [proxy] : [])
@@ -111,6 +117,7 @@ final class OfflineRuleMatcherTests: XCTestCase {
     let custom = CustomRule(action: .proxy, match: match)
     let duplicate = ProxyRule(action: .proxy, match: match)
     let merged = RulesCollection.load(
+      preset: .gfwlist,
       custom: { [custom] },
       builtin: {
         rulesFixture($0, rules: $0 == .gfwlist ? [duplicate] : [])
@@ -122,7 +129,8 @@ final class OfflineRuleMatcherTests: XCTestCase {
   }
 
   func testInvalidInputsAreOperationErrorsRatherThanUnmatched() throws {
-    let collection = RulesCollection.load(custom: { [] }, builtin: { rulesFixture($0) })
+    let collection = RulesCollection.load(
+      preset: .gfwlist, custom: { [] }, builtin: { rulesFixture($0) })
     for input in [
       "", " ", "example..com", "example.com..", "-example.com", "example-.com",
       "https:///path", "https://", "file:///tmp/test", "203.0.113.999", "203.0.113.8/32",
@@ -139,7 +147,7 @@ final class OfflineRuleMatcherTests: XCTestCase {
     let valid = try OfflineRuleMatcher.test(
       collection: collection, address: "XN--BCHER-KVA.example.")
     XCTAssertEqual(valid.target, "xn--bcher-kva.example")
-    XCTAssertEqual(valid.outcome, .unmatched)
+    XCTAssertEqual(valid.outcome, .direct)
   }
 
 }

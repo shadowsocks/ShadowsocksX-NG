@@ -18,7 +18,11 @@ final class FakeProxyRuntime: ProxyRuntimeAdapting {
   var systemProxyApprovalRequired = false
   var systemProxyInspection = SystemProxyInspectionFacts()
   var proxyMode: ProxyMode
-  var ruleDefaultAction: RuleDefaultAction = .proxyWhenUnmatched
+  var rulePreset: RulePreset = .chinaDirect
+  var ruleDefaultAction: RuleDefaultAction {
+    get { rulePreset.defaultAction }
+    set { rulePreset = RulePreset(legacy: newValue) }
+  }
   var skippedInvalidServerCount = 0
   var activeTargetID: NodeID?
   var httpExportCapability = HTTPExportCapability(
@@ -34,6 +38,7 @@ final class FakeProxyRuntime: ProxyRuntimeAdapting {
   private(set) var systemProxyCommands: [Bool] = []
   private(set) var approvalCommandCount = 0
   private(set) var modeCommands: [ProxyMode] = []
+  private(set) var rulePresetCommands: [RulePreset] = []
   private(set) var ruleDefaultActionCommands: [RuleDefaultAction] = []
 
   init(
@@ -65,6 +70,10 @@ final class FakeProxyRuntime: ProxyRuntimeAdapting {
   func recheckSystemProxy() async {}
 
   func setProxyMode(_ mode: ProxyMode) async { modeCommands.append(mode) }
+
+  func setRulePreset(_ preset: RulePreset) async {
+    rulePresetCommands.append(preset)
+  }
 
   func setRuleDefaultAction(_ action: RuleDefaultAction) async {
     ruleDefaultActionCommands.append(action)
@@ -165,7 +174,7 @@ final class ProxyControlWorkflowTests: XCTestCase {
         systemProxyApplication: .pending,
         systemProxyApprovalRequired: false,
         proxyMode: .global,
-        ruleDefaultAction: .proxyWhenUnmatched,
+        rulePreset: .chinaDirect,
         availableModes: ProxyMode.availableModes,
         activeTarget: ProxyActiveTargetFacts(id: Self.serverID, pathSummary: "组A / 香港 01"),
         skippedInvalidServerCount: 3,
@@ -259,6 +268,17 @@ final class ProxyControlWorkflowTests: XCTestCase {
     XCTAssertEqual(workflow.snapshot.ruleDefaultAction, .proxyWhenUnmatched)
     runtime.ruleDefaultAction = .directWhenUnmatched
     runtime.emitChange()
+    XCTAssertEqual(workflow.snapshot.ruleDefaultAction, .directWhenUnmatched)
+    XCTAssertEqual(workflow.snapshot.proxyMode, runtime.proxyMode)
+  }
+
+  func testExplicitChinaProxyPresetCommandPreservesItsIdentityInPublishedFacts() async {
+    _ = await workflow.setRulePreset(.chinaProxy)
+    XCTAssertEqual(runtime.rulePresetCommands, [.chinaProxy])
+    XCTAssertEqual(workflow.snapshot.rulePreset, .chinaDirect)
+    runtime.rulePreset = .chinaProxy
+    runtime.emitChange()
+    XCTAssertEqual(workflow.snapshot.rulePreset, .chinaProxy)
     XCTAssertEqual(workflow.snapshot.ruleDefaultAction, .directWhenUnmatched)
     XCTAssertEqual(workflow.snapshot.proxyMode, runtime.proxyMode)
   }

@@ -154,7 +154,7 @@ class ProxyRuntimeControllerTests: XCTestCase {
         unreadableError: nil)
     // Fixture snapshots represent previously saved intent, matching production bootstrap.
     controlPreferences.preferredMode = restored.settings.preferredMode
-    controlPreferences.ruleDefaultAction = restored.settings.ruleDefaultAction
+    controlPreferences.rulePreset = restored.settings.rulePreset
     controlPreferences.agentEnabled = restored.settings.agentEnabled
     controlPreferences.systemProxyEnabled = restored.settings.systemProxyEnabled
     controlPreferences.proxyExceptions = restored.settings.proxyExceptions

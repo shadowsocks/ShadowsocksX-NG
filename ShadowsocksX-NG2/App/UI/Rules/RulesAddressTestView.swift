@@ -89,7 +89,6 @@ extension OfflineRuleMatcher.Outcome {
     switch self {
     case .proxy: RulesCopy.text("代理")
     case .direct: RulesCopy.text("直连")
-    case .unmatched: RulesCopy.text("未匹配规则")
     }
   }
 }
@@ -100,7 +99,8 @@ extension OfflineRuleMatcher.Explanation {
     case .fixedLocal: "固定本地策略优先。"
     case .domainProxy: "域名同时命中两种行动时，代理优先。"
     case .ipDirect: "IP 同时命中两种行动时，直连优先。"
-    case .singleAction, .noMatch: nil
+    case .defaultAction: "未命中规则，采用预设默认动作。"
+    case .singleAction: nil
     }
   }
 }

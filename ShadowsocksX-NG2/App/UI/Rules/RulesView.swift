@@ -99,8 +99,7 @@ struct RulesView: View {
 
   private var sourceList: some View {
     List(selection: sourceBinding) {
-      Text(RulesCopy.text("全部规则")).tag(RulesSourceChoice.all)
-      ForEach(RulesSource.allCases) { source in
+      ForEach([RulesSource.custom] + workflow.preset.sources + [.fixed]) { source in
         HStack {
           Text(source.label)
           Spacer()
@@ -109,7 +108,7 @@ struct RulesView: View {
           } else if !workflow.snapshot.isLoading && !workflow.snapshot.version.isEmpty {
             Image(systemName: "exclamationmark.triangle").foregroundStyle(.secondary)
           }
-        }.tag(RulesSourceChoice.source(source))
+        }.tag(source)
       }
     }
   }
@@ -234,15 +233,15 @@ struct RulesView: View {
       }
   }
 
-  private var sourceBinding: Binding<RulesSourceChoice?> {
+  private var sourceBinding: Binding<RulesSource?> {
     Binding(
       get: {
-        workflow.snapshot.query.source.map(RulesSourceChoice.source) ?? .all
+        workflow.snapshot.query.source ?? .custom
       },
       set: { choice in
         guard let choice else { return }
         updateQuery {
-          if case .source(let source) = choice { $0.source = source } else { $0.source = nil }
+          $0.source = choice
         }
       })
   }
@@ -363,11 +362,6 @@ extension RulesRow {
     }
     return labels.isEmpty ? RulesCopy.text("独立候选") : labels.joined(separator: "; ")
   }
-}
-
-private enum RulesSourceChoice: Hashable {
-  case all
-  case source(RulesSource)
 }
 
 extension RuleRelationship {

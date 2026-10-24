@@ -86,13 +86,21 @@ extension ProxyRuntimeController {
   /// Validate and atomically save intent; runtime application is a separate worker.
   /// Deployment failure never restores an older saved rule document.
   /// 全局和直连模式不加载自定义规则，但持久化仍然进行（切换到规则模式后生效）。
-  func commitRuleDocument(_ document: CustomRuleDocument) async -> RuleDocumentCommit {
-    let previous = try? ruleDocuments.load()
-    let outcome = await updateRuleDocument(document)
-    return RuleDocumentCommit(outcome: outcome, document: ruleDocuments.current ?? previous)
+  func commitRuleDocument(_ document: CustomRuleDocument, preset: RulePreset? = nil) async
+    -> RuleDocumentCommit
+  {
+    let preset = preset ?? settings.rulePreset
+    let session = documents(for: preset)
+    let previous = try? session.load()
+    let outcome = await updateRuleDocument(document, preset: preset)
+    return RuleDocumentCommit(outcome: outcome, document: session.current ?? previous)
   }
 
-  func updateRuleDocument(_ document: CustomRuleDocument) async -> CustomRuleUpdateOutcome {
+  func updateRuleDocument(_ document: CustomRuleDocument, preset: RulePreset? = nil) async
+    -> CustomRuleUpdateOutcome
+  {
+    let preset = preset ?? settings.rulePreset
+    let session = documents(for: preset)
     guard !isUpdatingRules else { return .busy }
     isUpdatingRules = true
     defer { isUpdatingRules = false }
@@ -104,13 +112,13 @@ extension ProxyRuntimeController {
           Set(RuleCoverage.fixedLocalMatches.map { ProxyRule(action: .direct, match: $0) }))
     else { return .invalidDocument(detail: "Fixed local policy cannot be disabled") }
     do {
-      _ = try ruleDocuments.load()
-      try ruleDocuments.save(document)
+      _ = try session.load()
+      try session.save(document)
     } catch {
       RuntimeLog.emit(.runtimePersistFailed(detail: String(describing: error)))
       return .persistenceFailed
     }
-    scheduleRuleApplication()
+    if preset == settings.rulePreset { scheduleRuleApplication() }
     return .saved
   }
 
@@ -148,6 +156,6 @@ extension ProxyRuntimeController {
 
   /// 自定义规则安全摘要：数量 + 内容版本，不含原始域名。
   func readCustomRuleSummary() -> CustomRuleSummary? {
-    try? customRuleStore.summary()
+    try? CustomRuleSummary.summarizing(ruleDocuments.load())
   }
 }

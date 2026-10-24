@@ -11,8 +11,12 @@ struct ProxyRuntimeSettings: Equatable, Sendable {
   /// The persisted current mode: the mode selector's choice survives GUI
   /// restarts. First run defaults to rule mode.
   var preferredMode: ProxyModeKind
-  /// 规则模式子选项：未匹配默认动作，出厂「未匹配时代理」。
-  var ruleDefaultAction: RuleDefaultAction
+  /// 规则模式预设，出厂为中国大陆目标直连。
+  var rulePreset: RulePreset
+  var ruleDefaultAction: RuleDefaultAction {
+    get { rulePreset.defaultAction }
+    set { rulePreset = RulePreset(legacy: newValue) }
+  }
   /// 用户保存的代理服务意图，默认关闭，与当前运行健康状态独立。
   var agentEnabled: Bool
   /// 系统代理意图：默认关闭；与 agent 意图相互独立，开关关闭
@@ -24,13 +28,14 @@ struct ProxyRuntimeSettings: Equatable, Sendable {
     proxyExceptions: String = ProxyRuntimeSettings.defaultProxyExceptions,
     preferredMode: ProxyModeKind = .rule,
     ruleDefaultAction: RuleDefaultAction = .proxyWhenUnmatched,
+    rulePreset: RulePreset? = nil,
     agentEnabled: Bool = false,
     systemProxyEnabled: Bool = false
   ) {
     self.listen = listen
     self.proxyExceptions = proxyExceptions
     self.preferredMode = preferredMode
-    self.ruleDefaultAction = ruleDefaultAction
+    self.rulePreset = rulePreset ?? RulePreset(legacy: ruleDefaultAction)
     self.agentEnabled = agentEnabled
     self.systemProxyEnabled = systemProxyEnabled
   }
@@ -38,7 +43,7 @@ struct ProxyRuntimeSettings: Equatable, Sendable {
   init(listen: ProxyListeningConfiguration, preferences: ProxyControlPreferences) {
     self.init(
       listen: listen, proxyExceptions: preferences.proxyExceptions,
-      preferredMode: preferences.preferredMode, ruleDefaultAction: preferences.ruleDefaultAction,
+      preferredMode: preferences.preferredMode, rulePreset: preferences.rulePreset,
       agentEnabled: preferences.agentEnabled, systemProxyEnabled: preferences.systemProxyEnabled)
   }
 

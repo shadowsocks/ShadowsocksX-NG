@@ -56,7 +56,7 @@ enum StatusMenuModel {
   private static func modeLabel(for snapshot: ProxyControlSnapshot) -> String {
     let mode = snapshot.proxyMode
     if mode == .rule {
-      return "\(mode.label) · \(snapshot.ruleDefaultAction.label)"
+      return "\(mode.label) · \(snapshot.rulePreset.label)"
     }
     return mode.label
   }

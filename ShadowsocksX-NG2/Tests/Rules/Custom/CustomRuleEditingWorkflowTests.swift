@@ -6,7 +6,7 @@ import XCTest
 final class CustomRuleEditingWorkflowTests: XCTestCase {
   func testIPPreviewNormalizesWithoutSavingAndSavePublishesNewRow() async throws {
     let workflow = RulesWorkflow(
-      loadDocument: { CustomRuleDocument(rules: []) },
+      preset: .gfwlist, loadDocument: { CustomRuleDocument(rules: []) },
       commitDocument: { RuleDocumentCommit(outcome: .saved, document: $0) },
       builtinSnapshots: BuiltinRuleSnapshots(loader: { rulesFixture($0) }))
     await workflow.refresh()
@@ -34,6 +34,7 @@ final class CustomRuleEditingWorkflowTests: XCTestCase {
     let builtin = ProxyRule(action: .proxy, match: original.match)
     var saved = CustomRuleDocument(rules: [original], disabledIdentities: [original.identity])
     let workflow = RulesWorkflow(
+      preset: .gfwlist,
       loadDocument: { saved },
       commitDocument: {
         saved = $0
@@ -61,10 +62,12 @@ final class CustomRuleEditingWorkflowTests: XCTestCase {
         original.identity,
         ProxyRule(action: .direct, match: try RuleMatch(domainSuffix: "new.example")),
       ])
+    workflow.query(RulesQuery(source: .gfwlist))
     let oldRow = try XCTUnwrap(workflow.snapshot.rows.first { $0.identity == original.identity })
     XCTAssertEqual(oldRow.sources, [.gfwlist])
     XCTAssertTrue(oldRow.customIDs.isEmpty)
     XCTAssertFalse(oldRow.isEnabled)
+    workflow.query(RulesQuery(source: .custom))
     let newRow = try XCTUnwrap(workflow.snapshot.rows.first { $0.customIDs.contains(original.id) })
     XCTAssertEqual(newRow.sources, [.custom])
     XCTAssertFalse(newRow.isEnabled)
@@ -72,7 +75,7 @@ final class CustomRuleEditingWorkflowTests: XCTestCase {
 
   func testCIDRRequiresAddressAndPrefixAndShowsMaskedNetwork() async throws {
     let workflow = RulesWorkflow(
-      loadDocument: { CustomRuleDocument(rules: []) },
+      preset: .gfwlist, loadDocument: { CustomRuleDocument(rules: []) },
       commitDocument: { RuleDocumentCommit(outcome: .saved, document: $0) },
       builtinSnapshots: BuiltinRuleSnapshots(loader: { rulesFixture($0) }))
     await workflow.refresh()
@@ -98,7 +101,7 @@ final class CustomRuleEditingWorkflowTests: XCTestCase {
     let existing = CustomRule(action: .direct, match: try RuleMatch(ipv4CIDR: "8.8.8.8/32"))
     var commits = 0
     let workflow = RulesWorkflow(
-      loadDocument: { CustomRuleDocument(rules: [existing]) },
+      preset: .gfwlist, loadDocument: { CustomRuleDocument(rules: [existing]) },
       commitDocument: {
         commits += 1
         return RuleDocumentCommit(outcome: .saved, document: $0)
@@ -134,6 +137,7 @@ final class CustomRuleEditingWorkflowTests: XCTestCase {
       action: .proxy, match: try RuleMatch(domainSuffix: "merge.example"))
     let orphan = ProxyRule(action: .proxy, match: try RuleMatch(domainExact: "orphan.example"))
     let workflow = RulesWorkflow(
+      preset: .gfwlist,
       loadDocument: {
         CustomRuleDocument(rules: [], disabledIdentities: [builtin, orphan])
       },
@@ -167,7 +171,7 @@ final class CustomRuleEditingWorkflowTests: XCTestCase {
 
   func testDomainBoundaryAndNationalSuffixUseExistingNormalization() async throws {
     let workflow = RulesWorkflow(
-      loadDocument: { CustomRuleDocument(rules: []) },
+      preset: .gfwlist, loadDocument: { CustomRuleDocument(rules: []) },
       commitDocument: { RuleDocumentCommit(outcome: .saved, document: $0) },
       builtinSnapshots: BuiltinRuleSnapshots(loader: { rulesFixture($0) }))
     await workflow.refresh()
@@ -205,7 +209,7 @@ final class CustomRuleEditingWorkflowTests: XCTestCase {
       action: .direct, match: try RuleMatch(domainSuffix: "coverage.example"))
     let proxy = CustomRule(action: .proxy, match: try RuleMatch(domainExact: "a.coverage.example"))
     let workflow = RulesWorkflow(
-      loadDocument: { CustomRuleDocument(rules: [broad, proxy]) },
+      preset: .gfwlist, loadDocument: { CustomRuleDocument(rules: [broad, proxy]) },
       commitDocument: { RuleDocumentCommit(outcome: .saved, document: $0) },
       builtinSnapshots: BuiltinRuleSnapshots(loader: { rulesFixture($0) }))
     await workflow.refresh()
@@ -246,7 +250,7 @@ extension CustomRuleEditingWorkflowTests {
     var continuation: CheckedContinuation<Void, Never>?
     var commits = 0
     let workflow = RulesWorkflow(
-      loadDocument: { original },
+      preset: .gfwlist, loadDocument: { original },
       commitDocument: { _ in
         commits += 1
         await withCheckedContinuation {
@@ -284,7 +288,7 @@ extension CustomRuleEditingWorkflowTests {
     let original = CustomRuleDocument(rules: [rule])
     let outcome = CustomRuleUpdateOutcome.saved
     let workflow = RulesWorkflow(
-      loadDocument: { original },
+      preset: .gfwlist, loadDocument: { original },
       commitDocument: { RuleDocumentCommit(outcome: outcome, document: $0) },
       builtinSnapshots: BuiltinRuleSnapshots(loader: { rulesFixture($0) }))
     XCTAssertNil(workflow.makeCustomRuleDraft())
@@ -299,6 +303,7 @@ extension CustomRuleEditingWorkflowTests {
     let stale = await workflow.previewCustomRule(draft)
     XCTAssertEqual(stale.failure, .staleDraft)
     let incomplete = RulesWorkflow(
+      preset: .gfwlist,
       loadDocument: { throw CustomRuleStoreError.corrupt(detail: "fixture error") },
       commitDocument: { RuleDocumentCommit(outcome: .saved, document: $0) },
       builtinSnapshots: BuiltinRuleSnapshots(loader: { rulesFixture($0) }))
@@ -315,6 +320,7 @@ extension CustomRuleEditingWorkflowTests {
       action: .direct, match: try RuleMatch(domainExact: "disabled.example"))
     var commits = 0
     let workflow = RulesWorkflow(
+      preset: .gfwlist,
       loadDocument: {
         CustomRuleDocument(rules: [original], disabledIdentities: [original.identity])
       },
@@ -342,7 +348,7 @@ extension CustomRuleEditingWorkflowTests {
     let rule = CustomRule(action: .direct, match: try RuleMatch(domainExact: "kept.example"))
     var commits = 0
     let workflow = RulesWorkflow(
-      loadDocument: { CustomRuleDocument(rules: [rule]) },
+      preset: .gfwlist, loadDocument: { CustomRuleDocument(rules: [rule]) },
       commitDocument: {
         commits += 1
         return RuleDocumentCommit(outcome: .saved, document: $0)

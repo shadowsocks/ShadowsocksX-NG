@@ -93,7 +93,7 @@ extension RuleAnalysis {
   static func runtimeCandidates(_ rules: [ProxyRule], defaultAction: RuleDefaultAction)
     -> [ProxyRule]
   {
-    let expressed = rules.filter { defaultAction != .proxyWhenUnmatched || $0.action == .direct }
+    let expressed = rules.filter { defaultAction.expresses($0.action) }
     let index = RulesOverlapIndex(rules: expressed)
     return expressed.filter { rule in
       let analysis = RuleAnalysis(rules: index.overlapping(rule.match), subjects: [rule])

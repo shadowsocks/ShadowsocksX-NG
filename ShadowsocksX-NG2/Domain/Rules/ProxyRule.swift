@@ -23,6 +23,10 @@ enum RuleDefaultAction: String, Codable, CaseIterable, Equatable, Hashable, Send
     }
   }
 
+  func expresses(_ action: RuleAction) -> Bool {
+    self != .proxyWhenUnmatched || action == .direct
+  }
+
   /// 域名优先匹配下，未命中时的默认动作。
   var fallbackAction: RuleAction {
     switch self {

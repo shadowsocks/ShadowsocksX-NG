@@ -18,7 +18,7 @@ struct ShadowsocksXNG2App: App {
   @StateObject private var diagnosticsWorkflow: DiagnosticsWorkflow
   @StateObject private var workspaceRoute: WorkspaceRoute
   @StateObject private var silentLaunch: SilentLaunchController
-  @StateObject private var rulesWorkflow: RulesWorkflow
+  @StateObject private var rulesWorkflow: RulesWorkspaces
   @StateObject private var windowActivation: WindowActivationPolicyCoordinator
   private let textClipboard: any TextClipboard
   private let diagnosticReportExporter: any DiagnosticReportExporter
@@ -183,7 +183,7 @@ private struct AppComposition {
   let textClipboard: any TextClipboard
   let diagnosticReportExporter: any DiagnosticReportExporter
   let imageClipboard: any ImageClipboard
-  let rulesWorkflow: RulesWorkflow
+  let rulesWorkflow: RulesWorkspaces
   let workspaceContent: MainWindowView
 
   static func make() -> AppComposition {
@@ -298,10 +298,13 @@ private struct AppComposition {
     let route = WorkspaceRoute()
     let silentLaunch = SilentLaunchController(store: context.dependencies.silentLaunchStore)
     let expansion = CatalogExpansionState()
-    let rulesWorkflow = RulesWorkflow(
-      loadDocument: { try context.controller.ruleDocuments.load() },
-      commitDocument: { await context.controller.commitRuleDocument($0) },
-      builtinSnapshots: context.controller.ruleSnapshots)
+    let rulesWorkflow = RulesWorkspaces { preset in
+      RulesWorkflow(
+        preset: preset,
+        loadDocument: { try context.controller.documents(for: preset).load() },
+        commitDocument: { await context.controller.commitRuleDocument($0, preset: preset) },
+        builtinSnapshots: context.controller.ruleSnapshots)
+    }
     let content = MainWindowView(
       rulesWorkflow: rulesWorkflow,
       route: route,
@@ -382,6 +385,6 @@ private struct WorkspaceComposition {
   let route: WorkspaceRoute
   let silentLaunch: SilentLaunchController
   let expansion: CatalogExpansionState
-  let rulesWorkflow: RulesWorkflow
+  let rulesWorkflow: RulesWorkspaces
   let content: MainWindowView
 }

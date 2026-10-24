@@ -26,7 +26,7 @@ extension ProxyRuntimeController {
     do {
       let user = mode == .rule ? try ruleDocuments.load() : nil
       let builtIn =
-        mode == .rule ? try await runtimeBuiltinRules(ticket.settings.ruleDefaultAction) : []
+        mode == .rule ? try await runtimeBuiltinRules(ticket.settings.rulePreset) : []
       let aclURL = runtimeFileStore.aclFileURL
       let result = await Task.detached(priority: .userInitiated) {
         RuleRuntimeCompiler.compile(
@@ -58,26 +58,18 @@ extension ProxyRuntimeController {
       && ticket.modeGeneration == modeChangeGeneration
       && ticket.settings.listen == settings.listen
       && ticket.settings.preferredMode == settings.preferredMode
-      && ticket.settings.ruleDefaultAction == settings.ruleDefaultAction
+      && ticket.settings.rulePreset == settings.rulePreset
       && ticket.settings.agentEnabled == settings.agentEnabled
       && ticket.target == activeTargetID
       && (ticket.ruleRevision == nil || ticket.ruleRevision == ruleDocuments.revision)
   }
 
-  private func runtimeBuiltinRules(_ action: RuleDefaultAction) async throws -> [ProxyRule] {
-    switch action {
-    case .proxyWhenUnmatched:
-      let geolocation = try await ruleSnapshots.load(.geolocationCN)
-      let china = try await ruleSnapshots.load(.chinaIPv4)
-      return await Task.detached(priority: .userInitiated) {
-        BuiltinRuleCatalog.chinaDirectRules(from: [geolocation, china])
-      }.value
-    case .directWhenUnmatched:
-      let snapshot = try await ruleSnapshots.load(.gfwlist)
-      return await Task.detached(priority: .userInitiated) {
-        BuiltinRuleCatalog.gfwlistRules(from: snapshot)
-      }.value
-    }
+  private func runtimeBuiltinRules(_ preset: RulePreset) async throws -> [ProxyRule] {
+    var snapshots: [RuleSnapshot] = []
+    for source in preset.sources { snapshots.append(try await ruleSnapshots.load(source)) }
+    let captured = snapshots
+    return await Task.detached(priority: .userInitiated) {
+      captured.flatMap { preset.rules(from: $0) }
+    }.value
   }
-
 }
