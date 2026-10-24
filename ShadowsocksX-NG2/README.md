@@ -36,6 +36,7 @@ The default order is `lint → test → build`; execution stops on the first fai
 | --- | --- |
 | [Development, build, and test](../docs/development.md) | Validation entry points and artifacts, individual tasks, code style tools, Git hooks, and document language |
 | [Project structure and source search](../docs/project-structure.md) | Source layers, test directories, cross-target file constraints, and search methods |
+| [GUI, Agent, Helper, and sslocal architecture](../docs/design/ng2-process-architecture.md) | Implementation snapshot from 2026-10-24: process boundaries, configuration publication, traffic paths, and lifecycle |
 | [External binaries, signing, and distribution](../docs/distribution.md) | Supply-chain checks, Debug/Release signing, release requirements, and dependency updates |
 | [Bundled rule snapshots](../docs/rule-snapshots.md) | Sources, conversion semantics, maintenance scripts, and offline checks |
 | [Subscriptions, plugins, and listener configuration](../docs/configuration.md) | Subscription data, user plugins, Cloak, local and LAN listeners, and configuration recovery |
