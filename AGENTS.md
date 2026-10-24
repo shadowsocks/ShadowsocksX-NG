@@ -14,11 +14,24 @@ Write commit messages in English using Conventional Commits.
 
 ### Issue tracker
 
-Track issues in this repository's GitHub Issues. Use the `gh` CLI and explicitly specify this repository in every command. See `docs/agents/issue-tracker.md`.
+Issue tracker configuration is contributor-local.
 
-### Code comments
+Before using an issue-tracking skill:
 
-When writing or modifying code comments, do not reference fork repository issues through numbers such as `#123`, qualified references such as `owner/repo#123`, or issue links. These references cannot be tracked through upstream issues after merging. State the behavior, constraint, or design rationale directly so the comment is understandable without consulting a fork issue.
+1. Resolve the Git common directory:
+
+   `git rev-parse --path-format=absolute --git-common-dir`
+
+2. Read `<git-common-dir>/agent/issue-tracker.md`.
+
+3. Follow the tracker configuration found there.
+
+If the file does not exist, ask the contributor to
+configure their preferred tracker.
+
+Never assume GitHub Issues is the default.
+Never commit personal tracker configuration.
+Never reference personal tracker issues or tasks in code, commit messages, pull requests, or GitHub comments.
 
 ### Triage labels
 
@@ -35,3 +48,4 @@ Current code, `GLOSSARY.md`, and `docs/adr/` define the current state and accept
 `docs/design/` records requirements, designs, and specifications at the time of each task. It is historical reference and does not represent the latest implementation.
 
 `docs/research/` contains research reports. Each report records upstream capabilities, candidate solutions, and conclusions at the time of writing. It does not describe the project's current state or establish that a design has been adopted.
+
