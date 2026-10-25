@@ -9,12 +9,7 @@ extension ProxyRuntimeController {
     await transitionMode(mode, preset: settings.rulePreset)
   }
 
-  /// 规则模式子选项：切换「未匹配时代理/直连」并重部署 ACL。
-  /// 失败保留最新模式与子选项，发布后失败停止服务并暂停系统代理。
-  func setRuleDefaultAction(_ action: RuleDefaultAction) async {
-    await setRulePreset(RulePreset(legacy: action))
-  }
-
+  /// 切换规则预设；失败保留最新意图，发布后失败停止服务并暂停系统代理。
   func setRulePreset(_ preset: RulePreset) async {
     guard preset != settings.rulePreset else { return }
     await transitionMode(proxyMode, preset: preset)

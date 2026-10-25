@@ -272,7 +272,7 @@ extension RuleEnablementControllerTests {
     try store.save([rule])
     let settings = ProxyRuntimeSettings(
       listen: ActivationFixture.listen, preferredMode: .rule,
-      ruleDefaultAction: .proxyWhenUnmatched, agentEnabled: true)
+      rulePreset: .chinaDirect, agentEnabled: true)
     let deploymentWaiting = expectation(description: "deployment health retry paused")
     let deploymentGate = RuleRuntimeDelayGate(started: deploymentWaiting)
     defer { deploymentGate.resume() }
@@ -338,7 +338,7 @@ extension RuleEnablementControllerTests {
     try store.save([rule])
     let settings = ProxyRuntimeSettings(
       listen: ActivationFixture.listen, preferredMode: .rule,
-      ruleDefaultAction: .proxyWhenUnmatched, agentEnabled: true)
+      rulePreset: .chinaDirect, agentEnabled: true)
     let controller = makeRuleEnablementController(
       store: store, settings: settings, proxyMode: .rule)
     try await controller.activate(seeded.server)

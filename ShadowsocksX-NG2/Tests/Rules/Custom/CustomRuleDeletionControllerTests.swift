@@ -62,7 +62,7 @@ final class CustomRuleDeletionControllerTests: ProxyRuntimeControllerTests {
       store: store,
       settings: ProxyRuntimeSettings(
         listen: ActivationFixture.listen, preferredMode: .rule,
-        ruleDefaultAction: .proxyWhenUnmatched, agentEnabled: true), proxyMode: .rule)
+        rulePreset: .chinaDirect, agentEnabled: true), proxyMode: .rule)
     try await controller.activate(seeded.server)
     let workflow = deletionWorkflow(controller)
     await workflow.refresh()
@@ -95,7 +95,7 @@ final class CustomRuleDeletionControllerTests: ProxyRuntimeControllerTests {
         store: store,
         settings: ProxyRuntimeSettings(
           listen: ActivationFixture.listen, preferredMode: mode.kind,
-          ruleDefaultAction: .proxyWhenUnmatched, agentEnabled: true), proxyMode: mode)
+          rulePreset: .chinaDirect, agentEnabled: true), proxyMode: mode)
       try await controller.activate(seeded.server)
       let workflow = deletionWorkflow(controller)
       await workflow.refresh()
@@ -121,7 +121,7 @@ final class CustomRuleDeletionControllerTests: ProxyRuntimeControllerTests {
       store: store,
       settings: ProxyRuntimeSettings(
         listen: ActivationFixture.listen, preferredMode: .rule,
-        ruleDefaultAction: .proxyWhenUnmatched, agentEnabled: true), proxyMode: .rule)
+        rulePreset: .chinaDirect, agentEnabled: true), proxyMode: .rule)
     try await controller.activate(seeded.server)
     let workflow = deletionWorkflow(controller)
     await workflow.refresh()

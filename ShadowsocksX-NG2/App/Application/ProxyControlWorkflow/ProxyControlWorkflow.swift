@@ -73,7 +73,7 @@ struct ProxyControlSnapshot: Equatable, Sendable {
   var systemProxyInspection = SystemProxyInspectionFacts()
   /// 当前已应用的代理模式（持久化成功的模式）。
   let proxyMode: ProxyMode
-  /// 规则模式子选项：未匹配默认动作；仅规则模式呈现。
+  /// 规则模式内选择的规则预设；仅规则模式呈现。
   var rulePreset: RulePreset = .gfwlist
   var ruleDefaultAction: RuleDefaultAction { rulePreset.defaultAction }
   /// 可用模式由 Domain 单点策略投影；UI 不自行判断可用性。
@@ -119,8 +119,7 @@ protocol ProxyRuntimeAdapting: AnyObject {
   var systemProxyInspection: SystemProxyInspectionFacts { get }
   /// 当前已应用的代理模式。
   var proxyMode: ProxyMode { get }
-  /// 规则模式子选项。
-  var ruleDefaultAction: RuleDefaultAction { get }
+  /// 规则模式内选择的规则预设。
   var rulePreset: RulePreset { get }
   /// 最近一次激活预检或目录收敛跳过的无效服务器数量。
   var skippedInvalidServerCount: Int { get }
@@ -149,7 +148,6 @@ protocol ProxyRuntimeAdapting: AnyObject {
   func recheckSystemProxy() async
   func setProxyMode(_ mode: ProxyMode) async
   /// 规则模式子选项命令。
-  func setRuleDefaultAction(_ action: RuleDefaultAction) async
   func setRulePreset(_ preset: RulePreset) async
 }
 
@@ -259,13 +257,7 @@ final class ProxyControlWorkflow: ObservableObject {
     return republish()
   }
 
-  /// 切换规则模式子选项：完成后整体重发布。
-  @discardableResult
-  func setRuleDefaultAction(_ action: RuleDefaultAction) async -> ProxyControlSnapshot {
-    await runtime.setRuleDefaultAction(action)
-    return republish()
-  }
-
+  /// 切换规则预设：完成后整体重发布。
   @discardableResult
   func setRulePreset(_ preset: RulePreset) async -> ProxyControlSnapshot {
     await runtime.setRulePreset(preset)

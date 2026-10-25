@@ -35,7 +35,7 @@ final class CustomRuleEditingControllerTests: ProxyRuntimeControllerTests {
       store: store,
       settings: ProxyRuntimeSettings(
         listen: ActivationFixture.listen, preferredMode: .rule,
-        ruleDefaultAction: .proxyWhenUnmatched, agentEnabled: true), proxyMode: .rule)
+        rulePreset: .chinaDirect, agentEnabled: true), proxyMode: .rule)
     try await controller.activate(seeded.server)
     let workflow = editingWorkflow(controller)
     await workflow.refresh()
@@ -71,7 +71,7 @@ final class CustomRuleEditingControllerTests: ProxyRuntimeControllerTests {
       store: store,
       settings: ProxyRuntimeSettings(
         listen: ActivationFixture.listen, preferredMode: .rule,
-        ruleDefaultAction: .proxyWhenUnmatched, agentEnabled: true), proxyMode: .rule)
+        rulePreset: .chinaDirect, agentEnabled: true), proxyMode: .rule)
     try await controller.activate(seeded.server)
     let workflow = editingWorkflow(controller)
     await workflow.refresh()
