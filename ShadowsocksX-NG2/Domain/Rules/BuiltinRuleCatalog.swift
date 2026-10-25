@@ -117,8 +117,8 @@ actor BuiltinRuleSnapshots {
 
 /// The same policy supplies runtime candidates and the management collection.
 enum RulePreset: String, Codable, CaseIterable, Hashable, Sendable {
-  case chinaDirect = "china-direct"
   case gfwlist = "gfwlist"
+  case chinaDirect = "china-direct"
   case chinaProxy = "china-proxy"
 
   init(legacy action: RuleDefaultAction) {

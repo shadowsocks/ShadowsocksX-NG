@@ -23,7 +23,7 @@ struct ProxyControlPreferences {
       }
       let legacy =
         defaults.string(forKey: "proxyControl.ruleDefaultAction")
-        .flatMap(RuleDefaultAction.init(rawValue:)) ?? .proxyWhenUnmatched
+        .flatMap(RuleDefaultAction.init(rawValue:)) ?? .directWhenUnmatched
       return RulePreset(legacy: legacy)
     }
     nonmutating set { defaults.set(newValue.rawValue, forKey: "proxyControl.rulePreset") }

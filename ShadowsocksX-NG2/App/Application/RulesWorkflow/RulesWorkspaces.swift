@@ -4,7 +4,7 @@ import Foundation
 /// Each preset owns an unchanged workflow, including its in-flight operations.
 @MainActor
 final class RulesWorkspaces: ObservableObject {
-  @Published var selectedPreset: RulePreset = .chinaDirect
+  @Published var selectedPreset: RulePreset = .gfwlist
   @Published private(set) var reportSource: RulesSourceSnapshot?
   private let workflows: [RulePreset: RulesWorkflow]
   private var reports: Set<AnyCancellable> = []

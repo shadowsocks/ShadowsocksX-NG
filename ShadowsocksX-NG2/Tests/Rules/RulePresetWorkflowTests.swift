@@ -93,7 +93,7 @@ extension RulePresetWorkflowTests {
     let defaults = try #require(UserDefaults(suiteName: suite))
     defer { defaults.removePersistentDomain(forName: suite) }
     let preferences = ProxyControlPreferences(defaults: defaults)
-    #expect(preferences.rulePreset == .chinaDirect)
+    #expect(preferences.rulePreset == .gfwlist)
     defaults.set("direct-when-unmatched", forKey: "proxyControl.ruleDefaultAction")
     #expect(preferences.rulePreset == .gfwlist)
     preferences.rulePreset = .chinaProxy
