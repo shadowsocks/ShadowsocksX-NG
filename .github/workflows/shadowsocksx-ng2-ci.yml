@@ -107,12 +107,12 @@ jobs:
 
       - name: Test
         working-directory: ShadowsocksX-NG2
-        run: task --exit-code validate STRICT=true -- ${{ matrix.gate }}
+        run: task --exit-code validate -- ${{ matrix.gate }}
 
       - name: Build
         if: matrix.gate == 'test'
         working-directory: ShadowsocksX-NG2
-        run: task --exit-code build STRICT=true
+        run: task --exit-code build
 
       - name: Upload failed test evidence
         if: failure()

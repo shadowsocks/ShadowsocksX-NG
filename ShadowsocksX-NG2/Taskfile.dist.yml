@@ -15,8 +15,6 @@ vars:
   DERIVED_DATA_DIR: '{{default (printf "%s/derivedData" .BUILD_DIR) .DERIVED_DATA_DIR}}'
   RELEASE_VERSION_PATTERN: '^v?[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$'
   TEST_TIMEOUT_ARGS: '-test-timeouts-enabled YES -default-test-execution-time-allowance 120 -maximum-test-execution-time-allowance 300'
-  STRICT: '{{default "false" .STRICT}}'
-  STRICT_BUILD_ARGS: '{{if eq .STRICT "true"}}SWIFT_SUPPRESS_WARNINGS=NO SWIFT_TREAT_WARNINGS_AS_ERRORS=YES GCC_TREAT_WARNINGS_AS_ERRORS=YES{{end}}'
 
 tasks:
   validate:
@@ -65,7 +63,6 @@ tasks:
       - "printf '%s\n' {{printf \"[%s] running; log: %s/raw.log\" .GATE .GATE_DIR | shellQuote}}"
       - >-
         task --exit-code --taskfile {{.TASKFILE_DIR | shellQuote}}/Taskfile.dist.yml {{.GATE | shellQuote}}
-        STRICT={{.STRICT | shellQuote}}
         RESULT_BUNDLE_PATH={{.GATE_DIR | shellQuote}}/result.xcresult
         > {{.GATE_DIR | shellQuote}}/raw.log 2>&1
 
@@ -135,7 +132,7 @@ tasks:
         -destination 'platform=macOS,arch=arm64'
         -derivedDataPath {{.DERIVED_DATA_DIR | shellQuote}}
         {{if .RESULT_BUNDLE_PATH}}-resultBundlePath {{.RESULT_BUNDLE_PATH | shellQuote}}{{end}}
-        {{.STRICT_BUILD_ARGS}}
+        SWIFT_SUPPRESS_WARNINGS=NO SWIFT_TREAT_WARNINGS_AS_ERRORS=YES GCC_TREAT_WARNINGS_AS_ERRORS=YES
         build
 
   build:release:
@@ -160,6 +157,7 @@ tasks:
         -derivedDataPath {{.DERIVED_DATA_DIR | shellQuote}}
         {{printf "MARKETING_VERSION=%s" .BUNDLE_MARKETING_VERSION | shellQuote}}
         {{printf "CURRENT_PROJECT_VERSION=%s" .CURRENT_PROJECT_VERSION | shellQuote}}
+        SWIFT_SUPPRESS_WARNINGS=NO SWIFT_TREAT_WARNINGS_AS_ERRORS=YES GCC_TREAT_WARNINGS_AS_ERRORS=YES
         build
 
   format:
@@ -175,12 +173,12 @@ tasks:
   lint:
     desc: 'Lint the swift code by swiftlint'
     cmds:
-      - swiftlint lint --config .swiftlint.yml --no-cache
+      - swiftlint lint --strict --config .swiftlint.yml --no-cache
   
   lint:fix:
     desc: 'Automatically fix SwiftLint violations'
     cmds:
-      - swiftlint lint --fix --config .swiftlint.yml --no-cache
+      - swiftlint lint --fix --strict --config .swiftlint.yml --no-cache
   
   test:
     desc: 'Run conversion and unit tests'
@@ -197,7 +195,7 @@ tasks:
         -derivedDataPath {{.DERIVED_DATA_DIR | shellQuote}}
         {{if .RESULT_BUNDLE_PATH}}-resultBundlePath {{.RESULT_BUNDLE_PATH | shellQuote}}{{end}}
         {{.TEST_TIMEOUT_ARGS}}
-        {{.STRICT_BUILD_ARGS}}
+        SWIFT_SUPPRESS_WARNINGS=NO SWIFT_TREAT_WARNINGS_AS_ERRORS=YES GCC_TREAT_WARNINGS_AS_ERRORS=YES
         test
 
   test:binaries:
@@ -224,7 +222,7 @@ tasks:
         -derivedDataPath {{.DERIVED_DATA_DIR | shellQuote}}
         {{if .RESULT_BUNDLE_PATH}}-resultBundlePath {{.RESULT_BUNDLE_PATH | shellQuote}}{{end}}
         {{.TEST_TIMEOUT_ARGS}}
-        {{.STRICT_BUILD_ARGS}}
+        SWIFT_SUPPRESS_WARNINGS=NO SWIFT_TREAT_WARNINGS_AS_ERRORS=YES GCC_TREAT_WARNINGS_AS_ERRORS=YES
         test
 
   clean:

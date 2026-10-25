@@ -22,7 +22,7 @@ By default, stages run in this order: `lint → test → build`. Real-process sm
 
 Each local `validate` run creates a separate `.build/validation/<UTC time>-<random suffix>/` directory and prints its absolute path at the start and end. `summary.txt` records each stage's status, exit code, and evidence status. For every executed stage, the corresponding subdirectory contains a combined stdout/stderr `raw.log` and a `status.txt` (`test:smoke` uses `test-smoke/`); Xcode stages also save `result.xcresult`. The console shows progress and a summary. Read the corresponding logs for complete errors. All artifacts are inside existing ignored directories. `task clean` deletes them, so copy anything you need to keep.
 
-CI runs two independent matrix jobs: `test` and `test:smoke`, with fail-fast disabled. Both run through `task --exit-code validate STRICT=true -- <gate>` and treat compiler warnings as errors. The `test` job also checks formatting, runs lint, and builds. Failed jobs upload retained validation logs, summaries, and result bundles for seven days. Read the uploaded `summary.txt` and `test-summary.json` first; test output is retained in `raw.log`.
+CI runs two independent matrix jobs: `test` and `test:smoke`, with fail-fast disabled. Both run through `task --exit-code validate -- <gate>` and treat compiler warnings as errors. The `test` job also checks formatting, runs lint, and builds. Failed jobs upload retained validation logs, summaries, and result bundles for seven days. Read the uploaded `summary.txt` and `test-summary.json` first; test output is retained in `raw.log`.
 
 For test stages, the workflow uses the local `xcrun xcresulttool get test-results summary` and system `plutil` to read test counts on a best-effort basis; it adds no scripts or tool dependencies. `test-summary.json` stores the raw summary, `test-summary.stderr.log` stores xcresulttool errors, and `count-reader.log` stores count-reading errors. The summary shows passed, failed, skipped, expected-failure, and total counts using Xcode's summary semantics; parameterized tests may have a different actual execution count. Stage and overall exit codes come from the original command, and a failed command always remains a failure. A missing result bundle or unreadable summary is marked `evidence incomplete`, with counts shown as unknown. This does not change the command result, and missing counts are never reported as zero. Build stages do not read test counts; a stage that did not run is not the same as a skipped test.
 
@@ -40,14 +40,12 @@ task format:check  # Check formatting without modifying source files.
 task lint
 task lint:fix  # Use for automatic SwiftLint fixes; run task lint afterward.
 task gen:prj   # Generate the Xcode project.
-task build     # Build the Debug app.
-task test      # Run unit tests (without real-process smoke tests).
-task test STRICT=true   # Treat Swift and Clang compiler warnings as errors.
-task build STRICT=true  # Build the Debug app with the same strict policy.
+task build     # Build the Debug app; compiler warnings are errors.
+task test      # Run unit tests; compiler warnings are errors.
 task test:smoke  # Run real-process smoke tests (launches real sslocal; see the release gate in the signing and distribution guide).
 ```
 
-`STRICT=true` enables `SWIFT_TREAT_WARNINGS_AS_ERRORS=YES` and `GCC_TREAT_WARNINGS_AS_ERRORS=YES` for `test` and `build`. It also sets `SWIFT_SUPPRESS_WARNINGS=NO` to avoid conflicting Swift compiler options in package dependencies, whose warnings are checked too. It is opt-in; omitted or `STRICT=false` preserves the project's warning policy. The validation wrapper forwards this option: `task --exit-code validate STRICT=true -- test build`. Diagnostics explicitly suppressed with `@diagnose` remain suppressed. Xcode tool messages, such as AppIntents metadata warnings, are outside this compiler policy.
+All check, build, and test tasks use strict options directly. `lint` and `lint:fix` use SwiftLint's `--strict`, so warnings fail those tasks. `test`, `test:smoke`, `build`, and `build:release`, including calls from `package`, set `SWIFT_TREAT_WARNINGS_AS_ERRORS=YES` and `GCC_TREAT_WARNINGS_AS_ERRORS=YES`. They also set `SWIFT_SUPPRESS_WARNINGS=NO` to avoid conflicting Swift compiler options in package dependencies, whose warnings are checked too. `format:check` uses `swift format lint --strict`. These options cannot be disabled through a Taskfile variable. Diagnostics explicitly suppressed with `@diagnose` remain suppressed. Xcode tool messages, such as AppIntents metadata warnings, are outside this compiler policy.
 
 `task format` formats Swift files under `App/`, `Tests/`, `Domain/`, and `Agent/`. `task format:check` runs the same configuration in strict, read-only mode. `task lint:fix` modifies source files; inspect and review the diff afterward.
 
