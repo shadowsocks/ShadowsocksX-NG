@@ -34,7 +34,8 @@ extension ProxyRuntimeControllerTests {
       probe: probe,
       listeningStore: InMemoryProxyListeningStore(),
       settings: settings
-        ?? ProxyRuntimeSettings(listen: ActivationFixture.listen, agentEnabled: true),
+        ?? ProxyRuntimeSettings(
+          listen: ActivationFixture.listen, rulePreset: .chinaDirect, agentEnabled: true),
       proxyMode: proxyMode,
       launchHealthTimeoutSeconds: launchHealthTimeoutSeconds,
       launchHealthRetryDelay: launchHealthRetryDelay,
@@ -200,6 +201,7 @@ final class CustomRuleControllerTests: ProxyRuntimeControllerTests {
     let settings = ProxyRuntimeSettings(
       listen: ActivationFixture.listen,
       preferredMode: .global,
+      rulePreset: .chinaDirect,
       agentEnabled: true)
     let controller = makeControllerWithCustomRules(
       store: store, settings: settings, proxyMode: .global)
