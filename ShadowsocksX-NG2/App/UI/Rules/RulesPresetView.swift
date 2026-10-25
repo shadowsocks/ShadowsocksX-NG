@@ -5,7 +5,7 @@ struct RulesPresetView: View {
 
   var body: some View {
     VStack(alignment: .leading, spacing: 0) {
-      Picker("规则预设", selection: $workspaces.selectedPreset) {
+      Picker("规则方案", selection: $workspaces.selectedPreset) {
         ForEach(RulePreset.allCases, id: \.self) { preset in
           Text(preset.label).tag(preset)
         }

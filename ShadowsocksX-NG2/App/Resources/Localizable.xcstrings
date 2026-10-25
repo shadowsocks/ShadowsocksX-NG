@@ -9094,7 +9094,7 @@
         }
       }
     },
-    "规则预设": {
+    "规则方案": {
       "extractionState": "manual",
       "localizations": {
         "en": {
@@ -9106,7 +9106,7 @@
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "规则预设"
+            "value": "规则方案"
           }
         }
       }

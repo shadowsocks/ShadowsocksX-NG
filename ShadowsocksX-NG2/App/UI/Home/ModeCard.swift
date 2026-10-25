@@ -21,8 +21,8 @@ struct ModeCard: View {
           .frame(maxWidth: 480, alignment: .leading)
           if control.snapshot.proxyMode == .rule {
             HStack(spacing: 8) {
-              Text("规则预设")
-              Picker("规则预设", selection: rulePresetBinding) {
+              Text("规则方案")
+              Picker("规则方案", selection: rulePresetBinding) {
                 ForEach(RulePreset.allCases, id: \.self) { action in
                   Text(action.label).tag(action)
                 }
