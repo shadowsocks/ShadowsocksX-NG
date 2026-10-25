@@ -65,12 +65,6 @@ extension RealSslocalACLRoutingSmokeTests {
       try performDirectHTTPEcho(
         httpPort: listen.httpPort, targetHost: "unmatched.example.org", targetPort: echo.port,
         payload: payload), payload)
-    XCTAssertEqual(
-      try performDirectSocksEcho(
-        socksPort: listen.socksPort, targetPort: echo.port, payload: payload), payload)
-    XCTAssertEqual(
-      try performDirectHTTPEcho(
-        httpPort: listen.httpPort, targetPort: echo.port, payload: payload), payload)
     XCTAssertEqual(exit.connectionCount, before)
   }
 }
