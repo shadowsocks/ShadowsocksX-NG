@@ -23,7 +23,7 @@ final class RulesWorkflow: ObservableObject {
   private let analysisDelay: @Sendable () async throws -> Void
 
   init(
-    preset: RulePreset = .chinaDirect,
+    preset: RulePreset = .gfwlist,
     loadCustom: (@Sendable () throws -> [CustomRule])? = nil,
     loadDocument: (@MainActor () throws -> CustomRuleDocument)? = nil,
     commitDocument: (@MainActor (CustomRuleDocument) async -> RuleDocumentCommit)? = nil,

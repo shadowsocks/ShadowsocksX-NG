@@ -16,7 +16,7 @@ struct ProxyControlPreferencesTests {
       preferences: ProxyControlPreferences(defaults: defaults))
 
     #expect(settings.preferredMode == .rule)
-    #expect(settings.ruleDefaultAction == .proxyWhenUnmatched)
+    #expect(settings.ruleDefaultAction == .directWhenUnmatched)
     #expect(!settings.agentEnabled)
     #expect(!settings.systemProxyEnabled)
     #expect(settings.proxyExceptions.isEmpty)

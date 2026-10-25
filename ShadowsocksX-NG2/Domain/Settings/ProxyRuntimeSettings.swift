@@ -11,7 +11,7 @@ struct ProxyRuntimeSettings: Equatable, Sendable {
   /// The persisted current mode: the mode selector's choice survives GUI
   /// restarts. First run defaults to rule mode.
   var preferredMode: ProxyModeKind
-  /// 规则模式预设，出厂为中国大陆目标直连。
+  /// 规则模式预设，首次启动默认为仅 GFW 列表内目标代理。
   var rulePreset: RulePreset
   var ruleDefaultAction: RuleDefaultAction {
     get { rulePreset.defaultAction }
@@ -27,7 +27,7 @@ struct ProxyRuntimeSettings: Equatable, Sendable {
     listen: ProxyListeningConfiguration = ProxyListeningConfiguration(),
     proxyExceptions: String = ProxyRuntimeSettings.defaultProxyExceptions,
     preferredMode: ProxyModeKind = .rule,
-    ruleDefaultAction: RuleDefaultAction = .proxyWhenUnmatched,
+    ruleDefaultAction: RuleDefaultAction = .directWhenUnmatched,
     rulePreset: RulePreset? = nil,
     agentEnabled: Bool = false,
     systemProxyEnabled: Bool = false
