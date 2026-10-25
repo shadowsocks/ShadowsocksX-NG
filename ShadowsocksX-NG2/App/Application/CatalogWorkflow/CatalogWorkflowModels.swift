@@ -323,6 +323,7 @@ struct SubscriptionSummary: Identifiable, Equatable {
   let serverCount: Int
   var information: SubscriptionInformation?
   var lastSucceededAt: Date?
+  var autoUpdate = SubscriptionAutoUpdate()
 }
 
 /// 非持久化的刷新回执。每次操作有独立身份，失败事实不含秘密值。

@@ -9110,6 +9110,94 @@
           }
         }
       }
+    },
+    "自动更新": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Automatic updates"
+          }
+        }
+      }
+    },
+    "设置来源": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Settings source"
+          }
+        }
+      }
+    },
+    "跟随供应商": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Follow provider"
+          }
+        }
+      }
+    },
+    "自定义": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Custom"
+          }
+        }
+      }
+    },
+    "启用自动更新": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enable automatic updates"
+          }
+        }
+      }
+    },
+    "更新间隔": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Update interval"
+          }
+        }
+      }
+    },
+    "供应商设置": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Provider settings"
+          }
+        }
+      }
+    },
+    "供应商禁止覆盖自动更新设置": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The provider does not allow overriding automatic update settings"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

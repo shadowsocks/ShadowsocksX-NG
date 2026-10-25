@@ -55,6 +55,11 @@ final class CatalogWorkflow: ObservableObject {
   let dependencies: CatalogWorkflowDependencies
   /// 启动时发现的 Legacy 快照（导入编排用；秘密值不进 projection）。
   var discoveredLegacySnapshot: LegacySnapshot?
+  var subscriptionRequests: [NodeID: (token: UUID, task: Task<Void, Never>)] = [:]
+  var automaticUpdatesRunning = false
+  var automaticUpdateTimer: Task<Void, Never>?
+  var automaticUpdateBatch: Task<Void, Never>?
+  var checkingDueSubscriptions = false
 
   /// 组合根注入依赖束；workflow 不自行创建任何生产 adapter。
   init(dependencies: CatalogWorkflowDependencies) {
@@ -265,6 +270,7 @@ final class CatalogWorkflow: ObservableObject {
       plugins: dependencies.plugins)
     subscriptions = Self.subscriptionSummaries(
       coordinator.committedSubscriptions, catalog: coordinator.committedCatalog)
+    scheduleAutomaticUpdateCheck()
   }
 
   // MARK: - module 内部发布缝（扩展文件经此更新只读投影，setter 保持 private）

@@ -37,7 +37,25 @@ final class ConnectivityLifecycle: NSObject, NSApplicationDelegate {
 @MainActor
 final class ConnectivityApplicationDelegate: NSObject, NSApplicationDelegate {
   var lifecycle: ConnectivityLifecycle?
+  var catalogWorkflow: CatalogWorkflow?
+
+  func applicationDidFinishLaunching(_ notification: Notification) {
+    catalogWorkflow?.startSubscriptionAutomaticUpdates()
+    NSWorkspace.shared.notificationCenter.addObserver(
+      self, selector: #selector(didWake), name: NSWorkspace.didWakeNotification, object: nil)
+  }
+
+  @objc private func didWake(_ notification: Notification) {
+    catalogWorkflow?.subscriptionAutomaticUpdatesDidWake()
+  }
+
+  func applicationWillTerminate(_ notification: Notification) {
+    catalogWorkflow?.stopSubscriptionAutomaticUpdates()
+    NSWorkspace.shared.notificationCenter.removeObserver(self)
+  }
+
   func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
-    lifecycle?.applicationShouldTerminate(sender) ?? .terminateNow
+    catalogWorkflow?.stopSubscriptionAutomaticUpdates()
+    return lifecycle?.applicationShouldTerminate(sender) ?? .terminateNow
   }
 }

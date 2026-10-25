@@ -54,6 +54,7 @@ struct ShadowsocksXNG2App: App {
     // 诊断导出的来源；wrapper 侧不注册，仍走 stderr → agent.log 收敛。
     RuntimeLog.setSink(RuntimeEventStore.shared)
     appDelegate.lifecycle = connectivityLifecycle
+    appDelegate.catalogWorkflow = composition.catalogWorkflow
   }
 
   var body: some Scene {
