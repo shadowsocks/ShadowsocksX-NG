@@ -26,7 +26,9 @@ struct AddSubscriptionSheet: View {
         .foregroundStyle(.secondary)
       TextField(
         "订阅地址", text: $urlString,
-        prompt: Text("https://example.com/subscription.json").foregroundStyle(.tertiary))
+        prompt: Text(verbatim: "https://example.com/subscription.json")
+          .foregroundStyle(.placeholder)
+      )
       HStack {
         Spacer()
         Button("取消", role: .cancel) { dismiss() }
@@ -70,7 +72,9 @@ struct EditSubscriptionURLSheet: View {
         .foregroundStyle(.secondary)
       TextField(
         "订阅地址", text: $urlString,
-        prompt: Text("https://example.com/subscription.json").foregroundStyle(.tertiary))
+        prompt: Text(verbatim: "https://example.com/subscription.json")
+          .foregroundStyle(.placeholder)
+      )
       HStack {
         Spacer()
         Button("取消", role: .cancel) { dismiss() }
