@@ -16,11 +16,13 @@ task --exit-code --taskfile ShadowsocksX-NG2/Taskfile.dist.yml validate -- forma
 
 在工程目录内可用 `task --exit-code validate`。从任意目录可用 `task --exit-code --taskfile /path/to/ShadowsocksX-NG/ShadowsocksX-NG2/Taskfile.dist.yml validate`。入口按 Taskfile 所在位置定位工程目录，内部调用发行 Taskfile 中的单项任务。
 
-默认按 `lint → test → build` 执行；真实进程冒烟测试仍可显式选择 `test:smoke`。格式检查不属于默认验证循环：本地由 pre-commit 控制格式；CI 在 Xcode 27 arm64 runner 上单独运行 `task format:check`，与 Swift 6.4 格式工具基线一致。也可按指定顺序选择子集，每关最多一次；任一关失败立即停止，后续关标记 `not_run`，进程返回非零。`--exit-code` 让 Task 透传关卡退出码；省略时 Task 仍返回非零，但可能使用自己的错误码。入口不自动重试，不修改测试并行设置，也不执行会修改源码的格式化。
+默认按 `lint → test → build` 执行；真实进程冒烟测试仍可显式选择 `test:smoke`。格式检查不属于默认验证循环：本地由 pre-commit 控制格式；CI 在 Xcode 27 arm64 runner 上以独立 step 运行 `task --exit-code validate -- format:check`，与 Swift 6.4 格式工具基线一致。也可按指定顺序选择子集，每关最多一次；任一关失败立即停止，后续关标记 `not_run`，进程返回非零。`--exit-code` 让 Task 透传关卡退出码；省略时 Task 仍返回非零，但可能使用自己的错误码。入口不自动重试，不修改测试并行设置，也不执行会修改源码的格式化。
 
 ### 验证产物与证据
 
-每次运行创建独立的 `.build/validation/<UTC时间>-<随机后缀>/`，开始与结束均输出结果绝对路径。`summary.txt` 保存各关状态、退出码与证据状态；每个已执行关卡在同名子目录下保留合并 stdout/stderr 的 `raw.log` 和 `status.txt`（`test:smoke` 对应 `test-smoke/`），Xcode 关卡显式保存 `result.xcresult`。CI artifact 上传摘要、状态、日志和测试计数诊断文件，不上传 `.xcresult` 结果包，以减少下载体积；完整结果包在 job 运行期间仍保留于 runner 工作区。本地验证仍在验证目录保留全部证据。控制台只显示进度和摘要，需要完整错误时直接读取对应日志。所有产物均在现有忽略目录内；`task clean` 会删除它们，需要长期留存时先复制出去。
+每次运行创建独立的 `.build/validation/<UTC时间>-<随机后缀>/`，开始与结束均输出结果绝对路径。`summary.txt` 保存各关状态、退出码与证据状态；每个已执行关卡在同名子目录下保留合并 stdout/stderr 的 `raw.log` 和 `status.txt`（`test:smoke` 对应 `test-smoke/`），Xcode 关卡显式保存 `result.xcresult`。本地验证保留全部证据；CI 上传策略见下文。控制台只显示进度和摘要，需要完整错误时直接读取对应日志。所有产物均在现有忽略目录内；`task clean` 会删除它们，需要长期留存时先复制出去。
+
+CI 在 Xcode 27 arm64 上运行三个独立 job：`style` 依次检查格式和 lint；`build-test` 先构建应用，再执行 hostless 测试和离线检查；`smoke` 执行真实进程测试。每项检查都是独立 step，通过 `task --exit-code validate -- <gate>` 执行，各自保留独立的结果目录。任一步失败会跳过同一 job 的后续步骤，不影响其他 job。构建和测试共用 DerivedData，编译警告视为错误。公共依赖准备由本地 composite action 完成；`style` 只安装 Task 和 SwiftLint，不下载外部二进制。失败 job 将日志、摘要和结果包上传为 `validation-<job-id>`，保留七天。优先读取 `summary.txt` 和 `test-summary.json`，完整关卡输出保存在 `raw.log`。
 
 测试关通过本机 `xcrun xcresulttool get test-results summary` 和系统 `plutil` 尽力读取计数，无需新增脚本或工具依赖。`test-summary.json` 保存原始摘要，`test-summary.stderr.log` 保存 xcresulttool 错误，`count-reader.log` 保存计数读取错误。汇总展示通过、失败、跳过、预期失败及总数（Xcode 汇总口径，参数化测试的实际执行次数可能不同）。关卡与总体退出码由原命令决定，命令失败始终保留失败。结果包缺失或摘要不可读时显著标注 `evidence incomplete`（证据不完整）、计数未知，不改变命令结果，也不把缺失计数写成零。构建关不读取测试计数；未执行的关卡不等同于测试跳过。
 
