@@ -148,16 +148,21 @@ struct CatalogWorkflowLibraryTests {
       coordinator: CatalogCommitCoordinator(fileStore: store, runtime: FakeCatalogRuntime()),
       subscriptionFetcher: fetcher)
     let refresh = Task { await workflow.refreshSubscription(record.id) }
-    await fetcher.waitUntilEntered()
-    try await workflow.editSubscriptionURL(record.id, urlString: "https://new.example/sub")
-    let restored = CatalogFileStore(
-      fileURL: url,
-      library: ServerLibraryStorage(
-        keys: keys))
-    _ = try restored.load()
-    #expect(try restored.load().subscriptions.first?.url == "https://new.example/sub")
-    fetcher.releaseAll()
-    await refresh.value
+    try await withTestTask(refresh, release: fetcher.releaseAll) {
+      try await requireTestCondition("old URL fetch entered") { fetcher.didEnterFetch }
+      let edit = Task {
+        do {
+          try await workflow.editSubscriptionURL(record.id, urlString: "https://new.example/sub")
+        } catch { Issue.record(error) }
+      }
+      try await withTestTask(edit, release: fetcher.releaseAll) {
+        try await requireTestCondition("new URL fetch entered") { fetcher.requestCount == 2 }
+        let restored = CatalogFileStore(
+          fileURL: url, library: ServerLibraryStorage(keys: keys))
+        _ = try restored.load()
+        #expect(try restored.load().subscriptions.first?.url == "https://new.example/sub")
+      }
+    }
   }
 
   @Test func failedURLSaveDoesNotFetchOrPublishAndFailedRefreshKeepsSecrets() async throws {

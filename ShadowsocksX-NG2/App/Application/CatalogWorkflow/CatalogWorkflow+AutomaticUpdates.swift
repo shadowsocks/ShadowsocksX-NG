@@ -25,17 +25,15 @@ extension CatalogWorkflow {
     guard !checkingDueSubscriptions else { return }
     checkingDueSubscriptions = true
     defer { checkingDueSubscriptions = false }
-    let due = subscriptions.filter {
-      $0.autoUpdate.effectiveMode != .off
+    var attempted: Set<NodeID> = []
+    while let due = subscriptions.first(where: {
+      !attempted.contains($0.id) && !refreshingSubscriptionIDs.contains($0.id)
+        && $0.autoUpdate.effectiveMode != .off
         && ($0.autoUpdate.nextUpdateAt.map { $0 <= dependencies.subscriptionNow() } ?? false)
-    }
-    for summary in due {
+    }) {
       guard !Task.isCancelled else { return }
-      guard let current = subscriptions.first(where: { $0.id == summary.id }),
-        current.autoUpdate.effectiveMode != .off,
-        let date = current.autoUpdate.nextUpdateAt, date <= dependencies.subscriptionNow()
-      else { continue }
-      await refreshSubscription(summary.id)
+      attempted.insert(due.id)
+      await refreshSubscription(due.id)
     }
   }
 
