@@ -84,7 +84,8 @@ extension ProxyRuntimeControllerModeTests {
     let controller = makeController(
       probe: ProxyRuntimeFixture.FakeProbe.reachable(),
       settings: ProxyRuntimeSettings(
-        listen: ActivationFixture.listen, preferredMode: .global, agentEnabled: true),
+        listen: ActivationFixture.listen, preferredMode: .global,
+        rulePreset: .chinaDirect, agentEnabled: true),
       proxyMode: .global,
       ruleSnapshots: loader)
     try await controller.activate(seeded.server)

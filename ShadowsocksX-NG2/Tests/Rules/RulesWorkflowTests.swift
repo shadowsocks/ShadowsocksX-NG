@@ -82,6 +82,7 @@ final class RulesWorkflowTests: XCTestCase {
         attribution: "author"),
       rules: [ProxyRule(action: .direct, match: match)])
     let workflow = RulesWorkflow(
+      preset: .chinaDirect,
       loadCustom: { [custom] },
       builtinSnapshots: BuiltinRuleSnapshots(loader: { source in
         source == .geolocationCN ? snapshot : rulesFixture(source)
@@ -148,6 +149,7 @@ final class RulesWorkflowTests: XCTestCase {
 
   func testCorruptUserDocumentAndMissingBuiltinStayDistinctFromEmptySearch() async throws {
     let workflow = RulesWorkflow(
+      preset: .chinaDirect,
       loadCustom: { throw CustomRuleStoreError.corrupt(detail: "fixture") },
       builtinSnapshots: BuiltinRuleSnapshots(loader: { source in
         if source == .chinaIPv4 { throw RuleSnapshotError.missing }
@@ -169,6 +171,7 @@ final class RulesWorkflowTests: XCTestCase {
   func testPackagedCollectionLoadsMetadataShippedRulesAndFixedSemanticPolicy() async throws {
     let bundle = AppArtifact.bundle
     let workflow = RulesWorkflow(
+      preset: .chinaDirect,
       loadCustom: { [] },
       builtinSnapshots: BuiltinRuleSnapshots(bundle: bundle))
     await workflow.refresh()

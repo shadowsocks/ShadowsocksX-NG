@@ -38,7 +38,8 @@ final class RuleEnablementControllerTests: ProxyRuntimeControllerTests {
     let controller = makeRuleEnablementController(
       store: store,
       settings: ProxyRuntimeSettings(
-        listen: ActivationFixture.listen, preferredMode: .rule, agentEnabled: true),
+        listen: ActivationFixture.listen, preferredMode: .rule,
+        rulePreset: .chinaDirect, agentEnabled: true),
       proxyMode: .rule, ruleApplicationDelay: { try await applicationGate.wait() })
     try await controller.activate(seeded.server)
     let before = agent.registerCount
@@ -75,7 +76,8 @@ final class RuleEnablementControllerTests: ProxyRuntimeControllerTests {
     let controller = makeRuleEnablementController(
       store: store,
       settings: ProxyRuntimeSettings(
-        listen: ActivationFixture.listen, preferredMode: .rule, agentEnabled: true),
+        listen: ActivationFixture.listen, preferredMode: .rule,
+        rulePreset: .chinaDirect, agentEnabled: true),
       proxyMode: .rule, launchHealthTimeoutSeconds: 0.3,
       launchHealthRetryDelay: { try await healthGate.wait() })
     try await controller.activate(seeded.server)
@@ -123,7 +125,8 @@ final class RuleEnablementControllerTests: ProxyRuntimeControllerTests {
     let controller = makeRuleEnablementController(
       store: store,
       settings: ProxyRuntimeSettings(
-        listen: ActivationFixture.listen, preferredMode: .global, agentEnabled: true),
+        listen: ActivationFixture.listen, preferredMode: .global,
+        rulePreset: .chinaDirect, agentEnabled: true),
       proxyMode: .global, ruleSnapshots: BuiltinRuleSnapshots(loader: { await loader.load($0) }))
     try await controller.activate(seeded.server)
     let runtimeStore = RuntimeFileStore(fileURL: runtime.contract)
@@ -163,7 +166,8 @@ final class RuleEnablementControllerTests: ProxyRuntimeControllerTests {
     let controller = makeRuleEnablementController(
       store: store,
       settings: ProxyRuntimeSettings(
-        listen: ActivationFixture.listen, preferredMode: .global, agentEnabled: true),
+        listen: ActivationFixture.listen, preferredMode: .global,
+        rulePreset: .chinaDirect, agentEnabled: true),
       proxyMode: .global, ruleSnapshots: BuiltinRuleSnapshots(loader: { await loader.load($0) }))
     try await controller.activate(seeded.server)
     let modeSwitch = Task { await controller.setProxyMode(.rule) }
@@ -189,7 +193,8 @@ final class RuleEnablementControllerTests: ProxyRuntimeControllerTests {
     defer { loader.resume() }
     let snapshots = BuiltinRuleSnapshots(loader: { await loader.load($0) })
     let settings = ProxyRuntimeSettings(
-      listen: ActivationFixture.listen, preferredMode: .global, agentEnabled: true)
+      listen: ActivationFixture.listen, preferredMode: .global,
+      rulePreset: .chinaDirect, agentEnabled: true)
     let controller = makeRuleEnablementController(
       store: store, settings: settings, proxyMode: .global, ruleSnapshots: snapshots)
     try await controller.activate(seeded.server)
@@ -236,7 +241,8 @@ final class RuleEnablementControllerTests: ProxyRuntimeControllerTests {
     let controller = makeRuleEnablementController(
       store: store,
       settings: ProxyRuntimeSettings(
-        listen: ActivationFixture.listen, preferredMode: .global, agentEnabled: true),
+        listen: ActivationFixture.listen, preferredMode: .global,
+        rulePreset: .chinaDirect, agentEnabled: true),
       proxyMode: .global, ruleSnapshots: BuiltinRuleSnapshots(loader: { await loader.load($0) }))
     try await controller.activate(seeded.server)
     let old = Task { await controller.setProxyMode(.rule) }
@@ -363,7 +369,8 @@ extension RuleEnablementControllerTests {
     let (store, _) = try makeCustomRuleStore()
     let controller = makeRuleEnablementController(
       store: store,
-      settings: ProxyRuntimeSettings(listen: ActivationFixture.listen, agentEnabled: false))
+      settings: ProxyRuntimeSettings(
+        listen: ActivationFixture.listen, rulePreset: .chinaDirect, agentEnabled: false))
     let identity = ProxyRule(action: .proxy, match: try RuleMatch(domainExact: "saved.example"))
     let outcome = await controller.updateRuleDocument(
       CustomRuleDocument(rules: [], disabledIdentities: [identity]))
@@ -375,7 +382,8 @@ extension RuleEnablementControllerTests {
     try broken.write(to: store.fileURL)
     let newSession = makeRuleEnablementController(
       store: store,
-      settings: ProxyRuntimeSettings(listen: ActivationFixture.listen, agentEnabled: false))
+      settings: ProxyRuntimeSettings(
+        listen: ActivationFixture.listen, rulePreset: .chinaDirect, agentEnabled: false))
     let rejected = await newSession.updateRuleDocument(CustomRuleDocument(rules: []))
     XCTAssertEqual(rejected, .persistenceFailed)
     XCTAssertEqual(try Data(contentsOf: store.fileURL), broken)

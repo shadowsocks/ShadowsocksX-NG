@@ -59,6 +59,7 @@ final class RuleEnablementWorkflowTests: XCTestCase {
     let started = expectation(description: "analysis paused")
     let gate = RulesAnalysisGate(started: started)
     let workflow = RulesWorkflow(
+      preset: .chinaDirect,
       loadDocument: { try session.load() },
       commitDocument: { document in
         do {
@@ -107,6 +108,7 @@ final class RuleEnablementWorkflowTests: XCTestCase {
     let reads = RulesReadCounts()
     let rule = CustomRule(action: .proxy, match: try RuleMatch(domainExact: "saved.example"))
     let workflow = RulesWorkflow(
+      preset: .chinaDirect,
       loadDocument: {
         reads.recordDocument()
         return CustomRuleDocument(rules: [rule])

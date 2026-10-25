@@ -43,7 +43,8 @@ final class BuiltinRuleCatalogTests: XCTestCase {
       _ = try await snapshots.load(.chinaIPv4)
       XCTFail("The first runtime source request should fail")
     } catch {}
-    let workflow = RulesWorkflow(loadCustom: { [] }, builtinSnapshots: snapshots)
+    let workflow = RulesWorkflow(
+      preset: .chinaDirect, loadCustom: { [] }, builtinSnapshots: snapshots)
     await workflow.refresh()
     XCTAssertFalse(workflow.snapshot.isComplete)
     XCTAssertEqual(loader.count(.chinaIPv4), 1)
