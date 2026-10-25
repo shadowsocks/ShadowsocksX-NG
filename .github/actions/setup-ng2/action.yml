@@ -1,0 +1,88 @@
+name: Set up NG2 dependencies
+description: Install Homebrew tools and optionally fetch verified external binaries.
+inputs:
+  packages:
+    description: Space-separated Homebrew formulae to install.
+    default: age go-task xcodegen swiftlint
+  external-binaries:
+    description: Whether to fetch and verify external binaries.
+    default: 'true'
+runs:
+  using: composite
+  steps:
+    - name: Prepare Homebrew download cache
+      shell: bash
+      env:
+        HOMEBREW_PACKAGES: ${{ inputs.packages }}
+      id: homebrew-cache-key
+      run: |
+        read -r -a packages <<< "$HOMEBREW_PACKAGES"
+        brew info --json=v2 "${packages[@]}" > "$RUNNER_TEMP/homebrew-formulae.json"
+        formula_hash=$(python3 - "$RUNNER_TEMP/homebrew-formulae.json" <<'PY'
+        import hashlib
+        import json
+        import sys
+
+        with open(sys.argv[1]) as source:
+            formulae = json.load(source)["formulae"]
+        versions = sorted(
+            (f["full_name"], f["versions"]["stable"], f["revision"], f["bottle"])
+            for f in formulae
+        )
+        print(hashlib.sha256(json.dumps(versions, sort_keys=True).encode()).hexdigest())
+        PY
+        )
+        echo "path=$(brew --cache)/downloads" >> "$GITHUB_OUTPUT"
+        echo "key=ng2-homebrew-downloads-v1-macos-$(sw_vers -productVersion)-$(uname -m)-$formula_hash" >> "$GITHUB_OUTPUT"
+
+    - name: Restore Homebrew download cache
+      id: homebrew-cache
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ steps.homebrew-cache-key.outputs.path }}
+        key: ${{ steps.homebrew-cache-key.outputs.key }}
+
+    - name: Install build tools and test dependencies
+      id: install-build-tools
+      shell: bash
+      env:
+        HOMEBREW_PACKAGES: ${{ inputs.packages }}
+        HOMEBREW_NO_AUTO_UPDATE: '1'
+        HOMEBREW_NO_INSTALL_CLEANUP: '1'
+      run: |
+        read -r -a packages <<< "$HOMEBREW_PACKAGES"
+        brew install "${packages[@]}"
+
+    - name: Save Homebrew download cache
+      if: steps.install-build-tools.outcome == 'success' && steps.homebrew-cache.outputs.cache-hit != 'true'
+      uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ steps.homebrew-cache-key.outputs.path }}
+        key: ${{ steps.homebrew-cache.outputs.cache-primary-key }}
+
+    - name: Restore external binary archive cache
+      if: inputs.external-binaries == 'true'
+      id: external-binary-cache
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ShadowsocksX-NG2/.build/external-binary-archives
+        key: ng2-external-binaries-macos-arm64-${{ hashFiles('ShadowsocksX-NG2/Vendor/*/manifest.json') }}
+        restore-keys: |
+          ng2-external-binaries-macos-arm64-
+
+    - name: Fetch and verify external binaries
+      if: inputs.external-binaries == 'true'
+      shell: bash
+      id: fetch-external-binaries
+      working-directory: ShadowsocksX-NG2
+      env:
+        EXTERNAL_BINARY_CACHE_DIR: ${{ github.workspace }}/ShadowsocksX-NG2/.build/external-binary-archives
+      run: Scripts/fetch-external-binaries.sh
+
+    - name: Save external binary archive cache
+      if: inputs.external-binaries == 'true' && steps.fetch-external-binaries.outcome == 'success' && steps.external-binary-cache.outputs.cache-hit != 'true'
+      uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ShadowsocksX-NG2/.build/external-binary-archives
+        key: ${{ steps.external-binary-cache.outputs.cache-primary-key }}
+

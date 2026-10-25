@@ -27,7 +27,8 @@ final class CustomRuleDeletionControllerTests: ProxyRuntimeControllerTests {
     try store.saveDocument(original)
     let controller = makeDeletionController(
       store: store,
-      settings: ProxyRuntimeSettings(listen: ActivationFixture.listen, agentEnabled: false))
+      settings: ProxyRuntimeSettings(
+        listen: ActivationFixture.listen, rulePreset: .chinaDirect, agentEnabled: false))
     let workflow = deletionWorkflow(controller)
     await workflow.refresh()
     workflow.select(Set(workflow.snapshot.rows.map(\.id)))
@@ -62,7 +63,7 @@ final class CustomRuleDeletionControllerTests: ProxyRuntimeControllerTests {
       store: store,
       settings: ProxyRuntimeSettings(
         listen: ActivationFixture.listen, preferredMode: .rule,
-        ruleDefaultAction: .proxyWhenUnmatched, agentEnabled: true), proxyMode: .rule)
+        rulePreset: .chinaDirect, agentEnabled: true), proxyMode: .rule)
     try await controller.activate(seeded.server)
     let workflow = deletionWorkflow(controller)
     await workflow.refresh()
@@ -95,7 +96,7 @@ final class CustomRuleDeletionControllerTests: ProxyRuntimeControllerTests {
         store: store,
         settings: ProxyRuntimeSettings(
           listen: ActivationFixture.listen, preferredMode: mode.kind,
-          ruleDefaultAction: .proxyWhenUnmatched, agentEnabled: true), proxyMode: mode)
+          rulePreset: .chinaDirect, agentEnabled: true), proxyMode: mode)
       try await controller.activate(seeded.server)
       let workflow = deletionWorkflow(controller)
       await workflow.refresh()
@@ -121,7 +122,7 @@ final class CustomRuleDeletionControllerTests: ProxyRuntimeControllerTests {
       store: store,
       settings: ProxyRuntimeSettings(
         listen: ActivationFixture.listen, preferredMode: .rule,
-        ruleDefaultAction: .proxyWhenUnmatched, agentEnabled: true), proxyMode: .rule)
+        rulePreset: .chinaDirect, agentEnabled: true), proxyMode: .rule)
     try await controller.activate(seeded.server)
     let workflow = deletionWorkflow(controller)
     await workflow.refresh()
@@ -160,7 +161,8 @@ final class CustomRuleDeletionControllerTests: ProxyRuntimeControllerTests {
     try store.saveDocument(original)
     let controller = makeDeletionController(
       store: store,
-      settings: ProxyRuntimeSettings(listen: ActivationFixture.listen, agentEnabled: false))
+      settings: ProxyRuntimeSettings(
+        listen: ActivationFixture.listen, rulePreset: .chinaDirect, agentEnabled: false))
     let workflow = deletionWorkflow(controller)
     await workflow.refresh()
     workflow.select(Set(workflow.snapshot.rows.map(\.id)))
@@ -169,7 +171,8 @@ final class CustomRuleDeletionControllerTests: ProxyRuntimeControllerTests {
     let backupDirectory = directory.appendingPathExtension("backup")
     try FileManager.default.moveItem(at: directory, to: backupDirectory)
     try Data("blocks parent directory".utf8).write(to: directory)
-    let backup = backupDirectory.appendingPathComponent(store.fileURL.lastPathComponent)
+    let backup = backupDirectory.appendingPathComponent(
+      store.fileURL.path.replacingOccurrences(of: directory.path + "/", with: ""))
     await workflow.deleteCustomRules(confirmation)
     XCTAssertEqual(workflow.snapshot.commitOutcome, .persistenceFailed)
     XCTAssertEqual(controller.ruleDocuments.current, original)
@@ -190,6 +193,7 @@ final class CustomRuleDeletionControllerTests: ProxyRuntimeControllerTests {
 
   private func deletionWorkflow(_ controller: ProxyRuntimeController) -> RulesWorkflow {
     RulesWorkflow(
+      preset: controller.rulePreset,
       loadDocument: { try controller.ruleDocuments.load() },
       commitDocument: { await controller.commitRuleDocument($0) },
       builtinSnapshots: controller.ruleSnapshots)

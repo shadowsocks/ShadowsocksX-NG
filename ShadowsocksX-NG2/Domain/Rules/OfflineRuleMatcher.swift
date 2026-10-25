@@ -1,10 +1,10 @@
 import Foundation
 
-/// A full saved collection is the only context: no runtime, default action, or network dependencies.
+/// The preset’s full saved collection is the context; no runtime or network dependencies.
 enum OfflineRuleMatcher {
-  enum Outcome: Equatable, Sendable { case proxy, direct, unmatched }
+  enum Outcome: Equatable, Sendable { case proxy, direct }
   enum Explanation: Equatable, Sendable {
-    case fixedLocal, domainProxy, ipDirect, singleAction, noMatch
+    case fixedLocal, domainProxy, ipDirect, singleAction, defaultAction
   }
   enum Failure: Error, Equatable, Sendable { case invalidTarget, incompleteCollection }
 
@@ -22,7 +22,9 @@ enum OfflineRuleMatcher {
     guard collection.issues.isEmpty else { throw Failure.incompleteCollection }
     let target = try OfflineRuleTarget(address)
     let matches = collection.rows.filter { row in
-      guard row.isEnabled else { return false }
+      guard row.isEnabled, collection.preset.defaultAction.expresses(row.action) else {
+        return false
+      }
       guard let identity = row.identity else { return target.isSimpleHostname }
       return RuleCoverage.domainCovers(identity.match, target.match)
         || RuleCoverage.ipCovers(identity.match, target.match)
@@ -38,7 +40,8 @@ enum OfflineRuleMatcher {
       explanation = target.isDomain ? .domainProxy : .ipDirect
     } else {
       action = matches.first?.action
-      explanation = action == nil ? .noMatch : .singleAction
+      explanation =
+        action == nil ? .defaultAction : .singleAction
     }
     let deciding = matches.filter {
       fixed.isEmpty ? $0.action == action : $0.isFixed
@@ -46,7 +49,8 @@ enum OfflineRuleMatcher {
     let decidingIDs = Set(deciding.map(\.id))
     return Result(
       version: collection.version, target: target.display,
-      outcome: action.map { $0 == .proxy ? .proxy : .direct } ?? .unmatched,
+      outcome: (action ?? collection.preset.defaultAction.fallbackAction) == .proxy
+        ? .proxy : .direct,
       domainWithoutDNS: target.isDomain, deciding: deciding,
       otherMatches: matches.filter { !decidingIDs.contains($0.id) }, explanation: explanation)
   }

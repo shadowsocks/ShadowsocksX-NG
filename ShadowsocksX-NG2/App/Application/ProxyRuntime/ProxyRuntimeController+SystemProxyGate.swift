@@ -60,7 +60,7 @@ extension ProxyRuntimeController {
   private func firewallStatus(for executableURL: URL) async -> FirewallBlockStatus {
     let checker = firewallChecker
     return await Task.detached(priority: .utility) {
-      checker.status(for: executableURL)
+      await checker.status(for: executableURL)
     }.value
   }
 
@@ -69,7 +69,7 @@ extension ProxyRuntimeController {
   ) async -> EndpointHealthProbe.Outcome {
     let probe = probe
     return await Task.detached(priority: .utility) {
-      probe.probe(host: host, port: port, timeout: timeout)
+      await probe.probe(host: host, port: port, timeout: timeout)
     }.value
   }
 

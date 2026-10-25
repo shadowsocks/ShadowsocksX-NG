@@ -74,44 +74,71 @@ final class PluginCatalog: ObservableObject, PluginExecutableResolving {
     let captured = lock.withLock { state }
     guard !captured.unreadable else { throw PluginMappingError.unreadable }
     var proposed = captured.configuration
-    for change in changes {
-      switch change {
-      case .save(var record):
-        record.names = record.names.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
-        record.path = try validatedPath(record.path)
-        if let index = proposed.userPlugins.firstIndex(where: { $0.id == record.id }) {
-          proposed.userPlugins[index] = record
-        } else {
-          proposed.userPlugins.append(record)
-        }
-      case .remove(let id):
-        guard let index = proposed.userPlugins.firstIndex(where: { $0.id == id }) else {
-          throw PluginMappingError.nameMissing
-        }
-        proposed.userPlugins.remove(at: index)
-      case .managedMode(let program, let mode):
-        guard ManagedPluginCatalog.plugins.contains(where: { $0.program == program }) else {
-          throw PluginMappingError.nameMissing
-        }
-        if mode == .tcpOnly {
-          proposed.managedModes.removeValue(forKey: program)
-        } else {
-          proposed.managedModes[program] = mode
-        }
-      case .managedArguments(let program, let arguments):
-        guard ManagedPluginCatalog.plugins.contains(where: { $0.program == program }) else {
-          throw PluginMappingError.nameMissing
-        }
-        if arguments.isEmpty {
-          proposed.managedArguments.removeValue(forKey: program)
-        } else {
-          proposed.managedArguments[program] = arguments
-        }
-      }
-    }
+    for change in changes { try apply(change, to: &proposed) }
     try proposed.validate()
     guard proposed != captured.configuration else { return }
     try publishAfterSaving(proposed)
+  }
+
+  private func apply(_ change: Change, to configuration: inout PluginConfiguration) throws {
+    switch change {
+    case .save(let record): try save(record, to: &configuration)
+    case .remove(let id): try remove(id, from: &configuration)
+    case .managedMode(let program, let mode):
+      try set(mode, forManagedProgram: program, in: &configuration)
+    case .managedArguments(let program, let arguments):
+      try set(arguments, forManagedProgram: program, in: &configuration)
+    }
+  }
+
+  private func save(_ original: UserPluginRecord, to configuration: inout PluginConfiguration)
+    throws
+  {
+    var record = original
+    record.names = record.names.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+    record.path = try validatedPath(record.path)
+    if let index = configuration.userPlugins.firstIndex(where: { $0.id == record.id }) {
+      configuration.userPlugins[index] = record
+    } else {
+      configuration.userPlugins.append(record)
+    }
+  }
+
+  private func remove(_ id: UUID, from configuration: inout PluginConfiguration) throws {
+    guard let index = configuration.userPlugins.firstIndex(where: { $0.id == id }) else {
+      throw PluginMappingError.nameMissing
+    }
+    configuration.userPlugins.remove(at: index)
+  }
+
+  private func set(
+    _ mode: PluginTransportMode, forManagedProgram program: String,
+    in configuration: inout PluginConfiguration
+  ) throws {
+    try requireManagedProgram(program)
+    if mode == .tcpOnly {
+      configuration.managedModes.removeValue(forKey: program)
+    } else {
+      configuration.managedModes[program] = mode
+    }
+  }
+
+  private func set(
+    _ arguments: [String], forManagedProgram program: String,
+    in configuration: inout PluginConfiguration
+  ) throws {
+    try requireManagedProgram(program)
+    if arguments.isEmpty {
+      configuration.managedArguments.removeValue(forKey: program)
+    } else {
+      configuration.managedArguments[program] = arguments
+    }
+  }
+
+  private func requireManagedProgram(_ program: String) throws {
+    guard ManagedPluginCatalog.plugins.contains(where: { $0.program == program }) else {
+      throw PluginMappingError.nameMissing
+    }
   }
 
   /// Explicit repair; a corrupt store never silently becomes empty user intent.

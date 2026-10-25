@@ -15,13 +15,17 @@ extension CatalogWorkflow {
   /// 首次刷新。首次刷新失败留空分组加错误态（状态在刷新内标记，创建本身总是
   /// 成功）。返回订阅 summary（状态在首次刷新中落定）。
   @discardableResult
-  func createSubscription(urlString: String) async throws -> SubscriptionSummary {
+  func createSubscription(
+    urlString: String, autoUpdate: SubscriptionAutoUpdateSettings = .init()
+  ) async throws -> SubscriptionSummary {
     let url = try Self.validatedSubscriptionURL(urlString)
-    let record = SubscriptionRecord(
+    var record = SubscriptionRecord(
       id: .fresh(),
       groupID: .fresh(),
       url: url.absoluteString,
       status: .never)
+    record.autoUpdate.save(
+      autoUpdate, at: dependencies.subscriptionNow(), jitter: dependencies.subscriptionJitter())
     try commitSubscriptionDocument { catalog, subscriptions in
       try catalog.addGroup(url.host ?? "", source: .subscription, id: record.groupID, now: Date())
       subscriptions.append(record)
@@ -36,30 +40,43 @@ extension CatalogWorkflow {
   /// 立即更新单个订阅。不抛错：失败标记到订阅状态（无静默，
   /// 有结构化状态可呈现）。同一订阅不重入：进行中的刷新期间重复触发直接跳过。
   func refreshSubscription(_ id: NodeID) async {
-    guard !refreshingSubscriptionIDs.contains(id),
-      subscriptions.contains(where: { $0.id == id })
+    guard subscriptionRequests[id] == nil, let source = subscriptionRecord(withID: id),
+      !Task.isCancelled
     else { return }
+    let token = UUID()
     setSubscriptionRefreshCompletion(nil, for: id)
-    setRefreshInFlight(id, true)
-    defer { setRefreshInFlight(id, false) }
+    let request = Task { await runSubscriptionRefresh(source, token: token) }
+    subscriptionRequests[id] = (token, request)
+    await withTaskCancellationHandler {
+      await request.value
+    } onCancel: {
+      request.cancel()
+    }
+  }
+
+  private func runSubscriptionRefresh(_ source: SubscriptionRecord, token: UUID) async {
+    let id = source.id
+    defer {
+      if subscriptionRequests[id]?.token == token {
+        subscriptionRequests[id] = nil
+        scheduleAutomaticUpdateCheck()
+      }
+    }
     do {
-      try await performRefresh(id)
+      try await performRefresh(source, token: token)
       setSubscriptionRefreshFailure(nil, for: id)
       publishSubscriptionServerRefresh(id)
-      if subscriptions.contains(where: { $0.id == id }) {
-        setSubscriptionRefreshCompletion(SubscriptionRefreshCompletion(), for: id)
-      }
+      setSubscriptionRefreshCompletion(SubscriptionRefreshCompletion(), for: id)
     } catch is CancellationError {
-      // 取消不构成失败：快照与状态都不动。
+      // Cancellation preserves the last committed result and plan.
     } catch {
-      guard !Task.isCancelled else { return }
+      guard !Task.isCancelled, subscriptionRequests[id]?.token == token,
+        subscriptionRecord(withID: id)?.url == source.url
+      else { return }
       let failure = SubscriptionRefreshFailure.from(error: error)
       setSubscriptionRefreshFailure(failure, for: id)
       await markRefreshFailed(subscriptionID: id, failure: failure)
-      if subscriptions.contains(where: { $0.id == id }) {
-        setSubscriptionRefreshCompletion(
-          SubscriptionRefreshCompletion(failure: failure), for: id)
-      }
+      setSubscriptionRefreshCompletion(SubscriptionRefreshCompletion(failure: failure), for: id)
     }
   }
 
@@ -70,21 +87,32 @@ extension CatalogWorkflow {
     }
   }
 
-  /// 编辑订阅 URL：订阅/固定分组/远端身份
-  /// 命名空间全部保留；最后成功快照保留到新 URL 刷新成功，随后立即刷新。
-  func editSubscriptionURL(_ id: NodeID, urlString: String) async throws {
+  /// 保存订阅地址与自动更新选择，保留订阅、固定分组与远端身份。
+  /// 仅地址变化时立即刷新；设置保存不获取远端内容或触发运行时收敛。
+  func saveSubscription(
+    _ id: NodeID, urlString: String, autoUpdate: SubscriptionAutoUpdateSettings? = nil
+  ) async throws {
     guard let record = subscriptionRecord(withID: id) else {
       throw SubscriptionFormError.notFound
     }
     let url = try Self.validatedSubscriptionURL(urlString)
+    let changedURL = record.url != url.absoluteString
     try dependencies.coordinator.commitSubscriptions { subscriptions in
       guard let index = subscriptions.firstIndex(where: { $0.id == id }) else {
         throw SubscriptionFormError.notFound
       }
+      subscriptions[index].autoUpdate.save(
+        autoUpdate, sourceChanged: changedURL,
+        at: dependencies.subscriptionNow(), jitter: dependencies.subscriptionJitter())
       subscriptions[index].url = url.absoluteString
     }
+    if changedURL { cancelSubscriptionRequest(id) }
     republishCommittedState()
-    await refreshSubscription(record.id)
+    if changedURL { await refreshSubscription(record.id) }
+  }
+
+  func cancelSubscriptionRequest(_ id: NodeID) {
+    subscriptionRequests.removeValue(forKey: id)?.task.cancel()
   }
 
   /// 删除订阅：递归清除订阅源、固定分组与远端成员并清理凭据；
@@ -99,6 +127,7 @@ extension CatalogWorkflow {
       removedEntries = try catalog.removeSubscriptionSubtree(of: record.groupID)
       subscriptions.removeAll { $0.id == id }
     }
+    cancelSubscriptionRequest(id)
     setSubscriptionRefreshCompletion(nil, for: id)
     return RemovalOutcome(removedNodeIDs: Set(removedEntries.map(\.id)))
   }
@@ -114,12 +143,14 @@ extension CatalogWorkflow {
   // MARK: - 刷新内核
 
   /// 完整获取 → 解析校验 → 原子提交快照与成功状态。
-  private func performRefresh(_ id: NodeID) async throws {
-    guard let record = subscriptionRecord(withID: id) else { return }
-    let urlString = try subscriptionURL(for: record.id)
+  private func performRefresh(_ record: SubscriptionRecord, token: UUID) async throws {
+    let urlString = record.url
     let url = try Self.validatedSubscriptionURL(urlString)
     let data = try await dependencies.subscriptionFetcher.fetch(url)
     try Task.checkCancellation()
+    guard subscriptionRequests[record.id]?.token == token,
+      subscriptionRecord(withID: record.id)?.url == record.url
+    else { throw CancellationError() }
     let snapshot = try SubscriptionDocumentParser.parse(data, subscriptionID: record.id)
     let summary =
       subscriptions.first(where: { $0.id == record.id })
@@ -135,7 +166,7 @@ extension CatalogWorkflow {
     try Task.checkCancellation()
     do {
       try commitSubscriptionDocument { catalog, subscriptions in
-        let now = Date()
+        let now = dependencies.subscriptionNow()
         let resolved = Self.catalogSnapshot(snapshot.root, catalogGroupID: summary.groupID)
         try Task.checkCancellation()
         let name = snapshot.root.name.isEmpty ? fallbackName : snapshot.root.name
@@ -146,6 +177,8 @@ extension CatalogWorkflow {
           subscriptions[index].information =
             snapshot.information.isEmpty ? nil : snapshot.information
           subscriptions[index].lastSucceededAt = now
+          subscriptions[index].autoUpdate.refreshSucceeded(
+            policy: snapshot.autoUpdatePolicy, at: now, jitter: dependencies.subscriptionJitter())
         }
       }
     } catch {
@@ -161,13 +194,16 @@ extension CatalogWorkflow {
   ) async {
     try? commitSubscriptionDocument { _, subscriptions in
       if let index = subscriptions.firstIndex(where: { $0.id == subscriptionID }) {
-        subscriptions[index].status = .failed(at: Date(), failure: failure)
+        let now = dependencies.subscriptionNow()
+        subscriptions[index].status = .failed(at: now, failure: failure)
+        subscriptions[index].autoUpdate.refreshFailed(
+          at: now, jitter: dependencies.subscriptionJitter())
       }
     }
   }
 
   /// 订阅原始记录查询（module 内部；投影不含完整 URL）。
-  private func subscriptionRecord(withID id: NodeID) -> SubscriptionRecord? {
+  func subscriptionRecord(withID id: NodeID) -> SubscriptionRecord? {
     dependencies.coordinator.committedSubscriptions.first { $0.id == id }
   }
 
@@ -192,7 +228,8 @@ extension CatalogWorkflow {
         status: record.status,
         serverCount: serverCount,
         information: record.information,
-        lastSucceededAt: record.lastSucceededAt)
+        lastSucceededAt: record.lastSucceededAt,
+        autoUpdate: record.autoUpdate)
     }
   }
 

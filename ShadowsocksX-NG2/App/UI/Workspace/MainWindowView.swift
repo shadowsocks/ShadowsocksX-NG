@@ -14,10 +14,13 @@ private enum WorkspaceSheet: String, Identifiable {
 struct MainWindowView: View {
   /// 纯转发的分区工作流与控制器：壳 body 不读它们（分区视图自行观察），
   /// 用 let 转发，壳不重复订阅它们的发布。
-  let rulesWorkflow: RulesWorkflow
+  let rulesWorkflow: RulesWorkspaces
   @ObservedObject var route: WorkspaceRoute
   @ObservedObject var workflow: CatalogWorkflow
   @ObservedObject var control: ProxyControlWorkflow
+  /// 首页运行控制卡与菜单栏状态卡共享的状态显示 debounce 模型；壳 body
+  /// 不读它（分区视图自行观察），用 let 转发。
+  let statusDisplay: StatusDisplayModel
   let plugins: PluginManagementModel
   let settingsWorkflow: SettingsWorkflow
   let loginController: LaunchAtLoginController
@@ -127,6 +130,7 @@ struct MainWindowView: View {
       WorkspaceHomeView(
         workflow: workflow,
         control: control,
+        statusDisplay: statusDisplay,
         browser: homeBrowser,
         activation: activationFeedback,
         showServers: { route.navigate(to: .servers) },
@@ -144,7 +148,7 @@ struct MainWindowView: View {
         configurationGroupFileExporter: configurationGroupFileExporter,
         qrImageSaver: qrImageSaver)
     case .rules:
-      RulesView(workflow: rulesWorkflow)
+      RulesPresetView(workspaces: rulesWorkflow)
     case .settings:
       SettingsView(
         plugins: plugins, workflow: settingsWorkflow, loginController: loginController,
@@ -183,6 +187,7 @@ extension WorkspaceDestination {
 private struct WorkspaceHomeView: View {
   @ObservedObject var workflow: CatalogWorkflow
   @ObservedObject var control: ProxyControlWorkflow
+  let statusDisplay: StatusDisplayModel
   let browser: HomeTargetBrowser
   let activation: ActivationFeedbackState
   let showServers: () -> Void
@@ -193,6 +198,7 @@ private struct WorkspaceHomeView: View {
     HomeView(
       workflow: workflow,
       control: control,
+      statusDisplay: statusDisplay,
       browser: browser,
       activation: activation,
       showServers: showServers,

@@ -83,7 +83,7 @@ func spawnSslocal() -> Process? {
     if data.isEmpty { handle.readabilityHandler = nil }
   }
   child.executableURL = sslocalURL
-  child.arguments = ["-c", contractURL.path]
+  child.arguments = ["-c", contractURL.path, "--log-without-time"]
   var childEnvironment = environment
   // 不配置 sslocal 日志级别；未设置时使用上游默认值，显式外部 RUST_LOG 原样透传。
   // macOS 的 resolv.conf 可能含带 zone id 的链路本地 nameserver（RA 下发的

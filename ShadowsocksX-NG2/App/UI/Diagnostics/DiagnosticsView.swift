@@ -1,38 +1,30 @@
 import SwiftUI
 
-/// 独立窗口诊断区：状态摘要卡、日志卡与脱敏说明行。
-/// 为状态摘要卡（代理状态、活动目标）+ 日志卡（GUI 事件、wrapper 与
-/// sslocal 行经日志视图 intake 归一为一个按时间排序的列表，级别与来源
-/// 过滤、可复制）+ 底部脱敏说明行。导出诊断由
-/// 本页自挂工具栏（呈现于窗口工具栏右端），沿用 DiagnosticReportExportAction
-/// 既有入口，成功 alert 与错误弹窗均在本视图挂载。事实采样、轮询代际与报告
-/// 准备全部经 DiagnosticsWorkflow 这一 UI-facing seam；本视图
-/// 只负责生命周期触发、呈现与复制动作。
+/// 独立诊断窗口：可筛选的日志表格与选中行详情。
+/// 日志只在查看器中呈现；诊断导出继续通过 DiagnosticsWorkflow 准备脱敏报告。
 struct DiagnosticsView: View {
   @ObservedObject var diagnostics: DiagnosticsWorkflow
   @ObservedObject var windowState: DiagnosticsWindowState
   let clipboard: any TextClipboard
   let exporter: any DiagnosticReportExporter
 
+  @State private var selection: Set<DiagnosticLogEntry.ID> = []
+
   var body: some View {
-    ScrollView {
-      VStack(alignment: .leading, spacing: 20) {
-        summaryRow
-        logCard
-        Text(
-          "诊断导出只包含状态、存在性、权限和脱敏元数据，不包含密码、插件参数、订阅 URL 或运行时 JSON。"
-        )
-        .font(.footnote)
-        .foregroundStyle(.secondary)
-      }
-      .frame(maxWidth: 960, alignment: .leading)
-      .frame(maxWidth: .infinity, alignment: .leading)
-      .padding(.leading, 28)
-      .padding(.trailing, 32)
-      .padding(.top, 24)
-      .padding(.bottom, 36)
+    VStack(alignment: .leading, spacing: 20) {
+      logCard
+      Text(
+        "诊断导出只包含状态、存在性、权限和脱敏元数据，不包含密码、插件参数、订阅 URL 或运行时 JSON。"
+      )
+      .font(.footnote)
+      .foregroundStyle(.secondary)
     }
-    .frame(minWidth: 640, minHeight: 520)
+    .frame(maxWidth: .infinity, alignment: .leading)
+    .padding(.leading, 28)
+    .padding(.trailing, 32)
+    .padding(.top, 24)
+    .padding(.bottom, 36)
+    .frame(minWidth: 800, minHeight: 520)
     .background(DiagnosticsWindowAnchor(state: windowState).frame(width: 0, height: 0))
     .task(id: windowState.isOpen) {
       if windowState.isOpen { await diagnostics.readWhileActive() }
@@ -76,43 +68,6 @@ struct DiagnosticsView: View {
     }
   }
 
-  // MARK: - 状态摘要
-
-  private var summaryRow: some View {
-    HStack(alignment: .top, spacing: 14) {
-      statCard(
-        String(localized: "代理状态"),
-        value: AppPresentation.diagnosticStatus(diagnostics.summary.proxyState))
-      statCard(
-        String(localized: "活动目标"),
-        value: diagnostics.summary.hasActiveTarget
-          ? String(localized: "已设置") : String(localized: "未设置"))
-    }
-  }
-
-  private func statCard(_ label: String, value: String) -> some View {
-    VStack(alignment: .leading, spacing: 4) {
-      Text(label)
-        .font(.caption)
-        .foregroundStyle(.secondary)
-      Text(value)
-        .font(.callout.weight(.semibold))
-        .lineLimit(2)
-        .help(value)
-    }
-    .padding(.horizontal, 16)
-    .padding(.vertical, 12)
-    .frame(maxWidth: .infinity, alignment: .leading)
-    .background(
-      .background.secondary,
-      in: RoundedRectangle(cornerRadius: 12, style: .continuous)
-    )
-    .overlay(
-      RoundedRectangle(cornerRadius: 12, style: .continuous)
-        .strokeBorder(.quaternary)
-    )
-  }
-
   // MARK: - 日志卡
 
   private var logCard: some View {
@@ -125,7 +80,7 @@ struct DiagnosticsView: View {
         }
         .pickerStyle(.segmented)
         .labelsHidden()
-        .frame(width: 220)
+        .fixedSize()
         Picker("日志来源", selection: $windowState.filter.source) {
           Text("全部").tag(DiagnosticLogFilter.Source.all)
           Text("GUI").tag(DiagnosticLogFilter.Source.gui)
@@ -134,19 +89,18 @@ struct DiagnosticsView: View {
         }
         .pickerStyle(.segmented)
         .labelsHidden()
-        .frame(width: 240)
+        .fixedSize()
         Spacer(minLength: 12)
-        Button {
-          copyToClipboard(visibleText)
-        } label: {
-          Label("复制", systemImage: "doc.on.doc")
-        }
-        .disabled(visibleText.isEmpty)
       }
       .padding(.horizontal, 16)
       .padding(.vertical, 12)
       Divider()
-      logBox
+      DiagnosticsLogSplitView {
+        logTable
+      } details: {
+        logDetails
+      }
+      .frame(minHeight: 300, maxHeight: .infinity)
     }
     .frame(maxWidth: .infinity, alignment: .leading)
     .background(
@@ -159,9 +113,12 @@ struct DiagnosticsView: View {
     )
   }
 
-  /// 当前过滤条件下的可见行文本（呈现与复制共用同一可见集）。
-  private var visibleText: String {
-    windowState.filter.apply(diagnostics.logView.rows).map(\.rendered).joined(separator: "\n")
+  private var visibleRows: [DiagnosticLogEntry] {
+    diagnostics.logView.entries.filter { windowState.filter.admits($0.line) }
+  }
+
+  private var selectedRows: [DiagnosticLogEntry] {
+    visibleRows.filter { selection.contains($0.id) }
   }
 
   /// 空态提示：无过滤时提示如何产生日志；过滤后只提示过滤条件。
@@ -173,26 +130,93 @@ struct DiagnosticsView: View {
     return String(localized: "当前过滤条件下没有日志行。")
   }
 
-  private var logBox: some View {
-    ScrollView {
-      VStack(alignment: .leading, spacing: 2) {
-        if visibleText.isEmpty {
-          Text(emptyMessage)
-            .font(.callout)
-            .foregroundStyle(.secondary)
-            .padding(16)
-        } else {
-          Text(visibleText)
-            .font(.system(size: 11, design: .monospaced))
-            .foregroundStyle(.primary)
-            .textSelection(.enabled)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(16)
-        }
+  private var logTable: some View {
+    let rows = visibleRows
+    let selected = selectedRows
+    return Table(rows, selection: $selection) {
+      TableColumn("时间") { row in
+        Text(row.tableTimestampText)
+          .help(row.timestampText)
       }
-      .frame(maxWidth: .infinity, alignment: .leading)
+      .width(min: 90, ideal: 105)
+      TableColumn("日志级别") { row in
+        Text(row.line.level.rawValue)
+      }
+      .width(min: 60, ideal: 70)
+      TableColumn("分类") { row in
+        Text(row.sourceText)
+      }
+      .width(min: 60, ideal: 70)
+      TableColumn("消息") { row in
+        Text(row.line.text)
+      }
+      .width(min: 160, ideal: 520)
     }
-    .frame(minHeight: 300, maxHeight: 390)
+    .font(.system(size: 11, design: .monospaced))
+    .lineLimit(1)
+    .truncationMode(.tail)
+    .onCopyCommand(
+      perform: selected.isEmpty
+        ? nil
+        : {
+          [
+            NSItemProvider(
+              object: selected.map(\.line.rendered).joined(separator: "\n") as NSString)
+          ]
+        }
+    )
+    .contextMenu(forSelectionType: DiagnosticLogEntry.ID.self) { ids in
+      Button("复制") {
+        copyToClipboard(
+          rows.filter { ids.contains($0.id) }.map(\.line.rendered).joined(separator: "\n"))
+      }
+      .disabled(ids.isEmpty)
+    }
+    .onChange(of: rows.map(\.id)) { _, ids in
+      selection.formIntersection(ids)
+    }
+    .overlay {
+      if rows.isEmpty {
+        Text(emptyMessage)
+          .font(.callout)
+          .foregroundStyle(.secondary)
+          .padding(16)
+          .allowsHitTesting(false)
+      }
+    }
+  }
+
+  private var logDetails: some View {
+    let selected = selectedRows
+    return ScrollView {
+      if selected.count == 1, let row = selected.first {
+        VStack(alignment: .leading, spacing: 12) {
+          LabeledContent("时间", value: row.timestampText)
+          LabeledContent("日志级别", value: row.line.level.rawValue)
+          LabeledContent("分类", value: row.sourceText)
+          Divider()
+          Text("消息")
+            .font(.headline)
+          Text(row.line.text)
+            .font(.system(size: 11, design: .monospaced))
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .fixedSize(horizontal: false, vertical: true)
+        }
+        .textSelection(.enabled)
+        .padding(16)
+      } else {
+        Group {
+          if selected.isEmpty {
+            Text("选择日志查看详情")
+          } else {
+            Text("已选择 \(selected.count) 条日志")
+          }
+        }
+        .foregroundStyle(.secondary)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(16)
+      }
+    }
   }
 
   private func copyToClipboard(_ text: String) {
@@ -202,4 +226,23 @@ struct DiagnosticsView: View {
       windowState.errors.present(error)
     }
   }
+}
+
+extension DiagnosticLogEntry {
+  private static let tableTimestampFormatter: DateFormatter = {
+    let formatter = DateFormatter()
+    formatter.locale = Locale(identifier: "en_US_POSIX")
+    formatter.dateFormat = "HH:mm:ss.SSS"
+    return formatter
+  }()
+
+  var tableTimestampText: String {
+    line.timestamp.map { Self.tableTimestampFormatter.string(from: $0) } ?? "—"
+  }
+
+  var timestampText: String {
+    line.timestamp.map { LogLine.timestampFormatter.string(from: $0) } ?? "—"
+  }
+
+  var sourceText: String { line.source == .gui ? "GUI" : line.source.rawValue }
 }

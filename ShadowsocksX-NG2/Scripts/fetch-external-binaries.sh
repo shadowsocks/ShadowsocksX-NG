@@ -4,13 +4,13 @@
 # For every Vendor/<name>/manifest.json (see lib-manifests.sh for the schema):
 #   1. If the extracted binary is present and its recorded SHA-256 stamp still
 #      matches, nothing is downloaded (build cache hit).
-#   2. Otherwise the pinned release asset is downloaded and its asset
-#      SHA-256 must equal manifest archiveSHA256 — a mismatch fails the build.
+#   2. Otherwise a cached archive is checked, or the pinned release asset is
+#      downloaded; its SHA-256 must equal manifest archiveSHA256.
 #   3. A tar member or direct binary must be an arm64-only Mach-O,
 #      and is installed as Vendor/<name>/<binary> with a fresh stamp.
 #
-# Trust root is the committed manifest (tag + asset URL + archive SHA-256);
-# local artifacts are a cache and are silently refetched when they drift.
+# Trust root is the committed manifest (tag + asset URL + archive SHA-256).
+# Local artifacts are caches and are silently refetched when they drift.
 # Usage: Scripts/fetch-external-binaries.sh   (run from anywhere)
 
 set -eu
@@ -20,6 +20,7 @@ SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 
 NG2_ROOT=$(CDPATH= cd -- "$SCRIPT_DIR/.." && pwd)
 VENDOR_DIR="$NG2_ROOT/Vendor"
+EXTERNAL_BINARY_CACHE_DIR=${EXTERNAL_BINARY_CACHE_DIR:-}
 
 fetch_one() {
     manifest=$1
@@ -63,20 +64,49 @@ fetch_one() {
         echo "fetch($name): pinned manifest or local artifact changed; refetching release"
     fi
 
-    echo "fetch($name): $url"
-    archive="$tmproot/$asset"
-    curl --fail --location --silent --show-error --retry 3 \
-        --connect-timeout 15 --output "$archive" "$url" || {
-        echo "error: $name: download failed: $url" >&2
-        return 1
-    }
+    archive=""
+    cache_archive=""
+    if [ -n "$EXTERNAL_BINARY_CACHE_DIR" ]; then
+        cache_archive="$EXTERNAL_BINARY_CACHE_DIR/$name/$asset"
+        if [ -f "$cache_archive" ] && [ ! -L "$cache_archive" ]; then
+            actual=$(shasum -a 256 "$cache_archive" | awk '{print $1}')
+            if [ "$actual" = "$expected" ]; then
+                archive="$cache_archive"
+                echo "fetch($name): verified archive cache hit ($asset)"
+            else
+                echo "fetch($name): cached archive SHA-256 mismatch; downloading pinned release"
+                rm -f "$cache_archive"
+            fi
+        elif [ -e "$cache_archive" ] || [ -L "$cache_archive" ]; then
+            echo "fetch($name): cached archive path is not a regular file: $cache_archive" >&2
+            rm -rf "$cache_archive"
+        fi
+    fi
 
-    actual=$(shasum -a 256 "$archive" | awk '{print $1}')
-    [ "$actual" = "$expected" ] || {
-        echo "error: $name: archive SHA-256 mismatch (expected $expected, got $actual)
+    if [ -z "$archive" ]; then
+        echo "fetch($name): $url"
+        archive="$tmproot/$asset"
+        curl --fail --location --silent --show-error --retry 3 \
+            --connect-timeout 15 --output "$archive" "$url" || {
+            echo "error: $name: download failed: $url" >&2
+            return 1
+        }
+
+        actual=$(shasum -a 256 "$archive" | awk '{print $1}')
+        [ "$actual" = "$expected" ] || {
+            echo "error: $name: archive SHA-256 mismatch (expected $expected, got $actual)
 error: $name: the pinned release asset changed; redo the static manifest before upgrading" >&2
-        return 1
-    }
+            return 1
+        }
+
+        if [ -n "$cache_archive" ]; then
+            mkdir -p "$(dirname "$cache_archive")"
+            cache_tmp=$(mktemp "${cache_archive}.XXXXXX")
+            cp "$archive" "$cache_tmp"
+            mv "$cache_tmp" "$cache_archive"
+            archive="$cache_archive"
+        fi
+    fi
 
     case "$format" in
         binary) extracted="$archive" ;;

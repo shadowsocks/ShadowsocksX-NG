@@ -21,15 +21,14 @@ struct ModeCard: View {
           .frame(maxWidth: 480, alignment: .leading)
           if control.snapshot.proxyMode == .rule {
             HStack(spacing: 8) {
-              Text("未匹配规则时")
-              Picker("未匹配规则时", selection: ruleDefaultActionBinding) {
-                ForEach(RuleDefaultAction.allCases, id: \.self) { action in
+              Text("规则预设")
+              Picker("规则预设", selection: rulePresetBinding) {
+                ForEach(RulePreset.allCases, id: \.self) { action in
                   Text(action.label).tag(action)
                 }
               }
-              .pickerStyle(.segmented)
               .labelsHidden()
-              .frame(maxWidth: 480, alignment: .leading)
+              .frame(maxWidth: .infinity, alignment: .leading)
             }
           }
           Text(modeDescription(control.snapshot.proxyMode))
@@ -49,11 +48,11 @@ struct ModeCard: View {
       })
   }
 
-  private var ruleDefaultActionBinding: Binding<RuleDefaultAction> {
+  private var rulePresetBinding: Binding<RulePreset> {
     Binding(
-      get: { control.snapshot.ruleDefaultAction },
+      get: { control.snapshot.rulePreset },
       set: { action in
-        Task { await control.setRuleDefaultAction(action) }
+        Task { await control.setRulePreset(action) }
       })
   }
 

@@ -59,7 +59,9 @@ class DiagnosticsWorkflowTestCase: XCTestCase {
       runtimeFacts: facts,
       events: events,
       catalogFacts: catalog,
-      agentLogTail: agentLog,
+      agentLogTail: {
+        agentLog().map { DiagnosticLogTail(text: $0, fileID: 0, offset: 0) }
+      },
       fileFacts: fileFacts,
       managedPlugins: managedPlugins,
       homePath: homePath,

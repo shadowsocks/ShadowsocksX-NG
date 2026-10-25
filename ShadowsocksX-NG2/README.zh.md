@@ -25,10 +25,10 @@ Debug 默认使用 ad-hoc 签名，无需证书；Developer ID 配置与发布�
 ```bash
 task --exit-code --taskfile ShadowsocksX-NG2/Taskfile.dist.yml validate
 # 按指定顺序只运行所需关卡：
-task --exit-code --taskfile ShadowsocksX-NG2/Taskfile.dist.yml validate -- lint test
+task --exit-code --taskfile ShadowsocksX-NG2/Taskfile.dist.yml validate -- format:check lint test
 ```
 
-默认顺序为 `lint → test → test:smoke → build`，失败即停止，日志与结果保存在 `ShadowsocksX-NG2/.build/validation/`。在本目录内可直接运行 `task --exit-code validate`。单项任务、证据读取与测试边界见[开发指南](../docs/development.zh.md)。
+默认顺序为 `lint → test → build`，失败即停止；真实进程冒烟测试仍可通过显式运行 `test:smoke` 使用。格式检查可单独运行 `task format:check`，不会改写文件。日志与结果保存在 `ShadowsocksX-NG2/.build/validation/`。在本目录内可直接运行 `task --exit-code validate`。单项任务、证据读取与测试边界见[开发指南](../docs/development.zh.md)。
 
 ## 文档导航
 
@@ -36,6 +36,7 @@ task --exit-code --taskfile ShadowsocksX-NG2/Taskfile.dist.yml validate -- lint 
 | --- | --- |
 | [开发、构建与测试](../docs/development.zh.md) | 验证入口与产物、单项任务、代码风格工具、Git hooks、文档语言 |
 | [工程结构与源码搜索](../docs/project-structure.zh.md) | 源码分层、测试目录、跨 target 文件约束、搜索方法 |
+| [GUI、Agent、Helper 与 sslocal 架构](../docs/design/ng2-process-architecture.zh.md) | 2026-10-24 实现快照：进程边界、配置发布、流量路径与生命周期 |
 | [外部二进制、签名与分发](../docs/distribution.zh.md) | 供应链校验、Debug/Release 签名、发布门槛、依赖升级 |
 | [内置规则快照](../docs/rule-snapshots.zh.md) | 来源、转换语义、维护脚本与离线检查 |
 | [订阅、插件与监听配置](../docs/configuration.zh.md) | 订阅资料、用户插件、Cloak、本地与局域网监听、配置恢复 |

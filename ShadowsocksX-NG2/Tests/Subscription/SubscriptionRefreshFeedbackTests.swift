@@ -29,7 +29,7 @@ struct SubscriptionRefreshFeedbackTests {
     let failure = try #require(fixture.workflow.subscriptionRefreshCompletions[summary.id])
     #expect(failure.failure == .httpStatus(code: 503))
     fixture.fetcher.setBehavior(.success(SubscriptionDocs.flat(serverCount: 1)))
-    try await fixture.workflow.editSubscriptionURL(
+    try await fixture.workflow.saveSubscription(
       summary.id, urlString: "https://example.com/new.json")
     let success = try #require(fixture.workflow.subscriptionRefreshCompletions[summary.id])
     #expect(success.failure == nil)

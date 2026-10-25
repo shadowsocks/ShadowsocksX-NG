@@ -11,16 +11,18 @@
 ```bash
 task --exit-code --taskfile ShadowsocksX-NG2/Taskfile.dist.yml validate
 # 按指定顺序只运行所需关卡：
-task --exit-code --taskfile ShadowsocksX-NG2/Taskfile.dist.yml validate -- lint test
+task --exit-code --taskfile ShadowsocksX-NG2/Taskfile.dist.yml validate -- format:check lint test
 ```
 
 在工程目录内可用 `task --exit-code validate`。从任意目录可用 `task --exit-code --taskfile /path/to/ShadowsocksX-NG/ShadowsocksX-NG2/Taskfile.dist.yml validate`。入口按 Taskfile 所在位置定位工程目录，内部调用发行 Taskfile 中的单项任务。
 
-默认按 `lint → test → test:smoke → build` 执行，也可按指定顺序选择子集，每关最多一次；任一关失败立即停止，后续关标记 `not_run`，进程返回非零。`--exit-code` 让 Task 透传关卡退出码；省略时 Task 仍返回非零，但可能使用自己的错误码。入口不自动重试，不修改测试并行设置，也不执行会修改源码的格式化。
+默认按 `lint → test → build` 执行；真实进程冒烟测试仍可显式选择 `test:smoke`。格式检查不属于默认验证循环：本地由 pre-commit 控制格式；CI 在 Xcode 27 arm64 runner 上以独立 step 运行 `task --exit-code validate -- format:check`，与 Swift 6.4 格式工具基线一致。也可按指定顺序选择子集，每关最多一次；任一关失败立即停止，后续关标记 `not_run`，进程返回非零。`--exit-code` 让 Task 透传关卡退出码；省略时 Task 仍返回非零，但可能使用自己的错误码。入口不自动重试，不修改测试并行设置，也不执行会修改源码的格式化。
 
 ### 验证产物与证据
 
-每次运行创建独立的 `.build/validation/<UTC时间>-<随机后缀>/`，开始与结束均输出结果绝对路径。`summary.txt` 保存各关状态、退出码与证据状态；每个已执行关卡在同名子目录下保留合并 stdout/stderr 的 `raw.log` 和 `status.txt`（`test:smoke` 对应 `test-smoke/`），Xcode 关卡显式保存 `result.xcresult`。控制台只显示进度和摘要，需要完整错误时直接读取对应日志。所有产物均在现有忽略目录内；`task clean` 会删除它们，需要长期留存时先复制出去。
+每次运行创建独立的 `.build/validation/<UTC时间>-<随机后缀>/`，开始与结束均输出结果绝对路径。`summary.txt` 保存各关状态、退出码与证据状态；每个已执行关卡在同名子目录下保留合并 stdout/stderr 的 `raw.log` 和 `status.txt`（`test:smoke` 对应 `test-smoke/`），Xcode 关卡显式保存 `result.xcresult`。本地验证保留全部证据；CI 上传策略见下文。控制台只显示进度和摘要，需要完整错误时直接读取对应日志。所有产物均在现有忽略目录内；`task clean` 会删除它们，需要长期留存时先复制出去。
+
+CI 在 Xcode 27 arm64 上运行三个独立 job：`style` 依次检查格式和 lint；`build-test` 先构建应用，再执行 hostless 测试和离线检查；`smoke` 执行真实进程测试。每项检查都是独立 step，通过 `task --exit-code validate -- <gate>` 执行，各自保留独立的结果目录。任一步失败会跳过同一 job 的后续步骤，不影响其他 job。构建和测试共用 DerivedData，编译警告视为错误。公共依赖准备由本地 composite action 完成；`style` 只安装 Task 和 SwiftLint，不下载外部二进制。失败 job 将日志、摘要和结果包上传为 `validation-<job-id>`，保留七天。优先读取 `summary.txt` 和 `test-summary.json`，完整关卡输出保存在 `raw.log`。
 
 测试关通过本机 `xcrun xcresulttool get test-results summary` 和系统 `plutil` 尽力读取计数，无需新增脚本或工具依赖。`test-summary.json` 保存原始摘要，`test-summary.stderr.log` 保存 xcresulttool 错误，`count-reader.log` 保存计数读取错误。汇总展示通过、失败、跳过、预期失败及总数（Xcode 汇总口径，参数化测试的实际执行次数可能不同）。关卡与总体退出码由原命令决定，命令失败始终保留失败。结果包缺失或摘要不可读时显著标注 `evidence incomplete`（证据不完整）、计数未知，不改变命令结果，也不把缺失计数写成零。构建关不读取测试计数；未执行的关卡不等同于测试跳过。
 
@@ -34,6 +36,7 @@ task --exit-code --taskfile ShadowsocksX-NG2/Taskfile.dist.yml validate -- lint 
 
 ```bash
 task format
+task format:check  # 只检查格式，不改写源文件
 task lint
 task lint:fix  # 需要自动修复 SwiftLint 违规时使用；执行后再运行 task lint
 task gen:prj   # 生成 Xcode 工程
@@ -42,7 +45,7 @@ task test      # 运行单元测试（不含真实进程冒烟）
 task test:smoke  # 运行真实进程冒烟测试（拉起真实 sslocal，见签名与分发文档的发布门槛）
 ```
 
-`task format` 会格式化 `App/`、`Tests/`、`Domain/` 和 `Agent/` 下的 Swift 文件；`task lint:fix` 会修改源文件，执行后检查并复核 diff。
+`task format` 会格式化 `App/`、`Tests/`、`Domain/` 和 `Agent/` 下的 Swift 文件；`task format:check` 使用同一配置严格检查且不修改文件。`task lint:fix` 会修改源文件，执行后检查并复核 diff。
 
 ## 首次准备与测试范围
 
@@ -60,22 +63,55 @@ Swift Package Manager 从 `project.yml` 固定的正式版本解析 AgeSwift，�
 `Tests/Smoke/` 是真实进程冒烟（经 wrapper 拉起真实 sslocal 验证启动、握手、
 ACL 路由与插件监管），不在默认 `task test` 内，由独立 scheme 按需运行。
 
+## 编写与优化测试
+
+### Hostless 与打包资源
+
+单测不以 app 为宿主（ADR-0021）。两条约定：
+
+- 测试需要 app 产物（嵌入二进制、打包面 Info.plist 断言）时，一律经 `Tests/Support/AppArtifact.swift` 定位。
+- 生产代码读取 app bundle 内打包资源（规则快照、LaunchDaemon 清单等）时，走注入缝——控制器的 `appBundle` 参数（生产默认 `Bundle.main`），测试夹具注入 `AppArtifact.bundle`。
+
+背景与三处资源缝的由来见 [ADR-0021](../docs/adr/0021-hostless-unit-tests.md)。
+
+### 测试框架与隔离
+
+- 新增测试默认用 Swift Testing（`import Testing`）；UI 测试与性能测试依赖 XCTest 专属 API（`XCUIApplication`、`measure` 计时），继续用 XCTest；存量 XCTest 用例不回迁。
+- 单测多 runner 并行执行：新夹具只占用进程私有资源——运行时分配端口、临时目录、UUID 后缀命名空间，不写共享路径与固定名。
+
+### 夹具与执行成本
+
+- 输入规模由断言目标决定。启停、保存、部署、回滚、状态投影等行为集成测试使用小型确定性输入，保留真实的被测工作流与编译路径；规则行为夹具优先复用 `ProxyRuntimeFixture.controlFlowRuleSnapshot`。
+- 验证打包资源、完整规则语义、大数据边界或性能的专用用例，显式注入完整数据。行为测试通过规则数据注入缝缩小输入；仍需清单等打包资源时保留 `AppArtifact.bundle`。
+- 小夹具保留场景依赖：覆盖、遮蔽、禁用、孤立记录等关系按用例构造；公共夹具中无关的域名避开用例自身的规则，避免意外吸收或重复使预期部署变成无操作。替身实现被测流程依赖的注册、退出、回执等生命周期语义。
+- 异步穿插优先用 expectation、gate 或可控时钟观测阶段；与断言无关的生产延迟通过注入缩短。保留用例刻意验证的超时、健康窗、进程监督等待与数据边界。
+- 存量 XCTest 按行为拆为可独立调度的具体测试类；共享夹具基类只放状态和工厂，不含 `test*` 方法，避免子类重复执行继承用例。拆类或调整夹具后核对用例清单，确认无遗漏、重复或新增跳过。
+- 优化耗时先记录同一配置下的全量墙钟、最慢类和用例，再分段测量定位计算与等待。优先消除测试目标之外的重复计算，再评估拆类并行或独立的生产性能优化；用例耗时合计除以墙钟表示执行重叠，不能当作 CPU 使用率。
+
 ## 代码风格工具
 
-- `swift format` 随 Xcode/Swift 工具链提供，无需单独安装（基线：Apple Swift 6.4）；SwiftLint 需 `brew install swiftlint`（基线 0.65.0）。工具缺失时，含工程目录 Swift 文件的提交会被 pre-commit 钩子拒绝而不是放行。
+- `swift format` 随 Xcode/Swift 工具链提供，无需单独安装（基线：Apple Swift 6.4）；SwiftLint 需 `brew install swiftlint`（基线 0.65.0），钩子管理器需 `brew install pre-commit`。缺少必需工具时，暂存了 NG2 Swift 文件的提交会被拒绝。
 - 配置文件：`.swift-format` 是 Swift 6.4 工具链默认规则的快照（固定成文件，工具链升级不漂移）；`.swiftlint.yml` 默认规则起步，只声明排除项与个别和 format 基线冲突的关闭项（文件内有触发案例注释）。
-- 仓库级 `pre-commit` 钩子的启用方式和检查范围见下节「开发钩子」。
+- 仓库级 hook 配置位于 `.pre-commit-config.yaml`；安装方式和检查范围见下节「开发钩子」。
 - 调整规则只针对实际痛点：修改 `.swift-format` / `.swiftlint.yml` 的 PR 须给出触发案例，并同步更新本节中的基线版本。
 
 ## 开发钩子
 
-新 clone 后，在仓库根目录启用 Git hooks：
+新 clone 后，在仓库根目录安装 hooks：
 
 ```bash
-git config core.hooksPath .githooks
+brew install pre-commit  # 已安装时跳过
+pre-commit install
 ```
 
-启用后，`pre-commit` 只检查暂存区中 `ShadowsocksX-NG2/` 下的 `.swift` 文件：`swift format` 的结果写回暂存区、不修改工作区；SwiftLint 的 error 级违规拒绝提交，warning 仅提示。其他文件跳过；没有 NG2 Swift 文件时直接放行。含有 NG2 Swift 文件但缺少工具时，提交检查失败。两关都把「工具没能执行」与「查出问题」分开报告：看到「执行失败」应查工具与配置环境，而不是去改代码。工具安装与版本见上节「代码风格工具」。
+如果之前启用过旧版 `.githooks`，先清除本地 Git 设置，再安装新 hook：
+
+```bash
+git config --local --unset core.hooksPath
+pre-commit install
+```
+
+提交中包含 `ShadowsocksX-NG2/` 下的 `.swift` 文件时才会运行这些 hook，其他文件跳过。`swift format` 会在工作区格式化暂存的文件；如果文件发生变化，pre-commit 会拦下本次提交。检查并暂存格式化结果后再提交。随后只读的 `task format:check` 会检查全部 NG2 Swift 源码目录，也会覆盖 formatter 无法自动修复的 lint-only 规则。SwiftLint 检查暂存文件；error 级违规拒绝提交，warning 不阻止提交。没有暂存 NG2 Swift 文件时这些 hook 会跳过；暂存了 NG2 Swift 文件但缺少必需工具时，对应 hook 会失败。工具安装与版本见上节「代码风格工具」。
 
 ## 领域文档语言
 

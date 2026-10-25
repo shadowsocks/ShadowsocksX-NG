@@ -34,7 +34,7 @@ struct ProxyListeningFileStore: ProxyListeningStoring {
 
   init(
     fileURL: URL = ProxyListeningFileStore.defaultFileURL(),
-    keys: MasterKeyStoring = KeychainMasterKeyStore(namespace: "proxy-listening.age")
+    keys: CredentialKeyStoring = KeychainCredentialKeyStore(namespace: "proxy-listening.age")
   ) {
     self.fileURL = fileURL
     encrypted = EncryptedFileStorage(
@@ -83,7 +83,7 @@ struct ProxyListeningFileStore: ProxyListeningStoring {
       throw error
     } catch let error as EncryptedFileError {
       throw ProxyListeningStoreError.encryptedFile(error)
-    } catch is MasterKeyStoreError {
+    } catch is CredentialKeyStoreError {
       throw ProxyListeningStoreError.credentialFailure(detail: String(localized: "无法访问监听配置主密钥"))
     } catch { throw ProxyListeningStoreError.ioFailure(detail: String(describing: error)) }
   }

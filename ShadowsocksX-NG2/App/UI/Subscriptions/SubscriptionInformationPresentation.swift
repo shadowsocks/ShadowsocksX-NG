@@ -16,3 +16,13 @@ extension SubscriptionInformation {
       .formatted(.byteCount(style: .binary, spellsOutZero: false).locale(locale))
   }
 }
+
+extension SubscriptionUpdateMode {
+  var displayName: String {
+    switch self {
+    case .off: String(localized: "关闭", table: "ServerDetails")
+    case .daily: String(localized: "每天", table: "ServerDetails")
+    case .weekly: String(localized: "每周", table: "ServerDetails")
+    }
+  }
+}

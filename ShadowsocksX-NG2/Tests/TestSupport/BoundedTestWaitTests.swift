@@ -40,27 +40,26 @@ struct BoundedTestWaitTests {
     await #expect(throws: CancellationError.self) { try await task.value }
   }
 
-  @Test func blockingGateTimesOutInsteadOfRetainingAWorker() async {
-    let gate = TestBlockingGate(onTimeout: {})
-    let worker = Task.detached { gate.wait(timeout: 0.02) }
-    #expect(await worker.value == false)
+  @Test func asyncGateTimesOutWithoutBlockingAWorker() async {
+    let gate = TestAsyncGate(onTimeout: {})
+    #expect(await gate.wait(timeout: .milliseconds(20)) == false)
   }
 
-  @Test func blockingGateRemembersEarlyAndRepeatedRelease() {
-    let gate = TestBlockingGate()
+  @Test func asyncGateRemembersEarlyAndRepeatedRelease() async {
+    let gate = TestAsyncGate()
     gate.release()
     gate.release()
-    #expect(gate.wait(timeout: 0))
+    #expect(await gate.wait(timeout: .zero))
   }
 
-  @Test func blockingGateReleasesEveryWorker() async throws {
-    let gate = TestBlockingGate()
+  @Test func asyncGateReleasesEveryWorker() async throws {
+    let gate = TestAsyncGate()
     let entered = XCTestExpectation(description: "workers entered")
     entered.expectedFulfillmentCount = 4
     let workers = (0..<4).map { _ in
       Task.detached {
         entered.fulfill()
-        return gate.wait()
+        return await gate.wait()
       }
     }
     try await requireTestPhase([entered])

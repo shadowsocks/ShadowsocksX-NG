@@ -16,6 +16,7 @@ final class CustomRuleDeletionWorkflowTests: XCTestCase {
       rules: [custom, other], disabledIdentities: [custom.identity, orphan])
     var commits = 0
     let workflow = RulesWorkflow(
+      preset: .gfwlist,
       loadDocument: { saved },
       commitDocument: {
         commits += 1
@@ -37,6 +38,7 @@ final class CustomRuleDeletionWorkflowTests: XCTestCase {
     XCTAssertEqual(commits, 1)
     XCTAssertTrue(saved.rules.isEmpty)
     XCTAssertEqual(saved.disabledIdentities, [custom.identity, orphan])
+    workflow.query(RulesQuery(source: .gfwlist))
     let merged = try XCTUnwrap(workflow.snapshot.rows.first { $0.identity == custom.identity })
     XCTAssertEqual(merged.sources, [.gfwlist])
     XCTAssertTrue(merged.customIDs.isEmpty)
@@ -136,11 +138,11 @@ extension CustomRuleDeletionWorkflowTests {
 
   func testIncompleteCollectionRejectsDeletionFromPreviouslyLoadedFacts() async throws {
     let rule = CustomRule(action: .proxy, match: try RuleMatch(domainExact: "kept.example"))
-    var failed = false
+    let loadState = DocumentLoadState()
     var commits = 0
     let workflow = RulesWorkflow(
       loadDocument: {
-        if failed { throw CustomRuleStoreError.corrupt(detail: "fixture") }
+        if loadState.shouldFail { throw CustomRuleStoreError.corrupt(detail: "fixture") }
         return CustomRuleDocument(rules: [rule])
       },
       commitDocument: {
@@ -150,11 +152,15 @@ extension CustomRuleDeletionWorkflowTests {
     await workflow.refresh()
     workflow.select(Set(workflow.snapshot.rows.map(\.id)))
     let confirmation = try XCTUnwrap(workflow.prepareCustomRuleDeletion())
-    failed = true
+    loadState.shouldFail = true
     await workflow.refresh()
     XCTAssertNil(workflow.prepareCustomRuleDeletion())
     await workflow.deleteCustomRules(confirmation)
     XCTAssertEqual(workflow.snapshot.commitFeedback?.outcome, .superseded)
     XCTAssertEqual(commits, 0)
+  }
+  @MainActor
+  private final class DocumentLoadState {
+    var shouldFail = false
   }
 }

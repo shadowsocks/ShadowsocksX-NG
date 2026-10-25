@@ -8,6 +8,9 @@ struct ShadowsocksXNG2App: App {
   @NSApplicationDelegateAdaptor(ConnectivityApplicationDelegate.self) private var appDelegate
   private let connectivityLifecycle: ConnectivityLifecycle
   private let proxyController: ProxyRuntimeController
+  /// 状态显示 debounce 模型：进程期强持有（与首页/菜单栏两个表面共享同一
+  /// 门控状态机），body 不读它。
+  private let statusDisplay: StatusDisplayModel
   @StateObject private var catalogWorkflow: CatalogWorkflow
   @StateObject private var proxyControl: ProxyControlWorkflow
   @StateObject private var loginController: LaunchAtLoginController
@@ -15,7 +18,7 @@ struct ShadowsocksXNG2App: App {
   @StateObject private var diagnosticsWorkflow: DiagnosticsWorkflow
   @StateObject private var workspaceRoute: WorkspaceRoute
   @StateObject private var silentLaunch: SilentLaunchController
-  @StateObject private var rulesWorkflow: RulesWorkflow
+  @StateObject private var rulesWorkflow: RulesWorkspaces
   @StateObject private var windowActivation: WindowActivationPolicyCoordinator
   private let textClipboard: any TextClipboard
   private let diagnosticReportExporter: any DiagnosticReportExporter
@@ -32,6 +35,7 @@ struct ShadowsocksXNG2App: App {
     let composition = AppComposition.make()
     connectivityLifecycle = composition.connectivityLifecycle
     proxyController = composition.controller
+    statusDisplay = composition.statusDisplay
     _catalogWorkflow = StateObject(wrappedValue: composition.catalogWorkflow)
     _proxyControl = StateObject(wrappedValue: composition.proxyControl)
     _loginController = StateObject(wrappedValue: composition.loginController)
@@ -50,12 +54,13 @@ struct ShadowsocksXNG2App: App {
     // 诊断导出的来源；wrapper 侧不注册，仍走 stderr → agent.log 收敛。
     RuntimeLog.setSink(RuntimeEventStore.shared)
     appDelegate.lifecycle = connectivityLifecycle
+    appDelegate.catalogWorkflow = composition.catalogWorkflow
   }
 
   var body: some Scene {
     MenuBarExtra {
       ProxyStatusMenu(
-        control: proxyControl)
+        control: proxyControl, statusDisplay: statusDisplay)
     } label: {
       StatusMenuLabel(control: proxyControl)
     }
@@ -73,6 +78,9 @@ struct ShadowsocksXNG2App: App {
     Window("ShadowsocksX-NG2", id: WorkspaceRoute.workspaceSceneID) {
       workspaceContent
         .modifier(WindowActivationPolicy(coordinator: windowActivation))
+    }
+    .commands {
+      DiagnosticsCommands()
     }
     .defaultLaunchBehavior(launchPresentation)
     .defaultSize(width: 960, height: 640)
@@ -95,7 +103,7 @@ struct ShadowsocksXNG2App: App {
     .defaultLaunchBehavior(.suppressed)
     .restorationBehavior(.disabled)
     .commandsRemoved()
-    .defaultSize(width: 800, height: 600)
+    .defaultSize(width: 1200, height: 600)
     .windowToolbarLabelStyle($toolbarLabelStyle)
   }
 
@@ -116,6 +124,7 @@ struct ShadowsocksXNG2App: App {
 @MainActor
 private final class NSAppWindowActivationApplier: WindowActivationPolicyApplying {
   func apply(_ policy: NSApplication.ActivationPolicy) {
+    guard NSApp.activationPolicy() != policy else { return }
     NSApp.setActivationPolicy(policy)
     if policy == .regular {
       // Window scene 会呈现窗口，但 LSUIElement 进程仍需显式激活才能置前。
@@ -166,6 +175,7 @@ private struct AppComposition {
   let controller: ProxyRuntimeController
   let catalogWorkflow: CatalogWorkflow
   let proxyControl: ProxyControlWorkflow
+  let statusDisplay: StatusDisplayModel
   let loginController: LaunchAtLoginController
   let settingsWorkflow: SettingsWorkflow
   let diagnosticsWorkflow: DiagnosticsWorkflow
@@ -175,7 +185,7 @@ private struct AppComposition {
   let textClipboard: any TextClipboard
   let diagnosticReportExporter: any DiagnosticReportExporter
   let imageClipboard: any ImageClipboard
-  let rulesWorkflow: RulesWorkflow
+  let rulesWorkflow: RulesWorkspaces
   let workspaceContent: MainWindowView
 
   static func make() -> AppComposition {
@@ -194,14 +204,7 @@ private struct AppComposition {
       dependencies: dependencies,
       controller: controller,
       bootstrap: catalogBootstrap, plugins: plugins)
-    plugins.connect(
-      invalidateRuntime: { [weak controller] in controller?.pluginMappingsDidPublish() },
-      revalidate: { [weak catalogWorkflow] in catalogWorkflow?.republishCommittedState() },
-      converge: { [weak controller] in
-        guard let controller else { return }
-        _ = await controller.catalogDidCommit(
-          snapshot: controller.catalogSnapshotReader.catalogSnapshot)
-      })
+    connectPluginCatalog(plugins, controller: controller, workflow: catalogWorkflow)
     // 代理控制工作流 module：状态菜单等 UI 表面的唯一代理控制
     // seam，组合根接线一次。生产 runtime adapter 包装既有控制器（不复制运行
     // 时语义）；目录目标事实经窄缝从目录工作流读取；本机接口事实经独立缝
@@ -210,31 +213,79 @@ private struct AppComposition {
       runtime: ControllerProxyRuntimeAdapter(controller: controller),
       targetFacts: catalogWorkflow,
       interfaceFacts: SystemInterfaceFactsProvider())
+    // 状态显示 debounce 模型：订阅代理控制工作流 snapshot，组合根接线一次，
+    // 首页运行控制卡与菜单栏状态卡共享同一门控状态机。
+    let statusDisplay = StatusDisplayModel(control: proxyControl)
     // 设置工作流 module（Candidate 02）：设置窗口的唯一 seam，组合根接线一次；
     // 写入侧经窄缝 SettingsCommitting，运行时控制器薄扩展即生产实现。
     let settingsWorkflow = SettingsWorkflow(
       committing: controller)
+    let (connectivity, connectivityLifecycle) = makeConnectivity(
+      workflow: catalogWorkflow, settings: settingsWorkflow)
+    catalogWorkflow.connectivity = connectivity
+    let diagnosticsWorkflow = makeDiagnosticsWorkflow(
+      controller: controller, workflow: catalogWorkflow, plugins: plugins)
+    let workspace = makeWorkspace(
+      WorkspaceCompositionContext(
+        dependencies: dependencies, controller: controller, workflow: catalogWorkflow,
+        control: proxyControl, statusDisplay: statusDisplay, plugins: plugins,
+        settings: settingsWorkflow,
+        login: loginController, clipboard: textClipboard))
+    return AppComposition(
+      connectivityLifecycle: connectivityLifecycle,
+      controller: controller,
+      catalogWorkflow: catalogWorkflow,
+      proxyControl: proxyControl,
+      statusDisplay: statusDisplay,
+      loginController: loginController,
+      settingsWorkflow: settingsWorkflow,
+      diagnosticsWorkflow: diagnosticsWorkflow,
+      workspaceRoute: workspace.route,
+      silentLaunch: workspace.silentLaunch,
+      expansion: workspace.expansion,
+      textClipboard: textClipboard,
+      diagnosticReportExporter: dependencies.diagnosticReportExporter,
+      imageClipboard: dependencies.imageClipboard,
+      rulesWorkflow: workspace.rulesWorkflow,
+      workspaceContent: workspace.content)
+  }
+
+  private static func connectPluginCatalog(
+    _ plugins: PluginCatalog, controller: ProxyRuntimeController, workflow: CatalogWorkflow
+  ) {
+    plugins.connect(
+      invalidateRuntime: { [weak controller] in controller?.pluginMappingsDidPublish() },
+      revalidate: { [weak workflow] in workflow?.republishCommittedState() },
+      converge: { [weak controller] in
+        guard let controller else { return }
+        _ = await controller.catalogDidCommit(
+          snapshot: controller.catalogSnapshotReader.catalogSnapshot)
+      })
+  }
+
+  private static func makeConnectivity(
+    workflow: CatalogWorkflow, settings: SettingsWorkflow
+  ) -> (module: ServerConnectivity, lifecycle: ConnectivityLifecycle) {
     let testRuntime = ConnectivityRuntime(
       executable: Bundle.main.bundleURL.appendingPathComponent("Contents/Helpers/sslocal"))
     let connectivity = ServerConnectivity(
-      configuration: { [weak catalogWorkflow] id in
-        guard let catalogWorkflow else { throw ServerFormLoadError.notFound }
-        return try catalogWorkflow.connectivityConfiguration(for: id)
+      configuration: { [weak workflow] id in
+        guard let workflow else { throw ServerFormLoadError.notFound }
+        return try workflow.connectivityConfiguration(for: id)
       },
-      revision: { [weak catalogWorkflow] in
-        catalogWorkflow?.connectivityRevision(for: $0) ?? "missing"
-      },
+      revision: { [weak workflow] in workflow?.connectivityRevision(for: $0) ?? "missing" },
       measure: testRuntime.measure)
-    catalogWorkflow.connectivity = connectivity
-    connectivity.setURL(
-      ServerConnectivity.validURL(settingsWorkflow.beginConnectivityURLEditing()))
-    settingsWorkflow.connectivityURLDidChange = { [weak connectivity] in connectivity?.setURL($0) }
-    let connectivityLifecycle = ConnectivityLifecycle(module: connectivity)
-    // 诊断工作流 module：诊断区唯一 seam，组合根接线一次；进程期
-    // 实例供独立诊断窗口使用。
-    let diagnosticsWorkflow = DiagnosticsWorkflow(
+    connectivity.setURL(ServerConnectivity.validURL(settings.beginConnectivityURLEditing()))
+    settings.connectivityURLDidChange = { [weak connectivity] in connectivity?.setURL($0) }
+    return (connectivity, ConnectivityLifecycle(module: connectivity))
+  }
+
+  private static func makeDiagnosticsWorkflow(
+    controller: ProxyRuntimeController, workflow: CatalogWorkflow, plugins: PluginCatalog
+  ) -> DiagnosticsWorkflow {
+    DiagnosticsWorkflow(
       runtimeFacts: controller,
-      catalogFacts: { catalogWorkflow.diagnosticCatalogFacts },
+      catalogFacts: { workflow.diagnosticCatalogFacts },
       managedPlugins: {
         plugins.catalogSnapshot().entries.map { entry in
           DiagnosticPluginFacts(
@@ -242,43 +293,38 @@ private struct AppComposition {
             present: entry.availability == .available, source: entry.source)
         }
       })
-    let workspaceRoute = WorkspaceRoute()
-    let silentLaunch = SilentLaunchController(store: dependencies.silentLaunchStore)
+  }
+
+  private static func makeWorkspace(_ context: WorkspaceCompositionContext) -> WorkspaceComposition
+  {
+    let route = WorkspaceRoute()
+    let silentLaunch = SilentLaunchController(store: context.dependencies.silentLaunchStore)
     let expansion = CatalogExpansionState()
-    let rulesWorkflow = RulesWorkflow(
-      loadDocument: { try controller.ruleDocuments.load() },
-      commitDocument: { await controller.commitRuleDocument($0) },
-      builtinSnapshots: controller.ruleSnapshots)
-    let workspaceContent = MainWindowView(
+    let rulesWorkflow = RulesWorkspaces { preset in
+      RulesWorkflow(
+        preset: preset,
+        loadDocument: { try context.controller.documents(for: preset).load() },
+        commitDocument: { await context.controller.commitRuleDocument($0, preset: preset) },
+        builtinSnapshots: context.controller.ruleSnapshots)
+    }
+    let content = MainWindowView(
       rulesWorkflow: rulesWorkflow,
-      route: workspaceRoute,
-      workflow: catalogWorkflow,
-      control: proxyControl,
-      plugins: PluginManagementModel(catalog: plugins),
-      settingsWorkflow: settingsWorkflow,
-      loginController: loginController,
+      route: route,
+      workflow: context.workflow,
+      control: context.control,
+      statusDisplay: context.statusDisplay,
+      plugins: PluginManagementModel(catalog: context.plugins),
+      settingsWorkflow: context.settings,
+      loginController: context.login,
       silentLaunch: silentLaunch,
       expansion: expansion,
-      clipboard: textClipboard,
-      imageClipboard: dependencies.imageClipboard,
-      configurationGroupFileExporter: dependencies.configurationGroupFileExporter,
-      qrImageSaver: dependencies.qrImageSaver)
-    return AppComposition(
-      connectivityLifecycle: connectivityLifecycle,
-      controller: controller,
-      catalogWorkflow: catalogWorkflow,
-      proxyControl: proxyControl,
-      loginController: loginController,
-      settingsWorkflow: settingsWorkflow,
-      diagnosticsWorkflow: diagnosticsWorkflow,
-      workspaceRoute: workspaceRoute,
-      silentLaunch: silentLaunch,
-      expansion: expansion,
-      textClipboard: textClipboard,
-      diagnosticReportExporter: dependencies.diagnosticReportExporter,
-      imageClipboard: dependencies.imageClipboard,
-      rulesWorkflow: rulesWorkflow,
-      workspaceContent: workspaceContent)
+      clipboard: context.clipboard,
+      imageClipboard: context.dependencies.imageClipboard,
+      configurationGroupFileExporter: context.dependencies.configurationGroupFileExporter,
+      qrImageSaver: context.dependencies.qrImageSaver)
+    return WorkspaceComposition(
+      route: route, silentLaunch: silentLaunch, expansion: expansion,
+      rulesWorkflow: rulesWorkflow, content: content)
   }
 
   /// 运行时控制器接线：读侧接目录提交协调器快照，写侧接各持久化 seam 与
@@ -325,53 +371,22 @@ private struct AppComposition {
   }
 }
 
-/// 组合根依赖集（仅生产形态）：单测不再以本 app 为宿主（去宿主化，ADR 0021），
-/// 装配永远面向真实存储、系统服务与用户默认域。
-@MainActor
-private struct ApplicationDependencies {
-  let catalogFileStore: CatalogFileStore
-  let activationFileStore: ActivationStateFileStore
-  let runtimeFileStore: RuntimeFileStore
-  let listeningStore: ProxyListeningFileStore
-  let settingsRestore: RestoredProxyRuntimeSettings
-  let legacyImportService: LegacyImportService
-  let launchAgent: LaunchAgentControlling
-  let loginService: LaunchAtLoginControlling
-  let silentLaunchStore: SilentLaunchStore
-  let textClipboard: any TextClipboard
-  let imageClipboard: any ImageClipboard
-  let diagnosticReportExporter: any DiagnosticReportExporter
-  let configurationGroupFileExporter: any ConfigurationGroupFileExporter
-  let qrImageSaver: any QrImageSaver
+private struct WorkspaceCompositionContext {
+  let dependencies: ApplicationDependencies
+  let controller: ProxyRuntimeController
+  let workflow: CatalogWorkflow
+  let control: ProxyControlWorkflow
+  let statusDisplay: StatusDisplayModel
+  let plugins: PluginCatalog
+  let settings: SettingsWorkflow
+  let login: LaunchAtLoginController
+  let clipboard: any TextClipboard
+}
 
-  static func make() -> ApplicationDependencies {
-    let listeningStore = ProxyListeningFileStore()
-    let listening = ProxyListeningStartup.load(
-      store: listeningStore, presentReset: ProxyListeningResetAlert.present)
-    let library = ServerLibraryStorage()
-    let catalogFileStore = CatalogFileStore(
-      fileURL: CatalogFileStore.defaultFileURL(), library: library)
-    let restoredSettings = RestoredProxyRuntimeSettings(
-      settings: ProxyRuntimeSettings(
-        listen: listening, preferences: ProxyControlPreferences()),
-      unreadableError: nil)
-    return ApplicationDependencies(
-      catalogFileStore: catalogFileStore,
-      activationFileStore: ActivationStateFileStore(
-        fileURL: ActivationStateFileStore.defaultFileURL()),
-      runtimeFileStore: RuntimeFileStore(),
-      listeningStore: listeningStore,
-      settingsRestore: restoredSettings,
-      legacyImportService: LegacyImportService(
-        catalogStore: catalogFileStore),
-      launchAgent: SMAppLaunchAgentService(),
-      loginService: SMAppLaunchAtLoginService(),
-      silentLaunchStore: SilentLaunchStore(),
-      textClipboard: AppKitTextClipboard(),
-      imageClipboard: AppKitImageClipboard(),
-      diagnosticReportExporter: AppKitDiagnosticReportExporter(),
-      configurationGroupFileExporter: AppKitConfigurationGroupFileExporter(),
-      qrImageSaver: AppKitQrImageSaver())
-  }
-
+private struct WorkspaceComposition {
+  let route: WorkspaceRoute
+  let silentLaunch: SilentLaunchController
+  let expansion: CatalogExpansionState
+  let rulesWorkflow: RulesWorkspaces
+  let content: MainWindowView
 }

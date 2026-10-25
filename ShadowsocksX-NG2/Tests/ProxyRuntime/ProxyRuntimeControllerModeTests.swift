@@ -72,19 +72,20 @@ extension ProxyRuntimeControllerModeTests {
   func testAgentOffDuringModeRuleDerivationSupersedesDeployment() async throws {
     let seeded = try makeSeededCatalog()
     let started = expectation(description: "rule snapshot load paused")
-    let release = DispatchSemaphore(value: 0)
-    defer { release.signal() }
+    let release = TestAsyncGate("rule snapshot load release")
+    defer { release.release() }
     let loader = BuiltinRuleSnapshots(loader: { source -> RuleSnapshot in
       if source == .geolocationCN {
         started.fulfill()
-        release.wait()
+        _ = await release.wait()
       }
       return rulesFixture(source)
     })
     let controller = makeController(
       probe: ProxyRuntimeFixture.FakeProbe.reachable(),
       settings: ProxyRuntimeSettings(
-        listen: ActivationFixture.listen, preferredMode: .global, agentEnabled: true),
+        listen: ActivationFixture.listen, preferredMode: .global,
+        rulePreset: .chinaDirect, agentEnabled: true),
       proxyMode: .global,
       ruleSnapshots: loader)
     try await controller.activate(seeded.server)
@@ -94,7 +95,7 @@ extension ProxyRuntimeControllerModeTests {
     await controller.setAgentEnabled(false)
     XCTAssertEqual(controller.state, .off)
     let registrationsAfterStop = agent.registerCount
-    release.signal()
+    release.release()
     await modeSwitch.value
 
     XCTAssertEqual(agent.registerCount, registrationsAfterStop, "派生被取代后不得部署")

@@ -12,7 +12,7 @@ enum ServerLibraryFailure: Equatable {
 
   init(_ error: Error) {
     switch error {
-    case MasterKeyStoreError.keychainStatus(let status): self = .authorization(status)
+    case CredentialKeyStoreError.keychainStatus(let status): self = .authorization(status)
     case ServerLibraryError.keyUnavailable: self = .keyUnavailable
     case ServerLibraryError.authenticationFailed: self = .authenticationFailed
     case ServerLibraryError.unsupportedVersion: self = .unsupportedVersion

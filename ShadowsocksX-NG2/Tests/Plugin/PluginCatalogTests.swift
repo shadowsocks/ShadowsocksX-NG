@@ -208,52 +208,38 @@ struct PluginCatalogTests {
       inspector: QuietPluginInspector())
     try plugins.addPlugin(program: "tool", path: first.path)
     var catalog = ConfigurationCatalog()
-    let id = try ActivationFixture.addPlainServer("Plugin", in: &catalog)
-    var fields = try #require(catalog.entry(for: id)).serverFieldsForPluginTest
+    var fields = ActivationFixture.plainFields(remark: "Plugin")
     fields.pluginProgram = "tool"
-    try catalog.updateServer(id, with: fields)
+    let id = try catalog.addServer(fields, to: nil)
     let catalogFile = runtime.directory.appendingPathComponent("catalog.json")
     try makeTestCatalogStore(fileURL: catalogFile).save(CatalogDocument(catalog: catalog))
     let agent = ProxyRuntimeFixture.FakeLaunchAgent()
     let files = RuntimeFileStore(fileURL: runtime.contract)
-    agent.onRegister = {
-      try? files.writePublishedRuntimeReceipt(processID: 42)
-    }
     let probe = ProxyRuntimeFixture.BlockingProbe()
-    let controller = ProxyRuntimeController(
-      controlPreferences: makeTestProxyControlPreferences(),
-      catalogSnapshotReader: ProxyRuntimeFixture.catalogSnapshotReader(at: catalogFile),
-      activationFileStore: ActivationStateFileStore(
-        fileURL: runtime.directory.appendingPathComponent("activation.json")),
-      runtimeFileStore: files, plugins: plugins,
-      listeningStore: InMemoryProxyListeningStore(),
-      customRuleStore: CustomRuleStore(
-        fileURL: runtime.directory.appendingPathComponent("rules.json")),
-      appBundle: AppArtifact.bundle,
-      ruleSnapshots: BuiltinRuleSnapshots(loader: ProxyRuntimeFixture.controlFlowRuleSnapshot),
-      settingsRestore: RestoredProxyRuntimeSettings(
-        settings: ProxyRuntimeSettings(listen: ActivationFixture.listen, agentEnabled: true),
-        unreadableError: nil),
-      agent: agent, probe: probe, systemProxy: ProxyRuntimeFixture.FakeSystemProxy(),
-      systemProxyHelper: ProxyRuntimeFixture.FakeSystemProxyHelperService(),
-      firewallChecker: ProxyRuntimeFixture.FakeFirewallChecker(),
-      sendSignal: { _, _ in 0 }, processIsAlive: { $0 == 42 })
+    let controller = makeHealthCheckSupersessionController(
+      runtime: runtime, catalogFile: catalogFile, plugins: plugins, agent: agent, probe: probe)
     let started = XCTestExpectation(description: "old runtime entered health check")
     probe.arm(started: started)
-    let oldActivation = Task { try await controller.activate(id) }
-    let wait = await XCTWaiter.fulfillment(of: [started], timeout: 3)
-    #expect(wait == .completed)
-    let applied = AsyncStream<Void>.makeStream()
     plugins.connect(
-      invalidateRuntime: { controller.pluginMappingsDidPublish() }, revalidate: {},
-      converge: {
-        _ = await controller.catalogDidCommit(snapshot: catalog)
-        applied.continuation.yield(())
-      })
-    try plugins.updatePlugin(program: "tool", path: second.path)
-    probe.release()
-    _ = try await oldActivation.value
-    for await _ in applied.stream { break }
+      invalidateRuntime: { controller.pluginMappingsDidPublish() }, revalidate: {}, converge: {})
+    let oldActivation = Task { try await controller.activate(id) }
+    do {
+      try await requireTestPhase([started])
+      try plugins.updatePlugin(program: "tool", path: second.path)
+      probe.release()
+      _ = try await oldActivation.value
+    } catch {
+      probe.release()
+      oldActivation.cancel()
+      _ = await oldActivation.result
+      throw error
+    }
+    // A later successful deployment must not hide stale health-check side effects.
+    #expect(controller.state == .starting)
+    #expect(files.readFailure() == nil)
+    #expect(agent.unregisterCount == 0)
+    let outcome = await controller.catalogDidCommit(snapshot: catalog)
+    #expect(outcome == .converged(skippedServers: []))
     #expect(files.loadDocument()?.servers.first?.plugin == second.path)
     #expect(controller.state == .running)
   }
@@ -341,13 +327,6 @@ private struct FailingMappingStore: PluginMappingStoring {
   func save(_ configuration: PluginConfiguration) throws { throw PluginMappingError.unreadable }
 }
 
-extension CatalogEntry {
-  fileprivate var serverFieldsForPluginTest: ServerFields {
-    guard case .server(let fields) = kind else { preconditionFailure("expected server") }
-    return fields
-  }
-}
-
 private actor HeldPluginInspector: PluginInspecting {
   nonisolated let started: AsyncStream<Void>
   private let signal: AsyncStream<Void>.Continuation
@@ -378,119 +357,4 @@ private final class UnreadablePluginFileManager: FileManager, @unchecked Sendabl
   override func attributesOfItem(atPath path: String) throws -> [FileAttributeKey: Any] {
     throw NSError(domain: NSCocoaErrorDomain, code: NSFileReadNoPermissionError)
   }
-}
-
-/// Server-form behavior through workflow and draft interfaces.
-struct PluginFormCatalogTests {
-  @Test(arguments: [
-    PluginCatalogSnapshot.Availability.available, .missing, .notExecutable, .unreadable,
-  ])
-  @MainActor func formRetainsAvailabilityForNewlySelectedPlugin(
-    availability: PluginCatalogSnapshot.Availability
-  ) throws {
-    let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
-    defer { try? FileManager.default.removeItem(at: root) }
-    let snapshot = PluginCatalogSnapshot(entries: [
-      .init(
-        program: "tool", path: "/private/tool", source: .user,
-        availability: availability, managedInfo: nil)
-    ])
-    let workflow = makeCatalogWorkflow(
-      coordinator: CatalogCommitCoordinator(
-        fileStore: makeTestCatalogStore(fileURL: root.appendingPathComponent("catalog.json")),
-        runtime: FakeCatalogRuntime()), plugins: snapshot)
-    let form = workflow.newFormPluginSection(selection: .named(program: "tool"))
-    #expect(form.programs.first?.source == .user)
-    #expect(form.programs.first?.availability == availability)
-    #expect(!form.mappingsUnreadable)
-  }
-
-  @Test @MainActor func missingUnsavedChoiceHasUnresolvedPresentation() {
-    let plugin = PluginSectionState(
-      selection: .named(program: "saved"),
-      programs: [.init(program: "saved", source: .managed, availability: .available)],
-      mappingsUnreadable: false, optionsPresent: true, options: "flag")
-    let form = ServerEditForm(
-      address: "127.0.0.1", port: 8388,
-      encryptionMethod: "aes-256-gcm", password: "pw", remark: "Original",
-      plugin: plugin, isEditable: true)
-    let fields = ServerFormFields()
-    fields.showServer(.fresh()) { _ in form }
-    fields.pluginChoice = .named(program: "removed")
-    fields.pluginOptions.load("host=unsaved")
-    fields.updatePresentation(ServerFormPresentation(isEditable: true, plugin: plugin))
-    #expect(fields.pluginChoice == .named(program: "removed"))
-    #expect(fields.presentation?.plugin.unresolvedProgram(for: fields.pluginChoice) == "removed")
-    #expect(fields.pluginOptions.composedString == "host=unsaved")
-    #expect(plugin.unresolvedProgram(for: .none) == nil)
-    #expect(plugin.unresolvedProgram(for: .named(program: "saved")) == nil)
-  }
-
-  @Test @MainActor func mappingRemovalAndOverrideChangesPreserveServerDraft() async throws {
-    let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
-    defer { try? FileManager.default.removeItem(at: root) }
-    let managedBinary = root.appendingPathComponent("Contents/Helpers/Plugins/v2ray-plugin")
-    try FileManager.default.createDirectory(
-      at: managedBinary.deletingLastPathComponent(), withIntermediateDirectories: true)
-    try Data("#!/bin/sh\n".utf8).write(to: managedBinary)
-    try FileManager.default.setAttributes(
-      [.posixPermissions: 0o755], ofItemAtPath: managedBinary.path)
-    let plugins = PluginCatalog(
-      store: PluginMappingFileStore(fileURL: root.appendingPathComponent("plugins.json")),
-      managed: BundleManagedPluginProvider(bundleURL: root), inspector: QuietPluginInspector())
-    try plugins.addPlugin(program: "tool", path: managedBinary.path)
-    let workflow = makeCatalogWorkflow(
-      coordinator: CatalogCommitCoordinator(
-        fileStore: makeTestCatalogStore(fileURL: root.appendingPathComponent("catalog.json")),
-        runtime: FakeCatalogRuntime()), plugins: plugins)
-    let id = try await workflow.createServer(
-      ServerEditDraft(
-        address: "127.0.0.1", port: 8388, encryptionMethod: "aes-256-gcm",
-        password: "pw", remark: "Original", plugin: .named(program: "tool"), pluginOptions: "flag"),
-      into: nil)
-    let fields = ServerFormFields()
-    fields.showServer(id, load: workflow.serverEditForm)
-    fields.remark = "Unsaved"
-    fields.pluginOptions.load("host=unsaved")
-    try plugins.removePlugin(program: "tool")
-    fields.updatePresentation(
-      workflow.serverFormPresentation(for: id), load: workflow.serverEditForm)
-    #expect(fields.pluginChoice == .unknown(program: "tool"))
-    #expect(fields.pluginOptions.composedString == "host=unsaved")
-    try plugins.addPlugin(program: "tool", path: managedBinary.path)
-    fields.updatePresentation(
-      workflow.serverFormPresentation(for: id), load: workflow.serverEditForm)
-    #expect(fields.pluginChoice == .named(program: "tool"))
-    #expect(fields.pluginOptions.composedString == "host=unsaved")
-    #expect(try workflow.serverEditForm(for: id)?.plugin.options == "flag")
-    #expect(fields.remark == "Unsaved")
-
-    // An unsaved choice disappearing must retain a selectable unresolved reference.
-    fields.pluginChoice = .named(program: "tool")
-    try plugins.removePlugin(program: "tool")
-    fields.updatePresentation(
-      workflow.serverFormPresentation(for: id), load: workflow.serverEditForm)
-    #expect(fields.presentation?.plugin.unresolvedProgram(for: .named(program: "tool")) == "tool")
-    #expect(
-      workflow.newFormPluginSection(selection: .named(program: "tool"))
-        .unresolvedProgram(for: .named(program: "tool")) == "tool")
-    #expect(fields.pluginOptions.composedString == "host=unsaved")
-
-    fields.pluginChoice = .named(program: "v2ray-plugin")
-    try plugins.addPlugin(program: "v2ray-plugin", path: managedBinary.path)
-    fields.updatePresentation(
-      workflow.serverFormPresentation(for: id), load: workflow.serverEditForm)
-    #expect(
-      fields.presentation?.plugin.programs.first { $0.program == "v2ray-plugin" }?.source == .user)
-    try plugins.removePlugin(program: "v2ray-plugin")
-    fields.updatePresentation(
-      workflow.serverFormPresentation(for: id), load: workflow.serverEditForm)
-    #expect(
-      fields.presentation?.plugin.programs.first { $0.program == "v2ray-plugin" }?.source
-        == .managed)
-    #expect(fields.pluginChoice == .named(program: "v2ray-plugin"))
-    #expect(fields.pluginOptions.composedString == "host=unsaved")
-    #expect(fields.remark == "Unsaved")
-  }
-
 }

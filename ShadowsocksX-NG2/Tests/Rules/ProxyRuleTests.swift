@@ -82,6 +82,12 @@ final class ProxyRuleTests: XCTestCase {
 }
 
 struct NormalizedRuleValueTests {
+  private struct HistoricalCase {
+    let match: RuleMatch
+    let token: String
+    let acl: String
+  }
+
   @Test func equivalentInputsShareIdentityTokensAndACL() throws {
     let first = ProxyRule(action: .direct, match: try RuleMatch(ipv4CIDR: "203.0.113.15/24"))
     let second = ProxyRule(action: .direct, match: try RuleMatch(ipv4CIDR: "203.0.113.0/24"))
@@ -96,24 +102,21 @@ struct NormalizedRuleValueTests {
   }
 
   @Test func historicalTokensAndACLRenderingSurviveRepresentationChange() throws {
-    let cases: [(RuleMatch, String, String)] = [
-      (
-        try RuleMatch(domainExact: " API.Example.COM "), "proxy|domainExact(\"api.example.com\")",
-        "|api.example.com"
-      ),
-      (
-        try RuleMatch(domainSuffix: ".Example.COM"), "proxy|domainSuffix(\"example.com\")",
-        "||example.com"
-      ),
-      (
-        try RuleMatch(ipv6CIDR: "2001:DB8::8/32"), "proxy|ipv6CIDR(\"2001:db8::/32\")",
-        "2001:db8::/32"
-      ),
+    let cases = [
+      HistoricalCase(
+        match: try RuleMatch(domainExact: " API.Example.COM "),
+        token: "proxy|domainExact(\"api.example.com\")", acl: "|api.example.com"),
+      HistoricalCase(
+        match: try RuleMatch(domainSuffix: ".Example.COM"),
+        token: "proxy|domainSuffix(\"example.com\")", acl: "||example.com"),
+      HistoricalCase(
+        match: try RuleMatch(ipv6CIDR: "2001:DB8::8/32"),
+        token: "proxy|ipv6CIDR(\"2001:db8::/32\")", acl: "2001:db8::/32"),
     ]
-    for (match, token, acl) in cases {
-      let rule = ProxyRule(action: .proxy, match: match)
-      #expect(rule.contentToken == token)
-      #expect(rule.aclLine == acl)
+    for item in cases {
+      let rule = ProxyRule(action: .proxy, match: item.match)
+      #expect(rule.contentToken == item.token)
+      #expect(rule.aclLine == item.acl)
     }
   }
 

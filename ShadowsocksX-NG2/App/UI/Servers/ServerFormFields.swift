@@ -196,46 +196,54 @@ final class ServerFormFields: ObservableObject {
     preservingDraft: Bool = false,
     load: ((NodeID) throws -> ServerEditForm?)? = nil
   ) {
-    // Sheet 更新资格和可用性事实，保持打开时的草稿与基线。
     if preservingDraft {
-      if presentation != facts { presentation = facts }
+      updatePresentationFacts(facts)
       return
     }
-    if let selection = facts?.plugin.selection,
-      presentation?.plugin.selection != selection
-    {
-      let oldProgram: String?
-      switch pluginChoice {
-      case .named(let program), .unknown(let program): oldProgram = program
-      case .none: oldProgram = nil
-      }
-      let newProgram: String?
-      switch selection {
-      case .named(let program), .unknown(let program): newProgram = program
-      case .none: newProgram = nil
-      }
-      if let oldProgram, oldProgram == newProgram,
-        savedDraft?.plugin == pluginChoice
-      {
-        // Only refresh plugin facts. Independent unsaved server fields stay intact.
-        if case .unknown = pluginChoice, case .named = selection,
-          let serverID, let load,
-          pluginOptions.composedString == savedDraft?.pluginOptions
-        {
-          do {
-            if let form = try load(serverID) {
-              pluginOptions.load(form.plugin.options)
-              savedDraft?.pluginOptions = pluginOptions.composedString
-            }
-          } catch {
-            loadFailure = .credentialsUnavailable
-          }
-        }
-        pluginChoice = selection
-        savedDraft?.plugin = selection
-      }
-    }
+    updatePluginSelection(from: facts, load: load)
+    updatePresentationFacts(facts)
+  }
+
+  private func updatePresentationFacts(_ facts: ServerFormPresentation?) {
     if presentation != facts { presentation = facts }
+  }
+
+  private func updatePluginSelection(
+    from facts: ServerFormPresentation?, load: ((NodeID) throws -> ServerEditForm?)?
+  ) {
+    guard let selection = facts?.plugin.selection,
+      presentation?.plugin.selection != selection,
+      pluginProgram(pluginChoice) != nil,
+      pluginProgram(pluginChoice) == pluginProgram(selection),
+      savedDraft?.plugin == pluginChoice
+    else { return }
+    refreshUnknownPluginOptions(for: selection, load: load)
+    pluginChoice = selection
+    savedDraft?.plugin = selection
+  }
+
+  private func refreshUnknownPluginOptions(
+    for selection: PluginSelection, load: ((NodeID) throws -> ServerEditForm?)?
+  ) {
+    guard case .unknown = pluginChoice, case .named = selection,
+      let serverID, let load,
+      pluginOptions.composedString == savedDraft?.pluginOptions
+    else { return }
+    do {
+      if let form = try load(serverID) {
+        pluginOptions.load(form.plugin.options)
+        savedDraft?.pluginOptions = pluginOptions.composedString
+      }
+    } catch {
+      loadFailure = .credentialsUnavailable
+    }
+  }
+
+  private func pluginProgram(_ selection: PluginSelection) -> String? {
+    switch selection {
+    case .named(let program), .unknown(let program): return program
+    case .none: return nil
+    }
   }
 
   /// Only a manual reset failure may retain a successfully loaded draft.
@@ -324,150 +332,3 @@ final class ServerFormFields: ObservableObject {
 
 /// 新建与编辑共享的名称优先表单；焦点由提交入口持有，校验失败时定位首个
 /// 待修正字段。
-struct ServerFormFieldsGrid: View {
-  @ObservedObject var fields: ServerFormFields
-  let plugin: PluginSectionState?
-  let isEditable: Bool
-  let fieldFocus: FocusState<ServerFormField?>.Binding
-  var location: CreationLocationField?
-
-  var body: some View {
-    VStack(alignment: .leading, spacing: 18) {
-      row("名称") {
-        TextField("名称", text: $fields.remark, prompt: Text("例如：香港服务器"))
-          .textFieldStyle(.roundedBorder)
-          .focused(fieldFocus, equals: .name)
-          .disabled(!isEditable)
-        fieldErrorLabel(.name)
-      }
-      if let location { location }
-      ServerEndpointLayout {
-        row("服务器地址") {
-          TextField("服务器地址", text: $fields.address)
-            .textFieldStyle(.roundedBorder)
-            .focused(fieldFocus, equals: .address)
-            .disabled(!isEditable)
-          fieldErrorLabel(.address)
-        }
-        row("端口") {
-          TextField("端口", text: $fields.portText)
-            .textFieldStyle(.roundedBorder)
-            .focused(fieldFocus, equals: .port)
-            .disabled(!isEditable)
-          fieldErrorLabel(.port)
-        }
-      }
-      Picker("加密方式", selection: $fields.encryptionMethod) {
-        ForEach(fields.methodChoices, id: \.self) { Text($0).tag($0) }
-      }
-      .disabled(!isEditable)
-      row("密码") {
-        HStack(spacing: 8) {
-          Group {
-            if fields.showPassword {
-              TextField("密码", text: $fields.password)
-                .background(PasswordAutofillOptOut())
-            } else {
-              SecureField("密码", text: $fields.password)
-                .background(PasswordAutofillOptOut())
-            }
-          }
-          .textFieldStyle(.roundedBorder)
-          .textContentType(nil)
-          .autocorrectionDisabled()
-          .focused(fieldFocus, equals: .password)
-          .disabled(!isEditable)
-          Button {
-            fields.showPassword.toggle()
-          } label: {
-            Image(systemName: fields.showPassword ? "eye.slash" : "eye")
-          }
-          .buttonStyle(.borderless)
-          .help(fields.showPassword ? String(localized: "隐藏密码") : String(localized: "显示密码"))
-          .accessibilityLabel(
-            fields.showPassword ? String(localized: "隐藏密码") : String(localized: "显示密码"))
-        }
-        fieldErrorLabel(.password)
-      }
-      ServerPluginSection(
-        selection: $fields.pluginChoice,
-        options: fields.pluginOptions,
-        plugin: plugin,
-        isEditable: isEditable,
-        optionsError: fields.fieldErrors[.pluginOptions],
-        optionsFocus: fieldFocus)
-    }
-  }
-
-  private func row<Content: View>(
-    _ label: LocalizedStringKey, @ViewBuilder content: () -> Content
-  ) -> some View {
-    HStack(alignment: .firstTextBaseline, spacing: 8) {
-      Text(label)
-        .fixedSize()
-      VStack(alignment: .leading, spacing: 6) {
-        content()
-      }
-      .frame(maxWidth: .infinity, alignment: .leading)
-    }
-  }
-
-  /// 字段行内错误：只呈现字段、原因与上限，不回显字段内容。
-  @ViewBuilder
-  private func fieldErrorLabel(_ field: ServerFormField) -> some View {
-    if let error = fields.fieldErrors[field] {
-      Text(errorText(error, field: field))
-        .font(.footnote)
-        .foregroundStyle(.red)
-    }
-  }
-
-  private func errorText(_ error: ServerFormFieldError, field: ServerFormField)
-    -> LocalizedStringKey
-  {
-    switch error {
-    case .missingName:
-      return "请输入服务器名称"
-    case .tooManyCharacters(let limit):
-      switch field {
-      case .name: return "名称最多 \(limit) 个字符"
-      case .address: return "服务器地址最多 \(limit) 个字符"
-      case .password: return "密码最多 \(limit) 个字符"
-      case .port, .pluginOptions: return ""
-      }
-    case .tooManyBytes(let limit):
-      return "插件参数最多 \(limit) 个字节"
-    case .invalidPort:
-      return "端口必须是 1–65535 的数字（最多 \(ServerFormFields.portDigitLimit) 位）"
-    case .unfinishedPluginOptionRow:
-      return ""
-    }
-  }
-}
-
-/// 扣除间距后按 4:1 分配地址和端口宽度，高度由字段自身决定。
-private struct ServerEndpointLayout: Layout {
-  private let spacing: CGFloat = 20
-
-  func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
-    let width = proposal.width ?? 480
-    let unit = max(0, width - spacing) / 5
-    let height =
-      subviews.enumerated().map { index, view in
-        view.sizeThatFits(ProposedViewSize(width: unit * (index == 0 ? 4 : 1), height: nil)).height
-      }.max() ?? 0
-    return CGSize(width: width, height: height)
-  }
-
-  func placeSubviews(
-    in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()
-  ) {
-    let unit = max(0, bounds.width - spacing) / 5
-    for (index, view) in subviews.enumerated() {
-      view.place(
-        at: CGPoint(x: bounds.minX + (index == 0 ? 0 : unit * 4 + spacing), y: bounds.minY),
-        anchor: .topLeading,
-        proposal: ProposedViewSize(width: unit * (index == 0 ? 4 : 1), height: nil))
-    }
-  }
-}

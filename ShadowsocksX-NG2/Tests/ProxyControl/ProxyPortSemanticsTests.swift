@@ -105,14 +105,14 @@ final class ProxyPortSemanticsTests: XCTestCase {
     }
   }
 
-  func testBindProbeReportsUnknownWhenBindIsNotPermitted() throws {
+  func testBindProbeReportsUnknownWhenBindIsNotPermitted() async throws {
     try XCTSkipIf(getuid() == 0, "root 可绑定特权端口，无法用 EACCES 构造 .unknown")
     // 特权端口：非 root 进程 bind 失败（EACCES）≠ 占用，也不得冒充空闲。
     let request = PortOccupancyProbeRequest(
       endpoint: .socks,
       listen: RuntimeListenFacts(listen: ProxyListeningConfiguration()),
       port: 80)
-    let outcome = SystemPortOccupancyProbe().occupancy(for: request)
+    let outcome = await SystemPortOccupancyProbe().occupancy(for: request)
 
     guard case .unknown = outcome else {
       return XCTFail("绑定失败时必须报 .unknown，不得冒充空闲或占用，实际 \(outcome)")

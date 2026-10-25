@@ -1,5 +1,16 @@
 import Foundation
 
+private struct CatalogCopyContext {
+  let source: ConfigurationCatalog
+  let now: Date
+}
+
+private struct CatalogCopyDestination {
+  let parent: NodeID?
+  let index: Int?
+  let name: String
+}
+
 extension CatalogWorkflow {
   /// 手动节点和根层订阅组可复制；订阅子组不能将手动副本放入订阅父组。
   func canDuplicate(_ id: NodeID) -> Bool {
@@ -33,33 +44,36 @@ extension CatalogWorkflow {
       name = "\(base) \(number)"
       number += 1
     }
+    let context = CatalogCopyContext(source: source, now: Date())
     return try commit { catalog in
       try copyEntry(
-        entry, from: source, into: &catalog, parent: parent,
-        index: position + 1, name: name, now: Date())
+        entry, into: &catalog, context: context,
+        destination: CatalogCopyDestination(parent: parent, index: position + 1, name: name))
     }
   }
 
   /// 副本节点获得全新身份与全新时间戳（创建时间 = 复制时刻，ADR-0031）；
   /// 每个新建节点的落点分组按结构敏感语义更新修改时间。
   private func copyEntry(
-    _ entry: CatalogEntry, from source: ConfigurationCatalog,
-    into catalog: inout ConfigurationCatalog, parent: NodeID?, index: Int? = nil,
-    name: String, now: Date
+    _ entry: CatalogEntry, into catalog: inout ConfigurationCatalog,
+    context: CatalogCopyContext, destination: CatalogCopyDestination
   ) throws -> NodeID {
     switch entry.kind {
     case .server(var fields):
-      fields.remark = name
-      return try catalog.addServer(fields, to: parent, index: index, now: now)
+      fields.remark = destination.name
+      return try catalog.addServer(
+        fields, to: destination.parent, index: destination.index, now: context.now)
     case .group(let fields):
-      let copy = try catalog.addGroup(name, to: parent, index: index, now: now)
+      let copy = try catalog.addGroup(
+        destination.name, to: destination.parent, index: destination.index, now: context.now)
       for child in fields.children {
-        guard let childEntry = source.entry(for: child) else {
+        guard let childEntry = context.source.entry(for: child) else {
           throw CatalogError.nodeNotFound(child)
         }
         _ = try copyEntry(
-          childEntry, from: source, into: &catalog, parent: copy,
-          name: childEntry.displayName, now: now)
+          childEntry, into: &catalog, context: context,
+          destination: CatalogCopyDestination(
+            parent: copy, index: nil, name: childEntry.displayName))
       }
       return copy
     }

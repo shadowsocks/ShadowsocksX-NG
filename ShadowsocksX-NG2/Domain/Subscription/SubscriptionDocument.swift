@@ -40,6 +40,7 @@ struct SubscriptionSnapshot: Equatable, Sendable {
   /// 根分组内容：落入订阅固定分组（固定分组身份客户端所有，不取自远端）。
   let root: Group
   var information = SubscriptionInformation()
+  var autoUpdatePolicy: SubscriptionUpdatePolicyResult = .absent
 }
 
 /// 快照解析失败（整份拒绝，不做部分提交； 刷新失败族）。
@@ -88,10 +89,12 @@ enum SubscriptionDocumentParser {
         root: SubscriptionSnapshot.Group(
           id: NodeID(rawValue: "\(subscriptionID.rawValue):root"),
           name: "", children: leaves.map { .server($0.leaf) }),
-        information: SubscriptionInformation.parse(data))
+        information: SubscriptionInformation.parse(data),
+        autoUpdatePolicy: root.extensionNS?.policy ?? .absent)
     }
     var snapshot = buildSnapshot(tree: tree, leaves: leaves, subscriptionID: subscriptionID)
     snapshot.information = SubscriptionInformation.parse(data)
+    snapshot.autoUpdatePolicy = root.extensionNS?.policy ?? .absent
     return snapshot
   }
 
@@ -326,9 +329,25 @@ private struct ServerDTO: Decodable {
 
 private struct LenientExtension: Decodable {
   var value: ExtensionDTO?
+  var policy: SubscriptionUpdatePolicyResult = .invalid
+
+  enum CodingKeys: String, CodingKey {
+    case schemaVersion = "schema_version"
+    case autoUpdate = "auto_update"
+  }
 
   init(from decoder: Decoder) throws {
     value = try? ExtensionDTO(from: decoder)
+    guard let container = try? decoder.container(keyedBy: CodingKeys.self),
+      (try? container.decode(Int.self, forKey: .schemaVersion)) == 1
+    else { return }
+    guard container.contains(.autoUpdate) else {
+      policy = .absent
+      return
+    }
+    if let parsed = try? container.decode(SubscriptionUpdatePolicy.self, forKey: .autoUpdate) {
+      policy = .valid(parsed)
+    }
   }
 }
 

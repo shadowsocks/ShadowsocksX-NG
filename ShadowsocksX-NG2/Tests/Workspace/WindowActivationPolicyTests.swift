@@ -14,8 +14,8 @@ final class WindowActivationPolicyTests: XCTestCase {
   private var window: NSWindow!
   private var foreignWindow: NSWindow!
 
-  override func setUpWithError() throws {
-    try super.setUpWithError()
+  override func setUp() async throws {
+    try await super.setUp()
     spy = SpyApplier()
     tickScheduler = SpyTickScheduler()
     coordinator = WindowActivationPolicyCoordinator(
@@ -31,10 +31,10 @@ final class WindowActivationPolicyTests: XCTestCase {
     tickScheduler.drainOne()
   }
 
-  override func tearDownWithError() throws {
+  override func tearDown() async throws {
     window = nil
     foreignWindow = nil
-    try super.tearDownWithError()
+    try await super.tearDown()
   }
 
   /// 策略与激活落点 spy（ADR 0017）：只记录调用，不触碰真实 NSApp。
@@ -206,78 +206,6 @@ final class WindowActivationPolicyTests: XCTestCase {
 
   // MARK: 启动激活重试
 
-  func testLaunchRetryReactivatesWhileInactiveAndStopsAtLimit() {
-    spy.isActive = false
-    let visible = VisibilityWindow(
-      contentRect: .zero, styleMask: [.titled], backing: .buffered, defer: true)
-    visible.pretendVisible = true
-    coordinator.anchorDidAttach(to: visible)
-
-    XCTAssertEqual(tickScheduler.pending.count, 1)
-    tickScheduler.drainOne()
-    XCTAssertEqual(spy.activationCalls, 1)
-    XCTAssertEqual(
-      spy.applied.filter { $0 == .accessory }, [], "首拍必须先走普通 activate，不弹跳")
-    while tickScheduler.drainOne() {}
-    XCTAssertEqual(spy.activationCalls, 5, "默认上限 5 次激活（1 普通 + 4 次弹跳末跳）")
-    XCTAssertEqual(
-      spy.applied.filter { $0 == .accessory }.count, 4,
-      "第二拍起每次强制激活都要降一次 accessory")
-    XCTAssertEqual(
-      spy.applied.filter { $0 == .regular }.count, 5,
-      "attach 一次 regular + 每次弹跳回一次 regular")
-    XCTAssertEqual(visible.orderFrontCalls, 6, "attach 置前一次，每次激活后再置前")
-    XCTAssertEqual(visible.orderRegardlessCalls, 5)
-    XCTAssertTrue(tickScheduler.pending.isEmpty, "终态检查拍后不得再排")
-  }
-
-  func testLaunchRetryStopsOnceAppActive() {
-    spy.isActive = false
-    spy.becomesActiveAfterCalls = 2
-    let visible = VisibilityWindow(
-      contentRect: .zero, styleMask: [.titled], backing: .buffered, defer: true)
-    visible.pretendVisible = true
-    coordinator.anchorDidAttach(to: visible)
-
-    while tickScheduler.drainOne() {}
-
-    XCTAssertEqual(spy.activationCalls, 2, "已激活后的检查不得再激活")
-    XCTAssertEqual(spy.applied.suffix(2), [.accessory, .regular], "弹跳序列在激活成功处收敛")
-    XCTAssertTrue(tickScheduler.pending.isEmpty, "已激活后不得再排下一拍")
-  }
-
-  func testLaunchRetryStopsWhenWindowCloses() {
-    spy.isActive = false
-    let visible = VisibilityWindow(
-      contentRect: .zero, styleMask: [.titled], backing: .buffered, defer: true)
-    visible.pretendVisible = true
-    coordinator.anchorDidAttach(to: visible)
-    visible.pretendVisible = false
-
-    tickScheduler.drainOne()
-
-    XCTAssertEqual(spy.activationCalls, 0, "窗口已不可见不得再激活")
-    XCTAssertTrue(tickScheduler.pending.isEmpty)
-  }
-
-  func testForcedSequenceAbortsWhenWindowClosesMidBounce() {
-    spy.isActive = false
-    let visible = VisibilityWindow(
-      contentRect: .zero, styleMask: [.titled], backing: .buffered, defer: true)
-    visible.pretendVisible = true
-    coordinator.anchorDidAttach(to: visible)
-    tickScheduler.drainOne()
-    tickScheduler.drainOne()
-    XCTAssertEqual(spy.applied, [.regular, .accessory], "第二拍已降级 accessory 待弹跳")
-    visible.pretendVisible = false
-
-    while tickScheduler.drainOne() {}
-
-    XCTAssertEqual(spy.activationCalls, 1, "窗口关闭后弹跳末跳不得再激活")
-    XCTAssertEqual(
-      spy.applied, [.regular, .accessory], "中途关闭后不得再回 regular")
-  }
-
   func testLaunchRetryRunsOncePerProcess() {
     spy.isActive = false
     let first = VisibilityWindow(
@@ -374,5 +302,98 @@ private final class VisibilityWindow: NSWindow {
   var orderRegardlessCalls = 0
   override func orderFrontRegardless() {
     orderRegardlessCalls += 1
+  }
+}
+
+extension WindowActivationPolicyTests {
+  func testMenuBarMismatchNeverBouncesPolicyOrRestartsExhaustedRetries() {
+    spy.isActive = true
+    spy.ownsMenuBar = false
+    let visible = VisibilityWindow(
+      contentRect: .zero, styleMask: [.titled], backing: .buffered, defer: true)
+    visible.pretendVisible = true
+    coordinator.anchorDidAttach(to: visible)
+
+    while tickScheduler.drainOne() {}
+
+    XCTAssertFalse(spy.applied.contains(.accessory), "窗口仍打开时不得通过策略弹跳反复注册 Dock 图标")
+    let activationCalls = spy.activationCalls
+    for _ in 0..<3 {
+      post(NSWindow.didBecomeKeyNotification, on: visible)
+      post(NSWindow.didChangeOcclusionStateNotification, on: visible)
+      while tickScheduler.drainOne() {}
+    }
+    XCTAssertEqual(spy.activationCalls, activationCalls, "重试用尽后窗口事件不得重置预算并抢焦点")
+  }
+
+  func testLaunchRetryReactivatesWhileInactiveAndStopsAtLimit() {
+    spy.isActive = false
+    let visible = VisibilityWindow(
+      contentRect: .zero, styleMask: [.titled], backing: .buffered, defer: true)
+    visible.pretendVisible = true
+    coordinator.anchorDidAttach(to: visible)
+
+    XCTAssertEqual(tickScheduler.pending.count, 1)
+    tickScheduler.drainOne()
+    XCTAssertEqual(spy.activationCalls, 1)
+    while tickScheduler.drainOne() {}
+    XCTAssertEqual(spy.activationCalls, 5, "默认上限 5 次激活")
+    XCTAssertEqual(spy.applied, [.regular], "重试只激活，不改变随窗策略")
+    XCTAssertEqual(visible.orderFrontCalls, 6, "attach 置前一次，每次激活后再置前")
+    XCTAssertEqual(visible.orderRegardlessCalls, 5)
+    XCTAssertTrue(tickScheduler.pending.isEmpty, "终态检查拍后不得再排")
+  }
+
+  func testLaunchRetryStopsOnceAppActive() {
+    spy.isActive = false
+    spy.becomesActiveAfterCalls = 2
+    let visible = VisibilityWindow(
+      contentRect: .zero, styleMask: [.titled], backing: .buffered, defer: true)
+    visible.pretendVisible = true
+    coordinator.anchorDidAttach(to: visible)
+
+    while tickScheduler.drainOne() {}
+
+    XCTAssertEqual(spy.activationCalls, 2, "已激活后的检查不得再激活")
+    XCTAssertEqual(spy.applied, [.regular], "激活重试不得弹跳策略")
+    XCTAssertTrue(tickScheduler.pending.isEmpty, "已激活后不得再排下一拍")
+  }
+
+  func testLaunchRetryStopsWhenWindowCloses() {
+    spy.isActive = false
+    let visible = VisibilityWindow(
+      contentRect: .zero, styleMask: [.titled], backing: .buffered, defer: true)
+    visible.pretendVisible = true
+    coordinator.anchorDidAttach(to: visible)
+    visible.pretendVisible = false
+
+    tickScheduler.drainOne()
+
+    XCTAssertEqual(spy.activationCalls, 0, "窗口已不可见不得再激活")
+    XCTAssertTrue(tickScheduler.pending.isEmpty)
+  }
+
+  func testLaunchRetryPreservesBudgetAcrossVisibilityChanges() {
+    spy.isActive = false
+    let visible = VisibilityWindow(
+      contentRect: .zero, styleMask: [.titled], backing: .buffered, defer: true)
+    visible.pretendVisible = true
+    coordinator.anchorDidAttach(to: visible)
+    tickScheduler.drainOne()
+    tickScheduler.drainOne()
+    XCTAssertEqual(spy.activationCalls, 2)
+    visible.pretendVisible = false
+
+    while tickScheduler.drainOne() {}
+
+    XCTAssertEqual(spy.activationCalls, 2, "窗口不可见时不得再激活")
+    XCTAssertEqual(spy.applied, [.regular])
+
+    visible.pretendVisible = true
+    post(NSWindow.didChangeOcclusionStateNotification, on: visible)
+    while tickScheduler.drainOne() {}
+
+    XCTAssertEqual(spy.activationCalls, 5, "恢复可见后仅消耗剩余 3 次预算")
+    XCTAssertEqual(spy.applied, [.regular])
   }
 }

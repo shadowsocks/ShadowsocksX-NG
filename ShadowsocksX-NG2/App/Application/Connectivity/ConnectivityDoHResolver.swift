@@ -4,24 +4,35 @@ import Network
 
 /// HTTPS is confined to preparation. An ephemeral, proxy-required session has
 /// no shared connection/cache state, redirects, cookies or direct fallback.
+private struct ConnectivityDoHAnswer: Decodable {
+  let type: Int
+  let data: String
+}
+
+private struct ConnectivityDoHResponse: Decodable {
+  let status: Int
+  let answers: [ConnectivityDoHAnswer]?
+
+  enum CodingKeys: String, CodingKey {
+    case status = "Status"
+    case answers = "Answer"
+  }
+}
+
 struct ConnectivityDoHResolver: Sendable {
-  var sessionConfiguration: @Sendable () -> URLSessionConfiguration = { .ephemeral }
+  var sessionConfiguration: @Sendable () -> URLSessionConfiguration = {
+    let configuration = URLSessionConfiguration.ephemeral
+    configuration.timeoutIntervalForRequest = 3
+    configuration.timeoutIntervalForResource = 3
+    return configuration
+  }
+  var waitForDeadline: @Sendable (ContinuousClock.Instant) async -> Void = { deadline in
+    try? await ContinuousClock().sleep(until: deadline)
+  }
 
   struct Resolution: Sendable {
     var addresses: [String] = []
     var trace: [ConnectivityTrace] = []
-  }
-  private struct Answer: Decodable {
-    let type: Int
-    let data: String
-  }
-  private struct Response: Decodable {
-    let status: Int
-    let answers: [Answer]?
-    enum CodingKeys: String, CodingKey {
-      case status = "Status"
-      case answers = "Answer"
-    }
   }
   enum Failure: Error { case invalidResponse, deadline }
 
@@ -74,8 +85,6 @@ struct ConnectivityDoHResolver: Sendable {
     configuration.httpCookieStorage = nil
     configuration.urlCredentialStorage = nil
     configuration.requestCachePolicy = .reloadIgnoringLocalCacheData
-    configuration.timeoutIntervalForRequest = 3
-    configuration.timeoutIntervalForResource = 3
     let session = URLSession(
       configuration: configuration, delegate: NoRedirects(), delegateQueue: nil)
     defer { session.invalidateAndCancel() }
@@ -86,7 +95,7 @@ struct ConnectivityDoHResolver: Sendable {
         }
       }
       group.addTask {
-        try? await ContinuousClock().sleep(until: deadline)
+        await waitForDeadline(deadline)
         return nil
       }
       defer { group.cancelAll() }
@@ -134,14 +143,18 @@ struct ConnectivityDoHResolver: Sendable {
         guard data.count < 65536 else { return [] }
         data.append(byte)
       }
-      let answer = try JSONDecoder().decode(Response.self, from: data)
-      guard answer.status == 0 else { return [] }
-      return (answer.answers ?? []).filter {
-        $0.type == type && ConnectivityAddress.family($0.data) == (type == 1 ? AF_INET : AF_INET6)
-      }.map(\.data)
+      return try Self.addresses(from: data, type: type)
     } catch {
       return []
     }
+  }
+
+  static func addresses(from data: Data, type: Int) throws -> [String] {
+    let answer = try JSONDecoder().decode(ConnectivityDoHResponse.self, from: data)
+    guard answer.status == 0 else { return [] }
+    return (answer.answers ?? []).filter {
+      $0.type == type && ConnectivityAddress.family($0.data) == (type == 1 ? AF_INET : AF_INET6)
+    }.map(\.data)
   }
 
   private func elapsed(since started: ContinuousClock.Instant) -> Double {

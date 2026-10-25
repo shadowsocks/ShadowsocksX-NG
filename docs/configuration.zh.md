@@ -6,7 +6,7 @@
 
 面向订阅服务提供方的字段格式、嵌套分组扩展和响应要求见 [SIP-008 订阅扩展说明](subscription-provider-extension.zh.md)。
 
-订阅可在 SIP-008 JSON 根级提供 `bytes_used`、`bytes_remaining`（非负整数，最大为 UInt64），以及自定义的 `expires_at`（服务到期时间）、`traffic_reset_at`（流量重置时间）。日期值使用 RFC 3339 字符串，省略或 `null` 表示未提供；无效资料仅忽略该项，不影响有效服务器或分组资料。
+订阅可在 SIP-008 JSON 根级提供 `bytes_used`、`bytes_remaining`（非负整数，最大为 UInt64），并在根层 `x_shadowsocksx_ng` 对象中以 `schema_version: 1` 提供自定义的 `expires_at`（服务到期时间）、`traffic_reset_at`（流量重置时间）。根层时间字段不再读取。命名空间缺失或无效、版本缺失或不支持时，视为未提供时间资料；标准流量字段仍独立可用。日期值使用 RFC 3339 字符串，省略或 `null` 表示未提供；无效资料仅忽略该项，不影响有效服务器或分组资料。
 
 成功刷新完整替换白名单订阅资料，省略或无效的字段清除旧值；失败或取消保留最后成功资料与独立成功时间。资料和目录记录同文档原子保存，不另存原始响应或含密码的服务器明文快照；密码和插件参数沿用 Keychain 存储。旧目录文件缺少成功时间时不猜测。
 

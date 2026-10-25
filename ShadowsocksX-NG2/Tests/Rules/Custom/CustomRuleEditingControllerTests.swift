@@ -13,7 +13,8 @@ final class CustomRuleEditingControllerTests: ProxyRuntimeControllerTests {
     let (store, _) = try makeCustomRuleStore()
     let controller = makeControllerWithCustomRules(
       store: store,
-      settings: ProxyRuntimeSettings(listen: ActivationFixture.listen, agentEnabled: false))
+      settings: ProxyRuntimeSettings(
+        listen: ActivationFixture.listen, rulePreset: .chinaDirect, agentEnabled: false))
     let workflow = editingWorkflow(controller)
     await workflow.refresh()
     var draft = try XCTUnwrap(workflow.makeCustomRuleDraft())
@@ -35,7 +36,7 @@ final class CustomRuleEditingControllerTests: ProxyRuntimeControllerTests {
       store: store,
       settings: ProxyRuntimeSettings(
         listen: ActivationFixture.listen, preferredMode: .rule,
-        ruleDefaultAction: .proxyWhenUnmatched, agentEnabled: true), proxyMode: .rule)
+        rulePreset: .chinaDirect, agentEnabled: true), proxyMode: .rule)
     try await controller.activate(seeded.server)
     let workflow = editingWorkflow(controller)
     await workflow.refresh()
@@ -71,7 +72,7 @@ final class CustomRuleEditingControllerTests: ProxyRuntimeControllerTests {
       store: store,
       settings: ProxyRuntimeSettings(
         listen: ActivationFixture.listen, preferredMode: .rule,
-        ruleDefaultAction: .proxyWhenUnmatched, agentEnabled: true), proxyMode: .rule)
+        rulePreset: .chinaDirect, agentEnabled: true), proxyMode: .rule)
     try await controller.activate(seeded.server)
     let workflow = editingWorkflow(controller)
     await workflow.refresh()
@@ -103,6 +104,7 @@ final class CustomRuleEditingControllerTests: ProxyRuntimeControllerTests {
 
   private func editingWorkflow(_ controller: ProxyRuntimeController) -> RulesWorkflow {
     RulesWorkflow(
+      preset: controller.rulePreset,
       loadDocument: { try controller.ruleDocuments.load() },
       commitDocument: { await controller.commitRuleDocument($0) },
       builtinSnapshots: controller.ruleSnapshots)

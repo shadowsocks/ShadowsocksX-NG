@@ -54,13 +54,16 @@ struct PluginCatalogSnapshot: PluginExecutableResolving, Equatable, Sendable {
         ?? managed.bundleURL
         .appendingPathComponent("Contents/Helpers/Plugins")
         .appendingPathComponent(info?.executableName ?? program).path
+      let arguments =
+        user?.arguments
+        ?? info.map {
+          $0.defaultArguments + (configuration.managedArguments[$0.program] ?? [])
+        } ?? []
       return Entry(
         program: program, path: path, source: source,
         availability: mappingsUnreadable
           ? .unreadable : Self.availability(at: path, fileManager: managed.fileManager),
-        managedInfo: source == .managed ? info : nil,
-        arguments: user?.arguments ?? info.flatMap { configuration.managedArguments[$0.program] }
-          ?? [],
+        managedInfo: source == .managed ? info : nil, arguments: arguments,
         mode: user?.mode ?? info.flatMap { configuration.managedModes[$0.program] } ?? .tcpOnly,
         recordID: user?.id)
     }
@@ -74,7 +77,8 @@ struct PluginCatalogSnapshot: PluginExecutableResolving, Equatable, Sendable {
             program: info.program, path: path, source: .managed,
             availability: mappingsUnreadable
               ? .unreadable : Self.availability(at: path, fileManager: managed.fileManager),
-            managedInfo: info, arguments: configuration.managedArguments[info.program] ?? [],
+            managedInfo: info,
+            arguments: info.defaultArguments + (configuration.managedArguments[info.program] ?? []),
             mode: configuration.managedModes[info.program] ?? .tcpOnly)
         )
       })

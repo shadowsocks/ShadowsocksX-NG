@@ -24,7 +24,7 @@ struct RulesSourceSummaryView: View {
 
 struct RulesReportView: View {
   static let sceneID = "rules-conversion-report"
-  @ObservedObject var workflow: RulesWorkflow
+  @ObservedObject var workflow: RulesWorkspaces
 
   var body: some View {
     ScrollView {

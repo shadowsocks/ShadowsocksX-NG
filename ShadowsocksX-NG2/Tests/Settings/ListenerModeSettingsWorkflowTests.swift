@@ -7,12 +7,10 @@ extension SettingsWorkflowInterfaceTests {
   private func saveMode(_ workflow: SettingsWorkflow, _ mode: LANListenerMode?) async
     -> SettingsCommandOutcome
   {
-    do {
-      var draft = workflow.beginLANListeningEditing()
-      draft.isEnabled = mode != nil
-      if let mode { draft.mode = mode }
-      return await workflow.saveLANListening(draft)
-    } catch { return .commitFailed(.unknown) }
+    var draft = workflow.beginLANListeningEditing()
+    draft.isEnabled = mode != nil
+    if let mode { draft.mode = mode }
+    return await workflow.saveLANListening(draft)
   }
 
   func testListenerModeAllowsReplacingItsOwnActiveListener() async {

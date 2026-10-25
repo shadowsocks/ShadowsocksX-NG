@@ -286,9 +286,7 @@ enum CustomRuleValidator {
   ) -> CustomRuleValidationResult {
     let validated = hardValidation(custom: custom)
     let candidates = builtIn + validated.accepted
-    let expressed =
-      defaultAction == .proxyWhenUnmatched
-      ? candidates.filter { $0.action == .direct } : candidates
+    let expressed = candidates.filter { defaultAction.expresses($0.action) }
     let analysis = RuleAnalysis(rules: expressed, subjects: validated.accepted)
     return CustomRuleValidationResult(
       accepted: validated.accepted, rejected: validated.rejected,
@@ -335,8 +333,7 @@ enum CustomRuleValidator {
 
 }
 
-/// Pure runtime projection; browsing uses all sources, this projection uses only
-/// the source subset expressed by the current ACL skeleton.
+/// Pure runtime projection of the selected preset’s enabled candidates.
 enum RuleRuntimeCompiler {
   struct Input: Sendable {
     let source: SslocalRuntimeDocument

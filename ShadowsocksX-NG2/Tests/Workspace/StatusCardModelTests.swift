@@ -52,7 +52,7 @@ final class StatusCardModelTests: XCTestCase {
       systemProxyApplication: systemProxyApplication,
       systemProxyApprovalRequired: false,
       proxyMode: mode,
-      ruleDefaultAction: .proxyWhenUnmatched,
+      rulePreset: .chinaDirect,
       availableModes: ProxyMode.availableModes,
       activeTarget: activeTarget,
       skippedInvalidServerCount: 0,

@@ -84,109 +84,141 @@ private func loadValidatedContract() -> RuntimeSupervision? {
 
 private enum SupervisionOutcome { case stopped, restart }
 
+private struct SupervisionState {
+  var current: RuntimeSupervision
+  var processFiles: Set<String>
+  var reloadPending = RuntimeReloadState()
+  var healthy = false
+  var receiptPublished = false
+  var readinessDeadline: Date
+}
+
 private func superviseChild(
   _ child: Process, document: RuntimeSupervision,
   flags: SignalFlags
 ) -> SupervisionOutcome {
-  var current = document
-  // 重载信号没有应用确认，旧进程曾用过的引用保守保留到该进程退出。
-  var processFiles = document.retainedFiles
-  var reloadPending = Set<Int32>()
-  var healthy = false
-  var receiptPublished = false
-  var readinessDeadline = Date().addingTimeInterval(listenEstablishmentDeadline)
+  var state = SupervisionState(
+    current: document, processFiles: document.retainedFiles,
+    readinessDeadline: Date().addingTimeInterval(listenEstablishmentDeadline))
   while true {
     if flags.consumeStop() {
-      if !stopChild(child) { recordDeploymentFailure(current, reason: "Child stop unconfirmed") }
+      if !stopChild(child) {
+        recordDeploymentFailure(state.current, reason: "Child stop unconfirmed")
+      }
       return .stopped
     }
-    if !child.isRunning {
-      child.waitUntilExit()
-      RuntimeLog.emit(.sslocalExitedUnexpectedly(status: child.terminationStatus))
-      clearRuntimeReceipt()
-      guard healthy else {
-        recordDeploymentFailure(current, reason: "Child exited before deployment became healthy")
-        return .stopped
-      }
-      // 已健康的当前部署发生意外退出；下一轮重放当前发布，不选择历史配置。
-      return .restart
-    }
-    if !healthy {
-      if listenersAreEstablished(document: current, child: child) {
-        guard sendReloadSignals(&reloadPending, to: child.processIdentifier) else {
-          recordDeploymentFailure(current, reason: "Deferred reload failed")
-          _ = stopChild(child)
-          return .stopped
-        }
-        healthy = true
-      } else if Date() >= readinessDeadline {
-        RuntimeLog.emit(
-          .listenNotEstablished(
-            detail: current.locals.map {
-              "\($0.inboundProtocol) \($0.localAddress):\($0.localPort)"
-            }.joined(separator: ", ")))
-        recordDeploymentFailure(current, reason: "Listener establishment failed")
-        _ = stopChild(child)
-        return .stopped
-      }
-    }
-    // 延续无 ACL 回执的原证据范围；健康恢复资格仍要求实际监听建立。
-    if !receiptPublished && (healthy || current.acl == nil) {
-      receiptPublished = writeRuntimeReceipt(for: current, processID: child.processIdentifier)
-      if !receiptPublished {
-        recordDeploymentFailure(current, reason: "Receipt publication failed")
-        _ = stopChild(child)
-        return .stopped
-      }
-      if !retireFiles(current, protecting: processFiles) {
-        recordDeploymentFailure(current, reason: "Retired runtime file cleanup failed")
-        _ = stopChild(child)
-        return .stopped
-      }
-    }
-    if flags.consumeReload() {
-      guard let next = loadValidatedContract(), !deploymentHasFailed(next) else {
-        _ = stopChild(child)
-        return .stopped
-      }
-      if next.generation < current.generation {
-        recordDeploymentFailure(current, reason: "Stale publication rejected")
-        _ = stopChild(child)
-        return .stopped
-      }
-      if next.requiresRestart(from: current) {
-        RuntimeLog.emit(.reloadRestarted)
-        guard stopChild(child) else {
-          recordDeploymentFailure(next, reason: "Child stop unconfirmed")
-          return .stopped
-        }
-        return .restart
-      }
-      // 无需重启的更新沿用本子进程已建立的监听事实。
-      let needsDeferral = next.acl != nil && !healthy
-      reloadPending.formUnion(next.reloadSignals(from: current))
-      guard selectDeployment(next),
-        needsDeferral
-          || sendReloadSignals(&reloadPending, to: child.processIdentifier)
-      else {
-        recordDeploymentFailure(next, reason: "Reload failed")
-        _ = stopChild(child)
-        return .stopped
-      }
-      RuntimeLog.emit(needsDeferral ? .reloadDeferred : .reloadForwarded)
-      processFiles.formUnion(next.retainedFiles)
-      current = next
-      receiptPublished = false
-      readinessDeadline = Date().addingTimeInterval(listenEstablishmentDeadline)
-    }
+    if let outcome = handleChildExit(child, state: &state) { return outcome }
+    if let outcome = establishChildReadiness(child, state: &state) { return outcome }
+    if let outcome = publishChildReceipt(child, state: &state) { return outcome }
+    if let outcome = applyReloadIfRequested(child, flags: flags, state: &state) { return outcome }
     _ = flags.wait(timeout: .now() + listenProbeInterval)
   }
 }
 
-private func sendReloadSignals(_ signals: inout Set<Int32>, to processID: Int32) -> Bool {
-  guard signals.sorted().allSatisfy({ kill(processID, $0) == 0 }) else { return false }
-  signals.removeAll()
-  return true
+private func handleChildExit(
+  _ child: Process, state: inout SupervisionState
+) -> SupervisionOutcome? {
+  guard !child.isRunning else { return nil }
+  child.waitUntilExit()
+  RuntimeLog.emit(.sslocalExitedUnexpectedly(status: child.terminationStatus))
+  clearRuntimeReceipt()
+  guard state.healthy else {
+    recordDeploymentFailure(state.current, reason: "Child exited before deployment became healthy")
+    return .stopped
+  }
+  // 已健康的当前部署发生意外退出；下一轮重放当前发布，不选择历史配置。
+  return .restart
+}
+
+private func establishChildReadiness(
+  _ child: Process, state: inout SupervisionState
+) -> SupervisionOutcome? {
+  guard !state.healthy else { return nil }
+  if listenersAreEstablished(document: state.current, child: child) {
+    guard sendReloadSignals(&state.reloadPending, to: child.processIdentifier) else {
+      recordDeploymentFailure(state.current, reason: "Deferred reload failed")
+      _ = stopChild(child)
+      return .stopped
+    }
+    state.healthy = true
+    return nil
+  }
+  guard Date() >= state.readinessDeadline else { return nil }
+  RuntimeLog.emit(
+    .listenNotEstablished(
+      detail: state.current.locals.map {
+        "\($0.inboundProtocol) \($0.localAddress):\($0.localPort)"
+      }.joined(separator: ", ")))
+  recordDeploymentFailure(state.current, reason: "Listener establishment failed")
+  _ = stopChild(child)
+  return .stopped
+}
+
+private func publishChildReceipt(
+  _ child: Process, state: inout SupervisionState
+) -> SupervisionOutcome? {
+  guard !state.receiptPublished, state.healthy || state.current.acl == nil else { return nil }
+  state.receiptPublished = writeRuntimeReceipt(
+    for: state.current, processID: child.processIdentifier)
+  guard state.receiptPublished else {
+    recordDeploymentFailure(state.current, reason: "Receipt publication failed")
+    _ = stopChild(child)
+    return .stopped
+  }
+  guard retireFiles(state.current, protecting: state.processFiles) else {
+    recordDeploymentFailure(state.current, reason: "Retired runtime file cleanup failed")
+    _ = stopChild(child)
+    return .stopped
+  }
+  return nil
+}
+
+private func applyReloadIfRequested(
+  _ child: Process, flags: SignalFlags, state: inout SupervisionState
+) -> SupervisionOutcome? {
+  guard flags.consumeReload() else { return nil }
+  guard let next = loadValidatedContract(), !deploymentHasFailed(next) else {
+    _ = stopChild(child)
+    return .stopped
+  }
+  guard next.generation >= state.current.generation else {
+    recordDeploymentFailure(state.current, reason: "Stale publication rejected")
+    _ = stopChild(child)
+    return .stopped
+  }
+  if next.requiresRestart(from: state.current) {
+    RuntimeLog.emit(.reloadRestarted)
+    guard stopChild(child) else {
+      recordDeploymentFailure(next, reason: "Child stop unconfirmed")
+      return .stopped
+    }
+    return .restart
+  }
+  return applyInPlaceReload(next, child: child, state: &state)
+}
+
+private func applyInPlaceReload(
+  _ next: RuntimeSupervision, child: Process, state: inout SupervisionState
+) -> SupervisionOutcome? {
+  let needsDeferral = next.acl != nil && !state.healthy
+  state.reloadPending.enqueue(next, from: state.current)
+  guard selectDeployment(next),
+    needsDeferral || sendReloadSignals(&state.reloadPending, to: child.processIdentifier)
+  else {
+    recordDeploymentFailure(next, reason: "Reload failed")
+    _ = stopChild(child)
+    return .stopped
+  }
+  RuntimeLog.emit(needsDeferral ? .reloadDeferred : .reloadForwarded)
+  state.processFiles.formUnion(next.retainedFiles)
+  state.current = next
+  state.receiptPublished = false
+  state.readinessDeadline = Date().addingTimeInterval(listenEstablishmentDeadline)
+  return nil
+}
+
+private func sendReloadSignals(_ signals: inout RuntimeReloadState, to processID: Int32) -> Bool {
+  signals.flush { kill(processID, $0) == 0 }
 }
 
 /// 停止超时不得进入启动分支。保留 pid 文件供下次 Agent 拒绝重叠启动。

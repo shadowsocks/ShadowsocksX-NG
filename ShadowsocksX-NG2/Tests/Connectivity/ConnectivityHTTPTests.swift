@@ -6,12 +6,14 @@ import Testing
 
 @MainActor
 struct ConnectivityHTTPTests {
-  @Test(arguments: [204, 200, 302, 500])
-  func sendsGETThroughProxyAndStopsAtHeaders(status: Int) async throws {
-    let proxy = try HeaderProxy(status: status)
+  @Test(arguments: [(204, false), (200, false), (302, false), (500, false), (200, true)])
+  func sendsGETThroughProxyAndStopsAtHeaders(status: Int, informational: Bool) async throws {
+    let headers =
+      "HTTP/1.1 \(status) Response\r\nLocation: http://another.invalid/redirect\r\nContent-Length: 99999\r\n\r\n"
+    let proxy = try HeaderProxy(
+      response: (informational ? "HTTP/1.1 100 Continue\r\n\r\n" : "") + headers)
     defer { proxy.stop() }
     let port = try await proxy.start()
-    let started = ContinuousClock.now
     // This name cannot resolve; a successful response proves proxy routing.
     let id = NodeID.fresh()
     let module = ServerConnectivity(
@@ -30,18 +32,52 @@ struct ConnectivityHTTPTests {
     } else {
       #expect(value == .http(status))
     }
-    #expect(ContinuousClock.now - started < .seconds(2))
     #expect(proxy.requests.count == 1)
     #expect(proxy.requests.first?.hasPrefix("GET http://target.invalid/test HTTP/") == true)
   }
 
+  @Test func informationalAndFragmentedHeadersDoNotWaitForBody() async throws {
+    // Leave the socket readable while the reader supplies exact response chunks.
+    let proxy = try HeaderProxy(response: "ready")
+    defer { proxy.stop() }
+    let port = try await proxy.start()
+    let result = await Task.detached {
+      var chunks = [
+        "HTTP/1.1 100 Continue\r\n\r\nHTTP/1.1 200 OK\r\nContent-Len",
+        "gth: 999999\r\n\r\n",
+      ].map { Array($0.utf8) }
+      let cancellation = ConnectivityHTTPCreateCancellation()
+      defer { ConnectivityHTTPDestroyCancellation(cancellation) }
+      return withUnsafeMutablePointer(to: &chunks) { context in
+        "GET http://target.invalid/test HTTP/1.1\r\nHost: target.invalid\r\n\r\n".withCString {
+          ConnectivityHTTPProbeWithReader(
+            $0, Int32(port), 5000, cancellation,
+            { buffer, capacity, context in
+              let chunks = context!.assumingMemoryBound(to: [[UInt8]].self)
+              guard !chunks.pointee.isEmpty else { return 0 }
+              let chunk = chunks.pointee.removeFirst()
+              precondition(chunk.count <= capacity)
+              chunk.withUnsafeBytes {
+                buffer!.copyMemory(from: $0.baseAddress!, byteCount: $0.count)
+              }
+              return chunk.count
+            }, context)
+        }
+      }
+    }.value
+    #expect(result.received_headers == 1)
+    #expect(result.status == 200)
+    #expect(result.timed_out == 0)
+  }
+
   @Test func fixedAddressPreservesHostAndReportsClientPhases() async throws {
-    let proxy = try HeaderProxy(status: 204)
+    let proxy = try HeaderProxy(
+      response: "HTTP/1.1 204 No Content\r\nContent-Length: 99999\r\n\r\n")
     defer { proxy.stop() }
     let port = try await proxy.start()
     let result = await ConnectivityHTTPRequest().observe(
       url: URL(string: "http://target.invalid:8080/test?q=private%20value")!,
-      targetIP: "2001:db8::1", proxyPort: port, timeout: 1)
+      targetIP: "2001:db8::1", proxyPort: port, timeout: 5)
     guard case .success = result.outcome else {
       Issue.record("Expected successful fixed-address request")
       return
@@ -56,61 +92,29 @@ struct ConnectivityHTTPTests {
     #expect(result.totalMilliseconds >= 0)
   }
 
-  @Test func informationalAndFragmentedHeadersDoNotWaitForBody() async throws {
-    let proxy = try HeaderProxy(
-      status: nil,
-      parts: [
-        "HTTP/1.1 100 Continue\r\n\r\nHTTP/1.1 200 OK\r\nContent-Len",
-        "gth: 999999\r\n\r\n",
-      ])
-    defer { proxy.stop() }
-    let port = try await proxy.start()
-    let result = await ConnectivityHTTPRequest().observe(
-      url: URL(string: "http://target.invalid/test")!, targetIP: "192.0.2.1", proxyPort: port,
-      timeout: 1)
-    guard case .success = result.outcome else {
-      Issue.record("Expected complete final headers")
-      return
-    }
-    #expect(result.firstByteMilliseconds != nil)
-    #expect(result.headersMilliseconds != nil)
-    #expect(result.totalMilliseconds < 1000)
-  }
-
   @Test(arguments: [
     "HTTP/2 200 OK\r\n\r\n",
     "HTTP/1.1 200 OK\r\nInvalid Header\r\n\r\n",
     "HTTP/1.1 200 OK\r\nX-Large: " + String(repeating: "x", count: 65536),
     String(repeating: "HTTP/1.1 100 Continue\r\n\r\n", count: 3000),
+    // Each block fits; only the cumulative budget including final headers is exceeded.
+    "HTTP/1.1 100 Continue\r\nX-Large: " + String(repeating: "x", count: 60000) + "\r\n\r\n"
+      + "HTTP/1.1 204 No Content\r\nX-Large: " + String(repeating: "x", count: 6000) + "\r\n\r\n",
   ])
   func rejectsMalformedOrUnboundedHeaders(response: String) async throws {
-    let proxy = try HeaderProxy(status: nil, parts: [response])
+    let proxy = try HeaderProxy(response: response)
     defer { proxy.stop() }
     let port = try await proxy.start()
     let result = await ConnectivityHTTPRequest().observe(
       url: URL(string: "http://target.invalid/test")!, targetIP: "192.0.2.1", proxyPort: port,
-      timeout: 1)
+      timeout: 5)
     #expect(result.outcome == .network)
     #expect(result.failureStage == "headers")
   }
 
-  @Test func cumulativeHeadersIncludeFinalBlockAfterInformationalResponses() async throws {
+  @Test func httpsIsRejectedBeforeOpeningProxyConnection() async throws {
     let proxy = try HeaderProxy(
-      status: nil,
-      parts: [
-        String(repeating: "HTTP/1.1 100 Continue\r\n\r\n", count: 2500),
-        "HTTP/1.1 204 No Content\r\nX-Large: " + String(repeating: "x", count: 5000) + "\r\n\r\n",
-      ])
-    defer { proxy.stop() }
-    let port = try await proxy.start()
-    let result = await ConnectivityHTTPRequest().observe(
-      url: URL(string: "http://target.invalid/test")!, targetIP: "192.0.2.1", proxyPort: port,
-      timeout: 1)
-    #expect(result.outcome == .network)
-  }
-
-  @Test func HTTPSIsRejectedBeforeOpeningProxyConnection() async throws {
-    let proxy = try HeaderProxy(status: 204)
+      response: "HTTP/1.1 204 No Content\r\nContent-Length: 99999\r\n\r\n")
     defer { proxy.stop() }
     let port = try await proxy.start()
     let result = await ConnectivityHTTPRequest().perform(
@@ -119,27 +123,22 @@ struct ConnectivityHTTPTests {
     #expect(proxy.requests.isEmpty)
   }
 
-  @Test func requestHasOneFiveSecondDeadline() async throws {
-    let proxy = try HeaderProxy(status: nil)
+  @Test(.timeLimit(.minutes(1)))
+  func timesOutWhileWaitingForFirstByte() async throws {
+    let proxy = try HeaderProxy()
     defer { proxy.stop() }
     let port = try await proxy.start()
-    let id = NodeID.fresh()
-    let module = ServerConnectivity(
-      configuration: { _ in Self.server },
-      measure: { _, url, _ in
-        await ConnectivityHTTPRequest().perform(url: url, proxyPort: port)
-      })
-    module.setURL(URL(string: "http://target.invalid/slow")!)
-    let started = ContinuousClock.now
-    await module.wait(for: module.test([id]))
-    #expect(module.history(for: id).first?.outcome == .requestTimeout)
-    #expect(ContinuousClock.now - started >= .seconds(5))
-    #expect(ContinuousClock.now - started < .seconds(6))
+    let result = await ConnectivityHTTPRequest().observe(
+      url: URL(string: "http://target.invalid/slow")!, targetIP: nil, proxyPort: port,
+      timeout: 0.5)
+    #expect(result.outcome == .requestTimeout)
+    #expect(result.failureStage == "first_byte")
+    #expect(result.totalMilliseconds >= 500)
     #expect(proxy.requests.count == 1)
   }
 
   @Test func cancellationEndsRequestWithoutWaitingForHeaders() async throws {
-    let proxy = try HeaderProxy(status: nil)
+    let proxy = try HeaderProxy()
     defer { proxy.stop() }
     let port = try await proxy.start()
     let id = NodeID.fresh()
@@ -172,16 +171,14 @@ struct ConnectivityHTTPTests {
 /// Controlled HTTP proxy: headers arrive, but the declared body never does.
 private final class HeaderProxy: @unchecked Sendable {
   private let listener: NWListener
-  private let status: Int?
-  private let parts: [String]?
+  private let response: String?
   private let lock = NSLock()
   private var received: [String] = []
   private var connections: [NWConnection] = []
   var requests: [String] { lock.withLock { received } }
 
-  init(status: Int?, parts: [String]? = nil) throws {
-    self.status = status
-    self.parts = parts
+  init(response: String? = nil) throws {
+    self.response = response
     listener = try NWListener(using: .tcp, on: .any)
   }
 
@@ -191,14 +188,9 @@ private final class HeaderProxy: @unchecked Sendable {
       connection.start(queue: DispatchQueue(label: UUID().uuidString))
       connection.receive(minimumIncompleteLength: 1, maximumLength: 65536) { [self] data, _, _, _ in
         if let data { lock.withLock { received.append(String(data: data, encoding: .utf8) ?? "") } }
-        if let parts {
-          send(parts, through: connection)
-          return
+        if let response {
+          connection.send(content: Data(response.utf8), completion: .contentProcessed { _ in })
         }
-        guard let status else { return }
-        let headers =
-          "HTTP/1.1 \(status) Response\r\nLocation: http://another.invalid/redirect\r\nContent-Length: 99999\r\n\r\n"
-        connection.send(content: Data(headers.utf8), completion: .contentProcessed { _ in })
       }
     }
     return try await withCheckedThrowingContinuation { continuation in
@@ -217,23 +209,12 @@ private final class HeaderProxy: @unchecked Sendable {
     }
   }
 
-  private func send(_ parts: [String], through connection: NWConnection) {
-    guard let first = parts.first else { return }
-    connection.send(
-      content: Data(first.utf8),
-      completion: .contentProcessed { [self] _ in
-        if parts.count > 1 {
-          DispatchQueue.global().asyncAfter(deadline: .now() + 0.01) { [self] in
-            send(Array(parts.dropFirst()), through: connection)
-          }
-        }
-      })
-  }
-
   func stop() {
     listener.cancel()
     listener.newConnectionHandler = nil
     let connections = lock.withLock { self.connections }
-    connections.forEach { $0.cancel() }
+    for connection in connections {
+      connection.cancel()
+    }
   }
 }

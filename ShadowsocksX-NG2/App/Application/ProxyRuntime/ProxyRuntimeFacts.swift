@@ -115,19 +115,32 @@ extension SystemProxyOperationFailure {
   /// `SystemProxyError` 的呈现类别投影：稳定事实只保留操作类别；Domain 错误
   /// 的关联值（排查细节）不出现在运行时事实里。
   init(_ error: SystemProxyError) {
+    self = Self.preferenceFailure(error) ?? Self.serviceFailure(error)
+  }
+
+  private static func preferenceFailure(_ error: SystemProxyError) -> Self? {
     switch error {
-    case .preferencesUnavailable: self = .preferencesUnavailable
-    case .preferencesBusy: self = .preferencesBusy
-    case .noCurrentNetworkSet: self = .noCurrentNetworkSet
-    case .noNetworkLocations: self = .noNetworkLocations
-    case .noProxyServices: self = .noProxyServices
-    case .unreadableService: self = .unreadableService
-    case .invalidStoredConfiguration: self = .invalidStoredConfiguration
-    case .cannotWriteService: self = .cannotWriteService
-    case .commitFailed: self = .commitFailed
-    case .applyFailed: self = .applyFailed
-    case .invalidRequest: self = .invalidRequest
-    case .helperUnavailable: self = .helperUnavailable
+    case .preferencesUnavailable: return .preferencesUnavailable
+    case .preferencesBusy: return .preferencesBusy
+    case .noCurrentNetworkSet: return .noCurrentNetworkSet
+    case .noNetworkLocations: return .noNetworkLocations
+    case .noProxyServices: return .noProxyServices
+    default: return nil
+    }
+  }
+
+  private static func serviceFailure(_ error: SystemProxyError) -> Self {
+    switch error {
+    case .unreadableService: return .unreadableService
+    case .invalidStoredConfiguration: return .invalidStoredConfiguration
+    case .cannotWriteService: return .cannotWriteService
+    case .commitFailed: return .commitFailed
+    case .applyFailed: return .applyFailed
+    case .invalidRequest: return .invalidRequest
+    case .helperUnavailable: return .helperUnavailable
+    case .preferencesUnavailable, .preferencesBusy, .noCurrentNetworkSet,
+      .noNetworkLocations, .noProxyServices:
+      preconditionFailure("Preference failures are mapped before service failures")
     }
   }
 }

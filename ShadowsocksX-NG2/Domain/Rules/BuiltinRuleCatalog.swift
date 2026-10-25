@@ -52,7 +52,7 @@ struct BuiltinRuleCatalog {
 /// App-process source facts. Concurrent consumers share one attempt per source;
 /// successful bundled snapshots never expire, failed attempts require explicit retry.
 actor BuiltinRuleSnapshots {
-  typealias Loader = @Sendable (RulesSource) throws -> RuleSnapshot
+  typealias Loader = @Sendable (RulesSource) async throws -> RuleSnapshot
   private struct Attempt {
     let id: UUID
     let task: Task<RuleSnapshot, Error>
@@ -81,7 +81,7 @@ actor BuiltinRuleSnapshots {
       attempt = Attempt(
         id: UUID(),
         task: Task.detached(priority: .userInitiated) {
-          let snapshot = try loader(source)
+          let snapshot = try await loader(source)
           guard let kind = source.sourceKind, kind != .custom else {
             throw RuleSnapshotError.missing
           }
@@ -99,15 +99,52 @@ actor BuiltinRuleSnapshots {
     }
   }
 
-  func browsingSources(retryFailures: Bool = false) async -> [RulesSource: Result<
+  func browsingSources(
+    sources: [RulesSource] = [.geolocationCN, .chinaIPv4, .gfwlist],
+    retryFailures: Bool = false
+  ) async -> [RulesSource: Result<
     RuleSnapshot, Error
   >] {
     var results: [RulesSource: Result<RuleSnapshot, Error>] = [:]
-    for source in [RulesSource.geolocationCN, .chinaIPv4, .gfwlist] {
+    for source in sources {
       do { results[source] = .success(try await load(source, retryFailure: retryFailures)) } catch {
         results[source] = .failure(error)
       }
     }
     return results
+  }
+}
+
+/// The same policy supplies runtime candidates and the management collection.
+enum RulePreset: String, Codable, CaseIterable, Hashable, Sendable {
+  case gfwlist = "gfwlist"
+  case chinaDirect = "china-direct"
+  case chinaProxy = "china-proxy"
+
+  init(legacy action: RuleDefaultAction) {
+    self = action == .proxyWhenUnmatched ? .chinaDirect : .gfwlist
+  }
+
+  var defaultAction: RuleDefaultAction {
+    self == .chinaDirect ? .proxyWhenUnmatched : .directWhenUnmatched
+  }
+
+  var sources: [RulesSource] {
+    self == .gfwlist ? [.gfwlist] : [.geolocationCN, .chinaIPv4]
+  }
+
+  var label: String {
+    switch self {
+    case .chinaDirect: String(localized: "中国大陆目标直连")
+    case .gfwlist: String(localized: "仅GFW列表内目标代理")
+    case .chinaProxy: String(localized: "中国大陆目标代理")
+    }
+  }
+
+  func rules(from snapshot: RuleSnapshot) -> [ProxyRule] {
+    if self == .gfwlist { return snapshot.rules }
+    return BuiltinRuleCatalog.chinaDirectRules(from: snapshot).map {
+      ProxyRule(action: self == .chinaProxy ? .proxy : .direct, match: $0.match)
+    }
   }
 }

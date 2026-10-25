@@ -63,14 +63,27 @@ struct LogLineTests {
     let upstream = LogLine.legacy("2026-10-20T03:04:12Z ERROR sslocal] boom")
     #expect(upstream.source == .sslocal)
     #expect(upstream.level == .error)
+
+    let warningText = "[Warning] [107248047] app/dispatcher: default route"
+    let warning = LogLine.legacy(warningText)
+    #expect(warning.level == .warning)
+    #expect(warning.text == warningText)
+    #expect(warning.rendered == warningText)
   }
 
   @Test func detectsUpstreamLevelTokens() {
     #expect(LogLineLevel.detect(in: "2026-10-20T03:04:12Z ERROR sslocal] boom") == .error)
     #expect(LogLineLevel.detect(in: "[2026-10-20T03:04:12Z WARN sslocal] retrying") == .warning)
     #expect(LogLineLevel.detect(in: "WARNING token alone") == .warning)
+    #expect(LogLineLevel.detect(in: "2026-10-20T03:04:12Z error sslocal] boom") == .error)
+    #expect(LogLineLevel.detect(in: "2026-10-20T03:04:12Z ErRoR sslocal] boom") == .error)
+    #expect(
+      LogLineLevel.detect(in: "[Warning] [107248047] app/dispatcher: default route") == .warning)
+    #expect(LogLineLevel.detect(in: "[wArN] retrying") == .warning)
+    #expect(LogLineLevel.detect(in: "[Warning] later ERROR in message") == .warning)
     #expect(LogLineLevel.detect(in: "connected to server") == .info)
-    #expect(LogLineLevel.detect(in: "an error occurred") == .info)
+    #expect(LogLineLevel.detect(in: "an error occurred") == .error)
+    #expect(LogLineLevel.detect(in: "ERROR: boom") == .info)
     #expect(LogLineLevel.detect(in: "password: [redacted]") == .info)
     // CRLF 行尾不得吞掉级别 token（\r 也是空白）。
     #expect(LogLineLevel.detect(in: "2026-10-20T03:04:12Z ERROR boom\r") == .error)

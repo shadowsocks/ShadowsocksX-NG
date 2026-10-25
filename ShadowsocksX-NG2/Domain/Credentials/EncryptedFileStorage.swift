@@ -11,7 +11,7 @@ enum EncryptedFileError: Error, Equatable {
 
 /// age 文件的密钥选择与原子提交；每个实例独立持有已匹配的 identity。
 final class EncryptedFileStorage<Value> {
-  private let keys: MasterKeyStoring
+  private let keys: CredentialKeyStoring
   private var currentIdentity: AgeIdentity?
   private var loaded = false
   private let maximumSize: Int
@@ -29,7 +29,7 @@ final class EncryptedFileStorage<Value> {
   }
 
   init(
-    keys: MasterKeyStoring, maximumSize: Int,
+    keys: CredentialKeyStoring, maximumSize: Int,
     legacyFileNames: [String], makeDefault: @escaping () -> Value,
     encode: @escaping (Value) throws -> Data, decode: @escaping (Data) throws -> Value
   ) {

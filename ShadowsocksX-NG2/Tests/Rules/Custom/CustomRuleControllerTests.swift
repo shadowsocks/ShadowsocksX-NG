@@ -5,11 +5,14 @@ import XCTest
 
 /// Saved custom-rule intent and independent runtime application/recovery.
 extension ProxyRuntimeControllerTests {
-  func makeCustomRuleStore() throws -> (store: CustomRuleStore, directory: URL) {
+  func makeCustomRuleStore(preset: RulePreset = .chinaDirect) throws -> (
+    store: CustomRuleStore, directory: URL
+  ) {
     let directory = runtime.directory.appendingPathComponent(
       "custom-rules-\(UUID().uuidString)", isDirectory: true)
     try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-    let store = CustomRuleStore(fileURL: directory.appendingPathComponent("custom-rules.json"))
+    let store = CustomRuleStore(
+      preset: preset, baseURL: directory.appendingPathComponent("custom-rules.json"))
     return (store, directory)
   }
 
@@ -31,7 +34,8 @@ extension ProxyRuntimeControllerTests {
       probe: probe,
       listeningStore: InMemoryProxyListeningStore(),
       settings: settings
-        ?? ProxyRuntimeSettings(listen: ActivationFixture.listen, agentEnabled: true),
+        ?? ProxyRuntimeSettings(
+          listen: ActivationFixture.listen, rulePreset: .chinaDirect, agentEnabled: true),
       proxyMode: proxyMode,
       launchHealthTimeoutSeconds: launchHealthTimeoutSeconds,
       launchHealthRetryDelay: launchHealthRetryDelay,
@@ -59,7 +63,7 @@ final class CustomRuleControllerTests: ProxyRuntimeControllerTests {
     let settings = ProxyRuntimeSettings(
       listen: ActivationFixture.listen,
       preferredMode: .rule,
-      ruleDefaultAction: .proxyWhenUnmatched,
+      rulePreset: .chinaDirect,
       agentEnabled: true)
     let controller = makeControllerWithCustomRules(
       store: store, settings: settings, proxyMode: .rule)
@@ -86,10 +90,10 @@ final class CustomRuleControllerTests: ProxyRuntimeControllerTests {
 
   func testOppositeActionsPersistAndReorderingDoesNotRedeploy() async throws {
     let seeded = try makeSeededCatalog()
-    let (store, _) = try makeCustomRuleStore()
+    let (store, _) = try makeCustomRuleStore(preset: .gfwlist)
     let settings = ProxyRuntimeSettings(
       listen: ActivationFixture.listen, preferredMode: .rule,
-      ruleDefaultAction: .directWhenUnmatched, agentEnabled: true)
+      rulePreset: .gfwlist, agentEnabled: true)
     let controller = makeControllerWithCustomRules(
       store: store, settings: settings, proxyMode: .rule)
     try await controller.activate(seeded.server)
@@ -127,7 +131,7 @@ final class CustomRuleControllerTests: ProxyRuntimeControllerTests {
     let settings = ProxyRuntimeSettings(
       listen: ActivationFixture.listen,
       preferredMode: .rule,
-      ruleDefaultAction: .proxyWhenUnmatched,
+      rulePreset: .chinaDirect,
       agentEnabled: true)
     let controller = makeControllerWithCustomRules(
       store: store, settings: settings, proxyMode: .rule)
@@ -157,7 +161,7 @@ final class CustomRuleControllerTests: ProxyRuntimeControllerTests {
     let settings = ProxyRuntimeSettings(
       listen: ActivationFixture.listen,
       preferredMode: .rule,
-      ruleDefaultAction: .proxyWhenUnmatched,
+      rulePreset: .chinaDirect,
       agentEnabled: true,
       systemProxyEnabled: true)
     let controller = makeControllerWithCustomRules(
@@ -197,6 +201,7 @@ final class CustomRuleControllerTests: ProxyRuntimeControllerTests {
     let settings = ProxyRuntimeSettings(
       listen: ActivationFixture.listen,
       preferredMode: .global,
+      rulePreset: .chinaDirect,
       agentEnabled: true)
     let controller = makeControllerWithCustomRules(
       store: store, settings: settings, proxyMode: .global)

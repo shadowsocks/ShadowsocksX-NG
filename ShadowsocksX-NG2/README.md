@@ -25,10 +25,10 @@ Run the unified validation workflow from the repository root:
 ```bash
 task --exit-code --taskfile ShadowsocksX-NG2/Taskfile.dist.yml validate
 # Run only the requested stages, in the specified order:
-task --exit-code --taskfile ShadowsocksX-NG2/Taskfile.dist.yml validate -- lint test
+task --exit-code --taskfile ShadowsocksX-NG2/Taskfile.dist.yml validate -- format:check lint test
 ```
 
-The default order is `lint → test → test:smoke → build`; execution stops on the first failure. Logs and results are saved in `ShadowsocksX-NG2/.build/validation/`. From this directory, you can run `task --exit-code validate`. See the [development guide](../docs/development.md) for individual tasks, evidence, and test boundaries.
+The default order is `lint → test → build`; execution stops on the first failure. Real-process smoke tests remain available through the explicit `test:smoke` task. Run `task format:check` separately to check formatting without modifying files. Logs and results are saved in `ShadowsocksX-NG2/.build/validation/`. From this directory, you can run `task --exit-code validate`. See the [development guide](../docs/development.md) for individual tasks, evidence, and test boundaries.
 
 ## Documentation
 
@@ -36,6 +36,7 @@ The default order is `lint → test → test:smoke → build`; execution stops o
 | --- | --- |
 | [Development, build, and test](../docs/development.md) | Validation entry points and artifacts, individual tasks, code style tools, Git hooks, and document language |
 | [Project structure and source search](../docs/project-structure.md) | Source layers, test directories, cross-target file constraints, and search methods |
+| [GUI, Agent, Helper, and sslocal architecture](../docs/design/ng2-process-architecture.md) | Implementation snapshot from 2026-10-24: process boundaries, configuration publication, traffic paths, and lifecycle |
 | [External binaries, signing, and distribution](../docs/distribution.md) | Supply-chain checks, Debug/Release signing, release requirements, and dependency updates |
 | [Bundled rule snapshots](../docs/rule-snapshots.md) | Sources, conversion semantics, maintenance scripts, and offline checks |
 | [Subscriptions, plugins, and listener configuration](../docs/configuration.md) | Subscription data, user plugins, Cloak, local and LAN listeners, and configuration recovery |

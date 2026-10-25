@@ -66,8 +66,11 @@ class AgentLifecycleTests: XCTestCase {
         crash) exit 7 ;;
         exit0) exit 0 ;;
         drop-acl) rm -f "$SSXNG_RUNTIME_DIR"/acl-0*.ini
-          while :; do sleep 0.05; done ;;
-        ignore-term) trap 'echo "SIGTERM ignored" >> "$SSLOCAL_STUB_STATE"' TERM
+          exit 7 ;;
+        ignore-term-once) if [ ! -f "$SSLOCAL_STUB_PID_DIR/term-ignored" ]; then
+          touch "$SSLOCAL_STUB_PID_DIR/term-ignored"
+          trap 'echo "SIGTERM ignored" >> "$SSLOCAL_STUB_STATE"' TERM
+          fi
           while :; do sleep 0.05; done ;;
         *) while :; do sleep 0.05; done ;;
       esac
@@ -171,10 +174,13 @@ final class AgentLifecycleCoreTests: AgentLifecycleTests {
   func testStartProtocolSpawnsSslocalWithAbsoluteConfigPathThenStopsOnSIGTERM() throws {
     try writeContract(ProxyRuntimeFixture.makeDocument())
     let wrapper = try launchWrapper(behavior: "run")
+    let expectedInvocation = "invoked: -c \(contractURL.path) --log-without-time"
 
     XCTAssertTrue(
-      try waitUntil { self.stateLog().contains("invoked: -c \(self.contractURL.path)") },
-      "wrapper 应以契约绝对路径调用 sslocal，实际：\(stateLog())")
+      try waitUntil {
+        self.stateLog().components(separatedBy: .newlines).contains(expectedInvocation)
+      },
+      "wrapper 应以契约绝对路径及无上游时间参数调用 sslocal，实际：\(stateLog())")
     XCTAssertTrue(pidAlive(wrapper.processIdentifier), "sslocal 运行期间 wrapper 应保持常驻")
 
     XCTAssertThrowsError(try waitForExit(wrapper, timeout: 0.01))

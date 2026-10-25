@@ -76,31 +76,31 @@ final class SystemProxyObserverTests: XCTestCase {
   func testAgentStopPresentationFollowsProxyIntent() async throws {
     let proxy = ProxyRuntimeFixture.FakeSystemProxy()
     let monitor = ProxyRuntimeFixture.FakeSystemProxyNetworkChangeMonitor()
-    var intentEnabled = true
+    let intent = IntentState(enabled: true)
     let observer = makeObserver(
       proxy: proxy, monitor: monitor, cleanupSettleNanoseconds: 1_000_000,
-      isIntentEnabled: { intentEnabled })
+      isIntentEnabled: { intent.enabled })
 
     observer.agentDidStop()
     XCTAssertEqual(observer.systemProxyState, .pending, "代理意图仍在开时，agent 停机保持待应用（issue #71）")
     XCTAssertEqual(observer.systemProxyObservationMode, .stopped)
     XCTAssertEqual(monitor.stopCount, 1)
 
-    intentEnabled = false
+    intent.enabled = false
     observer.agentDidStop()
     XCTAssertEqual(observer.systemProxyState, .idle, "代理意图已关时，agent 停机呈现空闲")
   }
 
   func testModeTransitionAwaitingRuntimeStampsPendingOnlyUnderIntent() async throws {
-    var intentEnabled = false
+    let intent = IntentState(enabled: false)
     let observer = makeObserver(
       proxy: ProxyRuntimeFixture.FakeSystemProxy(), cleanupSettleNanoseconds: 1_000_000,
-      isIntentEnabled: { intentEnabled })
+      isIntentEnabled: { intent.enabled })
 
     observer.modeTransitionAwaitingRuntime()
     XCTAssertEqual(observer.systemProxyState, .idle, "代理意图关闭时不打待应用图章")
 
-    intentEnabled = true
+    intent.enabled = true
     observer.modeTransitionAwaitingRuntime()
     XCTAssertEqual(observer.systemProxyState, .pending)
   }
@@ -132,6 +132,13 @@ final class SystemProxyObserverTests: XCTestCase {
     XCTAssertFalse(observer.systemProxyStartupInProgress)
     XCTAssertEqual(observer.systemProxyState, .paused, "抑制解除后按意图挂起残留配置")
     XCTAssertEqual(observer.systemProxyObservationMode, .enabled)
+  }
+
+  @MainActor
+  private final class IntentState {
+    var enabled: Bool
+
+    init(enabled: Bool) { self.enabled = enabled }
   }
 
   private func makeObserver(

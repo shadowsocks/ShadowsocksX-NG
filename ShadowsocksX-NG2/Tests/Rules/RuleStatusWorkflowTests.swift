@@ -48,7 +48,9 @@ final class RuleStatusWorkflowTests: XCTestCase {
       feedbackDelay: { await clock.wait() },
       builtinSnapshots: BuiltinRuleSnapshots(loader: { rulesFixture($0) }))
     await workflow.refresh()
+    workflow.query(RulesQuery(source: .fixed))
     let fixed = try XCTUnwrap(workflow.snapshot.rows.first { $0.isFixed }?.identity)
+    workflow.query(RulesQuery(source: .custom))
     await workflow.setEnabled(true, identities: [disabled.identity, enabled.identity, fixed])
     let feedback = try XCTUnwrap(workflow.snapshot.commitFeedback)
     XCTAssertEqual(feedback.changedCount, 1)

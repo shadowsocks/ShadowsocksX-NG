@@ -16,6 +16,7 @@ final class RulesWorkflowTests: XCTestCase {
       CustomRuleDocument(rules: [broad, narrow], disabledIdentities: [orphan]))
     var commits = 0
     let workflow = RulesWorkflow(
+      preset: .gfwlist,
       loadDocument: { try store.loadDocument() },
       commitDocument: { document in
         commits += 1
@@ -45,6 +46,14 @@ final class RulesWorkflowTests: XCTestCase {
     await workflow.setEnabled(false, identities: workflow.actionableSelection)
     XCTAssertEqual(commits, 1)
     XCTAssertNotEqual(workflow.snapshot.version, version)
+    try await assertDisabledRowsAndOrphanCanBeEnabled(
+      workflow: workflow, store: store, broad: broad, narrow: narrow, orphan: orphan)
+  }
+
+  private func assertDisabledRowsAndOrphanCanBeEnabled(
+    workflow: RulesWorkflow, store: CustomRuleStore, broad: CustomRule,
+    narrow: CustomRule, orphan: ProxyRule
+  ) async throws {
     let disabled = try XCTUnwrap(workflow.snapshot.rows.first { $0.identity == broad.identity })
     XCTAssertFalse(disabled.isEnabled)
     XCTAssertEqual(disabled.sources, [.custom, .gfwlist])
@@ -73,6 +82,7 @@ final class RulesWorkflowTests: XCTestCase {
         attribution: "author"),
       rules: [ProxyRule(action: .direct, match: match)])
     let workflow = RulesWorkflow(
+      preset: .chinaDirect,
       loadCustom: { [custom] },
       builtinSnapshots: BuiltinRuleSnapshots(loader: { source in
         source == .geolocationCN ? snapshot : rulesFixture(source)
@@ -94,7 +104,7 @@ final class RulesWorkflowTests: XCTestCase {
       }))
     await workflow.refresh()
     XCTAssertFalse(workflow.snapshot.isComplete)
-    XCTAssertEqual(workflow.snapshot.issues.count, 2)
+    XCTAssertEqual(workflow.snapshot.issues.count, 1)
   }
 
   func testSearchActionAndSourceIntersectAndHiddenSelectionIsCleared() async throws {
@@ -139,6 +149,7 @@ final class RulesWorkflowTests: XCTestCase {
 
   func testCorruptUserDocumentAndMissingBuiltinStayDistinctFromEmptySearch() async throws {
     let workflow = RulesWorkflow(
+      preset: .chinaDirect,
       loadCustom: { throw CustomRuleStoreError.corrupt(detail: "fixture") },
       builtinSnapshots: BuiltinRuleSnapshots(loader: { source in
         if source == .chinaIPv4 { throw RuleSnapshotError.missing }
@@ -149,6 +160,7 @@ final class RulesWorkflowTests: XCTestCase {
     XCTAssertEqual(
       workflow.snapshot.issues,
       [.userDocument("corrupt(detail: \"fixture\")"), .builtin(.chinaIPv4, "missing")])
+    workflow.query(RulesQuery(source: .fixed))
     XCTAssertTrue(workflow.snapshot.rows.contains { $0.isFixed })
     workflow.query(RulesQuery(search: "no-result.example"))
     XCTAssertTrue(workflow.snapshot.rows.isEmpty)
@@ -159,11 +171,13 @@ final class RulesWorkflowTests: XCTestCase {
   func testPackagedCollectionLoadsMetadataShippedRulesAndFixedSemanticPolicy() async throws {
     let bundle = AppArtifact.bundle
     let workflow = RulesWorkflow(
+      preset: .chinaDirect,
       loadCustom: { [] },
       builtinSnapshots: BuiltinRuleSnapshots(bundle: bundle))
     await workflow.refresh()
     XCTAssertTrue(workflow.snapshot.isComplete, "\(workflow.snapshot.issues)")
-    XCTAssertEqual(workflow.snapshot.sources.count, 5)
+    XCTAssertEqual(workflow.snapshot.sources.count, 4)
+    workflow.query(RulesQuery(source: .fixed))
     XCTAssertTrue(workflow.snapshot.rows.contains { $0.id == .noDotHostname && $0.isFixed })
     let geo = try XCTUnwrap(workflow.snapshot.sources.first { $0.id == .geolocationCN })
     XCTAssertEqual(geo.count, 4241)
@@ -285,7 +299,8 @@ extension RulesWorkflowTests {
       CustomRule(action: .direct, match: exact),
     ]
     for input in [rules, Array(rules.reversed())] {
-      let collection = RulesCollection.load(custom: { input }, builtin: { rulesFixture($0) })
+      let collection = RulesCollection.load(
+        preset: .gfwlist, custom: { input }, builtin: { rulesFixture($0) })
       XCTAssertTrue(collection.issues.isEmpty)
       XCTAssertEqual(
         collection.rows.filter { $0.content == "same.example" }.compactMap(\.identity),

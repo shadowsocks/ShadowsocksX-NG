@@ -73,8 +73,9 @@ struct ProxyControlSnapshot: Equatable, Sendable {
   var systemProxyInspection = SystemProxyInspectionFacts()
   /// 当前已应用的代理模式（持久化成功的模式）。
   let proxyMode: ProxyMode
-  /// 规则模式子选项：未匹配默认动作；仅规则模式呈现。
-  let ruleDefaultAction: RuleDefaultAction
+  /// 规则模式内选择的规则预设；仅规则模式呈现。
+  var rulePreset: RulePreset = .gfwlist
+  var ruleDefaultAction: RuleDefaultAction { rulePreset.defaultAction }
   /// 可用模式由 Domain 单点策略投影；UI 不自行判断可用性。
   let availableModes: [ProxyMode]
   /// 活动目标事实；无活动目标为 nil。
@@ -118,8 +119,8 @@ protocol ProxyRuntimeAdapting: AnyObject {
   var systemProxyInspection: SystemProxyInspectionFacts { get }
   /// 当前已应用的代理模式。
   var proxyMode: ProxyMode { get }
-  /// 规则模式子选项。
-  var ruleDefaultAction: RuleDefaultAction { get }
+  /// 规则模式内选择的规则预设。
+  var rulePreset: RulePreset { get }
   /// 最近一次激活预检或目录收敛跳过的无效服务器数量。
   var skippedInvalidServerCount: Int { get }
   /// 当前活动目标身份；无目标为 nil（目录侧目标事实的唯一输入）。
@@ -147,7 +148,7 @@ protocol ProxyRuntimeAdapting: AnyObject {
   func recheckSystemProxy() async
   func setProxyMode(_ mode: ProxyMode) async
   /// 规则模式子选项命令。
-  func setRuleDefaultAction(_ action: RuleDefaultAction) async
+  func setRulePreset(_ preset: RulePreset) async
 }
 
 /// 窄的目录目标事实缝：目录侧只向代理控制提供活动
@@ -256,10 +257,10 @@ final class ProxyControlWorkflow: ObservableObject {
     return republish()
   }
 
-  /// 切换规则模式子选项：完成后整体重发布。
+  /// 切换规则预设：完成后整体重发布。
   @discardableResult
-  func setRuleDefaultAction(_ action: RuleDefaultAction) async -> ProxyControlSnapshot {
-    await runtime.setRuleDefaultAction(action)
+  func setRulePreset(_ preset: RulePreset) async -> ProxyControlSnapshot {
+    await runtime.setRulePreset(preset)
     return republish()
   }
 
@@ -331,7 +332,7 @@ final class ProxyControlWorkflow: ObservableObject {
         systemProxyApprovalRequired: runtime.systemProxyApprovalRequired,
         systemProxyInspection: runtime.systemProxyInspection,
         proxyMode: runtime.proxyMode,
-        ruleDefaultAction: runtime.ruleDefaultAction,
+        rulePreset: runtime.rulePreset,
         availableModes: ProxyMode.availableModes,
         activeTarget: targetFacts.activeTargetFacts(for: runtime.activeTargetID),
         skippedInvalidServerCount: runtime.skippedInvalidServerCount,

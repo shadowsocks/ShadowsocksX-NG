@@ -1,0 +1,107 @@
+name: ShadowsocksX-NG2 CI
+
+on:
+  pull_request:
+    branches: [develop, master]
+  push:
+    branches: [develop, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ng2-ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: ShadowsocksX-NG2
+
+jobs:
+  style:
+    name: Style (Xcode 27 arm64)
+    runs-on: xcode-27
+    timeout-minutes: 60
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up dependencies
+        uses: ./.github/actions/setup-ng2
+        with:
+          packages: go-task swiftlint
+          external-binaries: 'false'
+
+      - name: Check Swift formatting
+        run: task --exit-code validate -- format:check
+
+      - name: Lint
+        run: task --exit-code validate -- lint
+
+      - name: Upload failed validation evidence
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: validation-${{ github.job }}
+          path: ShadowsocksX-NG2/.build/validation/
+          include-hidden-files: true
+          retention-days: 7
+          if-no-files-found: warn
+
+  build-test:
+    name: Build and test (Xcode 27 arm64)
+    runs-on: xcode-27
+    timeout-minutes: 60
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up dependencies
+        uses: ./.github/actions/setup-ng2
+
+      - name: Build
+        run: task --exit-code validate -- build
+
+      - name: Test
+        run: task --exit-code validate -- test
+
+      - name: Upload failed validation evidence
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: validation-${{ github.job }}
+          path: ShadowsocksX-NG2/.build/validation/
+          include-hidden-files: true
+          retention-days: 7
+          if-no-files-found: warn
+
+  smoke:
+    name: Smoke tests (Xcode 27 arm64)
+    runs-on: xcode-27
+    timeout-minutes: 60
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up dependencies
+        uses: ./.github/actions/setup-ng2
+
+      - name: Smoke tests
+        run: task --exit-code validate -- test:smoke
+
+      - name: Upload failed validation evidence
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: validation-${{ github.job }}
+          path: ShadowsocksX-NG2/.build/validation/
+          include-hidden-files: true
+          retention-days: 7
+          if-no-files-found: warn

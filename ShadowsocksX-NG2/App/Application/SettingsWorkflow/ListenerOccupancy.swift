@@ -154,11 +154,11 @@ final class ListenerOccupancy: ObservableObject {
     let excluded = Set(ProxyEndpointKind.allCases.map { context.proposedListen.port(for: $0) })
     let probe = probe
     let candidate = await Task.detached(priority: .utility) {
-      PortSuggestion.firstFree(excluding: excluded) { port in
+      await PortSuggestion.firstFreeAsync(excluding: excluded) { port in
         let request = PortOccupancyProbeRequest(
           endpoint: endpoint,
           listen: context.proposedListen.replacingPort(port, for: endpoint), port: port)
-        if case .free = probe.occupancy(for: request) { return true }
+        if case .free = await probe.occupancy(for: request) { return true }
         return false
       }
     }.value
@@ -202,15 +202,14 @@ final class ListenerOccupancy: ObservableObject {
     -> [SettingsPortID: PortOccupancy]
   {
     await Task.detached(priority: .utility) {
-      Dictionary(
-        uniqueKeysWithValues: SettingsPortID.allCases.map { id in
-          let endpoint = SettingsPortAdapter.endpoint(for: id, group: context.draft.group)
-          return (
-            id,
-            probe.occupancy(
-              for: PortOccupancyProbeRequest(endpoint: endpoint, listen: context.proposedListen))
-          )
-        })
+      var results: [SettingsPortID: PortOccupancy] = [:]
+      for id in SettingsPortID.allCases {
+        let endpoint = SettingsPortAdapter.endpoint(for: id, group: context.draft.group)
+        let request = PortOccupancyProbeRequest(
+          endpoint: endpoint, listen: context.proposedListen)
+        results[id] = await probe.occupancy(for: request)
+      }
+      return results
     }.value
   }
 }

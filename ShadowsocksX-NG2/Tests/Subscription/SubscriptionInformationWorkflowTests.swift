@@ -11,6 +11,8 @@ struct SubscriptionInformationWorkflowTests {
       let summary = try await workflow.createSubscription(urlString: "https://p.example.com/sub")
       #expect(summary.information?.bytesUsed == 25)
       #expect(summary.information?.bytesRemaining == 75)
+      #expect(summary.information?.expiresAt == Date(timeIntervalSince1970: 0))
+      #expect(summary.information?.trafficResetAt == Date(timeIntervalSince1970: 86_400))
       let succeededAt = try #require(summary.lastSucceededAt)
       if case .succeeded(let attemptAt) = summary.status {
         #expect(succeededAt == attemptAt)
@@ -35,13 +37,24 @@ struct SubscriptionInformationWorkflowTests {
       fetcher.setBehavior(
         .success(
           Data(
-            #"{"version":1,"servers":[],"bytes_used":50,"bytes_remaining":-1,"expires_at":123}"#
-              .utf8)))
+            #"""
+            {"version":1,
+            "servers":[],
+            "bytes_used":50,
+            "bytes_remaining":-1,
+            "expires_at":"1970-01-01T00:00:00Z",
+            "x_shadowsocksx_ng":{"schema_version":1,
+            "expires_at":123}}
+            """#
+            .utf8)))
       await workflow.refreshSubscription(first.id)
       let replaced = try #require(workflow.subscriptions.first)
       #expect(replaced.information?.bytesUsed == 50)
       #expect(replaced.information?.bytesRemaining == nil)
+      #expect(first.information?.expiresAt != nil)
+      #expect(first.information?.trafficResetAt != nil)
       #expect(replaced.information?.expiresAt == nil)
+      #expect(replaced.information?.trafficResetAt == nil)
 
       fetcher.setBehavior(.success(Data(#"{"version":1,"servers":[]}"#.utf8)))
       await workflow.refreshSubscription(first.id)
@@ -149,7 +162,17 @@ struct SubscriptionInformationWorkflowTests {
     let store = makeTestCatalogStore(fileURL: directory.appendingPathComponent("catalog.json"))
     let fetcher = FakeSubscriptionFetcher(
       behavior: .success(
-        Data(#"{"version":1,"servers":[],"bytes_used":25,"bytes_remaining":75}"#.utf8)))
+        Data(
+          #"""
+          {"version":1,
+          "servers":[],
+          "bytes_used":25,
+          "bytes_remaining":75,
+          "x_shadowsocksx_ng":{"schema_version":1,
+          "expires_at":"1970-01-01T00:00:00Z",
+          "traffic_reset_at":"1970-01-02T00:00:00Z"}}
+          """#
+          .utf8)))
     let workflow = makeCatalogWorkflow(
       coordinator: CatalogCommitCoordinator(fileStore: store, runtime: FakeCatalogRuntime()),
       subscriptionFetcher: fetcher)

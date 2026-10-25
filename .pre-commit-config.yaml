@@ -1,0 +1,27 @@
+minimum_pre_commit_version: "3.2.0"
+
+repos:
+  - repo: local
+    hooks:
+      - id: ng2-swift-format
+        name: Format staged NG2 Swift files
+        entry: swift format format --in-place --configuration ShadowsocksX-NG2/.swift-format
+        language: system
+        files: ^ShadowsocksX-NG2/.*\.swift$
+        stages: [pre-commit]
+
+      - id: ng2-swift-format-check
+        name: Check NG2 Swift formatting and style
+        entry: task --dir ShadowsocksX-NG2 format:check
+        language: system
+        files: ^ShadowsocksX-NG2/.*\.swift$
+        pass_filenames: false
+        stages: [pre-commit]
+
+      - id: ng2-swiftlint
+        name: Lint staged NG2 Swift files
+        entry: swiftlint lint --config ShadowsocksX-NG2/.swiftlint.yml --no-cache --quiet
+        language: system
+        files: ^ShadowsocksX-NG2/.*\.swift$
+        stages: [pre-commit]
+        verbose: true

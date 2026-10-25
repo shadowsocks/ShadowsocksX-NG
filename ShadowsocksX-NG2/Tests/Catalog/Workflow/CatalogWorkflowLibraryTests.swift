@@ -148,16 +148,21 @@ struct CatalogWorkflowLibraryTests {
       coordinator: CatalogCommitCoordinator(fileStore: store, runtime: FakeCatalogRuntime()),
       subscriptionFetcher: fetcher)
     let refresh = Task { await workflow.refreshSubscription(record.id) }
-    await fetcher.waitUntilEntered()
-    try await workflow.editSubscriptionURL(record.id, urlString: "https://new.example/sub")
-    let restored = CatalogFileStore(
-      fileURL: url,
-      library: ServerLibraryStorage(
-        keys: keys))
-    _ = try restored.load()
-    #expect(try restored.load().subscriptions.first?.url == "https://new.example/sub")
-    fetcher.releaseAll()
-    await refresh.value
+    try await withTestTask(refresh, release: fetcher.releaseAll) {
+      try await requireTestCondition("old URL fetch entered") { fetcher.didEnterFetch }
+      let edit = Task {
+        do {
+          try await workflow.saveSubscription(record.id, urlString: "https://new.example/sub")
+        } catch { Issue.record(error) }
+      }
+      try await withTestTask(edit, release: fetcher.releaseAll) {
+        try await requireTestCondition("new URL fetch entered") { fetcher.requestCount == 2 }
+        let restored = CatalogFileStore(
+          fileURL: url, library: ServerLibraryStorage(keys: keys))
+        _ = try restored.load()
+        #expect(try restored.load().subscriptions.first?.url == "https://new.example/sub")
+      }
+    }
   }
 
   @Test func failedURLSaveDoesNotFetchOrPublishAndFailedRefreshKeepsSecrets() async throws {
@@ -179,16 +184,19 @@ struct CatalogWorkflowLibraryTests {
     try FileManager.default.removeItem(at: gate)
     try Data().write(to: gate)
     await #expect(throws: (any Error).self) {
-      try await workflow.editSubscriptionURL(subscription.id, urlString: "https://new.example/sub")
+      try await workflow.saveSubscription(
+        subscription.id, urlString: "https://new.example/sub",
+        autoUpdate: .init(userOverride: .daily))
     }
+    #expect(workflow.subscriptions.first?.autoUpdate == subscription.autoUpdate)
     #expect(try workflow.subscriptionURL(for: subscription.id) == "https://old.example/sub")
     #expect(fetcher.requestCount == requests)
     #expect(runtime.convergeCount == 0)
+    let updatedDocument = try #require(String(bytes: SubscriptionDocs.tree(), encoding: .utf8))
     fetcher.setBehavior(
       .success(
         Data(
-          String(decoding: SubscriptionDocs.tree(), as: UTF8.self)
-            .replacingOccurrences(of: "\"pa\"", with: "\"changed-password\"").utf8)))
+          updatedDocument.replacingOccurrences(of: "\"pa\"", with: "\"changed-password\"").utf8)))
     await workflow.refreshSubscription(subscription.id)
     let after = try #require(try workflow.serverEditForm(for: server.id))
     #expect(after.password == before.password)

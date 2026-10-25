@@ -54,37 +54,47 @@ extension ProxyRuntimeController {
         return
       }
     }
-    if enabled == settings.agentEnabled {
-      guard enabled else { return }
-      if retryingFailure {
-        await convergeAgent()
-        return
-      }
-      if ruleApplicationFailure != nil {
-        scheduleRuleApplication()
-        return
-      }
-      switch state {
-      case .off, .launchFailed, .serviceFailed:
-        await convergeAgent()
-      case .starting, .running, .firewallBlocked, .requiresApproval:
-        break
-      }
+    guard enabled != settings.agentEnabled else {
+      await handleUnchangedAgentIntent(enabled, retryingFailure: retryingFailure)
       return
     }
     controlPreferences.agentEnabled = enabled
     settings.agentEnabled = enabled
     if enabled {
-      await convergeAgent()
-      if settings.systemProxyEnabled { systemProxyObserver.startEnabledSystemProxyObservation() }
+      await enableAgentAfterIntent()
     } else {
-      let cleanupOutcome = await cascadeSystemProxyOffForAgentOff()
-      await stopAgent()
-      if let cleanupOutcome {
-        systemProxyObserver.presentCleanupOutcome(cleanupOutcome)
-      } else {
-        systemProxyObserver.updateSystemProxyActions()
-      }
+      await disableAgentAfterIntent()
+    }
+  }
+
+  private func handleUnchangedAgentIntent(_ enabled: Bool, retryingFailure: Bool) async {
+    guard enabled else { return }
+    if retryingFailure {
+      await convergeAgent()
+      return
+    }
+    if ruleApplicationFailure != nil {
+      scheduleRuleApplication()
+      return
+    }
+    switch state {
+    case .off, .launchFailed, .serviceFailed: await convergeAgent()
+    case .starting, .running, .firewallBlocked, .requiresApproval: break
+    }
+  }
+
+  private func enableAgentAfterIntent() async {
+    await convergeAgent()
+    if settings.systemProxyEnabled { systemProxyObserver.startEnabledSystemProxyObservation() }
+  }
+
+  private func disableAgentAfterIntent() async {
+    let cleanupOutcome = await cascadeSystemProxyOffForAgentOff()
+    await stopAgent()
+    if let cleanupOutcome {
+      systemProxyObserver.presentCleanupOutcome(cleanupOutcome)
+    } else {
+      systemProxyObserver.updateSystemProxyActions()
     }
   }
 

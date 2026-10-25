@@ -71,13 +71,13 @@ func withRuleApplicationTask<Value: Sendable>(
 
 final class PausedRuntimeRuleSource: @unchecked Sendable {
   let started: XCTestExpectation
-  private let release = TestBlockingGate("rule source release")
+  private let release = TestAsyncGate("rule source release")
   init(started: XCTestExpectation) { self.started = started }
   func resume() { release.release() }
-  func load(_ source: RulesSource) -> RuleSnapshot {
+  func load(_ source: RulesSource) async -> RuleSnapshot {
     if source == .geolocationCN {
       started.fulfill()
-      _ = release.wait()
+      _ = await release.wait()
     }
     return rulesFixture(source)
   }

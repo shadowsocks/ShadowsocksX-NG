@@ -1,5 +1,13 @@
 import Foundation
 
+private typealias RuntimeFileCreator = (Data, String, String) throws -> String
+
+private struct PreparedAuthentication {
+  let document: SslocalRuntimeDocument
+  let id: String?
+  let files: [String]
+}
+
 /// GUI 独占配置准备与监管发布；Agent 独占稳定链接切换和退休文件回收。
 struct RuntimeFileStore {
   enum PersistenceError: Error, Equatable {
@@ -32,105 +40,128 @@ struct RuntimeFileStore {
 
   func write(_ contract: PreparedRuntimeContract) throws {
     try RuntimePublication.withLock(in: directoryURL) {
-      var created: [URL] = []
-      var publicationID: String?
-      do {
-        guard contract.document.isWellFormed else { throw POSIXError(.EINVAL) }
-        let old = RuntimePublication.load(at: supervisionFileURL)
-        let generation = try reserveGeneration()
-        let prefix = String(format: "%020llu", generation)
-        func create(_ data: Data, kind: String, suffix: String) throws -> String {
-          let name = "\(kind)-\(prefix)-\(suffix)"
-          let url = directoryURL.appendingPathComponent(name)
-          guard !FileManager.default.fileExists(atPath: url.path) else { throw POSIXError(.EEXIST) }
-          // 先登记：注入的写入器即使在写后抛错，也由 GUI 清理本次未发布文件。
-          created.append(url)
-          try fileWriter(data, url)
-          guard RuntimePublication.isRegularFile(url), try Data(contentsOf: url) == data else {
-            throw POSIXError(.EIO)
-          }
-          return name
+      try publishLocked(contract)
+    }
+  }
+
+  private func publishLocked(_ contract: PreparedRuntimeContract) throws {
+    var created: [URL] = []
+    var publicationID: String?
+    do {
+      guard contract.document.isWellFormed else { throw POSIXError(.EINVAL) }
+      let old = RuntimePublication.load(at: supervisionFileURL)
+      let generation = try reserveGeneration()
+      let prefix = String(format: "%020llu", generation)
+      func create(_ data: Data, kind: String, suffix: String) throws -> String {
+        let name = "\(kind)-\(prefix)-\(suffix)"
+        let url = directoryURL.appendingPathComponent(name)
+        guard !FileManager.default.fileExists(atPath: url.path) else { throw POSIXError(.EEXIST) }
+        // 先登记：注入的写入器即使在写后抛错，也由 GUI 清理本次未发布文件。
+        created.append(url)
+        try fileWriter(data, url)
+        guard RuntimePublication.isRegularFile(url), try Data(contentsOf: url) == data else {
+          throw POSIXError(.EIO)
         }
-        var variants = old?.aclVariants ?? [:]
-        var selectedACL: RuntimeSupervision.ACL?
-        if let acl = contract.document.aclRuntime {
-          guard acl.path == aclFileURL.standardizedFileURL.path, acl.isWellFormed else {
-            throw POSIXError(.EINVAL)
-          }
-          if let cached = variants[acl.summary], cached.sha256 == acl.sha256 {
-            selectedACL = cached
-          } else {
-            guard !acl.content.isEmpty else { throw POSIXError(.ENOENT) }
-            let data = Data(acl.content.utf8)
-            let name = try create(data, kind: "acl", suffix: "\(acl.summary).ini")
-            selectedACL = .init(file: name, sha256: acl.sha256, size: data.count)
-            variants[acl.summary] = selectedACL
-          }
+        return name
+      }
+      let snapshot = try makeSnapshot(
+        contract, old: old, generation: generation,
+        create: { try create($0, kind: $1, suffix: $2) })
+      // 唯一发布点。所有可引用资源已落盘且校验完成；不提前触碰任何活动链接。
+      publicationID = snapshot.deploymentID
+      try fileWriter(JSONEncoder().encode(snapshot), supervisionFileURL)
+    } catch {
+      try handlePublicationFailure(error, publicationID: publicationID, created: created)
+    }
+  }
+
+  private func makeSnapshot(
+    _ contract: PreparedRuntimeContract, old: RuntimeSupervision?, generation: UInt64,
+    create: RuntimeFileCreator
+  ) throws -> RuntimeSupervision {
+    var variants = old?.aclVariants ?? [:]
+    var selectedACL: RuntimeSupervision.ACL?
+    if let acl = contract.document.aclRuntime {
+      guard acl.path == aclFileURL.standardizedFileURL.path, acl.isWellFormed else {
+        throw POSIXError(.EINVAL)
+      }
+      selectedACL = try selectACL(acl, variants: &variants, create: create)
+    }
+    let authentication = try prepareAuthentication(contract.document, old: old, create: create)
+    let configurationData = try authentication.document.jsonData()
+    let configurationID =
+      reusableConfigurationID(
+        for: configurationData, previous: old) ?? UUID().uuidString
+    let configuration = try create(configurationData, "config", "sslocal.json")
+    let intent = PublishedRuntimeIntent(
+      sha256: contract.sha256, configurationSHA256: ProxyACLDocument.digest(configurationData),
+      summary: Redactor.documentSummary(contract.document))
+    let intentMetadata = try create(JSONEncoder().encode(intent), "config", "intent.json")
+    let snapshot = RuntimeSupervision(
+      version: 2, generation: generation, deploymentID: UUID().uuidString,
+      configuration: configuration, configurationID: configurationID,
+      intentMetadata: intentMetadata,
+      locals: authentication.document.locals.map {
+        .init(
+          inboundProtocol: $0.inboundProtocol, localAddress: $0.localAddress,
+          localPort: $0.localPort, mode: $0.mode)
+      }, ipv6Only: authentication.document.ipv6Only,
+      authenticationID: authentication.id, authenticationFiles: authentication.files,
+      acl: selectedACL, aclVariants: variants)
+    guard snapshot.validated(in: directoryURL) else { throw POSIXError(.EINVAL) }
+    return snapshot
+  }
+
+  private func selectACL(
+    _ acl: ProxyACLDocument, variants: inout [String: RuntimeSupervision.ACL],
+    create: RuntimeFileCreator
+  ) throws -> RuntimeSupervision.ACL {
+    if let cached = variants[acl.summary], cached.sha256 == acl.sha256 { return cached }
+    guard !acl.content.isEmpty else { throw POSIXError(.ENOENT) }
+    let data = Data(acl.content.utf8)
+    let name = try create(data, "acl", "\(acl.summary).ini")
+    let selected = RuntimeSupervision.ACL(file: name, sha256: acl.sha256, size: data.count)
+    variants[acl.summary] = selected
+    return selected
+  }
+
+  private func reusableConfigurationID(for data: Data, previous: RuntimeSupervision?) -> String? {
+    guard let previous, let identity = previous.configurationID,
+      publishedIntent(previous)?.configurationSHA256 == ProxyACLDocument.digest(data),
+      (try? Data(contentsOf: directoryURL.appendingPathComponent(previous.configuration))) == data
+    else { return nil }
+    return identity
+  }
+
+  private func handlePublicationFailure(
+    _ error: Error, publicationID: String?, created: [URL]
+  ) throws {
+    // 写入器在原子替换后报错时，发布已经发生；不得删除读者可见资源。
+    if let publicationID,
+      RuntimePublication.load(at: supervisionFileURL)?.deploymentID == publicationID
+    {
+      throw PersistenceError.ioFailure(detail: "Publication completed but writer reported failure")
+    }
+    var failures: [String] = []
+    for url in created {
+      do { try FileManager.default.removeItem(at: url) } catch {
+        if FileManager.default.fileExists(atPath: url.path) {
+          failures.append(url.lastPathComponent)
         }
-        let authentication = try prepareAuthentication(
-          contract.document, old: old, create: { try create($0, kind: $1, suffix: $2) })
-        let encoded = authentication.document
-        let configurationData = try encoded.jsonData()
-        let configurationID =
-          old.flatMap { previous -> String? in
-            guard let identity = previous.configurationID,
-              publishedIntent(previous)?.configurationSHA256
-                == ProxyACLDocument.digest(configurationData),
-              (try? Data(contentsOf: directoryURL.appendingPathComponent(previous.configuration)))
-                == configurationData
-            else { return nil }
-            return identity
-          } ?? UUID().uuidString
-        let configuration = try create(configurationData, kind: "config", suffix: "sslocal.json")
-        let intent = PublishedRuntimeIntent(
-          sha256: contract.sha256, configurationSHA256: ProxyACLDocument.digest(configurationData),
-          summary: Redactor.documentSummary(contract.document))
-        let intentMetadata = try create(
-          JSONEncoder().encode(intent), kind: "config", suffix: "intent.json")
-        let snapshot = RuntimeSupervision(
-          version: 2, generation: generation, deploymentID: UUID().uuidString,
-          configuration: configuration, configurationID: configurationID,
-          intentMetadata: intentMetadata,
-          locals: encoded.locals.map {
-            .init(
-              inboundProtocol: $0.inboundProtocol, localAddress: $0.localAddress,
-              localPort: $0.localPort, mode: $0.mode)
-          }, ipv6Only: encoded.ipv6Only, authenticationID: authentication.id,
-          authenticationFiles: authentication.files, acl: selectedACL, aclVariants: variants)
-        guard snapshot.validated(in: directoryURL) else { throw POSIXError(.EINVAL) }
-        // 唯一发布点。所有可引用资源已落盘且校验完成；不提前触碰任何活动链接。
-        publicationID = snapshot.deploymentID
-        try fileWriter(JSONEncoder().encode(snapshot), supervisionFileURL)
-      } catch {
-        // 写入器在原子替换后报错时，发布已经发生；不得删除读者可见资源。
-        if let publicationID,
-          RuntimePublication.load(at: supervisionFileURL)?.deploymentID == publicationID
-        {
-          throw PersistenceError.ioFailure(
-            detail: "Publication completed but writer reported failure")
-        }
-        var failures: [String] = []
-        for url in created {
-          do { try FileManager.default.removeItem(at: url) } catch {
-            if FileManager.default.fileExists(atPath: url.path) {
-              failures.append(url.lastPathComponent)
-            }
-          }
-        }
-        if !failures.isEmpty {
-          throw PersistenceError.rollbackFailed(
-            detail: "Unpublished cleanup: " + failures.joined(separator: ","))
-        }
-        throw PersistenceError.ioFailure(detail: String(describing: error))
       }
     }
+    if !failures.isEmpty {
+      throw PersistenceError.rollbackFailed(
+        detail: "Unpublished cleanup: " + failures.joined(separator: ","))
+    }
+    throw PersistenceError.ioFailure(detail: String(describing: error))
   }
 
   private func prepareAuthentication(
     _ document: SslocalRuntimeDocument,
     old: RuntimeSupervision?,
-    create: (Data, String, String) throws -> String
-  ) throws -> (document: SslocalRuntimeDocument, id: String?, files: [String]) {
+    create: RuntimeFileCreator
+  ) throws -> PreparedAuthentication {
     var authenticationID: String?
     var authenticationFiles: [String] = []
     var encoded = document
@@ -167,7 +198,8 @@ struct RuntimeFileStore {
         }
       }
     }
-    return (encoded, authenticationID, authenticationFiles)
+    return PreparedAuthentication(
+      document: encoded, id: authenticationID, files: authenticationFiles)
   }
 
   /// 代次高水位独立于部署文件持久保存。预留失败可留空号，溢出拒绝部署。
@@ -186,6 +218,10 @@ struct RuntimeFileStore {
     try AtomicFileWriter.write(Data(String(current + 1).utf8), to: url)
     return current + 1
   }
+
+}
+
+extension RuntimeFileStore {
 
   /// 意图比较不解析输出正文；最终字节摘要保留原有磁盘漂移检查。
   func contains(_ contract: PreparedRuntimeContract) -> Bool {

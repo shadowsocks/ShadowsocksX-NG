@@ -76,20 +76,22 @@ final class ProxyRuntimeModeCommandTests: ProxyRuntimeControllerTests {
     let callsBefore = probe.callCount
     signals.reloadReceipt = {}
     let pending = Task { await controller.setProxyMode(.direct) }
-    try await withTestTask(pending, release: { gate.resume() }) {
-      try await requireTestPhase([waiting])
-      XCTAssertEqual(controller.state, .running)
-      let store = RuntimeFileStore(fileURL: runtime.contract)
-      var stateAtReload: ProxyRuntimeController.AgentRunState?
-      self.signals.reloadReceipt = {
-        stateAtReload = controller.state
-        try? store.writePublishedRuntimeReceipt(processID: 42)
-      }
-      await controller.setProxyMode(.global)
-      XCTAssertEqual(stateAtReload, .running)
-      XCTAssertEqual(controller.state, .running)
-      XCTAssertEqual(probe.callCount, callsBefore)
-    }
+    try await withTestTask(
+      pending, release: { gate.resume() },
+      body: {
+        try await requireTestPhase([waiting])
+        XCTAssertEqual(controller.state, .running)
+        let store = RuntimeFileStore(fileURL: runtime.contract)
+        var stateAtReload: ProxyRuntimeController.AgentRunState?
+        self.signals.reloadReceipt = {
+          stateAtReload = controller.state
+          try? store.writePublishedRuntimeReceipt(processID: 42)
+        }
+        await controller.setProxyMode(.global)
+        XCTAssertEqual(stateAtReload, .running)
+        XCTAssertEqual(controller.state, .running)
+        XCTAssertEqual(probe.callCount, callsBefore)
+      })
     XCTAssertTrue(controller.runtimeReloadProcesses.isEmpty)
     XCTAssertEqual(controller.proxyMode, .global)
     XCTAssertEqual(controller.state, .running)

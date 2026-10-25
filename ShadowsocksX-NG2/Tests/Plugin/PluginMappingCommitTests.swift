@@ -162,9 +162,9 @@ private final class PluginMappingCommitFixture {
   let store: PluginMappingFileStore
   let plugins: PluginCatalog
   let files: RuntimeFileStore
-  let agent = ProxyRuntimeFixture.FakeLaunchAgent()
-  let probe = ProxyRuntimeFixture.BlockingProbe()
-  let signals = CommitSignals()
+  let agent: ProxyRuntimeFixture.FakeLaunchAgent
+  let probe: ProxyRuntimeFixture.BlockingProbe
+  let signals: CommitSignals
   let controller: ProxyRuntimeController
   let workflow: CatalogWorkflow
   let group: NodeID
@@ -175,75 +175,33 @@ private final class PluginMappingCommitFixture {
   private var applications: AsyncStream<RuntimeSyncOutcome>.Iterator
 
   init() throws {
-    let runtime = ProxyRuntimeFixture.makeTemporaryRuntime()
-    directory = runtime.directory
-    first = directory.appendingPathComponent("first")
-    second = directory.appendingPathComponent("second")
-    third = directory.appendingPathComponent("third")
-    for binary in [first, second, third] {
-      try Data("#!/bin/sh\n".utf8).write(to: binary)
-      try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: binary.path)
-    }
-    store = PluginMappingFileStore(
-      fileURL: directory.appendingPathComponent("mappings/plugins.json"))
-    plugins = PluginCatalog(store: store, inspector: CommitPluginInspector())
-    try plugins.addPlugin(program: "tool", path: first.path)
-    var catalog = ConfigurationCatalog()
-    group = try catalog.addGroup("Group")
-    pluginServer = try ActivationFixture.addPlainServer(
-      "Plugin", to: group, in: &catalog)
-    plainServer = try ActivationFixture.addPlainServer(
-      "Plain", to: group, in: &catalog)
-    guard case .server(var fields) = try #require(catalog.entry(for: pluginServer)).kind else {
-      throw CocoaError(.fileReadCorruptFile)
-    }
-    fields.pluginProgram = "tool"
-    try catalog.updateServer(pluginServer, with: fields)
-    let catalogStore = makeTestCatalogStore(
-      fileURL: directory.appendingPathComponent("catalog.json"))
-    try catalogStore.save(CatalogDocument(catalog: catalog))
-    let bootstrap = CatalogCommitCoordinator.bootstrap(fileStore: catalogStore)
-    files = RuntimeFileStore(fileURL: runtime.contract)
-    let files = files
-    agent.onRegister = {
-      try? Data("42".utf8).write(to: files.pidFileURL)
-      try? files.writePublishedRuntimeReceipt(processID: 42)
-    }
-    let contractURL = files.fileURL
-    let signals = signals
-    controller = ProxyRuntimeController(
-      controlPreferences: makeTestProxyControlPreferences(),
-      catalogSnapshotReader: bootstrap.catalogSnapshotReader,
-      activationFileStore: ActivationStateFileStore(
-        fileURL: directory.appendingPathComponent("activation.json")),
-      runtimeFileStore: files, plugins: plugins,
-      listeningStore: InMemoryProxyListeningStore(),
-      customRuleStore: CustomRuleStore(fileURL: directory.appendingPathComponent("rules.json")),
-      appBundle: AppArtifact.bundle,
-      ruleSnapshots: BuiltinRuleSnapshots(loader: ProxyRuntimeFixture.controlFlowRuleSnapshot),
-      settingsRestore: RestoredProxyRuntimeSettings(
-        settings: ProxyRuntimeSettings(listen: ActivationFixture.listen, agentEnabled: true),
-        unreadableError: nil),
-      agent: agent, probe: probe, systemProxy: ProxyRuntimeFixture.FakeSystemProxy(),
-      systemProxyHelper: ProxyRuntimeFixture.FakeSystemProxyHelperService(),
-      firewallChecker: ProxyRuntimeFixture.FakeFirewallChecker(),
-      launchHealthTimeoutSeconds: 0.2,
-      launchHealthRetryDelay: { try await Task.sleep(for: .milliseconds(10)) },
-      sendSignal: { _, signal in
-        guard signal != 0 else { return 0 }
-        signals.record()
-        let store = RuntimeFileStore(fileURL: contractURL)
-        try? store.writePublishedRuntimeReceipt(processID: 42)
-        return 0
-      }, processIsAlive: { $0 == 42 })
-    workflow = makeCatalogWorkflow(
-      coordinator: CatalogCommitCoordinator(
-        fileStore: catalogStore, runtime: ProxyRuntimeSyncAdapter(controller: controller),
-        bootstrap: bootstrap), plugins: plugins)
+    let setup = try makePluginMappingCommitSetup()
+    directory = setup.runtime.directory
+    first = setup.first
+    second = setup.second
+    third = setup.third
+    store = setup.store
+    plugins = setup.plugins
+    files = setup.files
+    agent = setup.agent
+    probe = setup.probe
+    signals = setup.signals
+    controller = setup.controller
+    workflow = setup.workflow
+    group = setup.group
+    pluginServer = setup.pluginServer
+    plainServer = setup.plainServer
     let stream = AsyncStream<RuntimeSyncOutcome>.makeStream()
     applications = stream.stream.makeAsyncIterator()
+    connectPluginCatalog(stream.continuation)
+  }
+
+  private func connectPluginCatalog(
+    _ continuation: AsyncStream<RuntimeSyncOutcome>.Continuation
+  ) {
     let controller = controller
     let workflow = workflow
+    let files = files
     plugins.connect(
       invalidateRuntime: { [weak controller] in controller?.pluginMappingsDidPublish() },
       revalidate: { [weak workflow] in workflow?.republishCommittedState() },
@@ -255,7 +213,7 @@ private final class PluginMappingCommitFixture {
         if let path = files.loadDocument()?.servers.first?.plugin {
           self?.applicationPaths.append(path)
         }
-        stream.continuation.yield(outcome)
+        continuation.yield(outcome)
       })
   }
 
@@ -286,4 +244,142 @@ private final class CommitSignals: @unchecked Sendable {
   var count: Int { lock.withLock { recorded } }
 
   func record() { lock.withLock { recorded += 1 } }
+}
+
+@MainActor
+private struct PluginMappingCommitSetup {
+  let runtime: ProxyRuntimeFixture.TemporaryRuntime
+  let first: URL
+  let second: URL
+  let third: URL
+  let store: PluginMappingFileStore
+  let plugins: PluginCatalog
+  let files: RuntimeFileStore
+  let agent: ProxyRuntimeFixture.FakeLaunchAgent
+  let probe: ProxyRuntimeFixture.BlockingProbe
+  let signals: CommitSignals
+  let controller: ProxyRuntimeController
+  let workflow: CatalogWorkflow
+  let group: NodeID
+  let pluginServer: NodeID
+  let plainServer: NodeID
+}
+
+@MainActor
+private struct PluginMappingCatalogSetup {
+  let fileStore: CatalogFileStore
+  let bootstrap: CatalogCommitBootstrap
+  let group: NodeID
+  let pluginServer: NodeID
+  let plainServer: NodeID
+}
+
+@MainActor
+private struct PluginMappingControllerContext {
+  let directory: URL
+  let bootstrap: CatalogCommitBootstrap
+  let files: RuntimeFileStore
+  let plugins: PluginCatalog
+  let agent: ProxyRuntimeFixture.FakeLaunchAgent
+  let probe: ProxyRuntimeFixture.BlockingProbe
+  let signals: CommitSignals
+}
+
+@MainActor
+private func makePluginMappingCommitSetup() throws -> PluginMappingCommitSetup {
+  let runtime = ProxyRuntimeFixture.makeTemporaryRuntime()
+  let first = runtime.directory.appendingPathComponent("first")
+  let second = runtime.directory.appendingPathComponent("second")
+  let third = runtime.directory.appendingPathComponent("third")
+  try installPluginCommitExecutables([first, second, third])
+  let store = PluginMappingFileStore(
+    fileURL: runtime.directory.appendingPathComponent("mappings/plugins.json"))
+  let plugins = PluginCatalog(store: store, inspector: CommitPluginInspector())
+  try plugins.addPlugin(program: "tool", path: first.path)
+  let catalog = try makePluginMappingCatalogSetup(in: runtime.directory)
+  let files = RuntimeFileStore(fileURL: runtime.contract)
+  let agent = ProxyRuntimeFixture.FakeLaunchAgent()
+  let probe = ProxyRuntimeFixture.BlockingProbe()
+  let signals = CommitSignals()
+  agent.onRegister = {
+    try? Data("42".utf8).write(to: files.pidFileURL)
+    try? files.writePublishedRuntimeReceipt(processID: 42)
+  }
+  let controller = makePluginMappingCommitController(
+    PluginMappingControllerContext(
+      directory: runtime.directory, bootstrap: catalog.bootstrap, files: files,
+      plugins: plugins, agent: agent, probe: probe, signals: signals))
+  let workflow = makeCatalogWorkflow(
+    coordinator: CatalogCommitCoordinator(
+      fileStore: catalog.fileStore, runtime: ProxyRuntimeSyncAdapter(controller: controller),
+      bootstrap: catalog.bootstrap), plugins: plugins)
+  return PluginMappingCommitSetup(
+    runtime: runtime, first: first, second: second, third: third, store: store,
+    plugins: plugins, files: files, agent: agent, probe: probe, signals: signals,
+    controller: controller, workflow: workflow, group: catalog.group,
+    pluginServer: catalog.pluginServer, plainServer: catalog.plainServer)
+}
+
+private func installPluginCommitExecutables(_ binaries: [URL]) throws {
+  for binary in binaries {
+    try Data("#!/bin/sh\n".utf8).write(to: binary)
+    try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: binary.path)
+  }
+}
+
+@MainActor
+private func makePluginMappingCatalogSetup(in directory: URL) throws -> PluginMappingCatalogSetup {
+  let store = makeTestCatalogStore(fileURL: directory.appendingPathComponent("catalog.json"))
+  var catalog = ConfigurationCatalog()
+  let group = try catalog.addGroup("Group")
+  let pluginServer = try ActivationFixture.addPlainServer("Plugin", to: group, in: &catalog)
+  let plainServer = try ActivationFixture.addPlainServer("Plain", to: group, in: &catalog)
+  guard case .server(var fields) = try #require(catalog.entry(for: pluginServer)).kind else {
+    throw CocoaError(.fileReadCorruptFile)
+  }
+  fields.pluginProgram = "tool"
+  try catalog.updateServer(pluginServer, with: fields)
+  try store.save(CatalogDocument(catalog: catalog))
+  return PluginMappingCatalogSetup(
+    fileStore: store, bootstrap: CatalogCommitCoordinator.bootstrap(fileStore: store),
+    group: group, pluginServer: pluginServer, plainServer: plainServer)
+}
+
+@MainActor
+private func makePluginMappingCommitController(
+  _ context: PluginMappingControllerContext
+) -> ProxyRuntimeController {
+  let directory = context.directory
+  let bootstrap = context.bootstrap
+  let files = context.files
+  let plugins = context.plugins
+  let agent = context.agent
+  let probe = context.probe
+  let signals = context.signals
+  let contractURL = files.fileURL
+  return ProxyRuntimeController(
+    controlPreferences: makeTestProxyControlPreferences(),
+    catalogSnapshotReader: bootstrap.catalogSnapshotReader,
+    activationFileStore: ActivationStateFileStore(
+      fileURL: directory.appendingPathComponent("activation.json")),
+    runtimeFileStore: files, plugins: plugins,
+    listeningStore: InMemoryProxyListeningStore(),
+    customRuleStore: CustomRuleStore(fileURL: directory.appendingPathComponent("rules.json")),
+    appBundle: AppArtifact.bundle,
+    ruleSnapshots: BuiltinRuleSnapshots(loader: ProxyRuntimeFixture.controlFlowRuleSnapshot),
+    settingsRestore: RestoredProxyRuntimeSettings(
+      settings: ProxyRuntimeSettings(listen: ActivationFixture.listen, agentEnabled: true),
+      unreadableError: nil),
+    agent: agent, probe: probe, systemProxy: ProxyRuntimeFixture.FakeSystemProxy(),
+    systemProxyHelper: ProxyRuntimeFixture.FakeSystemProxyHelperService(),
+    firewallChecker: ProxyRuntimeFixture.FakeFirewallChecker(),
+    launchHealthTimeoutSeconds: 0.2,
+    launchHealthRetryDelay: { try await Task.sleep(for: .milliseconds(10)) },
+    sendSignal: { _, signal in
+      guard signal != 0 else { return 0 }
+      signals.record()
+      let store = RuntimeFileStore(fileURL: contractURL)
+      try? store.writePublishedRuntimeReceipt(processID: 42)
+      return 0
+    }, processIsAlive: { $0 == 42 })
 }

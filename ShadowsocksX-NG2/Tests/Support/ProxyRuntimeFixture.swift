@@ -23,7 +23,7 @@ final class ProxyRuntimeEventLog: @unchecked Sendable {
   }
 }
 
-enum ProxyRuntimeFixture {
+extension ProxyRuntimeFixture {
   /// 在临时目录中建一套隔离的运行时文件组（不触碰真实 ~/Library）。
   struct TemporaryRuntime {
     let directory: URL
@@ -47,88 +47,6 @@ enum ProxyRuntimeFixture {
   static func catalogSnapshotReader(at fileURL: URL) -> RuntimeCatalogSnapshotReading {
     CatalogCommitCoordinator.bootstrap(fileStore: makeTestCatalogStore(fileURL: fileURL))
       .catalogSnapshotReader
-  }
-
-  static func unusedLoopbackPort() throws -> Int {
-    let descriptor = socket(AF_INET, SOCK_STREAM, 0)
-    guard descriptor >= 0 else { throw POSIXError(.ENOTSOCK) }
-    defer { close(descriptor) }
-    var address = sockaddr_in()
-    address.sin_len = UInt8(MemoryLayout<sockaddr_in>.size)
-    address.sin_family = sa_family_t(AF_INET)
-    address.sin_port = 0
-    address.sin_addr = in_addr(s_addr: inet_addr("127.0.0.1"))
-    let result = withUnsafePointer(to: &address) { pointer in
-      pointer.withMemoryRebound(to: sockaddr.self, capacity: 1) {
-        Darwin.bind(descriptor, $0, socklen_t(MemoryLayout<sockaddr_in>.size))
-      }
-    }
-    guard result == 0 else { throw POSIXError(.EADDRINUSE) }
-    var bound = sockaddr_in()
-    var length = socklen_t(MemoryLayout<sockaddr_in>.size)
-    let nameResult = withUnsafeMutablePointer(to: &bound) { pointer in
-      pointer.withMemoryRebound(to: sockaddr.self, capacity: 1) {
-        getsockname(descriptor, $0, &length)
-      }
-    }
-    guard nameResult == 0 else { throw POSIXError(.EINVAL) }
-    return Int(CFSwapInt16BigToHost(bound.sin_port))
-  }
-
-  /// 夹具默认监听端口：测试进程内一次性分配的空闲端口对。不能固定 11086/
-  /// 11087（与 app 默认监听相同）：宿主 app 在跑时其 sslocal 占住这两个端口，
-  /// wrapper 健康探测会误判「监听已建立」。进程内共享同一对端口而非逐调用
-  /// 分配，保证两次默认构造之间除显式参数外无差异——「仅服务器变化」类
-  /// 变更协议语义依赖这一点。
-  private static let defaultListenPorts: (socks: Int, http: Int) = {
-    func freePort() -> Int {
-      guard let port = try? unusedLoopbackPort() else {
-        preconditionFailure("夹具端口分配失败：socket 不可用（fd 耗尽？）")
-      }
-      return port
-    }
-    let socks = freePort()
-    var http = freePort()
-    while http == socks {
-      http = freePort()
-    }
-    return (socks, http)
-  }()
-
-  static func makeDocument(
-    serverAddress: String = "203.0.113.7",
-    password: String = "resolved-password",
-    pluginOpts: String? = nil,
-    listenerMode: ListenerMode = .disabled,
-    localPort: Int? = nil,
-    inboundProtocol: String = "socks"
-  ) -> SslocalRuntimeDocument {
-    precondition(inboundProtocol == "socks")
-    let socksPort: Int
-    let httpPort: Int
-    if let localPort {
-      socksPort = localPort
-      httpPort = ProxyListeningConfiguration.defaultHTTPPort
-    } else {
-      socksPort = defaultListenPorts.socks
-      httpPort = defaultListenPorts.http
-    }
-    return SslocalRuntimeDocument(
-      servers: [
-        SslocalServerDocument(
-          id: "server-1",
-          server: serverAddress,
-          serverPort: 8388,
-          password: password,
-          method: "aes-256-gcm",
-          plugin: nil,
-          pluginOpts: pluginOpts
-        )
-      ],
-      listen: ProxyListeningConfiguration(
-        listenerMode: listenerMode,
-        socksPort: socksPort,
-        httpPort: httpPort))
   }
 
   /// LaunchAgent 注册态可编程替身，记录全部调用。
@@ -206,7 +124,13 @@ enum ProxyRuntimeFixture {
       return requestedPorts
     }
 
-    func probe(host: String, port: Int, timeout: TimeInterval) -> EndpointHealthProbe.Outcome {
+    func probe(host: String, port: Int, timeout: TimeInterval) async
+      -> EndpointHealthProbe.Outcome
+    {
+      recordProbe(port: port)
+    }
+
+    private func recordProbe(port: Int) -> EndpointHealthProbe.Outcome {
       lock.lock()
       defer { lock.unlock() }
       callCount += 1
@@ -239,7 +163,11 @@ enum ProxyRuntimeFixture {
       self.outcomes = outcomes
     }
 
-    func status(for executableURL: URL) -> FirewallBlockStatus {
+    func status(for executableURL: URL) async -> FirewallBlockStatus {
+      recordStatus(for: executableURL)
+    }
+
+    private func recordStatus(for executableURL: URL) -> FirewallBlockStatus {
       lock.lock()
       defer { lock.unlock() }
       recordedURLs.append(executableURL)
@@ -249,75 +177,6 @@ enum ProxyRuntimeFixture {
     }
   }
 
-  /// 可暂停探测替身：arm 后的下一次探测挂起在信号量上，直到测试放行——
-  /// 在启动健康门的 await 窗口内确定性插入交错命令（探测运行在 detached
-  /// 线程，不占主 actor）。放行后恢复直通。
-  final class BlockingProbe: EndpointProbing, @unchecked Sendable {
-    private let lock = NSLock()
-    private var gate: TestBlockingGate?
-    private var started: XCTestExpectation?
-
-    func arm(started: XCTestExpectation) {
-      lock.lock()
-      defer { lock.unlock() }
-      precondition(gate == nil, "上一次 arm 尚未 release")
-      gate = TestBlockingGate("runtime fixture release")
-      self.started = started
-    }
-
-    func release() {
-      lock.lock()
-      let gate = self.gate
-      self.gate = nil
-      self.started = nil
-      lock.unlock()
-      gate?.release()
-    }
-
-    func probe(host: String, port: Int, timeout: TimeInterval) -> EndpointHealthProbe.Outcome {
-      lock.lock()
-      let gate = self.gate
-      let started = self.started
-      lock.unlock()
-      if let gate {
-        started?.fulfill()
-        _ = gate.wait()
-      }
-      return .reachable
-    }
-  }
-
-  /// 按调用序返回预设结果、并可在第 N 次调用处挂起的防火墙检查替身：
-  /// 钉住「轮询 await 恢复后代际已推进时不得再写状态」的回归。
-  final class BlockingFirewallChecker: FirewallStatusChecking, @unchecked Sendable {
-    private let lock = NSLock()
-    private var callCount = 0
-    private let outcomes: [FirewallBlockStatus]
-    private let blockOnCall: Int
-    private let started: XCTestExpectation
-    private let gate = TestBlockingGate("runtime fixture release")
-
-    init(outcomes: [FirewallBlockStatus], blockOnCall: Int, started: XCTestExpectation) {
-      precondition(!outcomes.isEmpty)
-      self.outcomes = outcomes
-      self.blockOnCall = blockOnCall
-      self.started = started
-    }
-
-    func release() { gate.release() }
-
-    func status(for executableURL: URL) -> FirewallBlockStatus {
-      lock.lock()
-      callCount += 1
-      let call = callCount
-      lock.unlock()
-      if call == blockOnCall {
-        started.fulfill()
-        _ = gate.wait()
-      }
-      return outcomes[min(call, outcomes.count) - 1]
-    }
-  }
 }
 
 /// 每个夹具使用独立 defaults 域，最后一个引用释放时清理持久值。

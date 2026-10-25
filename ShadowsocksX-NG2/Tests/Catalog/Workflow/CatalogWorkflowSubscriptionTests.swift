@@ -160,7 +160,7 @@ final class CatalogWorkflowSubscriptionTests: XCTestCase {
 
     // 新地址先失败：快照保留、身份不动。
     fetcher.setBehavior(.failure(.httpStatus(code: 404)))
-    try await workflow.editSubscriptionURL(
+    try await workflow.saveSubscription(
       record.id, urlString: "https://other.example.com/v2.json")
     XCTAssertEqual(workflow.subscriptions[0].id, originalRecordID, "订阅身份保留")
     guard case .failed = workflow.subscriptions[0].status else {
@@ -182,7 +182,7 @@ final class CatalogWorkflowSubscriptionTests: XCTestCase {
   func testEditURLRequiresHTTPS() async throws {
     let record = try await seedSuccessfulSubscription()
     await expectThrowsAsync(
-      { try await workflow.editSubscriptionURL(record.id, urlString: "http://p.example.com/x") },
+      { try await workflow.saveSubscription(record.id, urlString: "http://p.example.com/x") },
       onThrow: { error in
         XCTAssertEqual(error as? SubscriptionFormError, .invalidURL)
       })

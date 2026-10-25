@@ -26,7 +26,7 @@ extension AppPresentation {
       return serverForm(error)
     case let error as SsUriError:
       return ssURI(error)
-    case let error as MasterKeyStoreError:
+    case let error as CredentialKeyStoreError:
       return credential(error)
     case let error as SubscriptionFormError:
       return subscriptionForm(error)
@@ -191,7 +191,7 @@ extension AppPresentation {
     }
   }
 
-  private static func credential(_ error: MasterKeyStoreError) -> String {
+  private static func credential(_ error: CredentialKeyStoreError) -> String {
     switch error {
     case .keychainStatus: return String(localized: "钥匙串操作失败")
     }

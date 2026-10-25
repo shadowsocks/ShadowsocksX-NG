@@ -13,9 +13,19 @@ struct CustomRuleStore {
   static let currentSchemaVersion = 3
 
   let fileURL: URL
+  let baseURL: URL
 
   init(fileURL: URL = CustomRuleStore.defaultFileURL()) {
     self.fileURL = fileURL
+    self.baseURL = fileURL
+  }
+
+  init(preset: RulePreset, baseURL: URL = CustomRuleStore.defaultFileURL()) {
+    self.baseURL = baseURL
+    self.fileURL = baseURL.deletingLastPathComponent()
+      .appendingPathComponent("rule-presets", isDirectory: true)
+      .appendingPathComponent(preset.rawValue, isDirectory: true)
+      .appendingPathComponent(baseURL.lastPathComponent)
   }
 
   static func defaultFileURL() -> URL {
@@ -74,30 +84,6 @@ struct CustomRuleStore {
     let encoder = JSONEncoder()
     encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
     return try encoder.encode(StoredCustomRuleDocument(document))
-  }
-}
-
-/// One saved-document owner per app process. Only successful atomic saves update
-/// this fact; runtime recovery never restores an older rule document.
-@MainActor
-final class RuleDocumentSession {
-  private let store: CustomRuleStore
-  private(set) var current: CustomRuleDocument?
-  private(set) var revision = 0
-
-  init(store: CustomRuleStore) { self.store = store }
-
-  func load() throws -> CustomRuleDocument {
-    if let current { return current }
-    let loaded = try store.loadDocument()
-    current = loaded
-    return loaded
-  }
-
-  func save(_ document: CustomRuleDocument) throws {
-    try store.saveDocument(document)
-    if current != document { revision += 1 }
-    current = document
   }
 }
 

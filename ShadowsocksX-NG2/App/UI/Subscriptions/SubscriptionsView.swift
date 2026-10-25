@@ -17,14 +17,20 @@ struct AddSubscriptionSheet: View {
   @Environment(\.dismiss) private var dismiss
 
   @State private var urlString = ""
+  @State private var autoUpdate = SubscriptionAutoUpdateSettings()
 
   var body: some View {
-    VStack(alignment: .leading, spacing: 12) {
+    VStack(alignment: .leading, spacing: 16) {
+      Text("添加订阅").font(.title2)
       Text("粘贴订阅地址（必须 HTTPS，返回 SIP-008 JSON；Content-Type 需为 application/json; charset=utf-8）。")
         .font(.callout)
         .foregroundStyle(.secondary)
-      TextField("https://example.com/subscription.json", text: $urlString)
-        .textFieldStyle(.roundedBorder)
+      TextField(
+        "订阅地址", text: $urlString,
+        prompt: Text(verbatim: "https://example.com/subscription.json")
+          .foregroundStyle(.placeholder)
+      )
+      SubscriptionAutoUpdateForm(settings: $autoUpdate)
       HStack {
         Spacer()
         Button("取消", role: .cancel) { dismiss() }
@@ -40,7 +46,7 @@ struct AddSubscriptionSheet: View {
   private func create() {
     Task {
       do {
-        _ = try await workflow.createSubscription(urlString: urlString)
+        _ = try await workflow.createSubscription(urlString: urlString, autoUpdate: autoUpdate)
         dismiss()
       } catch {
         errors.present(error)
@@ -49,28 +55,34 @@ struct AddSubscriptionSheet: View {
   }
 }
 
-/// 「编辑订阅 URL」表单（保留订阅与固定分组身份）；保存后立即刷新。
+/// 订阅编辑表单（保留订阅与固定分组身份）；仅地址变化时立即刷新。
 /// URL 明文经显式命令读取。
-struct EditSubscriptionURLSheet: View {
+struct EditSubscriptionSheet: View {
   let workflow: CatalogWorkflow
   let errors: ErrorAlertPresenter
   let summary: SubscriptionSummary
   @Environment(\.dismiss) private var dismiss
 
   @State private var urlString = ""
+  @State private var autoUpdate = SubscriptionAutoUpdateSettings()
   @State private var loaded = false
 
   var body: some View {
-    VStack(alignment: .leading, spacing: 12) {
+    VStack(alignment: .leading, spacing: 16) {
+      Text("编辑订阅").font(.title2)
       Text("编辑订阅地址。订阅身份与固定分组全部保留；新地址刷新成功前保留最后一次成功内容。")
         .font(.callout)
         .foregroundStyle(.secondary)
-      TextField("https://example.com/subscription.json", text: $urlString)
-        .textFieldStyle(.roundedBorder)
+      TextField(
+        "订阅地址", text: $urlString,
+        prompt: Text(verbatim: "https://example.com/subscription.json")
+          .foregroundStyle(.placeholder)
+      )
+      SubscriptionAutoUpdateForm(settings: $autoUpdate, provider: summary.autoUpdate.provider)
       HStack {
         Spacer()
         Button("取消", role: .cancel) { dismiss() }
-        Button("保存并刷新") { save() }
+        Button("保存") { save() }
           .keyboardShortcut(.defaultAction)
           .disabled(urlString.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
       }
@@ -82,6 +94,7 @@ struct EditSubscriptionURLSheet: View {
       loaded = true
       do {
         urlString = try workflow.subscriptionURL(for: summary.id)
+        autoUpdate = summary.autoUpdate.settings
       } catch {
         errors.present(error)
       }
@@ -91,11 +104,62 @@ struct EditSubscriptionURLSheet: View {
   private func save() {
     Task {
       do {
-        try await workflow.editSubscriptionURL(summary.id, urlString: urlString)
+        try await workflow.saveSubscription(
+          summary.id, urlString: urlString, autoUpdate: autoUpdate)
         dismiss()
       } catch {
         errors.present(error)
       }
+    }
+  }
+}
+
+private struct SubscriptionAutoUpdateForm: View {
+  @Binding var settings: SubscriptionAutoUpdateSettings
+  var provider: SubscriptionUpdatePolicy?
+
+  private var providerMode: SubscriptionUpdateMode { provider?.mode ?? .off }
+
+  var body: some View {
+    GroupBox("自动更新") {
+      VStack(alignment: .leading, spacing: 10) {
+        if provider?.allowUserOverride != false {
+          Picker(
+            "设置来源",
+            selection: Binding(
+              get: { settings.userOverride != nil },
+              set: { settings.userOverride = $0 ? .off : nil }
+            )
+          ) {
+            Text("跟随供应商").tag(false)
+            Text("自定义").tag(true)
+          }
+          if settings.userOverride != nil {
+            Toggle(
+              "启用自动更新",
+              isOn: Binding(
+                get: { settings.userOverride != .off },
+                set: { settings.userOverride = $0 ? settings.interval : .off }
+              ))
+            Picker("更新间隔", selection: $settings.interval) {
+              Text(SubscriptionUpdateMode.daily.displayName).tag(SubscriptionUpdateMode.daily)
+              Text(SubscriptionUpdateMode.weekly.displayName).tag(SubscriptionUpdateMode.weekly)
+            }
+            .onChange(of: settings.interval) { _, interval in
+              if settings.userOverride != .off { settings.userOverride = interval }
+            }
+          } else {
+            Text(providerMode.displayName).foregroundStyle(.secondary)
+          }
+        } else {
+          LabeledContent("供应商设置", value: providerMode.displayName)
+          Text("供应商禁止覆盖自动更新设置")
+            .font(.callout).foregroundStyle(.secondary)
+        }
+      }
+      .pickerStyle(.segmented)
+      .frame(maxWidth: .infinity, alignment: .leading)
+      .padding(6)
     }
   }
 }

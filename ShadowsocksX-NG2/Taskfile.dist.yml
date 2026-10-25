@@ -22,14 +22,14 @@ tasks:
     dir: '{{.TASKFILE_DIR}}'
     silent: true
     vars:
-      GATES: '{{default "lint test test:smoke build" .CLI_ARGS | trim}}'
+      GATES: '{{default "lint test build" .CLI_ARGS | trim}}'
       RUN_DIR:
         sh: |
           mkdir -p {{.BUILD_DIR | shellQuote}}/validation
           mktemp -d {{.BUILD_DIR | shellQuote}}/validation/$(date -u +%Y%m%dT%H%M%SZ)-XXXXXX
     preconditions:
-      - sh: '{{if regexMatch "^(lint|test|test:smoke|build)( (lint|test|test:smoke|build))*$" .GATES}}true{{else}}false{{end}}'
-        msg: 'Choose validation gates: lint, test, test:smoke, build (space separated).'
+      - sh: '{{if regexMatch "^(format:check|lint|test|test:smoke|build)( (format:check|lint|test|test:smoke|build))*$" .GATES}}true{{else}}false{{end}}'
+        msg: 'Choose validation gates: format:check, lint, test, test:smoke, build (space separated).'
       - sh: '{{if eq (len (splitList " " .GATES)) (len (uniq (splitList " " .GATES)))}}true{{else}}false{{end}}'
         msg: 'Choose each validation gate at most once.'
     cmds:
@@ -75,7 +75,7 @@ tasks:
         if [ {{.CODE | shellQuote}} = 0 ]; then status=passed; fi
         echo "[{{.GATE}}] $status; exit={{.CODE}}" > {{.GATE_DIR | shellQuote}}/status.txt
       - cmd: |
-          {{if ne .GATE "lint"}}
+          {{if and (ne .GATE "lint") (ne .GATE "format:check")}}
           if [ ! -d {{.GATE_DIR | shellQuote}}/result.xcresult ]; then
             echo '[{{.GATE}}] evidence incomplete: result bundle missing; test counts unknown' >> {{.GATE_DIR | shellQuote}}/status.txt
           {{if ne .GATE "build"}}
@@ -132,6 +132,7 @@ tasks:
         -destination 'platform=macOS,arch=arm64'
         -derivedDataPath {{.DERIVED_DATA_DIR | shellQuote}}
         {{if .RESULT_BUNDLE_PATH}}-resultBundlePath {{.RESULT_BUNDLE_PATH | shellQuote}}{{end}}
+        SWIFT_SUPPRESS_WARNINGS=NO SWIFT_TREAT_WARNINGS_AS_ERRORS=YES GCC_TREAT_WARNINGS_AS_ERRORS=YES
         build
 
   build:release:
@@ -156,22 +157,28 @@ tasks:
         -derivedDataPath {{.DERIVED_DATA_DIR | shellQuote}}
         {{printf "MARKETING_VERSION=%s" .BUNDLE_MARKETING_VERSION | shellQuote}}
         {{printf "CURRENT_PROJECT_VERSION=%s" .CURRENT_PROJECT_VERSION | shellQuote}}
+        SWIFT_SUPPRESS_WARNINGS=NO SWIFT_TREAT_WARNINGS_AS_ERRORS=YES GCC_TREAT_WARNINGS_AS_ERRORS=YES
         build
 
   format:
     desc: 'Format the code by swift-format'
     cmds:
-      - swift format format --in-place -r App Tests Domain Agent
+      - swift format format --in-place --recursive --configuration .swift-format App Tests Domain Agent
+
+  format:check:
+    desc: 'Check Swift formatting without modifying files'
+    cmds:
+      - swift format lint --strict --recursive --configuration .swift-format App Tests Domain Agent
 
   lint:
     desc: 'Lint the swift code by swiftlint'
     cmds:
-      - swiftlint lint --config .swiftlint.yml --no-cache
+      - swiftlint lint --strict --config .swiftlint.yml --no-cache
   
   lint:fix:
     desc: 'Automatically fix SwiftLint violations'
     cmds:
-      - swiftlint lint --fix --config .swiftlint.yml --no-cache
+      - swiftlint lint --fix --strict --config .swiftlint.yml --no-cache
   
   test:
     desc: 'Run conversion and unit tests'
@@ -188,6 +195,7 @@ tasks:
         -derivedDataPath {{.DERIVED_DATA_DIR | shellQuote}}
         {{if .RESULT_BUNDLE_PATH}}-resultBundlePath {{.RESULT_BUNDLE_PATH | shellQuote}}{{end}}
         {{.TEST_TIMEOUT_ARGS}}
+        SWIFT_SUPPRESS_WARNINGS=NO SWIFT_TREAT_WARNINGS_AS_ERRORS=YES GCC_TREAT_WARNINGS_AS_ERRORS=YES
         test
 
   test:binaries:
@@ -214,6 +222,7 @@ tasks:
         -derivedDataPath {{.DERIVED_DATA_DIR | shellQuote}}
         {{if .RESULT_BUNDLE_PATH}}-resultBundlePath {{.RESULT_BUNDLE_PATH | shellQuote}}{{end}}
         {{.TEST_TIMEOUT_ARGS}}
+        SWIFT_SUPPRESS_WARNINGS=NO SWIFT_TREAT_WARNINGS_AS_ERRORS=YES GCC_TREAT_WARNINGS_AS_ERRORS=YES
         test
 
   clean:

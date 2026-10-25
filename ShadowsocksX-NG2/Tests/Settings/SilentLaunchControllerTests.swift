@@ -10,17 +10,17 @@ final class SilentLaunchControllerTests: XCTestCase {
   private var defaults: UserDefaults!
   private var store: SilentLaunchStore!
 
-  override func setUpWithError() throws {
-    try super.setUpWithError()
+  override func setUp() async throws {
+    try await super.setUp()
     suiteName = "silent-launch-controller-tests-\(UUID().uuidString)"
     defaults = UserDefaults(suiteName: suiteName)!
     defaults.removePersistentDomain(forName: suiteName)
     store = SilentLaunchStore(defaults: defaults)
   }
 
-  override func tearDownWithError() throws {
+  override func tearDown() async throws {
     defaults.removePersistentDomain(forName: suiteName)
-    try super.tearDownWithError()
+    try await super.tearDown()
   }
 
   func testInitialValueComesFromStore() {
