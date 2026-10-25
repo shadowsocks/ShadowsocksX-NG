@@ -130,7 +130,12 @@ func makeCatalogWorkflow(
     behavior: .success(Data())),
   legacyImportService: LegacyImportService? = nil,
   postLegacyImport: ((LegacyImportOutcome) async -> Void)? = nil,
-  activator: Activating = RejectingActivator()
+  activator: Activating = RejectingActivator(),
+  subscriptionNow: @escaping () -> Date = { Date() },
+  subscriptionJitter: @escaping () -> Double = { Double.random(in: 0...0.1) },
+  subscriptionWait: @escaping (TimeInterval) async throws -> Void = {
+    try await Task.sleep(for: .seconds($0))
+  }
 ) -> CatalogWorkflow {
   CatalogWorkflow(
     dependencies: CatalogWorkflowDependencies(
@@ -143,7 +148,10 @@ func makeCatalogWorkflow(
           catalogStore: coordinator.fileStore,
           marker: InMemoryLegacyImportMarker()),
       postLegacyImport: postLegacyImport,
-      activator: activator))
+      activator: activator,
+      subscriptionNow: subscriptionNow,
+      subscriptionJitter: subscriptionJitter,
+      subscriptionWait: subscriptionWait))
 }
 
 // MARK: - 统一导入结果取用助手

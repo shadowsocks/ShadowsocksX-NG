@@ -20,4 +20,9 @@ struct CatalogWorkflowDependencies {
   let postLegacyImport: ((LegacyImportOutcome) async -> Void)?
   /// 激活缝：生产 adapter 为 `ProxyRuntimeController`，测试注入假 adapter。
   let activator: Activating
+  var subscriptionNow: () -> Date = { Date() }
+  var subscriptionJitter: () -> Double = { Double.random(in: 0...0.1) }
+  var subscriptionWait: (TimeInterval) async throws -> Void = {
+    try await Task.sleep(for: .seconds($0))
+  }
 }

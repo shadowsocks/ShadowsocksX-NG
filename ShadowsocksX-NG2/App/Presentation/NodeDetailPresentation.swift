@@ -118,6 +118,22 @@ struct NodeDetailPresentation {
           label: String(localized: "最后更新时间", table: "ServerDetails"),
           value: subscriptionTimestamp(date, locale: locale, timeZone: timeZone)))
     }
+    items.append(
+      Property(
+        label: String(localized: "自动更新", table: "ServerDetails"),
+        value: summary.autoUpdate.effectiveMode.displayName))
+    if !summary.autoUpdate.allowsUserOverride {
+      items.append(
+        Property(
+          label: String(localized: "配置限制", table: "ServerDetails"),
+          value: String(localized: "供应商禁止覆盖自动更新设置", table: "ServerDetails")))
+    }
+    if summary.autoUpdate.effectiveMode != .off, let date = summary.autoUpdate.nextUpdateAt {
+      items.append(
+        Property(
+          label: String(localized: "下次更新时间", table: "ServerDetails"),
+          value: subscriptionTimestamp(date, locale: locale, timeZone: timeZone)))
+    }
     if let used = summary.information?.bytesUsed {
       items.append(
         Property(
@@ -142,7 +158,6 @@ struct NodeDetailPresentation {
           label: String(localized: "重置时间", table: "ServerDetails"),
           value: subscriptionTimestamp(date, locale: locale, timeZone: timeZone)))
     }
-    guard !items.isEmpty else { return nil }
     return Properties(
       id: .subscription, title: String(localized: "订阅", table: "ServerDetails"), items: items)
   }
