@@ -154,6 +154,7 @@ private struct SubscriptionAutoUpdateForm: View {
             .font(.callout).foregroundStyle(.secondary)
         }
       }
+      .pickerStyle(.segmented)
       .frame(maxWidth: .infinity, alignment: .leading)
       .padding(6)
     }
