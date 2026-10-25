@@ -123,7 +123,6 @@ final class ProxyRuntimeController {
   var proxyMode: ProxyMode { didSet { factChanges.markChanged() } }
 
   /// 规则模式子选项：从设置快照投影。
-  var ruleDefaultAction: RuleDefaultAction { settings.ruleDefaultAction }
   var rulePreset: RulePreset { settings.rulePreset }
 
   init(

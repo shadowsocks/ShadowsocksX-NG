@@ -62,7 +62,7 @@ final class CustomRuleControllerTests: ProxyRuntimeControllerTests {
     let settings = ProxyRuntimeSettings(
       listen: ActivationFixture.listen,
       preferredMode: .rule,
-      ruleDefaultAction: .proxyWhenUnmatched,
+      rulePreset: .chinaDirect,
       agentEnabled: true)
     let controller = makeControllerWithCustomRules(
       store: store, settings: settings, proxyMode: .rule)
@@ -92,7 +92,7 @@ final class CustomRuleControllerTests: ProxyRuntimeControllerTests {
     let (store, _) = try makeCustomRuleStore(preset: .gfwlist)
     let settings = ProxyRuntimeSettings(
       listen: ActivationFixture.listen, preferredMode: .rule,
-      ruleDefaultAction: .directWhenUnmatched, agentEnabled: true)
+      rulePreset: .gfwlist, agentEnabled: true)
     let controller = makeControllerWithCustomRules(
       store: store, settings: settings, proxyMode: .rule)
     try await controller.activate(seeded.server)
@@ -130,7 +130,7 @@ final class CustomRuleControllerTests: ProxyRuntimeControllerTests {
     let settings = ProxyRuntimeSettings(
       listen: ActivationFixture.listen,
       preferredMode: .rule,
-      ruleDefaultAction: .proxyWhenUnmatched,
+      rulePreset: .chinaDirect,
       agentEnabled: true)
     let controller = makeControllerWithCustomRules(
       store: store, settings: settings, proxyMode: .rule)
@@ -160,7 +160,7 @@ final class CustomRuleControllerTests: ProxyRuntimeControllerTests {
     let settings = ProxyRuntimeSettings(
       listen: ActivationFixture.listen,
       preferredMode: .rule,
-      ruleDefaultAction: .proxyWhenUnmatched,
+      rulePreset: .chinaDirect,
       agentEnabled: true,
       systemProxyEnabled: true)
     let controller = makeControllerWithCustomRules(

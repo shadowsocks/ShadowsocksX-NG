@@ -115,9 +115,9 @@ struct RuntimeConvergenceTests {
     #expect(fixture.agent.registerCount > count)
   }
 
-  @Test(arguments: [false, true])
+  @Test(arguments: [false, true], RulePreset.allCases)
   func unchangedModeACLDoesNotReprobeHealthyListeners(
-    systemProxyEnabled: Bool
+    systemProxyEnabled: Bool, preset: RulePreset
   ) async throws {
     let fixture = try Fixture(systemProxyEnabled: systemProxyEnabled)
     defer { fixture.cleanUp() }
@@ -129,10 +129,16 @@ struct RuntimeConvergenceTests {
     let probes = fixture.probe.ports.count
     let signals = fixture.signals.signalsSent.filter { $0.signal != 0 }.count
 
-    // 全局模式仍保存规则默认动作，但它不改变全局 ACL。
-    await fixture.controller.setRuleDefaultAction(.directWhenUnmatched)
+    // 全局模式仍保存规则预设，但它不改变全局 ACL。
+    await fixture.controller.setRulePreset(preset)
+    let generation = fixture.controller.modeChangeGeneration
+    await fixture.controller.setRulePreset(preset)
 
-    #expect(fixture.controller.controlPreferences.ruleDefaultAction == .directWhenUnmatched)
+    #expect(fixture.controller.rulePreset == preset)
+    #expect(fixture.controller.modeChangeGeneration == generation)
+    if preset != .gfwlist {
+      #expect(fixture.controller.controlPreferences.rulePreset == preset)
+    }
     #expect(fixture.controller.proxyMode == .global)
     #expect(fixture.controller.state == .running)
     #expect(try Data(contentsOf: fixture.runtimeStore.fileURL) == bytes)

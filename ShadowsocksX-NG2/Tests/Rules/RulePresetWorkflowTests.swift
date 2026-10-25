@@ -117,6 +117,7 @@ extension RulePresetWorkflowTests {
           return RuleDocumentCommit(outcome: .saved, document: document)
         }, builtinSnapshots: BuiltinRuleSnapshots(loader: { rulesFixture($0) }))
     }
+    let originalPreset = workspaces.selectedPreset
     let original = workspaces.current
     await original.refresh()
     var draft = try #require(original.makeCustomRuleDraft())
@@ -136,7 +137,7 @@ extension RulePresetWorkflowTests {
     #expect(await save.value == .committed(.saved))
     await original.analysisTask?.value
     #expect(other.snapshot == untouched)
-    workspaces.selectedPreset = .chinaDirect
+    workspaces.selectedPreset = originalPreset
     #expect(workspaces.current.snapshot.rows.first?.content == "delayed.example")
     #expect(workspaces.current.snapshot.rows.first?.action == .direct)
     #expect(workspaces.current.snapshot.commitOutcome == .saved)

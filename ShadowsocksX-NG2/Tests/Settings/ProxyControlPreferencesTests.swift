@@ -16,6 +16,7 @@ struct ProxyControlPreferencesTests {
       preferences: ProxyControlPreferences(defaults: defaults))
 
     #expect(settings.preferredMode == .rule)
+    #expect(settings.rulePreset == .gfwlist)
     #expect(settings.ruleDefaultAction == .directWhenUnmatched)
     #expect(!settings.agentEnabled)
     #expect(!settings.systemProxyEnabled)
@@ -32,7 +33,7 @@ struct ProxyControlPreferencesTests {
     defer { defaults.removePersistentDomain(forName: suite) }
     let preferences = ProxyControlPreferences(defaults: defaults)
     preferences.preferredMode = .direct
-    preferences.ruleDefaultAction = .directWhenUnmatched
+    preferences.rulePreset = .chinaProxy
     preferences.agentEnabled = true
     preferences.systemProxyEnabled = true
     preferences.proxyExceptions = "example.com, localhost"
@@ -44,6 +45,7 @@ struct ProxyControlPreferencesTests {
     let settings = ProxyRuntimeSettings(listen: listen, preferences: reopened)
 
     #expect(settings.preferredMode == .direct)
+    #expect(settings.rulePreset == .chinaProxy)
     #expect(settings.ruleDefaultAction == .directWhenUnmatched)
     #expect(settings.agentEnabled)
     #expect(settings.systemProxyEnabled)
@@ -51,4 +53,27 @@ struct ProxyControlPreferencesTests {
     #expect(settings.listen.socksPort == 23001)
     #expect(settings.listen.httpPort == 23002)
   }
+
+  @Test(arguments: RuleDefaultAction.allCases)
+  func legacyDefaultActionIsReadUntilAnExplicitPresetIsSaved(_ action: RuleDefaultAction) throws {
+    let suite = "proxy-control-legacy-\(UUID().uuidString)"
+    let defaults = try #require(UserDefaults(suiteName: suite))
+    defer { defaults.removePersistentDomain(forName: suite) }
+    defaults.set(action.rawValue, forKey: "proxyControl.ruleDefaultAction")
+    let preferences = ProxyControlPreferences(defaults: defaults)
+    let expected: RulePreset = action == .proxyWhenUnmatched ? .chinaDirect : .gfwlist
+    #expect(preferences.rulePreset == expected)
+    #expect(defaults.object(forKey: "proxyControl.rulePreset") == nil)
+
+    for preset in RulePreset.allCases {
+      preferences.rulePreset = preset
+      let reopened = ProxyControlPreferences(defaults: defaults)
+      let settings = ProxyRuntimeSettings(
+        listen: ProxyListeningConfiguration(), preferences: reopened)
+      #expect(settings.rulePreset == preset)
+      #expect(settings.ruleDefaultAction == preset.defaultAction)
+      #expect(defaults.string(forKey: "proxyControl.ruleDefaultAction") == action.rawValue)
+    }
+  }
+
 }

@@ -19,10 +19,6 @@ final class FakeProxyRuntime: ProxyRuntimeAdapting {
   var systemProxyInspection = SystemProxyInspectionFacts()
   var proxyMode: ProxyMode
   var rulePreset: RulePreset = .chinaDirect
-  var ruleDefaultAction: RuleDefaultAction {
-    get { rulePreset.defaultAction }
-    set { rulePreset = RulePreset(legacy: newValue) }
-  }
   var skippedInvalidServerCount = 0
   var activeTargetID: NodeID?
   var httpExportCapability = HTTPExportCapability(
@@ -39,7 +35,6 @@ final class FakeProxyRuntime: ProxyRuntimeAdapting {
   private(set) var approvalCommandCount = 0
   private(set) var modeCommands: [ProxyMode] = []
   private(set) var rulePresetCommands: [RulePreset] = []
-  private(set) var ruleDefaultActionCommands: [RuleDefaultAction] = []
 
   init(
     facts: ProxyRuntimeFacts = ProxyRuntimeFacts(status: .off, isOn: false),
@@ -73,10 +68,6 @@ final class FakeProxyRuntime: ProxyRuntimeAdapting {
 
   func setRulePreset(_ preset: RulePreset) async {
     rulePresetCommands.append(preset)
-  }
-
-  func setRuleDefaultAction(_ action: RuleDefaultAction) async {
-    ruleDefaultActionCommands.append(action)
   }
 }
 
@@ -260,27 +251,20 @@ final class ProxyControlWorkflowTests: XCTestCase {
     XCTAssertEqual(after.runtime, ProxyRuntimeFacts(status: .running, isOn: true))
   }
 
-  func testRuleDefaultActionCommandForwardsAndRepublishes() async {
-    runtime.ruleDefaultAction = .proxyWhenUnmatched
-    _ = await workflow.setRuleDefaultAction(.directWhenUnmatched)
-    XCTAssertEqual(runtime.ruleDefaultActionCommands, [.directWhenUnmatched])
-    // 命令完成后 workflow 从 runtime 重读事实。
-    XCTAssertEqual(workflow.snapshot.ruleDefaultAction, .proxyWhenUnmatched)
-    runtime.ruleDefaultAction = .directWhenUnmatched
-    runtime.emitChange()
-    XCTAssertEqual(workflow.snapshot.ruleDefaultAction, .directWhenUnmatched)
-    XCTAssertEqual(workflow.snapshot.proxyMode, runtime.proxyMode)
-  }
-
-  func testExplicitChinaProxyPresetCommandPreservesItsIdentityInPublishedFacts() async {
-    _ = await workflow.setRulePreset(.chinaProxy)
-    XCTAssertEqual(runtime.rulePresetCommands, [.chinaProxy])
-    XCTAssertEqual(workflow.snapshot.rulePreset, .chinaDirect)
-    runtime.rulePreset = .chinaProxy
-    runtime.emitChange()
-    XCTAssertEqual(workflow.snapshot.rulePreset, .chinaProxy)
-    XCTAssertEqual(workflow.snapshot.ruleDefaultAction, .directWhenUnmatched)
-    XCTAssertEqual(workflow.snapshot.proxyMode, runtime.proxyMode)
+  func testRulePresetCommandsForwardAndRepublishWithoutLosingIdentity() async {
+    for preset in RulePreset.allCases {
+      let before = runtime.rulePreset
+      let after = await workflow.setRulePreset(preset)
+      XCTAssertEqual(runtime.rulePresetCommands.last, preset)
+      // 命令完成后从 runtime 重读事实，不提前发布请求值。
+      XCTAssertEqual(after.rulePreset, before)
+      runtime.rulePreset = preset
+      runtime.emitChange()
+      XCTAssertEqual(workflow.snapshot.rulePreset, preset)
+      XCTAssertEqual(workflow.snapshot.ruleDefaultAction, preset.defaultAction)
+      XCTAssertEqual(workflow.snapshot.proxyMode, runtime.proxyMode)
+    }
+    XCTAssertEqual(runtime.rulePresetCommands, RulePreset.allCases)
   }
 
   func testResyncOnLaunchForwardsAndRepublishes() async {

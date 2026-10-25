@@ -29,11 +29,6 @@ struct ProxyControlPreferences {
     nonmutating set { defaults.set(newValue.rawValue, forKey: "proxyControl.rulePreset") }
   }
 
-  var ruleDefaultAction: RuleDefaultAction {
-    get { rulePreset.defaultAction }
-    nonmutating set { rulePreset = RulePreset(legacy: newValue) }
-  }
-
   var agentEnabled: Bool {
     get { defaults.object(forKey: "proxyControl.agentEnabled") as? Bool ?? false }
     nonmutating set { defaults.set(newValue, forKey: "proxyControl.agentEnabled") }

@@ -8,7 +8,8 @@ extension RuleEnablementControllerTests {
     let (store, _) = try makeCustomRuleStore()
     let controller = makeControllerWithCustomRules(
       store: store,
-      settings: ProxyRuntimeSettings(listen: ActivationFixture.listen, agentEnabled: true),
+      settings: ProxyRuntimeSettings(
+        listen: ActivationFixture.listen, rulePreset: .chinaDirect, agentEnabled: true),
       proxyMode: .rule, ruleApplicationDelay: { await Task.yield() })
     try await controller.activate(seeded.server)
     let runtimeStore = RuntimeFileStore(fileURL: runtime.contract)
@@ -29,6 +30,11 @@ extension RuleEnablementControllerTests {
     XCTAssertTrue(china.contains("preset-only.example"))
     XCTAssertTrue(china.contains("[proxy_list]"))
     XCTAssertEqual(controller.controlPreferences.rulePreset, .chinaProxy)
+    let generation = controller.modeChangeGeneration
+    await controller.setRulePreset(.chinaProxy)
+    XCTAssertEqual(controller.rulePreset, .chinaProxy)
+    XCTAssertEqual(controller.modeChangeGeneration, generation)
+    XCTAssertEqual(try activeACLContent(runtimeStore), china)
     await controller.setRulePreset(.chinaDirect)
     XCTAssertEqual(try activeACLContent(runtimeStore), before)
     await controller.setRulePreset(.gfwlist)

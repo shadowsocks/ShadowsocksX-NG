@@ -14,8 +14,7 @@ struct ProxyRuntimeSettings: Equatable, Sendable {
   /// 规则模式预设，首次启动默认为仅 GFW 列表内目标代理。
   var rulePreset: RulePreset
   var ruleDefaultAction: RuleDefaultAction {
-    get { rulePreset.defaultAction }
-    set { rulePreset = RulePreset(legacy: newValue) }
+    rulePreset.defaultAction
   }
   /// 用户保存的代理服务意图，默认关闭，与当前运行健康状态独立。
   var agentEnabled: Bool
@@ -27,15 +26,14 @@ struct ProxyRuntimeSettings: Equatable, Sendable {
     listen: ProxyListeningConfiguration = ProxyListeningConfiguration(),
     proxyExceptions: String = ProxyRuntimeSettings.defaultProxyExceptions,
     preferredMode: ProxyModeKind = .rule,
-    ruleDefaultAction: RuleDefaultAction = .directWhenUnmatched,
-    rulePreset: RulePreset? = nil,
+    rulePreset: RulePreset = .gfwlist,
     agentEnabled: Bool = false,
     systemProxyEnabled: Bool = false
   ) {
     self.listen = listen
     self.proxyExceptions = proxyExceptions
     self.preferredMode = preferredMode
-    self.rulePreset = rulePreset ?? RulePreset(legacy: ruleDefaultAction)
+    self.rulePreset = rulePreset
     self.agentEnabled = agentEnabled
     self.systemProxyEnabled = systemProxyEnabled
   }
