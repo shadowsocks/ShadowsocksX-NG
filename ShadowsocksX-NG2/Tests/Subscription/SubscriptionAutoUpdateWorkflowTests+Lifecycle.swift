@@ -95,7 +95,7 @@ extension SubscriptionAutoUpdateWorkflowTests {
           clockReads += 1
           return fixture.now
         })
-      weak var releasedWorkflow = workflow
+      let workflowIsReleased = { [weak workflow] in workflow == nil }
       defer {
         workflow?.stopSubscriptionAutomaticUpdates()
         fetcher.releaseAll()
@@ -106,9 +106,8 @@ extension SubscriptionAutoUpdateWorkflowTests {
       workflow?.stopSubscriptionAutomaticUpdates()
       workflow = nil
       fetcher.releaseAll()
-      try await requireTestCondition("stopped batch released its workflow") {
-        releasedWorkflow == nil
-      }
+      try await requireTestCondition(
+        "stopped batch released its workflow", condition: workflowIsReleased)
       #expect(clockReads == readsBeforeStop)
     }
   }
