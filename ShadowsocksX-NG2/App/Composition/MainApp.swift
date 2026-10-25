@@ -123,6 +123,7 @@ struct ShadowsocksXNG2App: App {
 @MainActor
 private final class NSAppWindowActivationApplier: WindowActivationPolicyApplying {
   func apply(_ policy: NSApplication.ActivationPolicy) {
+    guard NSApp.activationPolicy() != policy else { return }
     NSApp.setActivationPolicy(policy)
     if policy == .regular {
       // Window scene 会呈现窗口，但 LSUIElement 进程仍需显式激活才能置前。

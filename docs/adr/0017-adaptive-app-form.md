@@ -54,3 +54,9 @@ GUI 日志的时序定位到启动路径的真正缺陷：重试链从未在启�
 ## 2026-10-24 补充：应用菜单诊断入口
 
 regular 形态的默认菜单栏在应用名称菜单（`CommandGroup(after: .appInfo)`）加入“诊断…”命令，与状态菜单入口同开唯一诊断窗口；应用处于 accessory 形态（无受管窗口）时不出现该菜单栏，入口自然缺席。诊断命令实现为独立视图文件（`App/UI/Diagnostics/DiagnosticsCommands.swift`）。同日移除按源码扫描 openWindow 调用点的守卫（原为文件豁免登记制）：豁免清单的维护成本高于其拦截价值。开窗纪律改由事实保证——全部 `Window` scene 集中在组合根（MainApp）一处声明，窗口激活协调只经 `.modifier(WindowActivationPolicy(...))` 挂在这些受管 scene 上。
+
+## 2026-10-25 补充：取消启动策略弹跳并限制重试预算
+
+用户报告启动重试期间 Dock 出现多个重复应用图标，日志显示菜单栏仍归 Xcode、重试多轮从 #1 重新开始。此前通过 accessory → regular 弹跳补注册的方案撤回：窗口打开期间保持 regular，重试只调用 activate、makeKeyAndOrderFront 和 orderFrontRegardless，不再反复触发 Dock 注册。真实 AppKit 落点仅在策略值变化时调用 setActivationPolicy。
+
+默认 5 次激活预算由协调器在进程内共享。窗口尚未可见或暂时不可见时结束当前链，后续窗口事件可续排剩余预算；双信号收敛或预算用尽后永久停止重试，避免开诊断窗口、切换焦点或可见化事件重新启动整轮。0.5 秒启动可见性重扫、双信号收敛检查及末拍诊断日志保留。系统拒绝协作式激活时，仍通过 orderFrontRegardless 抬窗，用户点击窗口完成激活；不再以反复改变应用形态强制争取焦点。

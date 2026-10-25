@@ -49,13 +49,11 @@ final class WindowActivationPolicyCoordinator: ObservableObject {
   private let applier: any WindowActivationPolicyApplying
   private let activationRetryInterval: TimeInterval
   private let activationRetryLimit: Int
-  private let policySettleInterval: TimeInterval
-  private let activationSettleInterval: TimeInterval
+  private var activationAttemptsLeft: Int
   private let launchRescanInterval: TimeInterval
   private let tickScheduler: any ActivationTickScheduling
-  /// 激活已真正收敛（双信号齐备）后的永久闩：此后任何事件不再重启链，
-  /// 避免会话中抢焦点。
-  private var activationSettled = false
+  /// 激活收敛或预算用尽后永久停止，避免窗口事件重启重试并抢焦点。
+  private var activationFinished = false
   /// 重试链是否在调度中。链可能在窗口尚未可见时静默终结（key 先于可见的
   /// 呈现次序），未收敛前由参与事件重新拉起（re-arm）。
   private var isRetryChainActive = false
@@ -66,16 +64,13 @@ final class WindowActivationPolicyCoordinator: ObservableObject {
     applying applier: any WindowActivationPolicyApplying,
     activationRetryInterval: TimeInterval = 0.2,
     activationRetryLimit: Int = 5,
-    policySettleInterval: TimeInterval = 0.1,
-    activationSettleInterval: TimeInterval = 0.15,
     launchRescanInterval: TimeInterval = 0.5,
     tickScheduler: (any ActivationTickScheduling)? = nil
   ) {
     self.applier = applier
     self.activationRetryInterval = activationRetryInterval
     self.activationRetryLimit = activationRetryLimit
-    self.policySettleInterval = policySettleInterval
-    self.activationSettleInterval = activationSettleInterval
+    self.activationAttemptsLeft = activationRetryLimit
     self.launchRescanInterval = launchRescanInterval
     self.tickScheduler = tickScheduler ?? TaskActivationTickScheduler()
     let center = NotificationCenter.default
@@ -121,7 +116,7 @@ final class WindowActivationPolicyCoordinator: ObservableObject {
   /// 自然不触发。
   private func scheduleLaunchVisibilityRescan() {
     tickScheduler.scheduleTick(after: launchRescanInterval) { [weak self] in
-      guard let self, !self.activationSettled, !self.isRetryChainActive else { return }
+      guard let self, !self.activationFinished, !self.isRetryChainActive else { return }
       guard let window = self.anchoredWindows.allObjects.first(where: { $0.isVisible })
       else { return }
       if self.openWindows.insert(ObjectIdentifier(window)).inserted {
@@ -165,29 +160,27 @@ final class WindowActivationPolicyCoordinator: ObservableObject {
     startLaunchActivationRetry(for: window)
   }
 
-  /// 启动激活重试（未收敛前可 re-arm）：首拍 activate 是否被焦点抢占保护
-  /// 忽略随当时前台应用而变；短窗口内轮询双信号（激活 + 菜单栏归属），
-  /// 不齐则重试 activate 并置前，收敛后永久闩死、次数用尽或窗口关闭则
-  /// 结束本链（后续参与事件可再拉起，直到收敛）。双击启动首拍即收敛。
+  /// 预算在进程内共享；窗口尚未可见时允许后续事件续排，但不重置预算。
+  /// 重试仅激活并置前，不切换策略，避免反复向 Dock 注册应用。
   private func startLaunchActivationRetry(for window: NSWindow) {
-    guard !activationSettled, !isRetryChainActive else { return }
+    guard !activationFinished, !isRetryChainActive else { return }
     isRetryChainActive = true
-    scheduleActivationRetryTick(for: window, attemptsLeft: activationRetryLimit)
+    scheduleActivationRetryTick(for: window)
   }
 
   private func endRetryChain() {
     isRetryChainActive = false
   }
 
-  private func scheduleActivationRetryTick(for window: NSWindow, attemptsLeft: Int) {
+  private func scheduleActivationRetryTick(for window: NSWindow) {
     tickScheduler.scheduleTick(after: activationRetryInterval) { [weak self] in
-      self?.runActivationRetryTick(for: window, attemptsLeft: attemptsLeft)
+      self?.runActivationRetryTick(for: window)
     }
   }
 
-  private func runActivationRetryTick(for window: NSWindow, attemptsLeft: Int) {
+  private func runActivationRetryTick(for window: NSWindow) {
     let visible = window.isVisible
-    let attempt = activationRetryLimit - attemptsLeft + 1
+    let attempt = activationRetryLimit - activationAttemptsLeft + 1
     let menuBarOwner = NSWorkspace.shared.menuBarOwningApplication?.bundleIdentifier ?? "-"
     let active = applier.isAppActive
     RuntimeLog.emit(
@@ -197,61 +190,19 @@ final class WindowActivationPolicyCoordinator: ObservableObject {
         menuBarOwner: menuBarOwner, onActiveSpace: window.isOnActiveSpace,
         windowVisible: visible))
     guard visible else {
-      // 窗口尚未可见（key 先行的呈现次序）或已关闭：结束本链留待可见化
-      // 事件或兜底重扫 re-arm。
       endRetryChain()
       return
     }
-    // 双信号收敛判据：isActive 可能为真而菜单栏实际仍归此前台应用
-    // （注册滞后的真相），此时继续重试——重置窗口置前本身就能盖回
-    // 可见层，后续弹跳再补 Dock 图标注册。
-    if applier.isAppActive && applier.ownsMenuBar {
-      activationSettled = true
+    if (applier.isAppActive && applier.ownsMenuBar) || activationAttemptsLeft == 0 {
+      activationFinished = true
       endRetryChain()
       return
     }
-    guard attemptsLeft > 0 else {
-      endRetryChain()
-      return
-    }
-    if attempt == 1 {
-      // 首拍仍用普通 activate（重开等点击上下文里足以生效，避免无谓的
-      // Dock 图标闪烁）。
-      applier.activateApp()
-      window.makeKeyAndOrderFront(nil)
-      window.orderFrontRegardless()
-      scheduleActivationRetryTick(for: window, attemptsLeft: attemptsLeft - 1)
-    } else {
-      scheduleForcedActivationSequence(for: window, attemptsLeft: attemptsLeft - 1)
-    }
-  }
-
-  /// 强制激活序列（跨拍沉淀）：失败场景实测 Dock 图标从未出现、进调度
-  /// 中心才刷新——启动早期的 regular 策略切换未注册到 WindowServer/Dock，
-  /// activate 因此全程被拒。同拍 accessory→regular 弹跳会被系统合并吞掉，
-  /// 必须拆成有真实间隔的三跳：降 accessory → 沉淀 → 回 regular（迫使
-  /// 重新注册）→ 沉淀 → 激活置前。末跳续排主链保持单线调度。
-  private func scheduleForcedActivationSequence(for window: NSWindow, attemptsLeft: Int) {
-    applier.apply(.accessory)
-    tickScheduler.scheduleTick(after: policySettleInterval) { [weak self] in
-      guard let self, window.isVisible else {
-        self?.endRetryChain()
-        return
-      }
-      self.applier.apply(.regular)
-      self.tickScheduler.scheduleTick(after: self.activationSettleInterval) { [weak self] in
-        guard let self, window.isVisible else {
-          self?.endRetryChain()
-          return
-        }
-        if !(self.applier.isAppActive && self.applier.ownsMenuBar) {
-          self.applier.activateApp()
-          window.makeKeyAndOrderFront(nil)
-          window.orderFrontRegardless()
-        }
-        self.scheduleActivationRetryTick(for: window, attemptsLeft: attemptsLeft)
-      }
-    }
+    activationAttemptsLeft -= 1
+    applier.activateApp()
+    window.makeKeyAndOrderFront(nil)
+    window.orderFrontRegardless()
+    scheduleActivationRetryTick(for: window)
   }
 
   private func trackedWindow(in notification: Notification) -> NSWindow? {
