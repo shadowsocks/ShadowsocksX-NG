@@ -59,7 +59,7 @@ enum ManagedPluginCatalog {
       executableName: "v2ray-plugin",
       project: "shadowsocks/v2ray-plugin",
       projectURL: "https://github.com/shadowsocks/v2ray-plugin",
-      release: "v1.4.0",
+      release: "v1.5.0",
       license: "MIT",
       signIdentifier: "com.qiuyuzhou.ShadowsocksX-NG2.plugin.v2ray-plugin",
       defaultArguments: ["-disableAccessLog"]),
