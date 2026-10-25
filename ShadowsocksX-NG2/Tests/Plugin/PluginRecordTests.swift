@@ -58,6 +58,9 @@ struct PluginRecordTests {
     try Data("#!/bin/sh\n".utf8).write(to: binary)
     try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: binary.path)
     let store = PluginMappingFileStore(fileURL: root.appendingPathComponent("plugins.json"))
+    let managed = BundleManagedPluginProvider(bundleURL: root)
+    let initial = PluginCatalog(store: store, managed: managed, inspector: QuietPluginInspector())
+    let originalArguments = try #require(initial.resolve(program: "v2ray-plugin")).arguments
     try Data(
       #"""
       {"version":2,"configuration":{"userPlugins":[],
@@ -66,13 +69,12 @@ struct PluginRecordTests {
       """#
       .utf8
     ).write(to: store.fileURL)
-    let managed = BundleManagedPluginProvider(bundleURL: root)
     let catalog = PluginCatalog(store: store, managed: managed, inspector: QuietPluginInspector())
     #expect(catalog.resolve(program: "v2ray-plugin-v1")?.mode == .tcpAndUDP)
     try catalog.commit([.managedArguments(program: "v2ray-plugin", arguments: [])])
     let restored = PluginCatalog(store: store, managed: managed, inspector: QuietPluginInspector())
     #expect(restored.resolve(program: "v2ray-plugin")?.mode == .tcpAndUDP)
-    #expect(restored.resolve(program: "v2ray-plugin")?.arguments == [])
+    #expect(restored.resolve(program: "v2ray-plugin")?.arguments == originalArguments)
     try restored.commit([.save(UserPluginRecord(names: ["v2ray-plugin"], path: binary.path))])
     #expect(restored.resolve(program: "v2ray-plugin")?.mode == .tcpOnly)
     #expect(restored.resolve(program: "v2ray-plugin-v1")?.mode == .tcpAndUDP)
@@ -174,6 +176,46 @@ struct PluginRecordTests {
     #expect(try ActivationFixture.serverFields(of: leaf, in: catalog).pluginProgram == "tool-v2")
   }
 
+  @Test(arguments: ["v2ray-plugin", "v2ray-plugin-v1"], [false, true])
+  @MainActor func activationAppliesAccessLogDefaultOnlyToManagedPlugins(
+    program: String, overrideManaged: Bool
+  ) throws {
+    let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+    defer { try? FileManager.default.removeItem(at: root) }
+    let binary = root.appendingPathComponent("Contents/Helpers/Plugins/v2ray-plugin")
+    try FileManager.default.createDirectory(
+      at: binary.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try Data("#!/bin/sh\n".utf8).write(to: binary)
+    try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: binary.path)
+    let plugins = PluginCatalog(
+      store: PluginMappingFileStore(fileURL: root.appendingPathComponent("plugins.json")),
+      managed: BundleManagedPluginProvider(bundleURL: root), inspector: QuietPluginInspector())
+    try plugins.commit([.managedArguments(program: "v2ray-plugin", arguments: ["--verbose"])])
+    if overrideManaged {
+      try plugins.commit([
+        .save(UserPluginRecord(names: [program], path: binary.path, arguments: ["--user-option"]))
+      ])
+    }
+    var catalog = ConfigurationCatalog()
+    let leaf = try ActivationFixture.addPlainServer("Plugin", in: &catalog)
+    var fields = try ActivationFixture.serverFields(of: leaf, in: catalog)
+    fields.pluginProgram = program
+    fields.pluginOptions = "tls;host=example.com"
+    try catalog.updateServer(leaf, with: fields)
+    var machine = ActivationStateMachine()
+    let runtime = try machine.activate(
+      leaf, in: catalog, plugins: plugins,
+      options: RuntimeDocumentOptions(listen: ActivationFixture.listen))
+    let json = try #require(
+      JSONSerialization.jsonObject(with: runtime.document.jsonData()) as? [String: Any])
+    let server = try #require((json["servers"] as? [[String: Any]])?.first)
+    #expect(
+      server["plugin_args"] as? [String]
+        == (overrideManaged ? ["--user-option"] : ["-disableAccessLog", "--verbose"]))
+    #expect(server["plugin"] as? String == binary.path)
+    #expect(server["plugin_opts"] as? String == "tls;host=example.com")
+  }
+
   @Test @MainActor func aliasesShareArgumentsAndOnlyExplicitNamesOverrideManaged() throws {
     let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     defer { try? FileManager.default.removeItem(at: root) }
@@ -186,6 +228,7 @@ struct PluginRecordTests {
     let catalog = PluginCatalog(
       store: store, managed: BundleManagedPluginProvider(bundleURL: root),
       inspector: QuietPluginInspector())
+    let originalAlias = try #require(catalog.resolve(program: "v2ray-plugin-v1"))
     let record = UserPluginRecord(
       names: ["v2ray-plugin", "custom-v2"], path: binary.path,
       arguments: ["--config", "/Users/me/My Config.json", "", "--verbose"])
@@ -194,7 +237,7 @@ struct PluginRecordTests {
     #expect(snapshot.resolve(program: "custom-v2")?.arguments == record.arguments)
     #expect(snapshot.resolve(program: "v2ray-plugin") == snapshot.resolve(program: "custom-v2"))
     #expect(snapshot.entry(for: "v2ray-plugin-v1")?.source == .managed)
-    #expect(snapshot.resolve(program: "v2ray-plugin-v1")?.arguments == [])
+    #expect(snapshot.resolve(program: "v2ray-plugin-v1") == originalAlias)
     let restored = PluginCatalog(store: store, inspector: QuietPluginInspector())
     #expect(restored.userRecords == [record])
   }
@@ -287,18 +330,20 @@ extension PluginRecordTests {
     let store = PluginMappingFileStore(fileURL: root.appendingPathComponent("plugins.json"))
     let managed = BundleManagedPluginProvider(bundleURL: root)
     let catalog = PluginCatalog(store: store, managed: managed, inspector: QuietPluginInspector())
+    let originalArguments = try #require(catalog.resolve(program: "v2ray-plugin-v1")).arguments
     try catalog.commit([.managedArguments(program: "v2ray-plugin", arguments: ["--verbose"])])
-    #expect(catalog.resolve(program: "v2ray-plugin-v1")?.arguments == ["--verbose"])
+    let configuredAlias = try #require(catalog.resolve(program: "v2ray-plugin-v1"))
+    #expect(configuredAlias.arguments == originalArguments + ["--verbose"])
     let user = UserPluginRecord(
       names: ["v2ray-plugin"], path: binary.path, arguments: ["--threads", "4"])
     try catalog.commit([.save(user)])
     #expect(catalog.resolve(program: "v2ray-plugin")?.arguments == ["--threads", "4"])
     let restored = PluginCatalog(store: store, managed: managed, inspector: QuietPluginInspector())
-    #expect(restored.resolve(program: "v2ray-plugin-v1")?.arguments == ["--verbose"])
+    #expect(restored.resolve(program: "v2ray-plugin-v1") == configuredAlias)
     try restored.commit([.managedArguments(program: "v2ray-plugin", arguments: [])])
-    #expect(restored.resolve(program: "v2ray-plugin-v1")?.arguments == [])
+    #expect(restored.resolve(program: "v2ray-plugin-v1")?.arguments == originalArguments)
     #expect(restored.resolve(program: "v2ray-plugin")?.arguments == ["--threads", "4"])
     try restored.commit([.remove(user.id)])
-    #expect(restored.resolve(program: "v2ray-plugin")?.arguments == [])
+    #expect(restored.resolve(program: "v2ray-plugin")?.arguments == originalArguments)
   }
 }
