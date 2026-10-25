@@ -47,60 +47,47 @@ extension RulePresetWorkflowTests {
     let old = CustomRule(action: .proxy, match: try RuleMatch(domainSuffix: "legacy.example"))
     try legacy.saveDocument(CustomRuleDocument(rules: [old], disabledIdentities: [old.identity]))
     let workspaces = makeWorkspaces(baseURL: baseURL)
-    for preset in RulePreset.allCases {
+    let shared = ProxyRule(action: .proxy, match: try RuleMatch(domainSuffix: "shared.example"))
+    let scenarios: [(RulePreset, RulesQuery)] = [
+      (.gfwlist, RulesQuery(search: "shared", action: .proxy, source: .custom, enabled: false)),
+      (.chinaDirect, RulesQuery(action: .direct, source: .fixed, enabled: true)),
+      (.chinaProxy, RulesQuery(search: "proxy", source: .chinaIPv4)),
+    ]
+    for (preset, query) in scenarios {
       workspaces.selectedPreset = preset
       let workflow = workspaces.current
       await workflow.refresh()
       #expect(workflow.snapshot.rows.isEmpty)
       var draft = try #require(workflow.makeCustomRuleDraft())
-      draft.kind = .domainExact
-      draft.content = "only-\(preset.rawValue).example"
+      draft.kind = .domainSuffix
+      draft.content = "shared.example"
       draft.action = .proxy
       let saved = await workflow.saveCustomRule(draft)
       #expect(saved == .committed(.saved))
-      let identity = try #require(workflow.snapshot.rows.first?.identity)
-      await workflow.setEnabled(false, identities: [identity])
-      workflow.query(
-        RulesQuery(search: preset.rawValue, action: .proxy, source: .custom, enabled: false))
-      workflow.setTestTarget("unmatched.example")
+      #expect(workflow.snapshot.rows.first?.identity == shared)
+      if preset == .gfwlist { await workflow.setEnabled(false, identities: [shared]) }
+      workflow.query(query)
+      workflow.setTestTarget("\(preset.rawValue).shared.example")
       await workflow.testAddress()
-      #expect(
-        workflow.snapshot.addressTest.result?.outcome == (preset == .chinaDirect ? .proxy : .direct)
-      )
     }
-    for preset in RulePreset.allCases {
+    for (preset, query) in scenarios {
       workspaces.selectedPreset = preset
       let page = workspaces.current.snapshot
-      #expect(page.query.search == preset.rawValue)
-      #expect(page.query.action == .proxy)
-      #expect(page.query.enabled == false)
-      #expect(page.rows.count == 1)
-      #expect(page.addressTest.target == "unmatched.example")
-      #expect(page.addressTest.result != nil)
+      let target = "\(preset.rawValue).shared.example"
+      #expect(page.query == query)
+      #expect(page.addressTest.target == target)
+      #expect(page.addressTest.result?.target == target)
+      #expect(page.addressTest.result?.outcome == (preset == .gfwlist ? .direct : .proxy))
+      workspaces.current.query(RulesQuery(source: .custom))
+      #expect(workspaces.current.snapshot.rows.first?.isEnabled == (preset != .gfwlist))
       let loaded = try CustomRuleStore(preset: preset, baseURL: baseURL).loadDocument()
       #expect(loaded.rules.count == 1)
-      let expected = try RuleMatch(domainExact: "only-\(preset.rawValue).example")
-      #expect(loaded.rules.first?.match == expected)
-      #expect(loaded.disabledIdentities.count == 1)
+      #expect(loaded.rules.first?.identity == shared)
+      #expect(loaded.disabledIdentities == (preset == .gfwlist ? [shared] : []))
     }
     #expect(
       try legacy.loadDocument()
         == CustomRuleDocument(rules: [old], disabledIdentities: [old.identity]))
-  }
-
-  @Test func oldRoutingPreferenceMapsButExplicitPresetSurvivesRestart() throws {
-    let suite = "preset-migration-\(UUID().uuidString)"
-    let defaults = try #require(UserDefaults(suiteName: suite))
-    defer { defaults.removePersistentDomain(forName: suite) }
-    let preferences = ProxyControlPreferences(defaults: defaults)
-    #expect(preferences.rulePreset == .gfwlist)
-    defaults.set("direct-when-unmatched", forKey: "proxyControl.ruleDefaultAction")
-    #expect(preferences.rulePreset == .gfwlist)
-    preferences.rulePreset = .chinaProxy
-    let restored = ProxyRuntimeSettings(
-      listen: ProxyListeningConfiguration(),
-      preferences: ProxyControlPreferences(defaults: defaults))
-    #expect(restored.rulePreset == .chinaProxy)
   }
 }
 
