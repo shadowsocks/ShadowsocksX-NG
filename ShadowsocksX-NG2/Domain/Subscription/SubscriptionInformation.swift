@@ -13,12 +13,18 @@ struct SubscriptionInformation: Codable, Equatable, Sendable {
 
   /// 与服务器及分组扩展的解码分别处理；无效附加资料只影响该项。
   static func parse(_ data: Data) -> Self {
-    let root = rootFields(data)
+    let root = objectFields(data, names: ["bytes_used", "bytes_remaining", "x_shadowsocksx_ng"])
+    let extensionFields = objectFields(
+      root["x_shadowsocksx_ng"] ?? Data(),
+      names: ["schema_version", "expires_at", "traffic_reset_at"])
+    let schemaVersion = extensionFields["schema_version"].flatMap {
+      try? JSONDecoder().decode(Int.self, from: $0)
+    }
     return Self(
       bytesUsed: byteCount(root["bytes_used"]),
       bytesRemaining: byteCount(root["bytes_remaining"]),
-      expiresAt: date(root["expires_at"]),
-      trafficResetAt: date(root["traffic_reset_at"]))
+      expiresAt: schemaVersion == 1 ? date(extensionFields["expires_at"]) : nil,
+      trafficResetAt: schemaVersion == 1 ? date(extensionFields["traffic_reset_at"]) : nil)
   }
 
   private static func byteCount(_ value: Data?) -> UInt64? {
@@ -77,11 +83,10 @@ struct SubscriptionInformation: Codable, Equatable, Sendable {
     let minutes = Int(offset.suffix(2))!
     return (hours * 60 + minutes) * 60 * (offset.first == "-" ? -1 : 1)
   }
-  /// JSON 结构已由订阅文档解析器校验。这里只切出根级白名单值的原始片段，
+  /// JSON 结构已由订阅文档解析器校验。这里只切出对象直接成员中白名单值的原始片段，
   /// 不把整个正文转换成 Any；某项超大数字因此不会损坏其他项的解码。
-  private static func rootFields(_ data: Data) -> [String: Data] {
+  private static func objectFields(_ data: Data, names: Set<String>) -> [String: Data] {
     let bytes = Array(data)
-    let names: Set<String> = ["bytes_used", "bytes_remaining", "expires_at", "traffic_reset_at"]
     var result: [String: Data] = [:]
     // 与现有 JSONDecoder 一致，接受可选的 UTF-8 BOM。
     var cursor = bytes.starts(with: [0xEF, 0xBB, 0xBF]) ? 3 : 0

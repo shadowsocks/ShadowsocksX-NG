@@ -4,7 +4,7 @@ This guide describes the SIP-008 fields and private extensions currently support
 
 [简体中文](subscription-provider-extension.zh.md)
 
-`x_shadowsocksx_ng`, `expires_at`, and `traffic_reset_at` are private extensions recognized by ShadowsocksX-NG; they are not SIP-008 standard fields. Ordinary SIP-008 clients may not recognize them, and clients without extension support should still read the servers from the standard `servers` array. SIP-008 allows custom fields but does not guarantee that all clients support them. See the [SIP-008 Online Configuration Delivery specification](https://shadowsocks.org/doc/sip008.html).
+`x_shadowsocksx_ng` is the namespace for all ShadowsocksX-NG private extensions, including `expires_at` and `traffic_reset_at`. These are not SIP-008 standard fields. Future project-specific fields must also live inside this root-level namespace, rather than directly in the root or server objects. Ordinary SIP-008 clients may not recognize them, and clients without extension support should still read the servers from the standard `servers` array. SIP-008 allows custom fields but does not guarantee that all clients support them. See the [SIP-008 Online Configuration Delivery specification](https://shadowsocks.org/doc/sip008.html).
 
 ## Response delivery
 
@@ -35,7 +35,7 @@ The root object must contain `version: 1` and a `servers` array. An empty array 
 
 A server ID represents logical identity, not its array position. Preserve the ID when renaming a server, changing its address or port, or updating its credentials if it remains the same logical server. Assign a new ID to a new logical server. Use the canonical hyphenated UUID form, and keep the exact same string in the server entry and extension references.
 
-## Root-level subscription information
+## Subscription information
 
 The following traffic fields are defined by SIP-008. Providers should follow SIP-008's rules for these fields. The client displays only values that match the formats below.
 
@@ -43,14 +43,16 @@ The following traffic fields are defined by SIP-008. Providers should follow SIP
 | --- | --- | --- |
 | `bytes_used` | A non-negative JSON integer from `0` through `18446744073709551615`. | Number of bytes used by the user. Do not send a string, negative number, decimal, or exponent form. |
 | `bytes_remaining` | A non-negative JSON integer in the same range. Omit it when there is no data limit; include `bytes_used` as well when a limit is enforced. | Number of bytes remaining. Do not use a private field to repeat the same traffic meaning. |
-| `expires_at` | An RFC 3339 date-time string, such as `2027-01-01T00:00:00Z` or `2027-01-01T08:00:00+08:00`. | A ShadowsocksX-NG private field for the service expiration time. |
-| `traffic_reset_at` | An RFC 3339 date-time string. | A ShadowsocksX-NG private field for the traffic reset time. |
+| `x_shadowsocksx_ng.expires_at` | An RFC 3339 date-time string, such as `2027-01-01T00:00:00Z` or `2027-01-01T08:00:00+08:00`. | A ShadowsocksX-NG private field for the service expiration time. |
+| `x_shadowsocksx_ng.traffic_reset_at` | An RFC 3339 date-time string. | A ShadowsocksX-NG private field for the traffic reset time. |
+
+Date fields are direct members of `x_shadowsocksx_ng` and require `schema_version: 1`; the namespace may contain only the version and dates, without a group tree. Root-level `expires_at` and `traffic_reset_at` are ignored, with no fallback. A missing or non-object namespace, or a missing or unsupported schema version, provides no date information. The standard traffic fields remain at the root.
 
 An omitted date field or `null` means no value is provided. The client parses these fields independently. An invalid value is ignored without discarding valid servers, groups, or other valid information. The client reads this information from the JSON body; it does not parse response headers such as `Subscription-Userinfo`.
 
-## Nested-group extension: `x_shadowsocksx_ng`
+## Private extension namespace: `x_shadowsocksx_ng`
 
-To provide nested groups to ShadowsocksX-NG, add the following private extension to the root object. Keep every server in `servers`; the extension carries only group names, hierarchy, order, and server references.
+Add the private extension namespace to the root object. The example below includes dates and a nested group tree. Keep every server in `servers`; the group tree carries only group names, hierarchy, order, and server references. Dates, the group tree, and `auto_update` are parsed independently: invalid content in one feature does not discard valid content in another under a supported schema version.
 
 ```json
 {
@@ -75,10 +77,10 @@ To provide nested groups to ShadowsocksX-NG, add the following private extension
   ],
   "bytes_used": 1073741824,
   "bytes_remaining": 9663676416,
-  "expires_at": "2027-01-01T00:00:00Z",
-  "traffic_reset_at": "2026-11-01T00:00:00Z",
   "x_shadowsocksx_ng": {
     "schema_version": 1,
+    "expires_at": "2027-01-01T00:00:00Z",
+    "traffic_reset_at": "2026-11-01T00:00:00Z",
     "root_group_id": "f6ad0a41-2a1d-4db8-9da0-b6f4f3dc889d",
     "groups": [
       {
@@ -114,7 +116,7 @@ The provider should make the extension a single-parent, acyclic tree rooted at `
 
 The client handles the extension as follows:
 
-- If the extension version is missing or unsupported, the root group is missing, IDs conflict, a reference is invalid, a child type is unknown, a cycle exists, or a group has multiple parents, the client ignores the entire extension and uses the flat standard `servers` list. Valid servers are not lost because of an invalid extension.
+- If the extension version is missing or unsupported, the root group is missing, IDs conflict, a reference is invalid, a child type is unknown, a cycle exists, or a group has multiple parents, the client ignores the group tree and uses the flat standard `servers` list. Valid servers are not lost because of an invalid group tree.
 - A server in `servers` that is not referenced by a valid tree is still shown at the end of the root group, in the order it appears in the `servers` array. If the extension is invalid or incomplete, servers may still appear, but their grouping is not preserved.
 - Groups unreachable from the root are not shown. Do not rely on client behavior for unreachable groups or duplicate server references; providers should produce a valid tree without orphan groups or repeated server references.
 - A record without a server `id` cannot be referenced by the tree. Provide a stable ID for every server to preserve grouping.
@@ -124,8 +126,10 @@ The client handles the extension as follows:
 - Use HTTPS and return HTTP `200` with `Content-Type: application/json; charset=utf-8`.
 - Return valid JSON with root-level `version: 1` and complete server records in `servers`.
 - Give every server a unique, stable UUID; use the exact same server ID in `servers` and group references.
-- If using the extension, set `schema_version` to `1`, include the root group, resolve every reference, and keep the tree ordered, single-parent, and acyclic.
-- Use the SIP-008 standard fields for traffic information; use RFC 3339 strings for expiration and reset dates.
+- If using the extension, set `schema_version` to `1`. If providing a group tree, include the root group, resolve every reference, and keep the tree ordered, single-parent, and acyclic.
+- Use the SIP-008 standard fields for traffic information; use RFC 3339 strings for expiration and reset dates inside `x_shadowsocksx_ng`.
 - Verify that a standard SIP-008 client that does not support `x_shadowsocksx_ng` still receives all servers in the flat `servers` list.
 
 For details about how the application presents subscription fields and handles refreshes, see [“Subscription information” in the configuration guide](configuration.md#subscription-information).
+
+A successful refresh replaces subscription information; missing or invalid dates clear previous values. Fetch, document-validation, or save failures preserve the previous information. Existing locally saved dates remain until a successful refresh; no local storage migration is needed. Group exports include servers and grouping only, omitting subscription dates, traffic, and provider update policies. File imports create independent manual subtrees without retaining subscription information.
