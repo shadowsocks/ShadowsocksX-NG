@@ -16,7 +16,7 @@ extension CatalogWorkflow {
   /// 成功）。返回订阅 summary（状态在首次刷新中落定）。
   @discardableResult
   func createSubscription(
-    urlString: String, autoUpdate: SubscriptionAutoUpdate = SubscriptionAutoUpdate()
+    urlString: String, autoUpdate: SubscriptionAutoUpdateSettings = .init()
   ) async throws -> SubscriptionSummary {
     let url = try Self.validatedSubscriptionURL(urlString)
     var record = SubscriptionRecord(
@@ -24,10 +24,8 @@ extension CatalogWorkflow {
       groupID: .fresh(),
       url: url.absoluteString,
       status: .never)
-    record.autoUpdate.userOverride = autoUpdate.userOverride
-    record.autoUpdate.interval = autoUpdate.interval == .weekly ? .weekly : .daily
-    record.autoUpdate.schedule(
-      from: dependencies.subscriptionNow(), jitter: dependencies.subscriptionJitter())
+    record.autoUpdate.save(
+      autoUpdate, at: dependencies.subscriptionNow(), jitter: dependencies.subscriptionJitter())
     try commitSubscriptionDocument { catalog, subscriptions in
       try catalog.addGroup(url.host ?? "", source: .subscription, id: record.groupID, now: Date())
       subscriptions.append(record)
@@ -91,10 +89,10 @@ extension CatalogWorkflow {
     }
   }
 
-  /// 编辑订阅 URL：订阅/固定分组/远端身份
-  /// 命名空间全部保留；最后成功快照保留到新 URL 刷新成功，随后立即刷新。
-  func editSubscriptionURL(
-    _ id: NodeID, urlString: String, autoUpdate: SubscriptionAutoUpdate? = nil
+  /// 保存订阅地址与自动更新选择，保留订阅、固定分组与远端身份。
+  /// 仅地址变化时立即刷新；设置保存不获取远端内容或触发运行时收敛。
+  func saveSubscription(
+    _ id: NodeID, urlString: String, autoUpdate: SubscriptionAutoUpdateSettings? = nil
   ) async throws {
     guard let record = subscriptionRecord(withID: id) else {
       throw SubscriptionFormError.notFound
@@ -105,40 +103,14 @@ extension CatalogWorkflow {
       guard let index = subscriptions.firstIndex(where: { $0.id == id }) else {
         throw SubscriptionFormError.notFound
       }
-      let previousMode = subscriptions[index].autoUpdate.effectiveMode
-      if let autoUpdate, subscriptions[index].autoUpdate.allowsUserOverride {
-        subscriptions[index].autoUpdate.userOverride = autoUpdate.userOverride
-        subscriptions[index].autoUpdate.interval = autoUpdate.interval == .weekly ? .weekly : .daily
-      }
+      subscriptions[index].autoUpdate.save(
+        autoUpdate, sourceChanged: changedURL,
+        at: dependencies.subscriptionNow(), jitter: dependencies.subscriptionJitter())
       subscriptions[index].url = url.absoluteString
-      if changedURL { subscriptions[index].autoUpdate.provider = nil }
-      if previousMode != subscriptions[index].autoUpdate.effectiveMode {
-        subscriptions[index].autoUpdate.schedule(
-          from: dependencies.subscriptionNow(), jitter: dependencies.subscriptionJitter())
-      }
     }
     if changedURL { cancelSubscriptionRequest(id) }
     republishCommittedState()
     if changedURL { await refreshSubscription(record.id) }
-  }
-
-  /// Settings-only saves never reconcile the proxy runtime or fetch the source.
-  func saveSubscriptionAutoUpdate(_ id: NodeID, settings: SubscriptionAutoUpdate) throws {
-    guard let record = subscriptionRecord(withID: id) else {
-      throw SubscriptionFormError.notFound
-    }
-    guard record.autoUpdate.allowsUserOverride else { return }
-    try dependencies.coordinator.commitSubscriptions { subscriptions in
-      guard let index = subscriptions.firstIndex(where: { $0.id == id }) else { return }
-      let previousMode = subscriptions[index].autoUpdate.effectiveMode
-      subscriptions[index].autoUpdate.userOverride = settings.userOverride
-      subscriptions[index].autoUpdate.interval = settings.interval == .weekly ? .weekly : .daily
-      if previousMode != subscriptions[index].autoUpdate.effectiveMode {
-        subscriptions[index].autoUpdate.schedule(
-          from: dependencies.subscriptionNow(), jitter: dependencies.subscriptionJitter())
-      }
-    }
-    republishCommittedState()
   }
 
   func cancelSubscriptionRequest(_ id: NodeID) {
@@ -208,9 +180,8 @@ extension CatalogWorkflow {
           subscriptions[index].information =
             snapshot.information.isEmpty ? nil : snapshot.information
           subscriptions[index].lastSucceededAt = now
-          subscriptions[index].autoUpdate.apply(snapshot.autoUpdatePolicy)
-          subscriptions[index].autoUpdate.schedule(
-            from: now, jitter: dependencies.subscriptionJitter())
+          subscriptions[index].autoUpdate.refreshSucceeded(
+            policy: snapshot.autoUpdatePolicy, at: now, jitter: dependencies.subscriptionJitter())
         }
       }
     } catch {
@@ -228,8 +199,8 @@ extension CatalogWorkflow {
       if let index = subscriptions.firstIndex(where: { $0.id == subscriptionID }) {
         let now = dependencies.subscriptionNow()
         subscriptions[index].status = .failed(at: now, failure: failure)
-        subscriptions[index].autoUpdate.schedule(
-          from: now, jitter: dependencies.subscriptionJitter())
+        subscriptions[index].autoUpdate.refreshFailed(
+          at: now, jitter: dependencies.subscriptionJitter())
       }
     }
   }

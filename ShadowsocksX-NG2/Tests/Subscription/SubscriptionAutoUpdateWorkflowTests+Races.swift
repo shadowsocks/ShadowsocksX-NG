@@ -15,7 +15,8 @@ extension SubscriptionAutoUpdateWorkflowTests {
         await workflow.refreshSubscription(first.id)
         #expect(fetcher.requestCount == 1)
         fixture.now = fixture.now.addingTimeInterval(100)
-        try workflow.saveSubscriptionAutoUpdate(first.id, settings: .init(userOverride: .weekly))
+        try await workflow.saveSubscription(
+          first.id, urlString: "https://example.com/sub", autoUpdate: .init(userOverride: .weekly))
         fixture.now = fixture.now.addingTimeInterval(200)
       }
       #expect(
@@ -44,7 +45,7 @@ extension SubscriptionAutoUpdateWorkflowTests {
       var current: [SubscriptionSummary] = []
       try await withTestTask(request, release: fetcher.release.release) {
         try #require(await fetcher.entered.wait())
-        try await workflow.editSubscriptionURL(first.id, urlString: "https://new.example.com/sub")
+        try await workflow.saveSubscription(first.id, urlString: "https://new.example.com/sub")
         #expect(workflow.subscriptions.first?.id == first.id)
         #expect(workflow.subscriptions.first?.groupID == first.groupID)
         #expect(workflow.subscriptions.first?.autoUpdate.provider == nil)

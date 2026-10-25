@@ -17,7 +17,7 @@ struct AddSubscriptionSheet: View {
   @Environment(\.dismiss) private var dismiss
 
   @State private var urlString = ""
-  @State private var autoUpdate = SubscriptionAutoUpdate()
+  @State private var autoUpdate = SubscriptionAutoUpdateSettings()
 
   var body: some View {
     VStack(alignment: .leading, spacing: 16) {
@@ -55,16 +55,16 @@ struct AddSubscriptionSheet: View {
   }
 }
 
-/// 「编辑订阅 URL」表单（保留订阅与固定分组身份）；保存后立即刷新。
+/// 订阅编辑表单（保留订阅与固定分组身份）；仅地址变化时立即刷新。
 /// URL 明文经显式命令读取。
-struct EditSubscriptionURLSheet: View {
+struct EditSubscriptionSheet: View {
   let workflow: CatalogWorkflow
   let errors: ErrorAlertPresenter
   let summary: SubscriptionSummary
   @Environment(\.dismiss) private var dismiss
 
   @State private var urlString = ""
-  @State private var autoUpdate = SubscriptionAutoUpdate()
+  @State private var autoUpdate = SubscriptionAutoUpdateSettings()
   @State private var loaded = false
 
   var body: some View {
@@ -78,7 +78,7 @@ struct EditSubscriptionURLSheet: View {
         prompt: Text(verbatim: "https://example.com/subscription.json")
           .foregroundStyle(.placeholder)
       )
-      SubscriptionAutoUpdateForm(settings: $autoUpdate)
+      SubscriptionAutoUpdateForm(settings: $autoUpdate, provider: summary.autoUpdate.provider)
       HStack {
         Spacer()
         Button("取消", role: .cancel) { dismiss() }
@@ -94,7 +94,7 @@ struct EditSubscriptionURLSheet: View {
       loaded = true
       do {
         urlString = try workflow.subscriptionURL(for: summary.id)
-        autoUpdate = summary.autoUpdate
+        autoUpdate = summary.autoUpdate.settings
       } catch {
         errors.present(error)
       }
@@ -104,7 +104,7 @@ struct EditSubscriptionURLSheet: View {
   private func save() {
     Task {
       do {
-        try await workflow.editSubscriptionURL(
+        try await workflow.saveSubscription(
           summary.id, urlString: urlString, autoUpdate: autoUpdate)
         dismiss()
       } catch {
@@ -115,12 +115,15 @@ struct EditSubscriptionURLSheet: View {
 }
 
 private struct SubscriptionAutoUpdateForm: View {
-  @Binding var settings: SubscriptionAutoUpdate
+  @Binding var settings: SubscriptionAutoUpdateSettings
+  var provider: SubscriptionUpdatePolicy?
+
+  private var providerMode: SubscriptionUpdateMode { provider?.mode ?? .off }
 
   var body: some View {
     GroupBox("自动更新") {
       VStack(alignment: .leading, spacing: 10) {
-        if settings.allowsUserOverride {
+        if provider?.allowUserOverride != false {
           Picker(
             "设置来源",
             selection: Binding(
@@ -146,10 +149,10 @@ private struct SubscriptionAutoUpdateForm: View {
               if settings.userOverride != .off { settings.userOverride = interval }
             }
           } else {
-            Text(settings.effectiveMode.displayName).foregroundStyle(.secondary)
+            Text(providerMode.displayName).foregroundStyle(.secondary)
           }
         } else {
-          LabeledContent("供应商设置", value: settings.effectiveMode.displayName)
+          LabeledContent("供应商设置", value: providerMode.displayName)
           Text("供应商禁止覆盖自动更新设置")
             .font(.callout).foregroundStyle(.secondary)
         }

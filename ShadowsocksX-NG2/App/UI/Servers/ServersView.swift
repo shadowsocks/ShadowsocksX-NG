@@ -82,7 +82,7 @@ struct ServersView: View {
         onCreated: selectCreatedNode)
     }
     .sheet(item: $subscriptionEditTarget) { summary in
-      EditSubscriptionURLSheet(workflow: workflow, errors: errors, summary: summary)
+      EditSubscriptionSheet(workflow: workflow, errors: errors, summary: summary)
     }
     .sheet(isPresented: $isPresentingAddSubscription) {
       AddSubscriptionSheet(workflow: workflow, errors: errors)

@@ -27,12 +27,18 @@ enum SubscriptionUpdatePolicyResult: Equatable, Sendable {
   case valid(SubscriptionUpdatePolicy)
 }
 
-/// Provider constraints hide, but never erase, the user's saved override.
-struct SubscriptionAutoUpdate: Codable, Equatable, Sendable {
-  var provider: SubscriptionUpdatePolicy?
+/// Editable choices; provider facts and the persisted deadline are not form input.
+struct SubscriptionAutoUpdateSettings: Equatable, Sendable {
   var userOverride: SubscriptionUpdateMode?
   var interval: SubscriptionUpdateMode = .daily
-  var nextUpdateAt: Date?
+}
+
+/// Provider constraints hide, but never erase, the user's saved override.
+struct SubscriptionAutoUpdate: Codable, Equatable, Sendable {
+  private(set) var provider: SubscriptionUpdatePolicy?
+  private(set) var userOverride: SubscriptionUpdateMode?
+  private(set) var interval: SubscriptionUpdateMode = .daily
+  private(set) var nextUpdateAt: Date?
 
   var allowsUserOverride: Bool { provider?.allowUserOverride != false }
 
@@ -41,15 +47,40 @@ struct SubscriptionAutoUpdate: Codable, Equatable, Sendable {
     return userOverride ?? provider?.mode ?? .off
   }
 
-  mutating func apply(_ result: SubscriptionUpdatePolicyResult) {
-    switch result {
+  var settings: SubscriptionAutoUpdateSettings {
+    .init(userOverride: userOverride, interval: interval)
+  }
+
+  /// A source change releases its policy only after applying the old constraints.
+  mutating func save(
+    _ settings: SubscriptionAutoUpdateSettings?, sourceChanged: Bool = false,
+    at date: Date, jitter: Double
+  ) {
+    let previousMode = effectiveMode
+    if let settings, allowsUserOverride {
+      userOverride = settings.userOverride
+      interval = settings.interval == .weekly ? .weekly : .daily
+    }
+    if sourceChanged { provider = nil }
+    if previousMode != effectiveMode { schedule(from: date, jitter: jitter) }
+  }
+
+  mutating func refreshSucceeded(
+    policy: SubscriptionUpdatePolicyResult, at date: Date, jitter: Double
+  ) {
+    switch policy {
     case .absent: provider = nil
     case .valid(let policy): provider = policy
     case .invalid: break
     }
+    schedule(from: date, jitter: jitter)
   }
 
-  mutating func schedule(from date: Date, jitter: Double) {
+  mutating func refreshFailed(at date: Date, jitter: Double) {
+    schedule(from: date, jitter: jitter)
+  }
+
+  private mutating func schedule(from date: Date, jitter: Double) {
     nextUpdateAt = effectiveMode.interval.map {
       date.addingTimeInterval($0 * (1 + min(max(jitter, 0), 0.1)))
     }

@@ -152,7 +152,7 @@ struct CatalogWorkflowLibraryTests {
       try await requireTestCondition("old URL fetch entered") { fetcher.didEnterFetch }
       let edit = Task {
         do {
-          try await workflow.editSubscriptionURL(record.id, urlString: "https://new.example/sub")
+          try await workflow.saveSubscription(record.id, urlString: "https://new.example/sub")
         } catch { Issue.record(error) }
       }
       try await withTestTask(edit, release: fetcher.releaseAll) {
@@ -184,8 +184,11 @@ struct CatalogWorkflowLibraryTests {
     try FileManager.default.removeItem(at: gate)
     try Data().write(to: gate)
     await #expect(throws: (any Error).self) {
-      try await workflow.editSubscriptionURL(subscription.id, urlString: "https://new.example/sub")
+      try await workflow.saveSubscription(
+        subscription.id, urlString: "https://new.example/sub",
+        autoUpdate: .init(userOverride: .daily))
     }
+    #expect(workflow.subscriptions.first?.autoUpdate == subscription.autoUpdate)
     #expect(try workflow.subscriptionURL(for: subscription.id) == "https://old.example/sub")
     #expect(fetcher.requestCount == requests)
     #expect(runtime.convergeCount == 0)

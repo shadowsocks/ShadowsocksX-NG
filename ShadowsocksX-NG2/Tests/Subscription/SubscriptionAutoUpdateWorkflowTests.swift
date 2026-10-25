@@ -31,7 +31,8 @@ struct SubscriptionAutoUpdateWorkflowTests {
     try await withAutoUpdateFixture { fixture in
       fixture.jitter = jitter
       let first = try await fixture.create()
-      try fixture.workflow.saveSubscriptionAutoUpdate(first.id, settings: .init(userOverride: mode))
+      try await fixture.workflow.saveSubscription(
+        first.id, urlString: "https://example.com/sub", autoUpdate: .init(userOverride: mode))
       let seconds: TimeInterval =
         mode == .daily ? (jitter == 0 ? 86_400 : 95_040) : (jitter == 0 ? 604_800 : 665_280)
       #expect(fixture.summary.autoUpdate.nextUpdateAt == fixture.now.addingTimeInterval(seconds))
@@ -52,19 +53,21 @@ struct SubscriptionAutoUpdateWorkflowTests {
   @Test func forcedPolicyPreservesOverrideThenFollowingClearsIt() async throws {
     try await withAutoUpdateFixture { fixture in
       let first = try await fixture.create()
-      try fixture.workflow.saveSubscriptionAutoUpdate(
-        first.id, settings: .init(userOverride: .weekly, interval: .weekly))
+      try await fixture.workflow.saveSubscription(
+        first.id, urlString: "https://example.com/sub",
+        autoUpdate: .init(userOverride: .weekly, interval: .weekly))
       fixture.respond(mode: .off, allowsOverride: false)
       await fixture.workflow.refreshSubscription(first.id)
       #expect(fixture.summary.autoUpdate.effectiveMode == .off)
       #expect(fixture.summary.autoUpdate.userOverride == .weekly)
-      try fixture.workflow.saveSubscriptionAutoUpdate(
-        first.id, settings: .init(userOverride: .daily))
+      try await fixture.workflow.saveSubscription(
+        first.id, urlString: "https://example.com/sub", autoUpdate: .init(userOverride: .daily))
       #expect(fixture.summary.autoUpdate.userOverride == .weekly)
       fixture.respond(mode: .daily, allowsOverride: true)
       await fixture.workflow.refreshSubscription(first.id)
       #expect(fixture.summary.autoUpdate.effectiveMode == .weekly)
-      try fixture.workflow.saveSubscriptionAutoUpdate(first.id, settings: .init())
+      try await fixture.workflow.saveSubscription(
+        first.id, urlString: "https://example.com/sub", autoUpdate: .init())
       #expect(fixture.summary.autoUpdate.userOverride == nil)
       #expect(fixture.summary.autoUpdate.effectiveMode == .daily)
       fixture.fetcher.setBehavior(.success(SubscriptionDocs.flat(serverCount: 0)))
@@ -112,14 +115,16 @@ struct SubscriptionAutoUpdateWorkflowTests {
       let plan = fixture.summary.autoUpdate.nextUpdateAt
       let requests = fixture.fetcher.requestCount
       fixture.now = fixture.now.addingTimeInterval(100)
-      try fixture.workflow.saveSubscriptionAutoUpdate(
-        first.id, settings: .init(userOverride: .daily))
+      try await fixture.workflow.saveSubscription(
+        first.id, urlString: "https://example.com/sub", autoUpdate: .init(userOverride: .daily))
       #expect(fixture.summary.autoUpdate.nextUpdateAt == plan)
-      try fixture.workflow.saveSubscriptionAutoUpdate(
-        first.id, settings: .init(userOverride: .weekly, interval: .weekly))
+      try await fixture.workflow.saveSubscription(
+        first.id, urlString: "https://example.com/sub",
+        autoUpdate: .init(userOverride: .weekly, interval: .weekly))
       #expect(fixture.summary.autoUpdate.nextUpdateAt == fixture.now.addingTimeInterval(604_800))
-      try fixture.workflow.saveSubscriptionAutoUpdate(
-        first.id, settings: .init(userOverride: .off, interval: .weekly))
+      try await fixture.workflow.saveSubscription(
+        first.id, urlString: "https://example.com/sub",
+        autoUpdate: .init(userOverride: .off, interval: .weekly))
       #expect(fixture.summary.autoUpdate.nextUpdateAt == nil)
       #expect(fixture.summary.autoUpdate.interval == .weekly)
       #expect(fixture.fetcher.requestCount == requests)
@@ -206,7 +211,9 @@ final class AutoUpdateFixture {
       subscriptionJitter: { [unowned self] in self.jitter }, subscriptionWait: wait)
   }
 
-  func create(settings: SubscriptionAutoUpdate = .init()) async throws -> SubscriptionSummary {
+  func create(settings: SubscriptionAutoUpdateSettings = .init()) async throws
+    -> SubscriptionSummary
+  {
     try await workflow.createSubscription(
       urlString: "https://example.com/sub", autoUpdate: settings)
   }
