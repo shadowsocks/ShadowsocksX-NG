@@ -61,15 +61,7 @@ final class RuleEnablementWorkflowTests: XCTestCase {
     let workflow = RulesWorkflow(
       preset: .chinaDirect,
       loadDocument: { try session.load() },
-      commitDocument: { document in
-        do {
-          try session.save(document)
-          return RuleDocumentCommit(outcome: .saved, document: session.current)
-        } catch {
-          XCTFail("Fixture save failed: \(error)")
-          return RuleDocumentCommit(outcome: .persistenceFailed, document: session.current)
-        }
-      },
+      commitDocument: { session.commit($0) },
       analysisDelay: { await gate.wait() },
       builtinSnapshots: BuiltinRuleSnapshots(loader: { source in
         if source == .geolocationCN {

@@ -300,7 +300,7 @@ extension RuleEnablementControllerTests {
       deploymentIsRunning = true
     }
     let disabledDocument = CustomRuleDocument(rules: [rule], disabledIdentities: [rule.identity])
-    let pending = Task { await controller.updateRuleDocument(disabledDocument) }
+    let pending = Task { await controller.commitRuleDocument(disabledDocument).outcome }
     try await withRuleApplicationTask(
       pending, controller: controller, release: deploymentGate.resume,
       body: {
@@ -372,8 +372,9 @@ extension RuleEnablementControllerTests {
       settings: ProxyRuntimeSettings(
         listen: ActivationFixture.listen, rulePreset: .chinaDirect, agentEnabled: false))
     let identity = ProxyRule(action: .proxy, match: try RuleMatch(domainExact: "saved.example"))
-    let outcome = await controller.updateRuleDocument(
-      CustomRuleDocument(rules: [], disabledIdentities: [identity]))
+    let outcome = await controller.commitRuleDocument(
+      CustomRuleDocument(rules: [], disabledIdentities: [identity])
+    ).outcome
     XCTAssertEqual(outcome, .saved)
     await controller.ruleApplicationTask?.value
     XCTAssertEqual(agent.registerCount, 0)
@@ -384,7 +385,7 @@ extension RuleEnablementControllerTests {
       store: store,
       settings: ProxyRuntimeSettings(
         listen: ActivationFixture.listen, rulePreset: .chinaDirect, agentEnabled: false))
-    let rejected = await newSession.updateRuleDocument(CustomRuleDocument(rules: []))
+    let rejected = await newSession.commitRuleDocument(CustomRuleDocument(rules: [])).outcome
     XCTAssertEqual(rejected, .persistenceFailed)
     XCTAssertEqual(try Data(contentsOf: store.fileURL), broken)
     XCTAssertEqual(agent.registerCount, 0)

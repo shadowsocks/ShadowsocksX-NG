@@ -150,14 +150,8 @@ extension RulePresetWorkflowTests {
       let session = RuleDocumentSession(store: CustomRuleStore(preset: preset, baseURL: baseURL))
       return RulesWorkflow(
         preset: preset, loadDocument: { try session.load() },
-        commitDocument: { document in
-          do {
-            try session.save(document)
-            return RuleDocumentCommit(outcome: .saved, document: document)
-          } catch {
-            return RuleDocumentCommit(outcome: .persistenceFailed, document: session.current)
-          }
-        }, builtinSnapshots: BuiltinRuleSnapshots(loader: { rulesFixture($0) }))
+        commitDocument: { session.commit($0) },
+        builtinSnapshots: BuiltinRuleSnapshots(loader: { rulesFixture($0) }))
     }
   }
 }

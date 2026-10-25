@@ -1,38 +1,8 @@
 import Foundation
 
-// MARK: - 自定义规则更新结果
-
-/// The result of accepting and saving a rule document, independent of runtime.
-/// `busy`/`superseded` are transaction-gate rejections: no save was attempted.
-enum CustomRuleUpdateOutcome: Equatable, Sendable {
-  /// 规则已保存；运行规则模式时应用。
-  case saved
-  /// 校验拒绝：整批不落地，旧规则保持不变；附可解释原因。
-  case rejected([RejectedCustomRule])
-  /// 持久化失败：旧规则保持不变。
-  case persistenceFailed
-  case busy
-  /// 事务门拒绝：意图捕获后事实已前进（集合版本/完整性变化），本次更新未尝试保存。
-  case superseded
-  case invalidDocument(detail: String)
-
-  var isSuccess: Bool {
-    switch self {
-    case .saved: true
-    default: false
-    }
-  }
-}
-
-/// Final persisted facts, independent of whether runtime application succeeded.
-struct RuleDocumentCommit: Sendable {
-  let outcome: CustomRuleUpdateOutcome
-  let document: CustomRuleDocument?
-}
-
 // MARK: - 结果呈现文案
 
-// outcome→文案映射与 outcome 类型同住，供状态行与编辑器两个视图共享。
+// outcome→文案映射供状态行与编辑器两个视图共享。
 
 extension RulesCommitFeedback {
   var summary: String {
@@ -90,36 +60,9 @@ extension ProxyRuntimeController {
     -> RuleDocumentCommit
   {
     let preset = preset ?? settings.rulePreset
-    let session = documents(for: preset)
-    let previous = try? session.load()
-    let outcome = await updateRuleDocument(document, preset: preset)
-    return RuleDocumentCommit(outcome: outcome, document: session.current ?? previous)
-  }
-
-  func updateRuleDocument(_ document: CustomRuleDocument, preset: RulePreset? = nil) async
-    -> CustomRuleUpdateOutcome
-  {
-    let preset = preset ?? settings.rulePreset
-    let session = documents(for: preset)
-    guard !isUpdatingRules else { return .busy }
-    isUpdatingRules = true
-    defer { isUpdatingRules = false }
-    let validation = validateCustomRulesForPersistence(document.rules)
-    guard validation.rejected.isEmpty else { return .rejected(validation.rejected) }
-    guard
-      document.disabledIdentities.isDisjoint(
-        with:
-          Set(RuleCoverage.fixedLocalMatches.map { ProxyRule(action: .direct, match: $0) }))
-    else { return .invalidDocument(detail: "Fixed local policy cannot be disabled") }
-    do {
-      _ = try session.load()
-      try session.save(document)
-    } catch {
-      RuntimeLog.emit(.runtimePersistFailed(detail: String(describing: error)))
-      return .persistenceFailed
-    }
-    if preset == settings.rulePreset { scheduleRuleApplication() }
-    return .saved
+    let result = documents(for: preset).commit(document)
+    if result.outcome.isSuccess && preset == settings.rulePreset { scheduleRuleApplication() }
+    return result
   }
 
   /// One worker owns rule deployments. Saves never cancel an in-flight restart;
@@ -138,20 +81,6 @@ extension ProxyRuntimeController {
         if generation == self.ruleApplicationGeneration { return }
       }
     }
-  }
-
-  /// 保存前校验：固定本地冲突与重复整批拒绝并返回可解释原因。
-  /// 同行动覆盖和相反行动遮蔽不阻止保存；编译时按当前骨架解释完整集合。
-  func validateCustomRulesForPersistence(_ rules: [CustomRule]) -> (
-    acceptedRules: [CustomRule], rejected: [RejectedCustomRule]
-  ) {
-    let base = CustomRuleValidator.hardValidation(custom: rules)
-    let hardRejected = base.rejected.filter {
-      $0.reason == .conflictsWithFixedLocalScope || $0.reason == .duplicate
-    }
-    let hardRejectedTokens = Set(hardRejected.map(\.rule.contentToken))
-    let accepted = rules.filter { !hardRejectedTokens.contains($0.contentToken) }
-    return (accepted, hardRejected)
   }
 
   /// 自定义规则安全摘要：数量 + 内容版本，不含原始域名。
