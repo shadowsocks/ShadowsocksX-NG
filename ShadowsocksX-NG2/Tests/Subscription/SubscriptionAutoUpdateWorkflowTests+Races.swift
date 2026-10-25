@@ -80,12 +80,18 @@ extension SubscriptionAutoUpdateWorkflowTests {
       fixture.now = fixture.now.addingTimeInterval(100_000)
       let fetcher = GatedFetcher()
       let workflow = fixture.makeWorkflow(fetcher: fetcher)
-      let batch = Task { await workflow.refreshDueSubscriptions() }
-      try await withTestTask(batch, release: fetcher.releaseAll) {
-        try await requireTestCondition("batch fetch entered") { fetcher.didEnterFetch }
-        #expect(fetcher.requestCount == 1)
-        await workflow.refreshSubscription(first.id)
-        #expect(fetcher.requestCount == 1)
+      defer {
+        workflow.stopSubscriptionAutomaticUpdates()
+        fetcher.releaseAll()
+      }
+      workflow.startSubscriptionAutomaticUpdates()
+      try await requireTestCondition("batch fetch entered") { fetcher.didEnterFetch }
+      #expect(fetcher.requestCount == 1)
+      await workflow.refreshSubscription(first.id)
+      #expect(fetcher.requestCount == 1)
+      fetcher.releaseAll()
+      try await requireTestCondition("automatic batch completed") {
+        fetcher.requestCount == 2 && workflow.refreshingSubscriptionIDs.isEmpty
       }
       #expect(fetcher.requestCount == 2)
     }
@@ -99,11 +105,17 @@ extension SubscriptionAutoUpdateWorkflowTests {
       fixture.now = fixture.now.addingTimeInterval(85_400)
       let fetcher = GatedFetcher()
       let workflow = fixture.makeWorkflow(fetcher: fetcher)
-      let batch = Task { await workflow.refreshDueSubscriptions() }
-      try await withTestTask(batch, release: fetcher.releaseAll) {
-        try await requireTestCondition("first due fetch entered") { fetcher.didEnterFetch }
-        #expect(fetcher.requestCount == 1)
-        fixture.now = fixture.now.addingTimeInterval(1_000)
+      defer {
+        workflow.stopSubscriptionAutomaticUpdates()
+        fetcher.releaseAll()
+      }
+      workflow.startSubscriptionAutomaticUpdates()
+      try await requireTestCondition("first due fetch entered") { fetcher.didEnterFetch }
+      #expect(fetcher.requestCount == 1)
+      fixture.now = fixture.now.addingTimeInterval(1_000)
+      fetcher.releaseAll()
+      try await requireTestCondition("automatic batch completed") {
+        fetcher.requestCount == 2 && workflow.refreshingSubscriptionIDs.isEmpty
       }
       #expect(fetcher.requestCount == 2)
     }

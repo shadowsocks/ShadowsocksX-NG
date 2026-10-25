@@ -24,7 +24,7 @@ final class CatalogWorkflow: ObservableObject {
   @Published private(set) var favoriteIDs: [NodeID]
   /// 订阅卡片 projection（非敏感）。
   @Published private(set) var subscriptions: [SubscriptionSummary] = []
-  /// 正在刷新的订阅身份（并发守卫的只读观察面）。
+  /// 请求登记的只读展示投影；刷新互斥仅由请求表判定。
   @Published private(set) var refreshingSubscriptionIDs: Set<NodeID> = []
   /// 当前会话的刷新结果；不从持久化状态重建，供各入口共用结束时间。
   @Published private(set) var subscriptionRefreshCompletions:
@@ -55,11 +55,10 @@ final class CatalogWorkflow: ObservableObject {
   let dependencies: CatalogWorkflowDependencies
   /// 启动时发现的 Legacy 快照（导入编排用；秘密值不进 projection）。
   var discoveredLegacySnapshot: LegacySnapshot?
-  var subscriptionRequests: [NodeID: (token: UUID, task: Task<Void, Never>)] = [:]
-  var automaticUpdatesRunning = false
-  var automaticUpdateTimer: Task<Void, Never>?
-  var automaticUpdateBatch: Task<Void, Never>?
-  var checkingDueSubscriptions = false
+  var subscriptionRequests: [NodeID: (token: UUID, task: Task<Void, Never>)] = [:] {
+    didSet { refreshingSubscriptionIDs = Set(subscriptionRequests.keys) }
+  }
+  var automaticUpdateState = AutomaticUpdateState.stopped
 
   /// 组合根注入依赖束；workflow 不自行创建任何生产 adapter。
   init(dependencies: CatalogWorkflowDependencies) {
@@ -277,15 +276,6 @@ final class CatalogWorkflow: ObservableObject {
 
   func publishLegacyImportState(_ state: LegacyImportAvailability) {
     legacyImportState = state
-  }
-
-  /// 订阅刷新并发守卫的写入口（集合对外只读）。
-  func setRefreshInFlight(_ id: NodeID, _ inFlight: Bool) {
-    if inFlight {
-      refreshingSubscriptionIDs.insert(id)
-    } else {
-      refreshingSubscriptionIDs.remove(id)
-    }
   }
 
   func setSubscriptionRefreshCompletion(

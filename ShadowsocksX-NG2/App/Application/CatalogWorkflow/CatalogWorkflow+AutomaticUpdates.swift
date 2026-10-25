@@ -1,67 +1,91 @@
 import Foundation
 
 extension CatalogWorkflow {
+  enum AutomaticUpdateState {
+    case stopped, idle
+    case waiting(id: UUID, task: Task<Void, Never>)
+    case updating(id: UUID, task: Task<Void, Never>)
+
+    var task: Task<Void, Never>? {
+      switch self {
+      case .stopped, .idle: nil
+      case .waiting(_, let task), .updating(_, let task): task
+      }
+    }
+
+    var id: UUID? {
+      switch self {
+      case .stopped, .idle: nil
+      case .waiting(let id, _), .updating(let id, _): id
+      }
+    }
+  }
+
   /// Owned by the GUI process, independently of workspace presentation.
   func startSubscriptionAutomaticUpdates() {
-    automaticUpdatesRunning = true
+    if case .stopped = automaticUpdateState { automaticUpdateState = .idle }
     scheduleAutomaticUpdateCheck()
   }
 
   func stopSubscriptionAutomaticUpdates() {
-    automaticUpdatesRunning = false
-    automaticUpdateTimer?.cancel()
-    automaticUpdateTimer = nil
-    automaticUpdateBatch?.cancel()
+    let task = automaticUpdateState.task
+    automaticUpdateState = .stopped
+    task?.cancel()
     for id in Array(subscriptionRequests.keys) { cancelSubscriptionRequest(id) }
   }
 
   /// Startup and wake use the persisted deadline directly, without catch-up jitter.
   func subscriptionAutomaticUpdatesDidWake() {
-    guard automaticUpdatesRunning else { return }
     scheduleAutomaticUpdateCheck()
   }
 
-  func refreshDueSubscriptions() async {
-    guard !checkingDueSubscriptions else { return }
-    checkingDueSubscriptions = true
-    defer { checkingDueSubscriptions = false }
+  private func refreshDueSubscriptions() async {
     var attempted: Set<NodeID> = []
-    while let due = subscriptions.first(where: {
-      !attempted.contains($0.id) && !refreshingSubscriptionIDs.contains($0.id)
-        && $0.autoUpdate.effectiveMode != .off
-        && ($0.autoUpdate.nextUpdateAt.map { $0 <= dependencies.subscriptionNow() } ?? false)
-    }) {
-      guard !Task.isCancelled else { return }
+    while !Task.isCancelled,
+      let due = subscriptions.first(where: {
+        !attempted.contains($0.id) && subscriptionRequests[$0.id] == nil
+          && $0.autoUpdate.effectiveMode != .off
+          && ($0.autoUpdate.nextUpdateAt.map { $0 <= dependencies.subscriptionNow() } ?? false)
+      })
+    {
       attempted.insert(due.id)
       await refreshSubscription(due.id)
     }
   }
 
   func scheduleAutomaticUpdateCheck(includeOverdue: Bool = true) {
-    automaticUpdateTimer?.cancel()
-    automaticUpdateTimer = nil
-    guard automaticUpdatesRunning, automaticUpdateBatch == nil,
+    switch automaticUpdateState {
+    case .stopped, .updating: return
+    case .idle, .waiting:
+      automaticUpdateState.task?.cancel()
+      automaticUpdateState = .idle
+    }
+    let now = dependencies.subscriptionNow()
+    guard
       let deadline = subscriptions.filter({
-        $0.autoUpdate.effectiveMode != .off && !refreshingSubscriptionIDs.contains($0.id)
+        $0.autoUpdate.effectiveMode != .off && subscriptionRequests[$0.id] == nil
       }).compactMap(\.autoUpdate.nextUpdateAt).filter({
-        includeOverdue || $0 > dependencies.subscriptionNow()
+        includeOverdue || $0 > now
       }).min()
     else { return }
-    let delay = max(0, deadline.timeIntervalSince(dependencies.subscriptionNow()))
+    let delay = max(0, deadline.timeIntervalSince(now))
     let wait = dependencies.subscriptionWait
-    automaticUpdateTimer = Task { [weak self] in
+    let id = UUID()
+    let task = Task { [weak self] in
       do {
         try await wait(delay)
         try Task.checkCancellation()
       } catch { return }
-      guard let self, self.automaticUpdatesRunning else { return }
-      self.automaticUpdateBatch = Task { [weak self] in
-        guard let self else { return }
-        await self.refreshDueSubscriptions()
-        self.automaticUpdateBatch = nil
-        // An unchanged overdue plan (for example a failed save) is not a retry loop.
-        self.scheduleAutomaticUpdateCheck(includeOverdue: false)
-      }
+      guard let self, case .waiting(let currentID, let task) = self.automaticUpdateState,
+        currentID == id
+      else { return }
+      self.automaticUpdateState = .updating(id: id, task: task)
+      await self.refreshDueSubscriptions()
+      guard self.automaticUpdateState.id == id, !Task.isCancelled else { return }
+      self.automaticUpdateState = .idle
+      // An unchanged overdue plan (for example a failed save) is not a retry loop.
+      self.scheduleAutomaticUpdateCheck(includeOverdue: false)
     }
+    automaticUpdateState = .waiting(id: id, task: task)
   }
 }

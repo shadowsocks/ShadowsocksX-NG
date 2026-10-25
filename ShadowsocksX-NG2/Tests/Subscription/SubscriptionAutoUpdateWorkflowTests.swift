@@ -137,13 +137,16 @@ struct SubscriptionAutoUpdateWorkflowTests {
       let first = try await fixture.create(settings: .init(userOverride: .daily))
       let second = try await fixture.create(settings: .init(userOverride: .daily))
       let requests = fixture.fetcher.requestCount
-      await fixture.workflow.refreshDueSubscriptions()
+      fixture.workflow.startSubscriptionAutomaticUpdates()
       #expect(fixture.fetcher.requestCount == requests)
       fixture.now = fixture.now.addingTimeInterval(1_000_000)
       fixture.fetcher.setBehavior(.failure(.httpStatus(code: 503)))
-      await fixture.workflow.refreshDueSubscriptions()
-      #expect(fixture.fetcher.requestCount == requests + 2)
-      await fixture.workflow.refreshDueSubscriptions()
+      fixture.workflow.subscriptionAutomaticUpdatesDidWake()
+      try await requireTestCondition("all overdue updates completed") {
+        fixture.fetcher.requestCount == requests + 2
+          && fixture.workflow.refreshingSubscriptionIDs.isEmpty
+      }
+      fixture.workflow.subscriptionAutomaticUpdatesDidWake()
       #expect(fixture.fetcher.requestCount == requests + 2)
       #expect(fixture.workflow.subscriptions.map(\.id) == [first.id, second.id])
       #expect(
@@ -167,7 +170,7 @@ struct SubscriptionAutoUpdateWorkflowTests {
       let requests = fixture.fetcher.requestCount
       let reload = fixture.makeWorkflow()
       reload.startSubscriptionAutomaticUpdates()
-      await reload.refreshDueSubscriptions()
+      reload.subscriptionAutomaticUpdatesDidWake()
       reload.stopSubscriptionAutomaticUpdates()
       #expect(reload.subscriptions.first?.id == first.id)
       #expect(fixture.fetcher.requestCount == requests)

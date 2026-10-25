@@ -45,7 +45,6 @@ extension CatalogWorkflow {
     else { return }
     let token = UUID()
     setSubscriptionRefreshCompletion(nil, for: id)
-    setRefreshInFlight(id, true)
     let request = Task { await runSubscriptionRefresh(source, token: token) }
     subscriptionRequests[id] = (token, request)
     await withTaskCancellationHandler {
@@ -60,7 +59,6 @@ extension CatalogWorkflow {
     defer {
       if subscriptionRequests[id]?.token == token {
         subscriptionRequests[id] = nil
-        setRefreshInFlight(id, false)
         scheduleAutomaticUpdateCheck()
       }
     }
@@ -115,7 +113,6 @@ extension CatalogWorkflow {
 
   func cancelSubscriptionRequest(_ id: NodeID) {
     subscriptionRequests.removeValue(forKey: id)?.task.cancel()
-    setRefreshInFlight(id, false)
   }
 
   /// 删除订阅：递归清除订阅源、固定分组与远端成员并清理凭据；

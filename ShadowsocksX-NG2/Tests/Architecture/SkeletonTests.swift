@@ -76,7 +76,7 @@ final class CatalogWorkflowArchitectureTests: XCTestCase {
     let memberTokens = [
       "\\.dependencies\\b", "\\bfileStore\\b", "discoveredLegacySnapshot",
       "republishCommittedState", "commitSubscriptionDocument", "publishLegacyImportState",
-      "setRefreshInFlight", "setSubscriptionRefreshFailure",
+      "automaticUpdateState", "subscriptionRequests", "setSubscriptionRefreshFailure",
       "subscriptionSummaries", "credentialRefs",
     ]
     return (typeTokens + memberTokens).map { token in
