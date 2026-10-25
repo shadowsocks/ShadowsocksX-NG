@@ -45,6 +45,8 @@ struct ManagedPluginInfo: Equatable, Sendable {
   let license: String
   /// 构建期 Developer ID 重签的 identifier（`<bundle-id>.plugin.<name>`）。
   let signIdentifier: String
+  /// 内置插件在没有额外本地参数时也会传递的启动参数。
+  let defaultArguments: [String]
 }
 
 /// 本版本受管集：固定版本的 v2ray-plugin 与 Cloak 客户端。
@@ -59,7 +61,8 @@ enum ManagedPluginCatalog {
       projectURL: "https://github.com/shadowsocks/v2ray-plugin",
       release: "v1.4.0",
       license: "MIT",
-      signIdentifier: "com.qiuyuzhou.ShadowsocksX-NG2.plugin.v2ray-plugin"),
+      signIdentifier: "com.qiuyuzhou.ShadowsocksX-NG2.plugin.v2ray-plugin",
+      defaultArguments: ["-disableAccessLog"]),
     ManagedPluginInfo(
       program: "ck-client",
       names: ["cloak", "cloak-v2"],
@@ -68,7 +71,8 @@ enum ManagedPluginCatalog {
       projectURL: "https://github.com/cbeuw/Cloak",
       release: "v2.12.0",
       license: "GPL-3.0",
-      signIdentifier: "com.qiuyuzhou.ShadowsocksX-NG2.plugin.ck-client"),
+      signIdentifier: "com.qiuyuzhou.ShadowsocksX-NG2.plugin.ck-client",
+      defaultArguments: []),
   ]
 
   static func info(forProgram program: String) -> ManagedPluginInfo? {
@@ -92,7 +96,7 @@ struct BundleManagedPluginProvider: PluginExecutableResolving {
       .appendingPathComponent("Contents/Helpers/Plugins")
       .appendingPathComponent(info.executableName)
     guard fileManager.isExecutableFile(atPath: url.path) else { return nil }
-    return ResolvedPlugin(path: url.path, arguments: [])
+    return ResolvedPlugin(path: url.path, arguments: info.defaultArguments)
   }
 }
 
