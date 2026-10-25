@@ -19,12 +19,14 @@ struct AddSubscriptionSheet: View {
   @State private var urlString = ""
 
   var body: some View {
-    VStack(alignment: .leading, spacing: 12) {
+    VStack(alignment: .leading, spacing: 16) {
+      Text("添加订阅").font(.title2)
       Text("粘贴订阅地址（必须 HTTPS，返回 SIP-008 JSON；Content-Type 需为 application/json; charset=utf-8）。")
         .font(.callout)
         .foregroundStyle(.secondary)
-      TextField("https://example.com/subscription.json", text: $urlString)
-        .textFieldStyle(.roundedBorder)
+      TextField(
+        "订阅地址", text: $urlString,
+        prompt: Text("https://example.com/subscription.json").foregroundStyle(.tertiary))
       HStack {
         Spacer()
         Button("取消", role: .cancel) { dismiss() }
@@ -61,12 +63,14 @@ struct EditSubscriptionURLSheet: View {
   @State private var loaded = false
 
   var body: some View {
-    VStack(alignment: .leading, spacing: 12) {
+    VStack(alignment: .leading, spacing: 16) {
+      Text("编辑订阅").font(.title2)
       Text("编辑订阅地址。订阅身份与固定分组全部保留；新地址刷新成功前保留最后一次成功内容。")
         .font(.callout)
         .foregroundStyle(.secondary)
-      TextField("https://example.com/subscription.json", text: $urlString)
-        .textFieldStyle(.roundedBorder)
+      TextField(
+        "订阅地址", text: $urlString,
+        prompt: Text("https://example.com/subscription.json").foregroundStyle(.tertiary))
       HStack {
         Spacer()
         Button("取消", role: .cancel) { dismiss() }
