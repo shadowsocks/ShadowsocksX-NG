@@ -104,3 +104,7 @@ ShadowsocksX-NG2/Vendor/ck-client/.fetched.sha256
 # dotenv file
 .env
 
+###
+# cmux omx
+.omx
+
