@@ -1,0 +1,169 @@
+Third-party notices for sslocal.
+
+Shadowsocks-Rust `sslocal` (manifest: `manifest.json`; release `v1.26.0`; source commit [`e83d0d2b18cd5fa922c610270932e01d0fe0646f`](https://github.com/qiuyuzhou/shadowsocks-rust/commit/e83d0d2b18cd5fa922c610270932e01d0fe0646f); the [release workflow](https://github.com/qiuyuzhou/shadowsocks-rust/blob/v1.26.0/.github/workflows/build-release.yml) uses `full`; target `aarch64-apple-darwin`).
+The direct Shadowsocks-Rust/workspace crates are handled separately. This file covers external Rust crates in the locked `full` target dependency graph.
+Complete license terms are stored once per SPDX identifier in `../third-party-licenses/`; entries below group components and retain their copyright/attribution notices without repeating license bodies.
+
+## 0BSD
+
+License text: `../third-party-licenses/0BSD.txt`
+
+Components: managed, mock_instant, smoltcp.
+
+- Copyright (C) 2017 whitequark@whitequark.org
+- Copyright (C) 2020 by museun <museun@outlook.com>
+- Copyright (C) smoltcp contributors
+
+## Apache-2.0
+
+License text: `../third-party-licenses/Apache-2.0.txt`
+
+Components: adler2, aead, aes, aes-gcm, anstream, anstyle, anstyle-parse, anstyle-query,
+  anyhow, arc-swap, arrayvec, atomic-waker, aws-lc-sys, base64, bitflags, blake3,
+  block-buffer, byte_string, camellia, cfg-if, chacha20, chacha20poly1305, chrono, cipher,
+  clap, clap_builder, clap_lex, cmov, colorchoice, const-oid, constant_time_eq,
+  core-foundation, core-foundation-sys, cpubits, cpufeatures, crc32fast, critical-section,
+  crossbeam-channel, crossbeam-epoch, crossbeam-utils, crypto-common, ctr, ctutils, deranged,
+  destructure_traitobject, digest, directories, dirs-sys, dynosaur, either, equivalent, errno,
+  etherparse, flate2, fnv, form_urlencoded, futures, futures-channel, futures-core,
+  futures-executor, futures-io, futures-sink, futures-task, futures-util, getrandom, ghash,
+  hash32, hashbrown, heapless, hickory-net, hickory-proto, hickory-resolver, hkdf, hmac, http,
+  httparse, httpdate, humantime, hybrid-array, iana-time-zone, idna, idna_adapter, indexmap,
+  inout, ipnet, is_terminal_polyfill, itoa, lazy_static, libc, lock_api, log, log-mdc, log4rs,
+  md-5, mime, miniz_oxide, moka, notify-types, num-conv, num-traits, num_threads, once_cell,
+  parking_lot, parking_lot_core, percent-encoding, pin-project, pin-project-lite, poly1305,
+  polyval, portable-atomic, powerfmt, ppv-lite86, prefix-trie, qrcode, rand, rand_chacha,
+  rand_core, regex, regex-automata, regex-syntax, resolv-conf, rpassword, rtoolbox, rustix,
+  rustls, rustls-native-certs, rustls-pki-types, ryu, scopeguard, security-framework,
+  security-framework-sys, sendfd, serde, serde_core, serde_json, serde_urlencoded, serde_yaml,
+  sha1, signal-hook-registry, smallvec, socket2, stable_deref_trait, symlink, sysexits,
+  system-configuration, system-configuration-sys, tagptr, terminal_size, thiserror, thread-id,
+  thread_local, time, time-core, tinyvec, tinyvec_macros, tokio-rustls, typenum, ucd-trie,
+  unicode-segmentation, universal-hash, url, utf8_iter, utf8parse, uuid, xdg, zerocopy,
+  zeroize.
+
+- Copyright (c) 2012-2013 Mozilla Foundation (core-foundation and core-foundation-sys).
+- Copyright (c) 2014, Kang Seonghoon.
+- Copyright (c) 2019-2026 The RustCrypto Project Developers (aead).
+- Copyright (c) 2019 MobileCoin, LLC (aead).
+
+## BSD-3-Clause
+
+License text: `../third-party-licenses/BSD-3-Clause.txt`
+
+Components: alloc-no-stdlib, alloc-stdlib, aws-lc-sys, brotli, subtle, zstd, zstd-safe,
+  zstd-sys.
+
+- Copyright (c) 2016 Dropbox, Inc.
+- Copyright (c) 2016-2017 Isis Agora Lovecruft, Henry de Valence. All rights reserved.
+- Copyright (c) 2016-2024 Isis Agora Lovecruft. All rights reserved.
+- Copyright (c) 2026, Alexandre Bury
+- Copyright (c) Meta Platforms, Inc. and affiliates. All rights reserved.
+
+## CC0-1.0
+
+License text: `../third-party-licenses/CC0-1.0.txt`
+
+Components: aws-lc-sys, notify.
+
+## CDLA-Permissive-2.0
+
+License text: `../third-party-licenses/CDLA-Permissive-2.0.txt`
+
+Components: webpki-roots.
+
+## ISC
+
+License text: `../third-party-licenses/ISC.txt`
+
+Components: aws-lc-rs, aws-lc-sys, rustls-webpki, untrusted.
+
+- Copyright (c) 1995-2003 by Internet Software Consortium
+- Copyright (c) 2004-2010 by Internet Systems Consortium, Inc. ("ISC")
+- Copyright 2015 Brian Smith.
+
+## MIT
+
+License text: `../third-party-licenses/MIT.txt`
+
+Components: aho-corasick, aws-lc-sys, brotli, brotli-decompressor, byteorder, bytes,
+  data-encoding, derive_more, fsevent-sys, h2, http-body, http-body-util, hyper, iprange,
+  json5, lru_time_cache, matchers, memchr, mio, nix, nu-ansi-term, ordered-float, same-file,
+  serde-value, shadowsocks-crypto, sharded-slab, simd-adler32, slab, spin, strsim,
+  syslog-tracing, tokio, tokio-tfo, tokio-util, tracing, tracing-appender, tracing-core,
+  tracing-log, tracing-subscriber, try-lock, typemap-ors, unsafe-any-ors, unsafe-libyaml,
+  walkdir, want, zmij.
+
+- Copyright (c) 2009, 2010, 2013-2016 by the Brotli Authors.
+- Copyright (c) 2014 Benjamin Sago
+- Copyright (c) 2014 Carl Lerche and other MIO contributors
+- Copyright (c) 2014 Mathijs van de Nes
+- Copyright (c) 2014-2026 Sean McArthur
+- Copyright (c) 2015 Andrew Gallant
+- Copyright (c) 2015 Carl Lerche + nix-rust Authors
+- Copyright (c) 2015 Danny Guo
+- Copyright (c) 2015 Jonathan Reem
+- Copyright (c) 2015 Pierre Baillet
+- Copyright (c) 2015-2020 Julien Cretin
+- Copyright (c) 2016 Alex Crichton
+- Copyright (c) 2016 arcnmx
+- Copyright (c) 2016 Jelte Fennema
+- Copyright (c) 2016 Titus Wormer <tituswormer@gmail.com>
+- Copyright (c) 2017 Andrew Gallant
+- Copyright (c) 2017 h2 authors
+- Copyright (c) 2017 Y. T. CHUNG <zonyitoo@gmail.com>
+- Copyright (c) 2017 Yilin Chen
+- Copyright (c) 2017-2020 Google Inc.
+- Copyright (c) 2018 Akash Kurdekar
+- Copyright (c) 2018 Carl Lerche
+- Copyright (c) 2018-2019 Sean McArthur
+- Copyright (c) 2018-2023 Sean McArthur
+- Copyright (c) 2019 Carl Lerche
+- Copyright (c) 2019 Eliza Weisman
+- Copyright (c) 2019 Tokio Contributors
+- Copyright (c) 2019 Yoshua Wuyts
+- Copyright (c) 2019-2026 Sean McArthur & Hyper Contributors
+- Copyright (c) 2020 寧靜
+- Copyright (c) 2021 Y. T. ZHONG
+- Copyright (c) 2021-2022 The Nushell Project Developers
+- Copyright (c) 2025 Callum Oakley
+- Copyright (c) [2021] [Marvin Countryman]
+- Copyright (c) Tokio Contributors
+- Copyright 2016 Nika Layzell
+- Copyright 2018 MaidSafe.net limited.
+
+## MPL-2.0
+
+License text: `../third-party-licenses/MPL-2.0.txt`
+
+Components: option-ext.
+
+## Unicode-3.0
+
+License text: `../third-party-licenses/Unicode-3.0.txt`
+
+Components: icu_collections, icu_locale_core, icu_normalizer, icu_normalizer_data,
+  icu_properties, icu_properties_data, icu_provider, litemap, potential_utf, tinystr,
+  writeable, yoke, zerofrom, zerotrie, zerovec.
+
+- Copyright © 1991-2023 Unicode, Inc.
+- Copyright © 2020-2024 Unicode, Inc.
+- ICU 1.8.1 to ICU 57.1 © 1995-2016 International Business Machines Corporation and others.
+
+## WTFPL
+
+License text: `../third-party-licenses/WTFPL.txt`
+
+Components: tun.
+
+## Additional upstream notices
+
+- `moka` source files `src/common/frequency_sketch.rs` and `src/common/timer_wheel.rs` are Apache-2.0-only (the remaining Moka library is MIT/Apache-2.0); see `../third-party-licenses/additional-notices/sslocal-moka-NOTICE.txt`.
+- `rand` COPYRIGHT applies to Rand, rand_chacha, and rand_core; the shared upstream statement is in `../third-party-licenses/additional-notices/rust-rand-COPYRIGHT.txt`. `symlink` has its own copyright notice at `../third-party-licenses/additional-notices/sslocal-symlink-COPYRIGHT.txt`.
+- `aws-lc-sys` has additional compiled-code attributions and license-branch details at `../third-party-licenses/additional-notices/sslocal-aws-lc-COPYRIGHTS.txt`. Its `Keccak / AES Reference Implementations` section identifies CC0 code, included above with the shared CC0-1.0 text; `s2n-bignum` permits Apache-2.0, ISC, or MIT-0, and the report uses the accepted Apache-2.0/ISC branches; Amazon elects BSD-3-Clause rather than GPL-2.0 for Jitter Entropy. The upstream file marks Google Test, its Go test runner, and Wycheproof vectors as not compiled into libcrypto/libssl; those are excluded.
+- AWS-LC uses an ISC warranty clause with `AUTHOR` wording; preserve that source variant at `../third-party-licenses/additional-notices/sslocal-aws-lc-ISC-variation.txt`.
+- `untrusted` and `rustls-webpki` use an ISC-style warranty clause with `AUTHORS` wording; preserve that source variant at `../third-party-licenses/additional-notices/sslocal-rustls-ISC-variation.txt`. The `rustls-webpki` package's `include` list excludes the `third-party/chromium` path mentioned in its source LICENSE.
+- `zstd`, `zstd-safe`, and `zstd-sys` have a source-specific BSD-3-Clause condition 3 at `../third-party-licenses/additional-notices/sslocal-zstd-BSD-3-Clause-variation.txt`.
+- `rustix` reports some Rust standard-library-derived files and permits Apache-2.0-with-LLVM-exception, Apache-2.0, or MIT; the generated graph selected the Apache-2.0 branch. Preserve the upstream copyright guidance: `../third-party-licenses/additional-notices/sslocal-rustix-COPYRIGHT.txt`.
+- `utf8_iter` documents Rust standard-library-derived code and its designated test-code public-domain exception; preserve its full upstream notice: `../third-party-licenses/additional-notices/sslocal-utf8_iter-COPYRIGHT.txt`.
+- `aho-corasick`, `byteorder`, `memchr`, `same-file`, and `walkdir` also offer Unlicense as an alternative to MIT; the report selected their MIT branch. The `COPYING` statements are selection guidance, not additional license bodies.

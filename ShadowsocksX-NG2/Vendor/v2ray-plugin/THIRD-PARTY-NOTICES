@@ -1,0 +1,68 @@
+Third-party notices for v2ray-plugin.
+
+v2ray-plugin (manifest: `manifest.json`; release `v1.5.0`; source commit [`7466d1f3a124a0e9f98184a5e0b2d766371c2d84`](https://github.com/shadowsocks/v2ray-plugin/commit/7466d1f3a124a0e9f98184a5e0b2d766371c2d84); binary metadata: Go `go1.27.3`, darwin/arm64, clean VCS revision).
+The direct v2ray-plugin project license is handled separately. This file covers external Go modules reported for the shipped darwin-arm64 binary and its Go standard library.
+Go standard-library source text: [go1.27.3 LICENSE](https://go.googlesource.com/go/+/refs/tags/go1.27.3/LICENSE).
+Complete license terms are stored once per SPDX identifier in `../third-party-licenses/`; entries below group components and retain their copyright/attribution notices without repeating license bodies.
+
+## Apache-2.0
+
+License text: `../third-party-licenses/Apache-2.0.txt`
+
+Components: github.com/pires/go-proxyproto, go.yaml.in/yaml/v3.
+
+- Copyright 2011-2016 Canonical Ltd.
+
+## BSD-2-Clause
+
+License text: `../third-party-licenses/BSD-2-Clause.txt`
+
+Components: github.com/gorilla/websocket.
+
+- Copyright (c) 2013 The Gorilla WebSocket Authors. All rights reserved.
+
+## BSD-3-Clause
+
+License text: `../third-party-licenses/BSD-3-Clause.txt`
+
+Components: Go standard library (go1.27.3), github.com/golang/protobuf, github.com/miekg/dns,
+  github.com/stretchr/testify/internal/difflib, golang.org/x/crypto, golang.org/x/exp/constraints,
+  golang.org/x/net, golang.org/x/sys, golang.org/x/text, google.golang.org/protobuf.
+
+- Copyright (c) 2009, The Go Authors. Extensions copyright (c) 2011, Miek Gieben.
+- Copyright (c) 2013, Patrick Mezard
+- Copyright (c) 2018 The Go Authors. All rights reserved.
+- Copyright 2009 The Go Authors.
+- Copyright 2010 The Go Authors.  All rights reserved.
+
+## ISC
+
+License text: `../third-party-licenses/ISC.txt`
+
+Components: github.com/stretchr/testify/internal/spew.
+
+- Copyright (c) 2012-2016 Dave Collins <dave@davec.name>
+
+## MIT
+
+License text: `../third-party-licenses/MIT.txt`
+
+Components: github.com/adrg/xdg, github.com/apernet/quic-go, github.com/quic-go/qpack,
+  github.com/quic-go/quic-go, github.com/stretchr/objx, github.com/stretchr/testify,
+  github.com/v2fly/hysteria/core/v2, github.com/v2fly/v2ray-core/v5, go.yaml.in/yaml/v3.
+
+- Copyright (c) 2006-2010 Kirill Simonov
+- Copyright (c) 2006-2011 Kirill Simonov
+- Copyright (c) 2012-2020 Mat Ryer, Tyler Bunnell and contributors.
+- Copyright (c) 2014 Adrian-George Bostan <adrg@epistack.com>
+- Copyright (c) 2014 Stretchr, Inc.
+- Copyright (c) 2015-2025 V2Fly Community
+- Copyright (c) 2016 the quic-go authors & Google, Inc.
+- Copyright (c) 2017-2018 objx contributors
+- Copyright 2019 Marten Seemann
+- Copyright 2023 Toby
+
+## Additional upstream notices
+
+- The Go standard library and `golang.org/x/crypto`, `golang.org/x/exp/constraints`, `golang.org/x/net`, `golang.org/x/sys`, and `golang.org/x/text` use the Google LLC BSD-3-Clause condition 3 variation; `github.com/golang/protobuf` and `google.golang.org/protobuf` use the Google Inc variation. Both clauses are preserved at `../third-party-licenses/additional-notices/Go-BSD-3-Clause-source-variations.txt`.
+- `go.yaml.in/yaml/v3` is reported as MIT, and its distinct NOTICE also identifies Apache-2.0 material; its text and Canonical copyright attribution are retained separately at `../third-party-licenses/additional-notices/v2ray-plugin-yaml-NOTICE.txt`.

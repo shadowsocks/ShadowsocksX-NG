@@ -1,0 +1,5 @@
+For Cloak's embedded `internal/ecdh` implementation (`wsddn/go-ecdh`), the upstream BSD-3-Clause text uses this source-specific condition 3 in place of condition 3 in the shared BSD-3-Clause text:
+
+    * Neither the name of tang0th nor the names of its contributors may be
+      used to endorse or promote products derived from this software without
+      specific prior written permission.

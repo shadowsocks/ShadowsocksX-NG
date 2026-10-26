@@ -1,0 +1,71 @@
+Third-party notices for AgeSwift.
+
+AgeSwift (pin in `../../ShadowsocksX-NG2.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved`: `0.1.0`, revision [`f29b609d5a20acabbb009c2884e9580fe960db96`](https://github.com/qiuyuzhou/AgeSwift/commit/f29b609d5a20acabbb009c2884e9580fe960db96); source `Rust/age-swift-ffi/Cargo.toml`; both `aarch64-apple-darwin` and `x86_64-apple-darwin`).
+The direct AgeSwift package and FFI crate are handled separately. This file covers external Rust crates from the pinned FFI package graph.
+Complete license terms are stored once per SPDX identifier in `../third-party-licenses/`; entries below group components and retain their copyright/attribution notices without repeating license bodies.
+
+## Apache-2.0
+
+License text: `../third-party-licenses/Apache-2.0.txt`
+
+Components: aead, aes, aes-gcm, age, age-core, arc-swap, base16ct, base64, block-buffer,
+  cfg-if, chacha20, chacha20poly1305, cipher, const-oid, cpufeatures, crypto-bigint,
+  crypto-common, ctr, der, digest, elliptic-curve, ff, fluent, fluent-bundle, fluent-langneg,
+  fluent-syntax, futures, futures-channel, futures-core, futures-executor, futures-io,
+  futures-sink, futures-task, futures-util, getrandom, ghash, group, hkdf, hmac, hpke,
+  hybrid-array, inout, intl-memoizer, intl_pluralrules, io_tee, keccak, kem, lazy_static,
+  libc, lock_api, log, ml-kem, opaque-debug, p256, parking_lot, parking_lot_core, pbkdf2,
+  pin-project, pin-project-lite, poly1305, polyval, ppv-lite86, primeorder, rand, rand_chacha,
+  rand_core, rustc-hash, salsa20, scopeguard, scrypt, sec1, secrecy, self_cell, sha2, sha3,
+  smallvec, thiserror, type-map, typenum, unic-langid, unic-langid-impl, universal-hash,
+  zerocopy, zeroize.
+
+- Copyright (c) 2019-2026 The RustCrypto Project Developers (aead).
+- Copyright (c) 2019 MobileCoin, LLC (aead).
+
+## BSD-3-Clause
+
+License text: `../third-party-licenses/BSD-3-Clause.txt`
+
+Components: curve25519-dalek, subtle, x25519-dalek.
+
+- Copyright (c) 2016-2017 Isis Agora Lovecruft, Henry de Valence. All rights reserved.
+- Copyright (c) 2016-2024 Isis Agora Lovecruft. All rights reserved.
+- Copyright (c) 2017-2021 isis agora lovecruft. All rights reserved.
+- Copyright (c) 2019-2021 DebugSteven. All rights reserved.
+
+## MIT
+
+License text: `../third-party-licenses/MIT.txt`
+
+Components: bech32, cookie-factory, generic-array, i18n-embed, memchr, nom, rust-embed,
+  rust-embed-utils, same-file, slab, walkdir.
+
+- Copyright (c) 2014-2019 Geoffroy Couprie
+- Copyright (c) 2015 Andrew Gallant
+- Copyright (c) 2015 Austin Bonander
+- Copyright (c) 2015 Bartłomiej Kamiński
+- Copyright (c) 2015 Danny Guo
+- Copyright (c) 2016 Titus Wormer <tituswormer@gmail.com>
+- Copyright (c) 2017 Andrew Gallant
+- Copyright (c) 2017 Clark Moody
+- Copyright (c) 2018 Akash Kurdekar
+- Copyright (c) 2018 pyros2097
+- Copyright (c) 2019 Carl Lerche
+- Copyright 2020 Luke Frisken
+
+## Unicode-3.0
+
+License text: `../third-party-licenses/Unicode-3.0.txt`
+
+Components: tinystr.
+
+- Copyright © 1991-2023 Unicode, Inc.
+- Copyright © 2020-2024 Unicode, Inc.
+- ICU 1.8.1 to ICU 57.1 © 1995-2016 International Business Machines Corporation and others.
+
+## Additional upstream notices
+
+- `tinystr` carries the ICU4X adaptation notice `../third-party-licenses/additional-notices/AgeSwift-ICU4X-attribution.txt`.
+- `group` retains contributor copyright and its Apache-2.0-or-MIT choice; see `../third-party-licenses/additional-notices/AgeSwift-group-COPYRIGHT.txt`. The shared Rand copyright statement is at `../third-party-licenses/additional-notices/rust-rand-COPYRIGHT.txt`.
+- `memchr`, `same-file`, and `walkdir` also offer Unlicense as an alternative to MIT; the report selected their MIT branch.

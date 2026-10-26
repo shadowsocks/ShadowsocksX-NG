@@ -1,0 +1,13 @@
+Several Go sources use source-specific condition 3 wording in place of condition 3 in the shared BSD-3-Clause text.
+
+For the Go standard libraries (`go1.24.5` and `go1.27.3`) and the `golang.org/x/crypto`, `golang.org/x/exp/constraints`, `golang.org/x/net`, `golang.org/x/sys`, and `golang.org/x/text` modules, condition 3 is:
+
+   * Neither the name of Google LLC nor the names of its contributors may be
+     used to endorse or promote products derived from this software without
+     specific prior written permission.
+
+For `github.com/golang/protobuf`, `google.golang.org/protobuf`, `github.com/klauspost/compress`, `github.com/klauspost/compress/internal/snapref`, and `github.com/refraction-networking/utls`, condition 3 is:
+
+   * Neither the name of Google Inc. nor the names of its contributors may be
+     used to endorse or promote products derived from this software without
+     specific prior written permission.

@@ -1,0 +1,141 @@
+AWS Libcrypto (AWS-LC)
+
+AWS-LC is a fork of BoringSSL, which is itself a fork of OpenSSL.
+Content from these and other sources retains their original licensing,
+as described below. New files from AWS-LC are made available under the Apache-2.0 license OR the ISC
+license. These licenses are reproduced at the bottom of this file.
+
+```
+Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+SPDX-License-Identifier: Apache-2.0 OR ISC
+```
+
+
+================================================================================
+BoringSSL
+================================================================================
+
+BoringSSL is a Google-maintained fork of OpenSSL. Historically, code
+authored by Google for BoringSSL was licensed under the ISC License.
+BoringSSL has since relicensed upstream to Apache License 2.0. Existing
+AWS-LC code originating from BoringSSL retains its ISC license, while
+newer code taken from BoringSSL is licensed under Apache License 2.0.
+
+```
+Copyright (c) 2014-2024 Google Inc.
+SPDX-License-Identifier: ISC
+```
+
+Additional individual contributions to BoringSSL-derived code are
+covered under the ISC license:
+
+  - Brian Smith (Copyright 2016)
+  - Robert Nagy (Copyright 2022)
+  - Arm Ltd (Copyright 2020)
+
+```
+Copyright (c) 2025-2026 Google Inc.
+SPDX-License-Identifier: Apache-2.0
+```
+
+================================================================================
+OpenSSL
+================================================================================
+
+Code derived from the OpenSSL project is licensed under the
+Apache License, Version 2.0.
+
+```
+Copyright (c) 1998-2011 The OpenSSL Project. All rights reserved.
+SPDX-License-Identifier: Apache-2.0
+```
+
+Some OpenSSL-derived files also carry the original SSLeay copyright:
+
+```
+Copyright (c) 1995-1998 Eric Young (eay@cryptsoft.com). All rights reserved.
+SPDX-License-Identifier: Apache-2.0
+```
+
+Portions of OpenSSL-derived code include contributions from:
+
+  - Sun Microsystems, Inc. (Copyright 2002)
+  - Nokia (Copyright 2005)
+  - Intel Corporation (Copyright 2012-2021)
+
+These contributions are covered under the Apache-2.0 license.
+
+================================================================================
+mlkem-native
+================================================================================
+
+Code from the mlkem-native project is licensed under Apache License 2.0 or MIT or ISC.
+
+```
+Copyright (c) The mlkem-native project authors.
+SPDX-License-Identifier: Apache-2.0 OR ISC OR MIT
+```
+
+================================================================================
+mldsa-native
+================================================================================
+
+Code from the mldsa-native project is licensed under Apache License 2.0 or MIT or ISC
+
+```
+Copyright (c) The mldsa-native project authors.
+SPDX-License-Identifier: Apache-2.0 OR ISC OR MIT
+```
+
+================================================================================
+Third-Party Libraries (compiled into libcrypto/libssl)
+================================================================================
+
+Fiat Cryptography
+-----------------
+Synthesizing Correct-by-Construction Code for Cryptographic Primitives.
+See third_party/fiat/LICENSE.
+
+```
+Copyright (c) 2015-2020 the fiat-crypto authors.
+SPDX-License-Identifier: MIT
+```
+
+s2n-bignum
+----------
+Integer arithmetic routines for cryptography.
+See third_party/s2n-bignum/s2n-bignum-imported/LICENSE.
+
+```
+Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+SPDX-License-Identifier: Apache-2.0 OR ISC OR MIT-0
+```
+
+Note: ML-KEM/SHA3 code within s2n-bignum is licensed as
+Apache-2.0 OR ISC OR MIT (with attribution), sourced from the
+mlkem-native project.
+
+Jitter Entropy RNG
+-------------------
+CPU Jitter Random Number Generator Library.
+See third_party/jitterentropy/jitterentropy-library/LICENSE.
+
+The Jitter Entropy library is dual-licensed under a BSD-style license
+and the GNU General Public License Version 2. Amazon expressly elects
+to distribute the package under the 3-Clause BSD License and NOT under
+GNU General Public License Version 2.
+
+```
+Copyright (C) 2017 - 2025, Stephan Mueller <smueller@chronox.de>.
+SPDX-License-Identifier: BSD-3-Clause
+```
+
+Keccak / AES Reference Implementations
+---------------------------------------
+Public domain (CC0) contributions.
+https://creativecommons.org/public-domain/cc0
+
+Code from sources and by authors listed in comments on top of the respective files.
+
+
+================================================================================

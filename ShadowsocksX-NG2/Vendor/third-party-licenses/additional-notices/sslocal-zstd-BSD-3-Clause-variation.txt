@@ -1,0 +1,5 @@
+For `zstd`, `zstd-safe`, and `zstd-sys`, the upstream Zstandard BSD-3-Clause text uses this source-specific condition 3 in place of condition 3 in the shared BSD-3-Clause text:
+
+ * Neither the name Facebook, nor Meta, nor the names of its contributors may
+   be used to endorse or promote products derived from this software without
+   specific prior written permission.
