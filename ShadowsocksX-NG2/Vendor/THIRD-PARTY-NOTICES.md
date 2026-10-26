@@ -58,6 +58,6 @@
 
    按 `report` 中的 SPDX 类型归组；从实际二进制 Go 版本对应的 Go 源码 `LICENSE` 核对 Go 标准库文本和归属。不要把直接产品本身的许可混进传递依赖组。
 4. 比较报告中的许可类型及组件名与现有分组。只有在类型尚未出现时才新增共享文本；相同 SPDX 标识不得复制完整正文。检查所有额外 NOTICE、COPYRIGHT、许可选择分支、自定义例外（包括同 SPDX 标识下不同的条件/免责声明措辞）和非 Go 源码；把新增材料放入 `third-party-licenses/additional-notices/` 并在对应组件声明中引用。
-5. 更新之后核对组件 pin、源码 revision、目标/feature、二进制构建信息及系统依赖边界；检查每个相对链接均指向离线存在的文件，再运行 `git diff --check`。只更新审阅后的本地静态材料，不能把扫描工具或网络下载加入正常构建步骤。上层 bundle 资源配置须同时复制这些声明和其引用的共享文本，并保留相对目录关系；本次不改 `project.yml` 或资源加载逻辑。
+5. 更新之后核对组件 pin、源码 revision、目标/feature、二进制构建信息及系统依赖边界；检查每个相对链接均指向离线存在的文件，再运行 `git diff --check`。只更新审阅后的本地静态材料，不能把扫描工具或网络下载加入正常构建步骤。上层 bundle 资源配置须同时复制这些声明和其引用的共享文本，并保留相对目录关系。生成与打包流程见 `DEPENDENCY-METADATA.md`。
 
 工具文档：[`cargo-about`](https://github.com/EmbarkStudios/cargo-about)、[`go-licenses`](https://github.com/google/go-licenses)。二进制所用 Go 工具链的源许可可从对应 Go 标签的 [`LICENSE`](https://go.googlesource.com/go/+/refs/tags/go1.27.3/LICENSE) 核对；Cloak 当前二进制对应的 [Go 1.24.5 LICENSE](https://go.googlesource.com/go/+/refs/tags/go1.24.5/LICENSE) 也按同一方式核对。

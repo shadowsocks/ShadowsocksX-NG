@@ -8,5 +8,10 @@
   "assetFormat": "binary",
   "binary": "ck-client",
   "bundleSubpath": "Helpers/Plugins",
-  "signIdentifier": "com.qiuyuzhou.ShadowsocksX-NG2.plugin.ck-client"
+  "signIdentifier": "com.qiuyuzhou.ShadowsocksX-NG2.plugin.ck-client",
+  "pluginNames": [
+    "cloak",
+    "cloak-v2"
+  ],
+  "defaultArguments": []
 }

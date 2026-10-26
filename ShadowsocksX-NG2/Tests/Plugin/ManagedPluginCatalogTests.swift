@@ -33,26 +33,20 @@ final class ManagedPluginCatalogTests: XCTestCase {
     XCTAssertFalse(manifests.isEmpty, "Vendor 下应至少有一个插件清单")
     XCTAssertEqual(
       ManagedPluginCatalog.plugins.count, manifests.count,
-      "受管事实表与 Vendor 插件清单数量不一致（升级须同步重做两处静态清单）")
+      "派生插件目录与 Vendor 插件清单数量不一致（须重新生成派生目录）")
     for (directory, manifest) in manifests {
       let info = try XCTUnwrap(
         ManagedPluginCatalog.plugins.first { $0.program == directory },
-        "\(directory): 清单里的记录「\(directory)」不在受管事实表内")
+        "\(directory): 清单里的记录「\(directory)」不在派生插件目录内")
       XCTAssertEqual(info.executableName, manifest.binary, "\(directory): 打包文件名漂移")
-      XCTAssertTrue(
-        info.project.hasSuffix(manifest.project),
-        "\(directory): 受管事实表 project（\(info.project)）须锚定清单 project（\(manifest.project)）")
       XCTAssertEqual(info.signIdentifier, manifest.signIdentifier, "\(directory): 重签标识漂移")
-      XCTAssertFalse(info.license.isEmpty, "\(directory): 许可证必须显式")
-      let url = try XCTUnwrap(URL(string: info.projectURL), "\(directory): 项目 URL 不可解析")
-      XCTAssertEqual(url.host, "github.com", "\(directory): 项目须托管在 GitHub")
     }
   }
 
   func testEveryCatalogEntryHasVendorManifest() {
     for info in ManagedPluginCatalog.plugins {
       let match = Self.vendorPluginManifests.first { $0.manifest.binary == info.program }
-      XCTAssertNotNil(match, "「\(info.program)」在受管事实表内但缺少 Vendor 插件清单")
+      XCTAssertNotNil(match, "「\(info.program)」在派生插件目录内但缺少 Vendor 插件清单")
     }
   }
 

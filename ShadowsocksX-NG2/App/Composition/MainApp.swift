@@ -289,7 +289,7 @@ private struct AppComposition {
       managedPlugins: {
         plugins.catalogSnapshot().entries.map { entry in
           DiagnosticPluginFacts(
-            program: entry.program, version: entry.managedInfo?.release ?? "",
+            program: entry.program, version: entry.managedInfo?.dependency?.version ?? "",
             present: entry.availability == .available, source: entry.source)
         }
       })

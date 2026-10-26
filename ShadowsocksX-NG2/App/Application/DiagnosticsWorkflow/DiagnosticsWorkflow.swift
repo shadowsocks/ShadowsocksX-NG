@@ -275,7 +275,7 @@ final class DiagnosticsWorkflow: ObservableObject {
     return ManagedPluginCatalog.plugins.map { info in
       DiagnosticPluginFacts(
         program: info.program,
-        version: info.release,
+        version: info.dependency?.version ?? "",
         present: provider.resolve(program: info.program) != nil)
     }
   }

@@ -187,6 +187,7 @@ tasks:
     cmds:
       - task: test:binaries
       - task: test:rules
+      - task: test:metadata
       - >-
         xcodebuild
         -project ShadowsocksX-NG2.xcodeproj
@@ -202,6 +203,11 @@ tasks:
     desc: 'Verify pinned external binary downloads with local assets'
     cmds:
       - PYTHONDONTWRITEBYTECODE=1 python3 Scripts/test-external-binary-fetch.py
+
+  test:metadata:
+    desc: 'Verify offline dependency metadata generation and rejection paths'
+    cmds:
+      - PYTHONDONTWRITEBYTECODE=1 python3 Scripts/test-dependency-metadata.py
 
   test:rules:
     desc: 'Run offline rule conversion and generated fixture checks'

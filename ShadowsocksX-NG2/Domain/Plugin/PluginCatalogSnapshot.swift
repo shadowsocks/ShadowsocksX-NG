@@ -39,14 +39,15 @@ struct PluginCatalogSnapshot: PluginExecutableResolving, Equatable, Sendable {
     generation: Int = 0,
     mappingsUnreadable: Bool = false
   ) {
-    let managedNames = ManagedPluginCatalog.plugins.flatMap(\.names)
+    let managedPlugins = ManagedPluginCatalog.plugins(in: managed.bundleURL)
+    let managedNames = managedPlugins.flatMap(\.names)
     let userByName = Dictionary(
       uniqueKeysWithValues: configuration.userPlugins.flatMap { record in
         record.names.map { ($0, record) }
       })
     let programs = Set(managedNames).union(userByName.keys).sorted()
     self.entries = programs.map { program in
-      let info = ManagedPluginCatalog.info(forProgram: program)
+      let info = managedPlugins.first { $0.names.contains(program) }
       let user = userByName[program]
       let source: Source = mappingsUnreadable ? .unknown : (user == nil ? .managed : .user)
       let path =
@@ -68,7 +69,7 @@ struct PluginCatalogSnapshot: PluginExecutableResolving, Equatable, Sendable {
         recordID: user?.id)
     }
     self.managedRecords = Dictionary(
-      uniqueKeysWithValues: ManagedPluginCatalog.plugins.map { info in
+      uniqueKeysWithValues: managedPlugins.map { info in
         let path = managed.bundleURL.appendingPathComponent("Contents/Helpers/Plugins")
           .appendingPathComponent(info.executableName).path
         return (

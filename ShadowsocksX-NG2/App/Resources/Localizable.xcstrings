@@ -9198,6 +9198,23 @@
           }
         }
       }
+    },
+    "版本信息不可用": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Version information unavailable"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "版本信息不可用"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

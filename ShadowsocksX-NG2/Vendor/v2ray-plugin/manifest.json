@@ -8,5 +8,12 @@
   "archiveMember": "v2ray-plugin_darwin_arm64",
   "binary": "v2ray-plugin",
   "bundleSubpath": "Helpers/Plugins",
-  "signIdentifier": "com.qiuyuzhou.ShadowsocksX-NG2.plugin.v2ray-plugin"
+  "signIdentifier": "com.qiuyuzhou.ShadowsocksX-NG2.plugin.v2ray-plugin",
+  "pluginNames": [
+    "v2ray-plugin",
+    "v2ray-plugin-v1"
+  ],
+  "defaultArguments": [
+    "-disableAccessLog"
+  ]
 }

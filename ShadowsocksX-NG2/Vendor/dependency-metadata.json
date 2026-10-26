@@ -1,0 +1,78 @@
+{
+  "sslocal": {
+    "manifest": "sslocal/manifest.json",
+    "projectURL": "https://github.com/shadowsocks/shadowsocks-rust",
+    "licenses": [
+      "sslocal/LICENSE"
+    ],
+    "notices": [
+      "sslocal/THIRD-PARTY-NOTICES"
+    ],
+    "sourceURL": "https://github.com/qiuyuzhou/shadowsocks-rust"
+  },
+  "v2ray-plugin": {
+    "manifest": "v2ray-plugin/manifest.json",
+    "projectURL": "https://github.com/shadowsocks/v2ray-plugin",
+    "licenses": [
+      "v2ray-plugin/LICENSE"
+    ],
+    "notices": [
+      "v2ray-plugin/THIRD-PARTY-NOTICES"
+    ]
+  },
+  "ck-client": {
+    "manifest": "ck-client/manifest.json",
+    "projectURL": "https://github.com/cbeuw/Cloak",
+    "licenses": [
+      "ck-client/LICENSE"
+    ],
+    "notices": [
+      "ck-client/NOTICE",
+      "ck-client/THIRD-PARTY-NOTICES"
+    ]
+  },
+  "AgeSwift": {
+    "package": "AgeSwift",
+    "licenses": [
+      "AgeSwift/LICENSE-MIT",
+      "AgeSwift/LICENSE-APACHE"
+    ],
+    "notices": [
+      "AgeSwift/THIRD-PARTY-NOTICES"
+    ]
+  },
+  "china-ipv4": {
+    "manifest": "rules/china-ipv4/manifest.json",
+    "name": "china-operator-ip",
+    "projectURL": "https://github.com/gaoyifan/china-operator-ip",
+    "licenses": [
+      "rules/china-ipv4/LICENSE"
+    ],
+    "notices": [
+      "rules/china-ipv4/NOTICE"
+    ]
+  },
+  "geolocation-cn": {
+    "manifest": "rules/geolocation-cn/manifest.json",
+    "name": "domain-list-custom",
+    "projectURL": "https://github.com/Loyalsoldier/domain-list-custom",
+    "licenses": [
+      "rules/geolocation-cn/LICENSE",
+      "rules/geolocation-cn/LICENSE-v2fly"
+    ],
+    "notices": [
+      "rules/geolocation-cn/NOTICE"
+    ]
+  },
+  "gfwlist": {
+    "manifest": "rules/gfwlist/manifest.json",
+    "name": "gfwlist",
+    "projectURL": "https://github.com/gfwlist/gfwlist",
+    "licenses": [
+      "rules/gfwlist/LICENSE"
+    ],
+    "notices": [
+      "rules/gfwlist/NOTICE"
+    ]
+  }
+}

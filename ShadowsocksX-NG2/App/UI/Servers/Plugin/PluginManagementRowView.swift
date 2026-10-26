@@ -51,14 +51,16 @@ struct PluginManagementRowView: View {
   private func managedIdentity(_ info: ManagedPluginInfo) -> some View {
     HStack(alignment: .firstTextBaseline, spacing: 8) {
       Text("内置").foregroundStyle(.secondary)
-      Text(verbatim: info.release).foregroundStyle(.secondary)
-      if let projectURL = URL(string: info.projectURL) {
-        Link(destination: projectURL) {
-          projectLink(info.projectURL)
+      if let dependency = info.dependency {
+        Text(verbatim: dependency.version).foregroundStyle(.secondary)
+        if let projectURL = URL(string: dependency.projectURL) {
+          Link(destination: projectURL) {
+            projectLink(dependency.projectURL)
+          }
+          .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
       } else {
-        projectLink(info.projectURL)
+        Text("版本信息不可用").foregroundStyle(.secondary)
       }
     }
     .font(.caption)

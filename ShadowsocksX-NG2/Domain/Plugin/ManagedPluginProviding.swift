@@ -28,52 +28,27 @@ extension PluginExecutableResolving {
   }
 }
 
-/// 受管插件静态事实：来源项目、许可证、固定版本与重签标识，供编辑器
-/// 插件区与诊断导出展示。事实只随发版变更：新增
-/// 或升级插件须同步 `Vendor/<name>/manifest.json` 与锚点测试
-/// `ManagedPluginCatalogTests`，两处漂移即构建期失败。
+/// Executable contracts are generated from Vendor manifests, independently of display metadata.
 struct ManagedPluginInfo: Equatable, Sendable {
-  /// 内置记录的固定身份，与可引用名称及打包文件名分别维护。
   let program: String
   let names: [String]
   let executableName: String
-  /// 来源项目（GitHub owner/repo）。
-  let project: String
-  let projectURL: String
-  /// 固定版本 tag（禁止 latest 漂移）。
-  let release: String
-  let license: String
-  /// 构建期 Developer ID 重签的 identifier（`<bundle-id>.plugin.<name>`）。
   let signIdentifier: String
-  /// 内置插件在没有额外本地参数时也会传递的启动参数。
   let defaultArguments: [String]
+  var dependency: BundledDependency?
 }
 
-/// 本版本受管集：固定版本的 v2ray-plugin 与 Cloak 客户端。
-/// 此目录只描述随 app 发布的程序；用户自备程序由 PluginCatalog 的本机映射提供。
 enum ManagedPluginCatalog {
-  static let plugins: [ManagedPluginInfo] = [
-    ManagedPluginInfo(
-      program: "v2ray-plugin",
-      names: ["v2ray-plugin", "v2ray-plugin-v1"],
-      executableName: "v2ray-plugin",
-      project: "shadowsocks/v2ray-plugin",
-      projectURL: "https://github.com/shadowsocks/v2ray-plugin",
-      release: "v1.5.0",
-      license: "MIT",
-      signIdentifier: "com.qiuyuzhou.ShadowsocksX-NG2.plugin.v2ray-plugin",
-      defaultArguments: ["-disableAccessLog"]),
-    ManagedPluginInfo(
-      program: "ck-client",
-      names: ["cloak", "cloak-v2"],
-      executableName: "ck-client",
-      project: "cbeuw/Cloak",
-      projectURL: "https://github.com/cbeuw/Cloak",
-      release: "v2.12.0",
-      license: "GPL-3.0",
-      signIdentifier: "com.qiuyuzhou.ShadowsocksX-NG2.plugin.ck-client",
-      defaultArguments: []),
-  ]
+  static let plugins = plugins(in: Bundle.main.bundleURL)
+
+  static func plugins(in bundleURL: URL) -> [ManagedPluginInfo] {
+    let catalog = try? BundledDependencyCatalog(bundleURL: bundleURL)
+    return definitions.map { definition in
+      var info = definition
+      info.dependency = catalog?.dependencies.first { $0.id == info.program }
+      return info
+    }
+  }
 
   static func info(forProgram program: String) -> ManagedPluginInfo? {
     plugins.first { $0.names.contains(program) }

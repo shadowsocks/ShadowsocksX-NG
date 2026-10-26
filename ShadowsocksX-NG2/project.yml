@@ -1,6 +1,7 @@
 name: ShadowsocksX-NG2
 options:
   createIntermediateGroups: true
+  preGenCommand: python3 Scripts/dependency-metadata.py
   developmentLanguage: zh-Hans
   deploymentTarget:
     macOS: "15.0"
@@ -94,26 +95,10 @@ targets:
           copyFiles:
             destination: wrapper
             subpath: Contents/Helpers/Plugins
-      - path: Vendor/ck-client/LICENSE
-        buildPhase:
-          copyFiles:
-            destination: resources
-            subpath: ThirdParty/Cloak
-      - path: Vendor/ck-client/NOTICE
-        buildPhase:
-          copyFiles:
-            destination: resources
-            subpath: ThirdParty/Cloak
-      - path: Vendor/AgeSwift/LICENSE-MIT
-        buildPhase:
-          copyFiles:
-            destination: resources
-            subpath: ThirdParty/AgeSwift
-      - path: Vendor/ck-client/THIRD-PARTY-NOTICES
-        buildPhase:
-          copyFiles:
-            destination: resources
-            subpath: ThirdParty/Cloak
+      # Generated offline catalog and license/notice tree; preserve relative references.
+      - path: .build/dependency-metadata/ThirdParty
+        buildPhase: resources
+        type: folder
       # 内置规则快照：普通构建只读本地已固定快照，离线且不重新
       # 抓取或转换；缺失、损坏或版本不匹配时 verify-rule-snapshots.sh 使构建失败。
       # folder reference 保留 rules/<source>/snapshot.json 结构，避免多个
@@ -122,6 +107,11 @@ targets:
         buildPhase: resources
         type: folder
     preBuildScripts:
+      - name: Verify dependency metadata
+        basedOnDependencyAnalysis: false
+        script: |
+          set -e
+          python3 "$SRCROOT/Scripts/dependency-metadata.py" --check
       - name: Fetch & verify external binaries
         basedOnDependencyAnalysis: false
         script: |
@@ -133,6 +123,11 @@ targets:
           set -e
           "$SRCROOT/Scripts/verify-rule-snapshots.sh"
     postBuildScripts:
+      - name: Verify bundled dependency metadata
+        basedOnDependencyAnalysis: false
+        script: |
+          set -e
+          python3 "$SRCROOT/Scripts/dependency-metadata.py" --bundle "$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH/ThirdParty"
       # 必须在 app 自身签名之前逐二进制 DevID 重签；Xcode 在所有脚本阶段之后
       # 完成 app 外层签名，封存重签后的嵌套代码。
       - name: Sign embedded helpers

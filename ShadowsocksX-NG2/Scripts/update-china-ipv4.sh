@@ -12,9 +12,9 @@ NOTICE="${RULES_DIR}/NOTICE"
 
 # Pinned upstream: gaoyifan/china-operator-ip ip-lists branch commit.
 # Bump these together after human review of the new commit.
-UPSTREAM_VERSION="75f2eb035cb53a7a4af3437e2c2110d0f73cf14a"
-UPSTREAM_URL="https://raw.githubusercontent.com/gaoyifan/china-operator-ip/${UPSTREAM_VERSION}/china.txt"
-UPSTREAM_SHA256="98493d3ec7f2c77b9f191600dc741df731cfbaef775201594d0bda66b0181479"
+UPSTREAM_VERSION="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["upstreamVersion"])' "$MANIFEST")"
+UPSTREAM_URL="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["upstreamURL"])' "$MANIFEST")"
+UPSTREAM_SHA256="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["upstreamArchiveSHA256"])' "$MANIFEST")"
 LICENSE="MIT"
 ATTRIBUTION="China mainland IPv4 CIDR derived from gaoyifan/china-operator-ip china.txt (ip-lists branch) at commit ${UPSTREAM_VERSION}. BGP/ASN-derived candidate routing data; not a guarantee of geographic ownership or reachability."
 

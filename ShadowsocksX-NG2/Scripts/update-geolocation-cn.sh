@@ -11,10 +11,10 @@ MANIFEST="${RULES_DIR}/manifest.json"
 NOTICE="${RULES_DIR}/NOTICE"
 
 # Pinned upstream: Loyalsoldier/domain-list-custom release (geosite.dat).
-# Bump these together after human review of the new release.
-UPSTREAM_VERSION="20260925234224"
-UPSTREAM_URL="https://github.com/Loyalsoldier/domain-list-custom/releases/download/${UPSTREAM_VERSION}/geosite.dat"
-UPSTREAM_SHA256="db12e746ef387c34c9e1be8194d772a0606ef09c236815555af5ba2595f3741f"
+# Update the manifest pin after human review of the new release.
+UPSTREAM_VERSION="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["upstreamVersion"])' "$MANIFEST")"
+UPSTREAM_URL="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["upstreamURL"])' "$MANIFEST")"
+UPSTREAM_SHA256="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["upstreamArchiveSHA256"])' "$MANIFEST")"
 LICENSE="MIT"
 ATTRIBUTION="geolocation-cn derived from Loyalsoldier/domain-list-custom geosite.dat ${UPSTREAM_VERSION} (based on v2fly/domain-list-community). The upstream export applies domain-list-custom attribute filtering (@ads and @!cn omitted)."
 

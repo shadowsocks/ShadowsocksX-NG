@@ -118,11 +118,10 @@ final class BundleManagedPluginProviderTests: XCTestCase {
     let path = try XCTUnwrap(provider.resolve(program: "cloak")?.path)
     XCTAssertTrue(path.hasSuffix("Contents/Helpers/Plugins/ck-client"))
     XCTAssertEqual(provider.resolve(program: "cloak-v2")?.path, path)
-    for name in ["LICENSE", "NOTICE", "THIRD-PARTY-NOTICES"] {
-      XCTAssertTrue(
-        FileManager.default.fileExists(
-          atPath:
-            bundle.appendingPathComponent("Contents/Resources/ThirdParty/Cloak/" + name).path))
+    let catalog = try BundledDependencyCatalog(bundleURL: bundle)
+    let dependency = try XCTUnwrap(catalog.dependencies.first { $0.id == "ck-client" })
+    for reference in dependency.licenses + dependency.notices {
+      XCTAssertFalse(try catalog.text(at: reference).isEmpty)
     }
   }
 

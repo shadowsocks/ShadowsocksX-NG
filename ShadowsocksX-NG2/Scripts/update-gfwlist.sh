@@ -10,12 +10,11 @@ SNAPSHOT="${RULES_DIR}/snapshot.json"
 MANIFEST="${RULES_DIR}/manifest.json"
 NOTICE="${RULES_DIR}/NOTICE"
 
-# Pinned upstream: gfwlist/gfwlist master commit. Bump these together after
-# human review of the new commit.
-UPSTREAM_VERSION="c19292511da4c5af8f6193fd32d666eaaa0312f9"
-UPSTREAM_URL="https://raw.githubusercontent.com/gfwlist/gfwlist/${UPSTREAM_VERSION}/gfwlist.txt"
+# Pinned upstream: edit the manifest after human review of the new commit.
+UPSTREAM_VERSION="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["upstreamVersion"])' "$MANIFEST")"
+UPSTREAM_URL="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["upstreamURL"])' "$MANIFEST")"
+UPSTREAM_SHA256="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["upstreamArchiveSHA256"])' "$MANIFEST")"
 UPSTREAM_MIRROR_URL="https://cdn.jsdelivr.net/gh/gfwlist/gfwlist@${UPSTREAM_VERSION}/gfwlist.txt"
-UPSTREAM_SHA256="750d34564363075fafa12d8ab9739f269e2fbd2bf3c5f4ab8cfd859bfd3441df"
 LICENSE="LGPL-2.1"
 ATTRIBUTION="GFWList AutoProxy rules derived from gfwlist/gfwlist gfwlist.txt at commit ${UPSTREAM_VERSION}. Official Base64 AutoProxy 0.2.9 list. Domain anchors become suffix matches. URL prefixes with an empty or root path, no query, fragment or user information, and a literal domain host become exact matches, discarding scheme and any valid port. Other URL conditions, wildcard hosts, IP literals and regex rules are reported as losses. List is candidate routing data, not a guarantee of reachability or completeness."
 
