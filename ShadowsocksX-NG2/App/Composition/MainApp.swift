@@ -80,6 +80,7 @@ struct ShadowsocksXNG2App: App {
         .modifier(WindowActivationPolicy(coordinator: windowActivation))
     }
     .commands {
+      AboutCommands()
       DiagnosticsCommands()
     }
     .defaultLaunchBehavior(launchPresentation)
@@ -88,6 +89,7 @@ struct ShadowsocksXNG2App: App {
 
     rulesReportScene
     diagnosticsScene
+    AboutScenes(windowActivation: windowActivation)
   }
 
   private var diagnosticsScene: some Scene {

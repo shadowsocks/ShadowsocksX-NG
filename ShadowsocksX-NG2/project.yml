@@ -153,6 +153,7 @@ targets:
       properties:
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        NSHumanReadableCopyright: "Copyright © Qiu Yuzhou"
         LSMinimumSystemVersion: "15.0"
         LSUIElement: true
         NSPrincipalClass: NSApplication
