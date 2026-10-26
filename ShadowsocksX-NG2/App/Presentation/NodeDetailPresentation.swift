@@ -19,6 +19,7 @@ struct NodeDetailPresentation {
     case information
     case connection
     case pluginParameters
+    case connectivity
   }
 
   struct Properties: Equatable, Identifiable {
@@ -247,5 +248,50 @@ struct NodeDetailPresentation {
   private static func timestamp(_ date: Date?) -> String {
     guard let date else { return "—" }
     return date.formatted(date: .numeric, time: .shortened)
+  }
+}
+
+extension NodeDetailPresentation {
+  static func connectivityHistory(
+    _ records: [ServerConnectivity.Record], locale: Locale, timeZone: TimeZone
+  ) -> Properties {
+    Properties(
+      id: .connectivity, title: ConnectivityCopy.text("连通性测试"),
+      items: records.isEmpty
+        ? [Property(label: ConnectivityCopy.text("状态"), value: ConnectivityCopy.text("尚未测试"))]
+        : records.map { record in
+          Property(
+            label: connectivityTime(record.finishedAt, locale: locale, timeZone: timeZone),
+            value: ConnectivityCopy.outcome(record.outcome))
+        })
+  }
+
+  static func connectivitySummary(
+    _ summary: ServerConnectivity.Summary, serverName: (NodeID) -> String,
+    locale: Locale, timeZone: TimeZone
+  ) -> Properties {
+    let items: [Property]
+    if let id = summary.serverID, let record = summary.record {
+      items = [
+        Property(
+          label: ConnectivityCopy.text("响应延迟"), value: ConnectivityCopy.outcome(record.outcome)),
+        Property(label: ConnectivityCopy.text("服务器"), value: serverName(id)),
+        Property(
+          label: ConnectivityCopy.text("测试时间"),
+          value: connectivityTime(record.finishedAt, locale: locale, timeZone: timeZone)),
+      ]
+    } else {
+      items = [
+        Property(
+          label: ConnectivityCopy.text("状态"),
+          value: ConnectivityCopy.text(summary.hasResults ? "无成功结果" : "尚未测试"))
+      ]
+    }
+    return Properties(id: .connectivity, title: ConnectivityCopy.text("最快响应延迟"), items: items)
+  }
+
+  private static func connectivityTime(_ date: Date, locale: Locale, timeZone: TimeZone) -> String {
+    date.formatted(
+      Date.FormatStyle(date: .omitted, time: .standard, locale: locale, timeZone: timeZone))
   }
 }

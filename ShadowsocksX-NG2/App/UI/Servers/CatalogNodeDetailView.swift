@@ -18,82 +18,15 @@ struct CatalogNodeDetailView: View {
 
   var body: some View {
     if let node {
-      let detail = presentation(for: node)
-      NodeDetailView(detail: detail) {
-        Button(
-          activation.pendingTargetID == nodeID
-            ? String(localized: "激活中…", table: "ServerDetails")
-            : String(localized: "激活", table: "ServerDetails"),
-          systemImage: "bolt.fill"
-        ) {
-          Task { @MainActor in
-            do {
-              _ = try await activation.activate(nodeID, via: workflow)
-            } catch {
-              // 激活状态记录失败，详情在 feedback 区域显示结果。
-            }
-          }
-        }
-        .disabled(!(eligibility?.canActivate ?? false) || activation.isPending)
-        if let subscription = subscriptionSummary(for: node) {
-          Button(
-            workflow.refreshingSubscriptionIDs.contains(subscription.id)
-              ? String(localized: "更新中…", table: "ServerDetails")
-              : String(localized: "更新", table: "ServerDetails"),
-            systemImage: "arrow.clockwise"
-          ) {
-            Task { await workflow.refreshSubscription(subscription.id) }
-          }
-          .disabled(workflow.refreshingSubscriptionIDs.contains(subscription.id))
-        }
-      } secondaryActions: {
+      Group {
         if let module = workflow.connectivity {
-          ConnectivityTestButton(module: module, node: node)
-        }
-        Button(
-          workflow.isFavorite(nodeID)
-            ? String(localized: "取消收藏", table: "ServerDetails")
-            : String(localized: "收藏", table: "ServerDetails")
-        ) {
-          do {
-            try workflow.setFavorite(nodeID, isFavorite: !workflow.isFavorite(nodeID))
-          } catch {
-            errors.present(error)
+          ObservedConnectivityProperties(
+            module: module, node: node, serverName: workflow.displayName(for:)
+          ) { properties in
+            detailView(for: node, connectivity: properties)
           }
-        }
-        if !node.isGroup && parameters.failure != nil {
-          Button(String(localized: "重新加载", table: "ServerDetails")) {
-            parameters.reload(load: workflow.serverDetailPluginOptions)
-          }
-        }
-      } feedback: {
-        ActivationDetailFeedbackView(
-          messages: detail.activationMessages,
-          completion: activation.completion?.targetID == nodeID ? activation.completion : nil)
-        if let subscription = subscriptionSummary(for: node) {
-          SubscriptionRefreshFeedbackView(
-            isRefreshing: workflow.refreshingSubscriptionIDs.contains(subscription.id),
-            completion: workflow.subscriptionRefreshCompletions[subscription.id]
-          )
-          .id(subscription.id)
-        }
-      } propertiesFooter: { group in
-        if group.id == .subscription,
-          let fraction = subscriptionSummary(for: node)?.information?.usedFraction
-        {
-          ProgressView(value: fraction) {
-            Text("流量消耗")
-          } currentValueLabel: {
-            Text(fraction, format: .percent.precision(.fractionLength(0)))
-          }
-          .progressViewStyle(.linear)
-          .tint(.accentColor)
         } else {
-          nil
-        }
-      } supplement: {
-        if let module = workflow.connectivity {
-          ConnectivityDetailView(module: module, node: node, workflow: workflow)
+          detailView(for: node)
         }
       }
       .onAppear {
@@ -104,6 +37,91 @@ struct CatalogNodeDetailView: View {
       .onReceive(workflow.serverDetailChanges) { affected in
         parameters.didRefresh(affectedServers: affected, load: workflow.serverDetailPluginOptions)
       }
+    }
+  }
+
+  private func detailView(
+    for node: CatalogTreeNode, connectivity: NodeDetailPresentation.Properties? = nil
+  ) -> some View {
+    var detail = presentation(for: node)
+    if let connectivity { detail.properties.append(connectivity) }
+    return NodeDetailView(detail: detail) {
+      primaryActions(for: node)
+    } secondaryActions: {
+      if let module = workflow.connectivity {
+        ConnectivityTestButton(module: module, node: node)
+      }
+      Button(
+        workflow.isFavorite(nodeID)
+          ? String(localized: "取消收藏", table: "ServerDetails")
+          : String(localized: "收藏", table: "ServerDetails")
+      ) {
+        do {
+          try workflow.setFavorite(nodeID, isFavorite: !workflow.isFavorite(nodeID))
+        } catch {
+          errors.present(error)
+        }
+      }
+      if !node.isGroup && parameters.failure != nil {
+        Button(String(localized: "重新加载", table: "ServerDetails")) {
+          parameters.reload(load: workflow.serverDetailPluginOptions)
+        }
+      }
+    } feedback: {
+      ActivationDetailFeedbackView(
+        messages: detail.activationMessages,
+        completion: activation.completion?.targetID == nodeID ? activation.completion : nil)
+      if let subscription = subscriptionSummary(for: node) {
+        SubscriptionRefreshFeedbackView(
+          isRefreshing: workflow.refreshingSubscriptionIDs.contains(subscription.id),
+          completion: workflow.subscriptionRefreshCompletions[subscription.id]
+        )
+        .id(subscription.id)
+      }
+    } propertiesFooter: { group in
+      if group.id == .subscription,
+        let fraction = subscriptionSummary(for: node)?.information?.usedFraction
+      {
+        ProgressView(value: fraction) {
+          Text("流量消耗")
+        } currentValueLabel: {
+          Text(fraction, format: .percent.precision(.fractionLength(0)))
+        }
+        .progressViewStyle(.linear)
+        .tint(.accentColor)
+      } else {
+        nil
+      }
+    }
+  }
+
+  @ViewBuilder
+  private func primaryActions(for node: CatalogTreeNode) -> some View {
+    Button(
+      activation.pendingTargetID == nodeID
+        ? String(localized: "激活中…", table: "ServerDetails")
+        : String(localized: "激活", table: "ServerDetails"),
+      systemImage: "bolt.fill"
+    ) {
+      Task { @MainActor in
+        do {
+          _ = try await activation.activate(nodeID, via: workflow)
+        } catch {
+          // 激活状态记录失败，详情在 feedback 区域显示结果。
+        }
+      }
+    }
+    .disabled(!(eligibility?.canActivate ?? false) || activation.isPending)
+    if let subscription = subscriptionSummary(for: node) {
+      Button(
+        workflow.refreshingSubscriptionIDs.contains(subscription.id)
+          ? String(localized: "更新中…", table: "ServerDetails")
+          : String(localized: "更新", table: "ServerDetails"),
+        systemImage: "arrow.clockwise"
+      ) {
+        Task { await workflow.refreshSubscription(subscription.id) }
+      }
+      .disabled(workflow.refreshingSubscriptionIDs.contains(subscription.id))
     }
   }
 
@@ -127,5 +145,30 @@ struct CatalogNodeDetailView: View {
   private func subscriptionSummary(for node: CatalogTreeNode) -> SubscriptionSummary? {
     guard node.isRootSubscriptionGroup else { return nil }
     return workflow.subscriptions.first { $0.groupID == node.id }
+  }
+}
+
+/// 只观察测试资料并生成属性；布局由通用节点详情负责。
+private struct ObservedConnectivityProperties<Content: View>: View {
+  @Environment(\.locale) private var locale
+  @Environment(\.timeZone) private var timeZone
+  @ObservedObject var module: ServerConnectivity
+  let node: CatalogTreeNode
+  let serverName: (NodeID) -> String
+  @ViewBuilder let content: (NodeDetailPresentation.Properties) -> Content
+
+  var body: some View {
+    if node.isGroup {
+      TimelineView(.periodic(from: .now, by: 1)) { context in
+        content(
+          NodeDetailPresentation.connectivitySummary(
+            module.summary(for: node.connectivityServerIDs, at: context.date),
+            serverName: serverName, locale: locale, timeZone: timeZone))
+      }
+    } else {
+      content(
+        NodeDetailPresentation.connectivityHistory(
+          module.history(for: node.id), locale: locale, timeZone: timeZone))
+    }
   }
 }

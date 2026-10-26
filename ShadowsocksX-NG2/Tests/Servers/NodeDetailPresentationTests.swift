@@ -107,12 +107,91 @@ struct NodeDetailPresentationTests {
         EmptyView()
       } propertiesFooter: { group in
         group.id == .information ? FooterMarker() : nil
-      } supplement: {
-        EmptyView()
       })
     host.frame = NSRect(x: 0, y: 0, width: 480, height: 600)
     host.layoutSubtreeIfNeeded()
     #expect(containsFooter(in: host))
+  }
+
+  @Test
+  func connectivityHistoryUsesTimeOnlyAndPreservesRepeatedLabelsAndFailures() {
+    let date = Date(timeIntervalSince1970: 37_421)
+    let records = [
+      ServerConnectivity.Record(
+        finishedAt: date, outcome: .success(milliseconds: 42), networkExpired: true),
+      ServerConnectivity.Record(finishedAt: date, outcome: .requestTimeout),
+      ServerConnectivity.Record(finishedAt: date.addingTimeInterval(-60), outcome: .http(302)),
+    ]
+    let properties = NodeDetailPresentation.connectivityHistory(
+      records, locale: Locale(identifier: "en_GB"), timeZone: TimeZone(secondsFromGMT: 3600)!)
+    #expect(properties.id == .connectivity)
+    #expect(properties.items.map(\.label) == ["11:23:41", "11:23:41", "11:22:41"])
+    #expect(properties.items.map(\.value) == ["42 ms", ConnectivityCopy.text("请求超时"), "HTTP 302"])
+  }
+
+  @Test
+  func connectivityEmptyStatesAreExplicitProperties() {
+    let locale = Locale(identifier: "en_GB")
+    let zone = TimeZone(secondsFromGMT: 0)!
+    let history = NodeDetailPresentation.connectivityHistory([], locale: locale, timeZone: zone)
+    #expect(
+      history.items == [
+        .init(label: ConnectivityCopy.text("状态"), value: ConnectivityCopy.text("尚未测试"))
+      ])
+    for hasResults in [false, true] {
+      let summary = ServerConnectivity.Summary(
+        serverID: nil, record: nil, hasResults: hasResults, isTesting: true)
+      let properties = NodeDetailPresentation.connectivitySummary(
+        summary,
+        serverName: { _ in
+          Issue.record("No server should be resolved")
+          return ""
+        },
+        locale: locale, timeZone: zone)
+      #expect(
+        properties.items == [
+          .init(
+            label: ConnectivityCopy.text("状态"),
+            value: ConnectivityCopy.text(hasResults ? "无成功结果" : "尚未测试"))
+        ])
+    }
+  }
+
+  @Test
+  func connectivityGroupPropertiesFollowFreshnessNetworkChangesAndNames() async {
+    let ids = [NodeID.fresh(), NodeID.fresh()]
+    var now = Date(timeIntervalSince1970: 37_421)
+    var latency = 10
+    var name = "First"
+    let module = ServerConnectivity(
+      configuration: { _ in
+        SslocalServerDocument(
+          id: "test", server: "example.com", serverPort: 443, password: "secret",
+          method: "aes-256-gcm", plugin: nil, pluginOpts: nil)
+      }, now: { now },
+      measure: { _, _, _ in .success(milliseconds: latency) })
+    func properties(at date: Date) -> NodeDetailPresentation.Properties {
+      NodeDetailPresentation.connectivitySummary(
+        module.summary(for: ids, at: date), serverName: { $0 == ids[0] ? name : "Second" },
+        locale: Locale(identifier: "en_GB"), timeZone: TimeZone(secondsFromGMT: 0)!)
+    }
+    await module.wait(for: module.test([ids[0]]))
+    #expect(properties(at: now).items.map(\.value) == ["10 ms", "First", "10:23:41"])
+    name = "Renamed"
+    #expect(properties(at: now).items[1].value == "Renamed")
+    now.addTimeInterval(60)
+    latency = 20
+    await module.wait(for: module.test([ids[1]]))
+    #expect(properties(at: now).items[1].value == "Renamed")
+    // First expires while Second is still fresh, without another measurement.
+    #expect(
+      properties(at: now.addingTimeInterval(240)).items.map(\.value) == [
+        "20 ms", "Second", "10:24:41",
+      ])
+    module.networkChanged()
+    #expect(properties(at: now.addingTimeInterval(240)).items[1].value == "Renamed")
+    module.setURL(URL(string: "http://example.com/check")!)
+    #expect(properties(at: now).items.map(\.value) == [ConnectivityCopy.text("尚未测试")])
   }
 
   private func containsFooter(in view: NSView) -> Bool {

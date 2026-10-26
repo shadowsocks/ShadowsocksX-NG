@@ -2,15 +2,13 @@ import SwiftUI
 
 /// 只接受展示值与外部动作；不查询节点类型、工作流或凭据。
 struct NodeDetailView<
-  PrimaryActions: View, SecondaryActions: View, Feedback: View, PropertiesFooter: View,
-  Supplement: View
+  PrimaryActions: View, SecondaryActions: View, Feedback: View, PropertiesFooter: View
 >: View {
   let detail: NodeDetailPresentation
   @ViewBuilder let primaryActions: PrimaryActions
   @ViewBuilder let secondaryActions: SecondaryActions
   @ViewBuilder let feedback: Feedback
   let propertiesFooter: (NodeDetailPresentation.Properties) -> PropertiesFooter?
-  @ViewBuilder let supplement: Supplement
 
   var body: some View {
     ScrollView {
@@ -69,7 +67,6 @@ struct NodeDetailView<
             }
           }
         }
-        supplement
       }
       .frame(maxWidth: .infinity, alignment: .leading)
       .padding(.horizontal, 16)
