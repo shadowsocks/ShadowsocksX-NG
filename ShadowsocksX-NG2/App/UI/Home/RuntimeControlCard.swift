@@ -128,17 +128,15 @@ private struct SystemProxyDifferenceView: View {
       }
       if facts.canRepair {
         Button("修复") { Task { await control.repairSystemProxy() } }
-          .controlSize(.small)
       }
       if facts.canRetryClear {
         Button("重试清除") { Task { await control.retrySystemProxyClear() } }
-          .controlSize(.small)
       }
       if facts.readFailure != nil && !facts.isBusy {
         Button("重新检查") { Task { await control.recheckSystemProxy() } }
-          .controlSize(.small)
       }
     }
+    .buttonStyle(.borderedProminent)
   }
 
   private func differenceMessage(_ kind: SystemProxyDifference.Kind) -> String {
