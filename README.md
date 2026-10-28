@@ -19,7 +19,8 @@ Until then, please use [Discussions](https://github.com/shadowsocks/ShadowsocksX
 - macOS 15 or later
 - An Apple Silicon (arm64) Mac
 
-This project provides a client. It does not provide servers or subscription services.
+> [!NOTE]
+> This project provides a client. It does not provide servers or subscription services.
 
 ## Features
 

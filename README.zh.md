@@ -19,7 +19,8 @@ ShadowsocksX-NG 正在进行大规模重构。旧版已停止维护，Shadowsock
 - macOS 15 或更新版本
 - Apple Silicon（arm64）Mac
 
-本项目提供客户端，不提供服务器或订阅服务。
+> [!NOTE]
+> 本项目提供客户端，不提供服务器或订阅服务。
 
 ## 功能
 
