@@ -182,19 +182,19 @@ private struct SIP008ExportIdentity {
   private static let namespace = UUID(uuidString: "0d89e9f8-8f0e-4a55-941a-77d61736eaa3")!
 
   func groupID(for nodeID: NodeID) -> String {
-    Self.version5(name: "group:\(nodeID.rawValue)").uuidString
+    Self.version5(name: "group:\(nodeID.rawValue)").uuidString.lowercased()
   }
 
   func serverID(for entry: CatalogEntry) -> String {
     if entry.source == .manual, let id = UUID(uuidString: entry.id.rawValue) {
-      return id.uuidString
+      return id.uuidString.lowercased()
     }
     if entry.source == .subscription,
       let providerID = subscriptionServerID(entry.id), let id = UUID(uuidString: providerID)
     {
-      return id.uuidString
+      return id.uuidString.lowercased()
     }
-    return Self.version5(name: "server:\(entry.id.rawValue)").uuidString
+    return Self.version5(name: "server:\(entry.id.rawValue)").uuidString.lowercased()
   }
 
   private func subscriptionServerID(_ nodeID: NodeID) -> String? {

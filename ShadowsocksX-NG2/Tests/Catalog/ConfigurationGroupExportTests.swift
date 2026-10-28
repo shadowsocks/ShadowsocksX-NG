@@ -104,9 +104,9 @@ final class ConfigurationGroupExportTests: XCTestCase {
     let rootIDs = rootServers.compactMap { $0["id"] as? String }
     let nestedIDs = nestedServers.compactMap { $0["id"] as? String }
 
-    XCTAssertEqual(rootIDs[0], providerID.uppercased())
-    XCTAssertEqual(rootIDs[1], nestedProviderID.uppercased())
-    XCTAssertEqual(nestedIDs, [nestedProviderID.uppercased()])
+    XCTAssertEqual(rootIDs[0], providerID)
+    XCTAssertEqual(rootIDs[1], nestedProviderID)
+    XCTAssertEqual(nestedIDs, [nestedProviderID])
     let repeatedRootIDs = try jsonServers(in: repeatedRootDraft).compactMap { $0["id"] as? String }
     XCTAssertEqual(rootIDs[2], repeatedRootIDs[2], "无 provider UUID 的服务器身份稳定")
     XCTAssertNotNil(UUID(uuidString: try XCTUnwrap(rootIDs[2])))

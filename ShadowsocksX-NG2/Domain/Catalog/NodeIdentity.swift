@@ -15,7 +15,7 @@ struct NodeID: Hashable, Codable, Sendable {
   init(rawValue: String) { self.rawValue = rawValue }
 
   /// 手动新建节点身份。
-  static func fresh() -> NodeID { NodeID(rawValue: UUID().uuidString) }
+  static func fresh() -> NodeID { NodeID(rawValue: UUID().uuidString.lowercased()) }
 
   init(from decoder: Decoder) throws {
     rawValue = try decoder.singleValueContainer().decode(String.self)
