@@ -62,7 +62,7 @@ struct ShadowsocksXNG2App: App {
       ProxyStatusMenu(
         control: proxyControl, statusDisplay: statusDisplay)
     } label: {
-      StatusMenuLabel(control: proxyControl)
+      StatusMenuLabel(control: proxyControl, statusDisplay: statusDisplay)
     }
     //    .menuBarExtraStyle(.window)
 
@@ -145,23 +145,6 @@ private final class NSAppWindowActivationApplier: WindowActivationPolicyApplying
 
   func activateApp() {
     NSApp.activate(ignoringOtherApps: true)
-  }
-}
-
-/// 状态菜单的标签视图（状态栏图标）。图标为静态 SF Symbol，不随代理状态
-/// 变化，故不观察 control——control 仅承载启动 resync。挂载时机与菜单内容
-/// 视图不同：内容视图首次点开才创建，而标签在启动时即挂载——启动 resync
-/// 只能挂在这里，挂在菜单内容上等于从不执行。主窗口的启动呈现由 Window
-/// scene 的 defaultLaunchBehavior 负责，与本任务无时序耦合。
-private struct StatusMenuLabel: View {
-  let control: ProxyControlWorkflow
-
-  var body: some View {
-    Image(systemName: "paperplane.fill")
-      .accessibilityLabel("ShadowsocksX-NG2")
-      .task {
-        await control.resyncOnLaunch()
-      }
   }
 }
 

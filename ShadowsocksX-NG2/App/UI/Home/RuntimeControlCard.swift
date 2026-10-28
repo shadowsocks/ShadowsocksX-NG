@@ -64,23 +64,11 @@ struct RuntimeControlCard: View {
 
   private func statusRow(_ row: StatusCardModel.Row) -> some View {
     HStack(spacing: 6) {
-      Circle()
-        .fill(statusColor(row.tone))
-        .frame(width: 8, height: 8)
-        .accessibilityHidden(true)
+      RuntimeStatusDot(tone: row.tone, diameter: 8)
       Text(row.text)
         .font(.body.weight(.medium))
         .foregroundStyle(.secondary)
         .lineLimit(1)
-    }
-  }
-
-  private func statusColor(_ tone: StatusCardModel.Tone) -> Color {
-    switch tone {
-    case .positive: .green
-    case .attention: .orange
-    case .failure: .red
-    case .neutral: .secondary
     }
   }
 

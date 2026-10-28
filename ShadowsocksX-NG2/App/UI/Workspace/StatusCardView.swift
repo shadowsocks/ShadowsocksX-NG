@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 
 /// 菜单栏面板代理状态卡。状态行经 StatusDisplayModel 的瞬态门控呈现
@@ -36,13 +37,62 @@ struct StatusCardView: View {
       .lineLimit(2)
       .help(detail.text)
   }
+}
 
-  private func color(_ tone: StatusCardModel.Tone) -> Color {
+/// 首页与状态栏共用圆点及色调映射，尺寸由显示位置决定。
+struct RuntimeStatusDot: View {
+  let tone: StatusCardModel.Tone
+  let diameter: CGFloat
+
+  var body: some View {
+    Circle()
+      .fill(color)
+      .frame(width: diameter, height: diameter)
+      .accessibilityHidden(true)
+  }
+
+  private var color: Color {
     switch tone {
     case .positive: .green
     case .attention: .orange
     case .failure: .red
     case .neutral: .secondary
     }
+  }
+}
+
+/// 标签在启动时即挂载；启动 resync 必须留在此处，不能移入首次点开才创建的菜单内容。
+struct StatusMenuLabel: View {
+  let control: ProxyControlWorkflow
+  let statusDisplay: StatusDisplayModel
+  @Environment(\.colorScheme) private var colorScheme
+  @Environment(\.displayScale) private var displayScale
+
+  var body: some View {
+    Image(nsImage: statusImage)
+      .renderingMode(.original)
+      .accessibilityLabel("ShadowsocksX-NG2")
+      .task {
+        await control.resyncOnLaunch()
+      }
+  }
+
+  /// MenuBarExtra 使用单张图像承载主图标和圆点，保留圆点的原始颜色。
+  private var statusImage: NSImage {
+    let renderer = ImageRenderer(
+      content: HStack(spacing: 2) {
+        Image(systemName: "paperplane.fill")
+          .font(.system(size: 16))
+          .foregroundStyle(.primary)
+          .frame(width: 18, height: 18)
+        VStack(spacing: 5) {
+          RuntimeStatusDot(tone: statusDisplay.agent.row.tone, diameter: 4)
+          RuntimeStatusDot(tone: statusDisplay.systemProxy.row.tone, diameter: 4)
+        }
+      }
+      .environment(\.colorScheme, colorScheme))
+    renderer.scale = displayScale
+    return renderer.nsImage ?? NSImage(
+      systemSymbolName: "paperplane.fill", accessibilityDescription: nil) ?? NSImage(size: .zero)
   }
 }
