@@ -5,62 +5,64 @@ import XCTest
 @MainActor
 final class RulesWorkflowCoverageTests: XCTestCase {
   func testCoverageUsesAllSourcesAndDistinguishesPartialFromFull() async throws {
-    let broad = CustomRule(action: .direct, match: try RuleMatch(domainSuffix: "example.com"))
-    let narrow = CustomRule(action: .proxy, match: try RuleMatch(domainExact: "www.example.com"))
-    let duplicate = CustomRule(
-      action: .direct, match: try RuleMatch(domainExact: "www.example.com"))
+    let broad = ProxyRule(action: .direct, match: try RuleMatch(domainSuffix: "example.com"))
+    let narrow = CustomRule(action: .direct, match: try RuleMatch(domainExact: "www.example.com"))
     let workflow = RulesWorkflow(
-      preset: .gfwlist, loadCustom: { [broad, narrow, duplicate] },
-      builtinSnapshots: BuiltinRuleSnapshots(loader: { rulesFixture($0) }))
+      preset: .chinaDirect, loadCustom: { [narrow] },
+      builtinSnapshots: BuiltinRuleSnapshots(loader: {
+        rulesFixture($0, rules: $0 == .geolocationCN ? [broad] : [])
+      }))
     await workflow.refresh()
-    workflow.query(RulesQuery(action: .direct, source: .custom))
-    let broadRow = try XCTUnwrap(workflow.snapshot.rows.first { $0.identity == broad.identity })
+    workflow.query(RulesQuery(source: .geolocationCN))
+    let broadRow = try XCTUnwrap(workflow.snapshot.rows.first { $0.identity == broad })
     XCTAssertTrue(
       broadRow.relationships.contains {
-        $0.kind == .shadowing && $0.extent == .partial && $0.covering == [narrow.identity]
+        $0.kind == .absorption && $0.extent == .partial && $0.covering == [narrow.identity]
       })
-    let narrowRow = try XCTUnwrap(
-      workflow.snapshot.rows.first { $0.identity == duplicate.identity })
-    XCTAssertTrue(narrowRow.relationships.contains { $0.kind == .shadowing && $0.extent == .full })
-    XCTAssertTrue(narrowRow.relationships.contains { $0.kind == .absorption && $0.extent == .full })
-    XCTAssertTrue(workflow.snapshot.rows.filter(\.isFixed).allSatisfy { $0.relationships.isEmpty })
+    workflow.query(RulesQuery(source: .custom))
+    let narrowRow = try XCTUnwrap(workflow.snapshot.rows.first)
+    XCTAssertTrue(
+      narrowRow.relationships.contains {
+        $0.kind == .absorption && $0.extent == .full && $0.covering == [broad]
+      })
+    XCTAssertTrue(narrowRow.relationships.allSatisfy { $0.kind != .shadowing })
   }
 
   func testMappedIPAndCombinedNarrowRangesExplainCoverageThroughWorkflow() async throws {
-    let proxy = CustomRule(action: .proxy, match: try RuleMatch(ipv6CIDR: "::ffff:8.8.8.0/120"))
+    let broad = CustomRule(action: .direct, match: try RuleMatch(ipv6CIDR: "::ffff:8.8.8.0/120"))
     let lower = CustomRule(action: .direct, match: try RuleMatch(ipv4CIDR: "8.8.8.0/25"))
     let upper = CustomRule(action: .direct, match: try RuleMatch(ipv4CIDR: "8.8.8.128/25"))
     let workflow = RulesWorkflow(
-      preset: .gfwlist, loadCustom: { [proxy, lower, upper] },
+      preset: .chinaDirect, loadCustom: { [broad, lower, upper] },
       builtinSnapshots: BuiltinRuleSnapshots(loader: { rulesFixture($0) }))
     await workflow.refresh()
-    workflow.query(RulesQuery(action: .proxy, source: .custom))
+    workflow.query(RulesQuery(action: .direct, source: .custom))
     let row = try XCTUnwrap(workflow.snapshot.rows.first)
-    XCTAssertEqual(row.identity, proxy.identity)
+    XCTAssertEqual(row.identity, broad.identity)
     XCTAssertEqual(row.relationships.count, 1)
-    XCTAssertEqual(row.relationships.first?.kind, .shadowing)
+    XCTAssertEqual(row.relationships.first?.kind, .absorption)
     XCTAssertEqual(row.relationships.first?.extent, .full)
     XCTAssertEqual(Set(row.relationships.first?.covering ?? []), [lower.identity, upper.identity])
   }
 
   func testFixedProtectionExplainsSimpleHostsAndPreventsFalseLocalShadowing() async throws {
     let simple = ProxyRule(
-      action: .proxy, match: try RuleMatch(domainExact: "printer"))
-    let simpleSuffix = ProxyRule(action: .proxy, match: try RuleMatch(nationalDomainSuffix: "cn"))
+      action: .direct, match: try RuleMatch(domainExact: "printer"))
+    let simpleSuffix = ProxyRule(action: .direct, match: try RuleMatch(nationalDomainSuffix: "cn"))
     let localProxy = ProxyRule(
-      action: .proxy, match: try RuleMatch(domainExact: "device.local"))
+      action: .direct, match: try RuleMatch(domainExact: "device.local"))
     let localDirect = CustomRule(action: .direct, match: try RuleMatch(domainExact: "device.local"))
     let nationalDirect = CustomRule(
       action: .direct, match: try RuleMatch(nationalDomainSuffix: "cn"))
     let workflow = RulesWorkflow(
-      preset: .gfwlist,
+      preset: .chinaDirect,
       loadCustom: { [localDirect, nationalDirect] },
       builtinSnapshots: BuiltinRuleSnapshots(loader: { requested in
         rulesFixture(
-          requested, rules: requested == .gfwlist ? [simple, simpleSuffix, localProxy] : [])
+          requested, rules: requested == .geolocationCN ? [simple, simpleSuffix, localProxy] : [])
       }))
     await workflow.refresh()
-    workflow.query(RulesQuery(source: .gfwlist))
+    workflow.query(RulesQuery(source: .geolocationCN))
     let simpleRow = try XCTUnwrap(workflow.snapshot.rows.first { $0.identity == simple })
     XCTAssertEqual(simpleRow.fixedCoverage?.extent, .full)
     let suffixRow = try XCTUnwrap(
@@ -74,15 +76,14 @@ final class RulesWorkflowCoverageTests: XCTestCase {
     let nationalRow = try XCTUnwrap(
       workflow.snapshot.rows.first { $0.identity == nationalDirect.identity })
     XCTAssertEqual(nationalRow.fixedCoverage?.extent, .partial)
-    XCTAssertTrue(
-      nationalRow.relationships.contains { $0.kind == .shadowing && $0.extent == .partial })
+    XCTAssertFalse(nationalRow.relationships.contains { $0.kind == .shadowing })
   }
 
-  func testFullyFixedProtectedProxyDoesNotShadowAnUnprotectedDirectSuffix() async throws {
+  func testFixedLocalCoverageDoesNotShadowPublicPartOfDirectSuffix() async throws {
     let direct = CustomRule(action: .direct, match: try RuleMatch(nationalDomainSuffix: "cn"))
     let proxy = ProxyRule(action: .proxy, match: try RuleMatch(domainExact: "cn"))
     let workflow = RulesWorkflow(
-      preset: .gfwlist,
+      preset: .chinaDirect,
       loadCustom: { [direct] },
       builtinSnapshots: BuiltinRuleSnapshots(loader: { requested in
         rulesFixture(requested, rules: requested == .gfwlist ? [proxy] : [])

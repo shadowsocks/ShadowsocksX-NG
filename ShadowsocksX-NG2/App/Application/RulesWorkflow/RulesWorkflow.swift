@@ -317,9 +317,10 @@ extension RulesWorkflow {
       return CustomRuleDraft(
         id: id, editingID: id, version: ticket.version,
         kind: rule.identity.match.editingKind, content: rule.identity.match.editingContent,
-        action: rule.action)
+        action: preset.matchedAction)
     }
-    return CustomRuleDraft(id: UUID(), editingID: nil, version: ticket.version)
+    return CustomRuleDraft(
+      id: UUID(), editingID: nil, version: ticket.version, action: preset.matchedAction)
   }
 
   func previewCustomRule(_ draft: CustomRuleDraft) async -> CustomRulePreview {

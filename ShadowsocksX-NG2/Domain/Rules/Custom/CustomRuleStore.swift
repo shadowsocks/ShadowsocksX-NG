@@ -10,18 +10,21 @@ enum CustomRuleStoreError: Error, Equatable, Sendable {
 /// 自定义规则持久化：独立 JSON 文档，原子写盘。
 /// Saving intent is independent of subsequent ACL application and runtime recovery.
 struct CustomRuleStore {
-  static let currentSchemaVersion = 3
+  static let currentSchemaVersion = 4
 
   let fileURL: URL
   let baseURL: URL
+  let preset: RulePreset?
 
   init(fileURL: URL = CustomRuleStore.defaultFileURL()) {
     self.fileURL = fileURL
     self.baseURL = fileURL
+    self.preset = nil
   }
 
   init(preset: RulePreset, baseURL: URL = CustomRuleStore.defaultFileURL()) {
     self.baseURL = baseURL
+    self.preset = preset
     self.fileURL = baseURL.deletingLastPathComponent()
       .appendingPathComponent("rule-presets", isDirectory: true)
       .appendingPathComponent(preset.rawValue, isDirectory: true)
@@ -46,7 +49,16 @@ struct CustomRuleStore {
     }
     let document: CustomRuleDocument
     do {
-      document = try Self.decode(data)
+      let stored = try JSONDecoder().decode(StoredCustomRuleDocument.self, from: data)
+      let decoded = try stored.domain()
+      if let preset, stored.schemaVersion < Self.currentSchemaVersion {
+        document = CustomRuleDocument(
+          rules: decoded.rules.filter { $0.action == preset.matchedAction },
+          disabledIdentities: decoded.disabledIdentities)
+      } else {
+        try validateActions(decoded)
+        document = decoded
+      }
     } catch let error as CustomRuleStoreError {
       throw error
     } catch {
@@ -62,12 +74,20 @@ struct CustomRuleStore {
   }
 
   func saveDocument(_ document: CustomRuleDocument) throws {
+    try validateActions(document)
     let data = try Self.encode(document)
     _ = try Self.decode(data)
     do {
       try AtomicFileWriter.write(data, to: fileURL)
     } catch {
       throw CustomRuleStoreError.ioFailure(detail: String(describing: error))
+    }
+  }
+
+  private func validateActions(_ document: CustomRuleDocument) throws {
+    guard let preset else { return }
+    guard document.rules.allSatisfy({ $0.action == preset.matchedAction }) else {
+      throw CustomRuleStoreError.corrupt(detail: "Custom rule action must match its rule scheme")
     }
   }
 
@@ -135,7 +155,7 @@ private struct StoredCustomRuleDocument: Codable {
   init(from decoder: Decoder) throws {
     let values = try decoder.container(keyedBy: CodingKeys.self)
     schemaVersion = try values.decode(Int.self, forKey: .schemaVersion)
-    guard [1, 2, CustomRuleStore.currentSchemaVersion].contains(schemaVersion) else {
+    guard (1...CustomRuleStore.currentSchemaVersion).contains(schemaVersion) else {
       throw CustomRuleStoreError.schemaVersionMismatch(
         found: schemaVersion, expected: CustomRuleStore.currentSchemaVersion)
     }

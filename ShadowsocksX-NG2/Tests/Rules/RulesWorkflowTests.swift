@@ -10,7 +10,7 @@ final class RulesWorkflowTests: XCTestCase {
     let store = CustomRuleStore(fileURL: directory.appendingPathComponent("rules.json"))
     let broad = CustomRule(
       action: .proxy, match: try RuleMatch(domainSuffix: "example.com"))
-    let narrow = CustomRule(action: .direct, match: try RuleMatch(domainExact: "safe.example.com"))
+    let narrow = CustomRule(action: .proxy, match: try RuleMatch(domainExact: "safe.example.com"))
     let orphan = ProxyRule(action: .proxy, match: try RuleMatch(domainExact: "gone.example"))
     try store.saveDocument(
       CustomRuleDocument(rules: [broad, narrow], disabledIdentities: [orphan]))
@@ -40,7 +40,7 @@ final class RulesWorkflowTests: XCTestCase {
     await workflow.refresh()
     let version = workflow.snapshot.version
     let covered = try XCTUnwrap(workflow.snapshot.rows.first { $0.identity == narrow.identity })
-    XCTAssertTrue(covered.relationships.contains { $0.kind == .shadowing && $0.extent == .full })
+    XCTAssertTrue(covered.relationships.contains { $0.kind == .absorption && $0.extent == .full })
     workflow.select([.rule(broad.identity), .noDotHostname])
     XCTAssertEqual(workflow.actionableSelection, [broad.identity])
     await workflow.setEnabled(false, identities: workflow.actionableSelection)
@@ -62,7 +62,7 @@ final class RulesWorkflowTests: XCTestCase {
       workflow.snapshot.rows.first { $0.identity == narrow.identity }!.relationships.isEmpty)
     workflow.setTestTarget("safe.example.com")
     await workflow.testAddress()
-    XCTAssertEqual(workflow.snapshot.addressTest.result?.outcome, .direct)
+    XCTAssertEqual(workflow.snapshot.addressTest.result?.outcome, .proxy)
     workflow.query(RulesQuery(enabled: false))
     XCTAssertTrue(workflow.snapshot.rows.contains { $0.identity == orphan && !$0.hasCurrentSource })
     await workflow.setEnabled(true, identities: [orphan])
@@ -109,12 +109,12 @@ final class RulesWorkflowTests: XCTestCase {
 
   func testSearchActionAndSourceIntersectAndHiddenSelectionIsCleared() async throws {
     let direct = CustomRule(action: .direct, match: try RuleMatch(domainSuffix: "example.com"))
-    let proxy = CustomRule(action: .proxy, match: try RuleMatch(domainExact: "outside.net"))
+    let other = CustomRule(action: .direct, match: try RuleMatch(domainExact: "outside.net"))
     let workflow = RulesWorkflow(
-      loadCustom: { [direct, proxy] },
+      preset: .chinaDirect, loadCustom: { [direct, other] },
       builtinSnapshots: BuiltinRuleSnapshots(loader: { rulesFixture($0) }))
     await workflow.refresh()
-    workflow.select([.rule(direct.identity), .rule(proxy.identity), .noDotHostname])
+    workflow.select([.rule(direct.identity), .rule(other.identity), .noDotHostname])
     workflow.query(RulesQuery(search: "EXAMPLE", action: .direct, source: .custom))
     XCTAssertEqual(workflow.snapshot.rows.map(\.identity), [direct.identity])
     XCTAssertEqual(workflow.snapshot.selection, [.rule(direct.identity)])
@@ -127,7 +127,7 @@ final class RulesWorkflowTests: XCTestCase {
   func testStableInputOrderAndNavigationPreserveVersionAndSessionQuery() async throws {
     let entries = [
       CustomRule(action: .proxy, match: try RuleMatch(domainExact: "z.net")),
-      CustomRule(action: .direct, match: try RuleMatch(domainExact: "a.net")),
+      CustomRule(action: .proxy, match: try RuleMatch(domainExact: "a.net")),
     ]
     let workflow = RulesWorkflow(
       loadCustom: { entries }, builtinSnapshots: BuiltinRuleSnapshots(loader: { rulesFixture($0) }))
@@ -194,7 +194,7 @@ final class RulesWorkflowTests: XCTestCase {
     let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     defer { try? FileManager.default.removeItem(at: directory) }
     let store = CustomRuleStore(fileURL: directory.appendingPathComponent("rules.json"))
-    let old = CustomRule(action: .direct, match: try RuleMatch(domainExact: "old.net"))
+    let old = CustomRule(action: .proxy, match: try RuleMatch(domainExact: "old.net"))
     let new = CustomRule(action: .proxy, match: try RuleMatch(domainExact: "new.net"))
     try store.save([old])
     let workflow = RulesWorkflow(
@@ -250,7 +250,7 @@ final class RulesWorkflowTests: XCTestCase {
 
 extension RulesWorkflowTests {
   func testCandidatePermutationKeepsVersionAndCoverageWhilePreservingInputOrder() async throws {
-    let broad = CustomRule(action: .direct, match: try RuleMatch(domainSuffix: "example.com"))
+    let broad = CustomRule(action: .proxy, match: try RuleMatch(domainSuffix: "example.com"))
     let narrow = CustomRule(action: .proxy, match: try RuleMatch(domainExact: "www.example.com"))
     let forward = RulesWorkflow(
       loadCustom: { [broad, narrow] },
@@ -271,8 +271,8 @@ extension RulesWorkflowTests {
   }
 
   func testSameNamedExactAndSuffixHaveStableVersionsAcrossRefreshes() async throws {
-    let exact = CustomRule(action: .direct, match: try RuleMatch(domainExact: "example.com"))
-    let suffix = CustomRule(action: .direct, match: try RuleMatch(domainSuffix: "example.com"))
+    let exact = CustomRule(action: .proxy, match: try RuleMatch(domainExact: "example.com"))
+    let suffix = CustomRule(action: .proxy, match: try RuleMatch(domainSuffix: "example.com"))
     let workflow = RulesWorkflow(
       loadCustom: { [suffix, exact] },
       builtinSnapshots: BuiltinRuleSnapshots(loader: { rulesFixture($0) }))
@@ -289,7 +289,7 @@ extension RulesWorkflowTests {
 }
 
 extension RulesWorkflowTests {
-  func testCollectionPreservesInputOrderForEqualContentWithDistinctActionsAndMatches() throws {
+  func testCollectionRemovesReverseActionsAndPreservesRemainingInputOrder() throws {
     let exact = try RuleMatch(domainExact: "same.example")
     let suffix = try RuleMatch(domainSuffix: "same.example")
     let rules = [
@@ -304,7 +304,7 @@ extension RulesWorkflowTests {
       XCTAssertTrue(collection.issues.isEmpty)
       XCTAssertEqual(
         collection.rows.filter { $0.content == "same.example" }.compactMap(\.identity),
-        input.map(\.identity))
+        input.filter { $0.action == .proxy }.map(\.identity))
       XCTAssertTrue(collection.rows.contains { $0.id == .noDotHostname && $0.isFixed })
     }
   }
@@ -342,7 +342,7 @@ private final class RulesReadBarrier: @unchecked Sendable {
       guard release.wait(timeout: .now() + 5) == .success else { throw RuleSnapshotError.missing }
     }
     return [
-      CustomRule(action: .direct, match: try RuleMatch(domainExact: first ? "old.net" : "new.net"))
+      CustomRule(action: .proxy, match: try RuleMatch(domainExact: first ? "old.net" : "new.net"))
     ]
   }
 }

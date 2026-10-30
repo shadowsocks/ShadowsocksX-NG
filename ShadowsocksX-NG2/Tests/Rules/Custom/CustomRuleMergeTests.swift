@@ -1,4 +1,5 @@
 import Foundation
+import Testing
 import XCTest
 
 @testable import ShadowsocksX_NG2
@@ -137,5 +138,31 @@ final class CustomRuleMergeTests: XCTestCase {
     XCTAssertTrue(directDefault.rejected.isEmpty)
     XCTAssertEqual(directDefault.relationships.first?.kind, .shadowing)
     XCTAssertEqual(directDefault.accepted.count, 1)
+  }
+}
+
+struct RuleSchemeRuntimeTests {
+  @Test func reverseIPExceptionCannotOverrideSchemeAction() throws {
+    let proxy = ProxyRule(action: .proxy, match: try RuleMatch(ipv4CIDR: "203.0.113.0/24"))
+    let reverse = CustomRule(action: .direct, match: try RuleMatch(ipv4CIDR: "203.0.113.8/32"))
+    let document = CustomRuleDocument(rules: [reverse])
+    let source = SslocalRuntimeDocument(servers: [], listen: ActivationFixture.listen)
+    let compiled = RuleRuntimeCompiler.compile(
+      .init(
+        source: source, mode: .rule, defaultAction: .directWhenUnmatched,
+        document: document, builtIn: [proxy], aclURL: URL(fileURLWithPath: "/tmp/scheme.acl")))
+    let content = try #require(compiled.aclRuntime?.content)
+    #expect(content.contains("203.0.113.0/24\n"))
+    #expect(!content.contains("203.0.113.8/32\n"))
+    #expect(content.contains("127.0.0.0/8\n"))
+    let collection = RulesCollection.load(
+      preset: .chinaProxy, custom: { [reverse] },
+      builtin: {
+        rulesFixture(
+          $0, rules: $0 == .chinaIPv4 ? [ProxyRule(action: .direct, match: proxy.match)] : [])
+      })
+    let result = try OfflineRuleMatcher.test(collection: collection, address: "203.0.113.8")
+    #expect(result.outcome == .proxy)
+    #expect(result.deciding.map(\.identity) == [proxy])
   }
 }

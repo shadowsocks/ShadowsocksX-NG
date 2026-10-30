@@ -1269,19 +1269,19 @@
         }
       }
     },
-    "未命中规则，采用预设默认动作。": {
+    "未命中规则，采用方案默认动作。": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "No rule matched. Using the preset’s default action."
+            "value": "No rule matched. Using the rule scheme’s default action."
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "未命中规则，采用预设默认动作。"
+            "value": "未命中规则，采用方案默认动作。"
           }
         }
       }

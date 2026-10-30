@@ -28,11 +28,9 @@ struct CustomRuleEditorSheet: View {
           .pickerStyle(.segmented)
           TextField(RulesCopy.text("匹配内容"), text: $draft.content)
             .autocorrectionDisabled()
-          Picker(RulesCopy.text("行动"), selection: $draft.action) {
-            Text(RulesCopy.text("代理")).tag(RuleAction.proxy)
-            Text(RulesCopy.text("直连")).tag(RuleAction.direct)
+          LabeledContent(RulesCopy.text("行动")) {
+            Text(RulesCopy.text(draft.action == .proxy ? "代理" : "直连"))
           }
-          .pickerStyle(.segmented)
         }
       }.disabled(isSaving || workflow.snapshot.isCommitting)
       ScrollView {

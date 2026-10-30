@@ -20,7 +20,6 @@ final class CustomRuleEditingControllerTests: ProxyRuntimeControllerTests {
     var draft = try XCTUnwrap(workflow.makeCustomRuleDraft())
     draft.kind = .ipAddress
     draft.content = "8.8.8.8"
-    draft.action = .direct
     let result = await workflow.saveCustomRule(draft)
     XCTAssertEqual(result, .committed(.saved))
     XCTAssertEqual(try store.load().first?.id, draft.id)
@@ -43,7 +42,6 @@ final class CustomRuleEditingControllerTests: ProxyRuntimeControllerTests {
     let registrations = agent.registerCount
     var draft = try XCTUnwrap(workflow.makeCustomRuleDraft())
     draft.content = "new-rule.example"
-    draft.action = .direct
     let added = await workflow.saveCustomRule(draft)
     XCTAssertEqual(added, .committed(.saved))
     await controller.ruleApplicationTask?.value

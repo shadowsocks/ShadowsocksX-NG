@@ -25,8 +25,8 @@ final class RulesPresentationTests: XCTestCase {
   }
   func testRelationshipExplanationRequiresExactlyOneRelatedSelection() async throws {
     let broad = CustomRule(action: .proxy, match: try RuleMatch(domainSuffix: "example.com"))
-    let narrow = CustomRule(action: .direct, match: try RuleMatch(domainExact: "a.example.com"))
-    let independent = CustomRule(action: .direct, match: try RuleMatch(domainExact: "other.net"))
+    let narrow = CustomRule(action: .proxy, match: try RuleMatch(domainExact: "a.example.com"))
+    let independent = CustomRule(action: .proxy, match: try RuleMatch(domainExact: "other.net"))
     let workflow = RulesWorkflow(
       preset: .gfwlist, loadCustom: { [broad, narrow, independent] },
       builtinSnapshots: BuiltinRuleSnapshots(loader: { rulesFixture($0) }))
@@ -35,7 +35,7 @@ final class RulesPresentationTests: XCTestCase {
     workflow.select([.rule(narrow.identity)])
     let row = try XCTUnwrap(workflow.selectedRelationshipRow)
     XCTAssertEqual(row.identity, narrow.identity)
-    XCTAssertEqual(row.relationships.first?.kind, .shadowing)
+    XCTAssertEqual(row.relationships.first?.kind, .absorption)
     XCTAssertEqual(row.relationships.first?.covering, [broad.identity])
     workflow.select([.rule(narrow.identity), .rule(independent.identity)])
     XCTAssertNil(workflow.selectedRelationshipRow)
@@ -48,7 +48,7 @@ final class RulesPresentationTests: XCTestCase {
     let narrow = CustomRule(action: .direct, match: try RuleMatch(domainExact: "a.example.net"))
     let local = CustomRule(action: .direct, match: try RuleMatch(domainExact: "device.local"))
     let workflow = RulesWorkflow(
-      preset: .gfwlist, loadCustom: { [broad, narrow, local] },
+      preset: .chinaDirect, loadCustom: { [broad, narrow, local] },
       builtinSnapshots: BuiltinRuleSnapshots(loader: { rulesFixture($0) }))
     await workflow.refresh()
     workflow.select([.rule(narrow.identity)])

@@ -129,6 +129,8 @@ enum RulePreset: String, Codable, CaseIterable, Hashable, Sendable {
     self == .chinaDirect ? .proxyWhenUnmatched : .directWhenUnmatched
   }
 
+  var matchedAction: RuleAction { self == .chinaDirect ? .direct : .proxy }
+
   var sources: [RulesSource] {
     self == .gfwlist ? [.gfwlist] : [.geolocationCN, .chinaIPv4]
   }
@@ -142,9 +144,9 @@ enum RulePreset: String, Codable, CaseIterable, Hashable, Sendable {
   }
 
   func rules(from snapshot: RuleSnapshot) -> [ProxyRule] {
-    if self == .gfwlist { return snapshot.rules }
+    if self == .gfwlist { return snapshot.rules.filter { $0.action == matchedAction } }
     return BuiltinRuleCatalog.chinaDirectRules(from: snapshot).map {
-      ProxyRule(action: self == .chinaProxy ? .proxy : .direct, match: $0.match)
+      ProxyRule(action: matchedAction, match: $0.match)
     }
   }
 }

@@ -39,10 +39,10 @@ final class OfflineRuleMatcherTests: XCTestCase {
         preset: .gfwlist, custom: { entries }, builtin: { rulesFixture($0) })
       let result = try OfflineRuleMatcher.test(collection: collection, address: "a.example.com")
       XCTAssertEqual(result.outcome, .proxy)
-      XCTAssertEqual(result.explanation, .domainProxy)
+      XCTAssertEqual(result.explanation, .singleAction)
       XCTAssertEqual(
         Set(result.deciding.compactMap(\.identity)), [exact.identity, secondProxy.identity])
-      XCTAssertEqual(result.otherMatches.map(\.identity), [suffix.identity])
+      XCTAssertEqual(result.otherMatches.isEmpty, true)
       XCTAssertEqual(
         try OfflineRuleMatcher.test(collection: collection, address: "notexample.com").outcome,
         .direct)
@@ -62,7 +62,7 @@ final class OfflineRuleMatcherTests: XCTestCase {
       .direct)
   }
 
-  func testIPOverlapAndMappedAddressesPreferDirectWithoutLosingOtherRanges() throws {
+  func testIPOverlapAndMappedAddressesUseOnlySchemeAction() throws {
     for reverseActions in [false, true] {
       let broad = CustomRule(
         action: reverseActions ? .direct : .proxy,
@@ -75,12 +75,12 @@ final class OfflineRuleMatcherTests: XCTestCase {
         custom: { [broad, narrow] }, builtin: { rulesFixture($0) })
       for address in ["203.0.113.8", "::ffff:203.0.113.8"] {
         let result = try OfflineRuleMatcher.test(collection: collection, address: address)
-        XCTAssertEqual(result.outcome, .direct)
-        XCTAssertEqual(result.explanation, .ipDirect)
+        XCTAssertEqual(result.outcome, .proxy)
+        XCTAssertEqual(result.explanation, .singleAction)
         XCTAssertEqual(
-          result.deciding.map(\.identity), [reverseActions ? broad.identity : narrow.identity])
+          result.deciding.map(\.identity), [reverseActions ? narrow.identity : broad.identity])
         XCTAssertEqual(
-          result.otherMatches.map(\.identity), [reverseActions ? narrow.identity : broad.identity])
+          result.otherMatches.map(\.identity), [])
       }
       XCTAssertEqual(
         try OfflineRuleMatcher.test(collection: collection, address: "203.0.113.9").outcome,

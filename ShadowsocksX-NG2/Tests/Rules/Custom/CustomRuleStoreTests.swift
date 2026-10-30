@@ -148,6 +148,39 @@ final class CustomRuleStoreTests: XCTestCase {
 }
 
 struct CustomRuleStorageMigrationTests {
+  @Test(arguments: RulePreset.allCases)
+  func migrationRemovesDefaultActionRulesAndPreservesRemainingIntent(_ preset: RulePreset) throws {
+    let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+    defer { try? FileManager.default.removeItem(at: directory) }
+    let store = CustomRuleStore(
+      preset: preset, baseURL: directory.appendingPathComponent("rules.json"))
+    try FileManager.default.createDirectory(
+      at: store.fileURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let action: RuleAction = preset == .chinaDirect ? .direct : .proxy
+    let first = CustomRule(action: action, match: try RuleMatch(domainExact: "first.example"))
+    let removed = CustomRule(
+      action: preset == .chinaDirect ? .proxy : .direct,
+      match: try RuleMatch(ipv4CIDR: "203.0.113.8/32"))
+    let last = CustomRule(action: action, match: try RuleMatch(domainSuffix: "last.example"))
+    let disabled: Set<ProxyRule> = [first.identity, removed.identity]
+    let document = CustomRuleDocument(rules: [first, removed, last], disabledIdentities: disabled)
+    var json = try #require(
+      JSONSerialization.jsonObject(with: CustomRuleStore.encode(document)) as? [String: Any])
+    json["schemaVersion"] = 3
+    let legacy = try JSONSerialization.data(withJSONObject: json)
+    try legacy.write(to: store.fileURL)
+    let loaded = try store.loadDocument()
+    #expect(loaded.rules == [first, last])
+    #expect(loaded.disabledIdentities == disabled)
+    #expect(try store.loadDocument() == loaded)
+    #expect(try Data(contentsOf: store.fileURL) == legacy)
+    try store.saveDocument(loaded)
+    #expect(try store.loadDocument() == loaded)
+    let saved = try #require(
+      JSONSerialization.jsonObject(with: Data(contentsOf: store.fileURL)) as? [String: Any])
+    #expect(saved["schemaVersion"] as? Int == 4)
+  }
+
   @Test func legacySourceIsDiscardedOnNextSaveWithoutLosingSavedIntent() throws {
     let data = Data(
       """
@@ -164,7 +197,7 @@ struct CustomRuleStorageMigrationTests {
     #expect(document.disabledIdentities.count == 1)
     let encoded = try CustomRuleStore.encode(document)
     let json = try #require(JSONSerialization.jsonObject(with: encoded) as? [String: Any])
-    #expect(json["schemaVersion"] as? Int == 3)
+    #expect(json["schemaVersion"] as? Int == 4)
     let rule = try #require((json["rules"] as? [[String: Any]])?.first)
     #expect(rule["source"] == nil)
     #expect((rule["match"] as? [String: String])?["value"] == "203.0.113.0/24")
@@ -173,6 +206,27 @@ struct CustomRuleStorageMigrationTests {
 }
 
 extension CustomRuleStorageMigrationTests {
+  @Test(arguments: [3, 4])
+  func scopedLoadRejectsCorruptionWithoutRewriting(schema: Int) throws {
+    let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+    defer { try? FileManager.default.removeItem(at: directory) }
+    let store = CustomRuleStore(
+      preset: .chinaProxy, baseURL: directory.appendingPathComponent("rules.json"))
+    try FileManager.default.createDirectory(
+      at: store.fileURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+    let reverse = CustomRule(action: .direct, match: try RuleMatch(domainExact: "reverse.example"))
+    // A duplicate must remain corrupt even when migration would remove both entries.
+    let rules = schema == 3 ? [reverse, reverse] : [reverse]
+    var json = try #require(
+      JSONSerialization.jsonObject(with: CustomRuleStore.encode(CustomRuleDocument(rules: rules)))
+        as? [String: Any])
+    json["schemaVersion"] = schema
+    let bytes = try JSONSerialization.data(withJSONObject: json)
+    try bytes.write(to: store.fileURL)
+    #expect(throws: CustomRuleStoreError.self) { try store.loadDocument() }
+    #expect(try Data(contentsOf: store.fileURL) == bytes)
+  }
+
   @Test func loadDoesNotRewriteLegacyFileAndSaveRetainsOrphanDisablement() throws {
     let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)

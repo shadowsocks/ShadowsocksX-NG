@@ -53,6 +53,13 @@ final class RuleDocumentSession {
     guard rejected.isEmpty else {
       return RuleDocumentCommit(outcome: .rejected(rejected), document: current)
     }
+    if let preset = store.preset,
+      document.rules.contains(where: { $0.action != preset.matchedAction })
+    {
+      return RuleDocumentCommit(
+        outcome: .invalidDocument(detail: "Custom rule action must match its rule scheme"),
+        document: current)
+    }
     guard
       document.disabledIdentities.isDisjoint(
         with: Set(RuleCoverage.fixedLocalMatches.map { ProxyRule(action: .direct, match: $0) }))

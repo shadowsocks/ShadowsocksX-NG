@@ -9,7 +9,7 @@ final class CustomRuleDeletionWorkflowTests: XCTestCase {
   {
     let custom = CustomRule(
       action: .proxy, match: try RuleMatch(domainSuffix: "merged.example"))
-    let other = CustomRule(action: .direct, match: try RuleMatch(domainExact: "other.example"))
+    let other = CustomRule(action: .proxy, match: try RuleMatch(domainExact: "other.example"))
     let orphan = ProxyRule(action: .proxy, match: try RuleMatch(domainExact: "orphan.example"))
     let builtin = ProxyRule(action: custom.action, match: custom.match)
     var saved = CustomRuleDocument(
@@ -53,7 +53,7 @@ final class CustomRuleDeletionWorkflowTests: XCTestCase {
 extension CustomRuleDeletionWorkflowTests {
   func testFilteredSelectionCannotEnterConfirmationAndStaleConfirmationCannotExpand() async throws {
     let first = CustomRule(action: .proxy, match: try RuleMatch(domainExact: "first.example"))
-    let hidden = CustomRule(action: .direct, match: try RuleMatch(domainExact: "hidden.example"))
+    let hidden = CustomRule(action: .proxy, match: try RuleMatch(domainExact: "hidden.example"))
     var commits = 0
     var saved = CustomRuleDocument(rules: [first, hidden])
     let workflow = RulesWorkflow(

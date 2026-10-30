@@ -356,7 +356,10 @@ enum RuleRuntimeCompiler {
     case .global: return source.replacingACL(.global(at: aclURL))
     case .rule:
       let document = document ?? CustomRuleDocument(rules: [])
-      let custom = document.rules.filter { !document.disabledIdentities.contains($0.identity) }
+      let custom = document.rules.filter {
+        $0.action != defaultAction.fallbackAction
+          && !document.disabledIdentities.contains($0.identity)
+      }
       let enabled = builtIn.filter { !document.disabledIdentities.contains($0) }
       let validated = CustomRuleValidator.hardValidation(custom: custom)
       let candidates = RuleAnalysis.runtimeCandidates(

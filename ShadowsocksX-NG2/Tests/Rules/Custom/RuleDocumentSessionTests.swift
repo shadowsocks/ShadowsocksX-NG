@@ -5,6 +5,35 @@ import Testing
 
 @MainActor
 struct RuleDocumentSessionTests {
+  @Test(arguments: RulePreset.allCases)
+  func reverseActionCommitIsRejectedWithoutChangingSavedFacts(_ preset: RulePreset) throws {
+    let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+    defer { try? FileManager.default.removeItem(at: directory) }
+    let store = CustomRuleStore(
+      preset: preset, baseURL: directory.appendingPathComponent("rules.json"))
+    let session = RuleDocumentSession(store: store)
+    let original = CustomRuleDocument(rules: [
+      CustomRule(
+        action: preset == .chinaDirect ? .direct : .proxy,
+        match: try RuleMatch(domainExact: "kept.example"))
+    ])
+    #expect(session.commit(original).outcome == .saved)
+    let bytes = try Data(contentsOf: store.fileURL)
+    let invalid = CustomRuleDocument(rules: [
+      CustomRule(
+        action: preset == .chinaDirect ? .proxy : .direct,
+        match: try RuleMatch(domainExact: "reverse.example"))
+    ])
+    let result = session.commit(invalid)
+    #expect(
+      result.outcome == .invalidDocument(detail: "Custom rule action must match its rule scheme"))
+    #expect(result.document == original)
+    #expect(session.revision == 1)
+    #expect(try Data(contentsOf: store.fileURL) == bytes)
+    #expect(throws: CustomRuleStoreError.self) { try store.saveDocument(invalid) }
+    #expect(try Data(contentsOf: store.fileURL) == bytes)
+  }
+
   @Test func successfulCommitPublishesSavedFactsAndOnlyChangedContentAdvancesRevision() throws {
     let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     defer { try? FileManager.default.removeItem(at: directory) }

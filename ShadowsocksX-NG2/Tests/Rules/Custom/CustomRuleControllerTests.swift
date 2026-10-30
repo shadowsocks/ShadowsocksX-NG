@@ -88,7 +88,7 @@ final class CustomRuleControllerTests: ProxyRuntimeControllerTests {
       "自定义直连规则应进入规则模式 ACL")
   }
 
-  func testOppositeActionsPersistAndReorderingDoesNotRedeploy() async throws {
+  func testSchemeActionRulesPersistAndReorderingDoesNotRedeploy() async throws {
     let seeded = try makeSeededCatalog()
     let (store, _) = try makeCustomRuleStore(preset: .gfwlist)
     let settings = ProxyRuntimeSettings(
@@ -98,9 +98,9 @@ final class CustomRuleControllerTests: ProxyRuntimeControllerTests {
       store: store, settings: settings, proxyMode: .rule)
     try await controller.activate(seeded.server)
     let rules = [
-      CustomRule(action: .direct, match: try RuleMatch(domainSuffix: "order.example")),
+      CustomRule(action: .proxy, match: try RuleMatch(domainSuffix: "order.example")),
       CustomRule(action: .proxy, match: try RuleMatch(domainExact: "a.order.example")),
-      CustomRule(action: .direct, match: try RuleMatch(domainExact: "a.order.example")),
+      CustomRule(action: .proxy, match: try RuleMatch(domainExact: "b.order.example")),
     ]
     let first = await controller.commitRuleDocument(CustomRuleDocument(rules: rules)).outcome
     XCTAssertEqual(first, .saved)
@@ -227,7 +227,7 @@ final class CustomRuleControllerTests: ProxyRuntimeControllerTests {
   func testCustomRuleSummaryExposesCountAndVersionOnly() async throws {
     let (store, _) = try makeCustomRuleStore()
     try store.save([
-      CustomRule(action: .proxy, match: try RuleMatch(domainSuffix: "secret.example"))
+      CustomRule(action: .direct, match: try RuleMatch(domainSuffix: "secret.example"))
     ])
     let controller = makeControllerWithCustomRules(store: store)
 

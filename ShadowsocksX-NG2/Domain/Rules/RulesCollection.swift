@@ -69,14 +69,16 @@ private struct RulesCollectionInput: Sendable {
 
   mutating func readCustom(_ loadCustom: () throws -> CustomRuleDocument) {
     do {
-      let document = try loadCustom()
-      let custom = document.rules
-      disabled = document.disabledIdentities
-      userDocument = document
-      let validation = CustomRuleValidator.hardValidation(custom: custom)
+      let loaded = try loadCustom()
+      let validation = CustomRuleValidator.hardValidation(custom: loaded.rules)
       guard validation.rejected.isEmpty else {
         throw CustomRuleStoreError.corrupt(detail: "Invalid custom rule collection")
       }
+      let custom = loaded.rules.filter { $0.action == preset.matchedAction }
+      let document = CustomRuleDocument(
+        rules: custom, disabledIdentities: loaded.disabledIdentities)
+      disabled = document.disabledIdentities
+      userDocument = document
       entries += custom.map { RulesCandidate(rule: $0.proxyRule, source: .custom, customID: $0.id) }
       sources.insert(
         RulesSourceSnapshot(id: .custom, count: custom.count, metadata: nil, conversionReport: nil),

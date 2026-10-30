@@ -12,7 +12,7 @@
 
 快照使用 schema 2 / converter 2.0.0 的紧凑 JSON：每条规则只有 `action` 和 `match`，来源只在 `metadata.source`，转换报告只保留计数。被吸收的 `.cn` 条目与被遮蔽的 GFWList 例外不随快照分发，禁用宽规则后不再恢复；详见 [ADR-0024](adr/0024-snapshot-drops-absorbed-and-forensics.md)。旧版本快照拒载。
 
-规则领域值与文件 DTO 独立演化。`ProxyRule` 同时表达规范化规则值与跨来源规则身份，自定义条目另外保留 UUID。自定义规则文件写入 schema 3，不再逐条保存 `source`；兼容读取 schema 1/2，读取不重写，下一次正常保存才更新格式。内置快照格式不变。见 [ADR-0039](adr/0039-rule-values-and-independent-storage-models.md)。
+规则领域值与文件 DTO 独立演化。`ProxyRule` 同时表达规范化规则值与跨来源规则身份，自定义条目另外保留 UUID。自定义规则文件写入 schema 4，不逐条保存 `source`。每项规则方案固定匹配后行动与未匹配行动，新增和编辑自定义规则时只读展示所属方案的匹配后行动。兼容读取 schema 1–3：加载方案时移除行动等于未匹配行动的自定义规则，保留剩余条目的 UUID、顺序和全部停用记录；读取不重写原文件，下一次正常保存才写入 schema 4。schema 4 文档包含反向行动时拒载，旧客户端不能读取 schema 4。**迁移可能改变路由**：“中国大陆目标代理”方案中，旧自定义直连 IP 例外可能曾覆盖内置代理网段，移除后该 IP 按方案规则代理。固定本地目标仍始终直连。内置快照格式不变。见 [ADR-0039](adr/0039-rule-values-and-independent-storage-models.md) 和 [ADR-0055](adr/0055-preset-owned-custom-rule-actions.md)。
 
 Python 是唯一的上游转换实现；Swift 只加载、校验并消费快照，不另行解析上游输入。转换脚本的离线回归检查：`PYTHONDONTWRITEBYTECODE=1 python3 Scripts/test-rule-snapshot-converters.py`。默认 `task test` 也会运行两组 Python 检查；可单独运行 `task test:rules`。另运行 `PYTHONDONTWRITEBYTECODE=1 python3 Scripts/test-rule-conversion-behavior.py`，验证转换行为和单测 bundle 使用的固定快照夹具。审查转换变化后，可通过同一命令加 `--write-fixtures` 重建夹具。夹具时间固定，正常测试逐字节检查生成结果。快照完整性检查：`Scripts/verify-rule-snapshots.sh`。
 

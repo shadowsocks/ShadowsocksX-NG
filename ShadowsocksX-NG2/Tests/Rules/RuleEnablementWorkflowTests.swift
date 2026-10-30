@@ -13,7 +13,7 @@ final class RuleEnablementWorkflowTests: XCTestCase {
     let gate = RulesAnalysisGate(started: started)
     var documents: [CustomRuleDocument] = []
     let workflow = RulesWorkflow(
-      preset: .gfwlist, loadDocument: { CustomRuleDocument(rules: [broad, narrow]) },
+      preset: .chinaDirect, loadDocument: { CustomRuleDocument(rules: [broad, narrow]) },
       commitDocument: {
         documents.append($0)
         return RuleDocumentCommit(outcome: .saved, document: $0)
@@ -37,7 +37,7 @@ final class RuleEnablementWorkflowTests: XCTestCase {
       oldRelationships)
     workflow.setTestTarget("other.pending.example")
     await workflow.testAddress()
-    XCTAssertEqual(workflow.snapshot.addressTest.result?.outcome, .direct)
+    XCTAssertEqual(workflow.snapshot.addressTest.result?.outcome, .proxy)
     await workflow.setEnabled(true, identities: [broad.identity])
     await workflow.setEnabled(false, identities: [broad.identity])
     XCTAssertEqual(documents.count, 3)
@@ -98,7 +98,7 @@ final class RuleEnablementWorkflowTests: XCTestCase {
 
   func testSuccessfulCommitDoesNotReadSourcesOrUserDocumentAgain() async throws {
     let reads = RulesReadCounts()
-    let rule = CustomRule(action: .proxy, match: try RuleMatch(domainExact: "saved.example"))
+    let rule = CustomRule(action: .direct, match: try RuleMatch(domainExact: "saved.example"))
     let workflow = RulesWorkflow(
       preset: .chinaDirect,
       loadDocument: {
@@ -169,7 +169,7 @@ final class RuleEnablementWorkflowTests: XCTestCase {
     let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
     defer { try? FileManager.default.removeItem(at: directory) }
     let store = CustomRuleStore(fileURL: directory.appendingPathComponent("rules.json"))
-    let rule = CustomRule(action: .direct, match: try RuleMatch(domainExact: "kept.example"))
+    let rule = CustomRule(action: .proxy, match: try RuleMatch(domainExact: "kept.example"))
     try store.save([rule])
     var commits = 0
     let workflow = RulesWorkflow(

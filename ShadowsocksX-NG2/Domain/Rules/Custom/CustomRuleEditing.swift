@@ -8,7 +8,7 @@ struct CustomRuleDraft: Equatable, Sendable, Identifiable {
   let version: String
   var kind: Kind = .domainSuffix
   var content = ""
-  var action: RuleAction = .proxy
+  let action: RuleAction
 
   func normalizedMatch() throws -> RuleMatch {
     let value = content.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -76,7 +76,7 @@ extension RulesCollection {
       return CustomRulePreview(failure: .staleDraft)
     }
     let rule = CustomRule(
-      id: draft.id, action: draft.action, match: match)
+      id: draft.id, action: preset.matchedAction, match: match)
     let others = document.rules.filter { $0.id != draft.editingID }
     guard !others.contains(where: { $0.identity == rule.identity }) else {
       return CustomRulePreview(failure: .duplicate, rule: rule)
