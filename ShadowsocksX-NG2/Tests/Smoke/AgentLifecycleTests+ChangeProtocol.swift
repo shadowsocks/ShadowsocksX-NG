@@ -117,6 +117,11 @@ final class AgentLifecycleStaleListenerTests: AgentLifecycleTests {
     XCTAssertNil(
       runtimeStore.readRuntimeReceipt(),
       "候选没有绑定端口时，旧监听和 server-only reload 都不能发布直连回执")
+    XCTAssertTrue(
+      try waitUntil(timeout: 20) { self.agentLog().contains("check=ownership") },
+      "超时日志应区分端口可连接但不属于当前子进程：\(agentLog())")
+    XCTAssertEqual(try waitForExit(wrapper), 0)
+    XCTAssertTrue(agentLog().contains("endpoint=socks 127.0.0.1:\(staleSocksListener.port)"))
   }
 }
 
@@ -124,20 +129,29 @@ final class AgentLifecycleListenDeadlineTests: AgentLifecycleTests {
   // MARK: 监听建立判定
 
   func testListenDeadlinePersistsFailureAndStopsChild() throws {
-    // stub sslocal 不监听任何端点：超时后应记 error 日志点名端点，且监管继续。
+    // stub sslocal 不监听任何端点：超时日志应包含失败检查与等待耗时。
     try writeContract(ProxyRuntimeFixture.makeDocument())
     let wrapper = try launchWrapper(behavior: "run")
 
     let agentLogURL = workDir.appendingPathComponent("agent.log")
     XCTAssertTrue(
-      try waitUntil {
+      try waitUntil(timeout: 20) {
         guard let log = try? String(contentsOf: agentLogURL, encoding: .utf8) else {
           return false
         }
         return log.contains("listen not established within deadline")
       },
-      "5 秒未建立监听应以 error 日志点名（D10），实际 agent.log：\(agentLog())")
+      "15 秒未建立监听应以 error 日志点名，实际 agent.log：\(agentLog())")
     XCTAssertEqual(try waitForExit(wrapper), 0)
+    let log = try XCTUnwrap(
+      agentLog().components(separatedBy: "\n").first {
+        $0.contains("listen not established within deadline")
+      })
+    XCTAssertTrue(log.contains("endpoint=socks 127.0.0.1:"), log)
+    XCTAssertTrue(log.contains("check=connect outcome=refused"), log)
+    XCTAssertTrue(log.contains("pid="), log)
+    XCTAssertTrue(log.contains("elapsed="), log)
+    XCTAssertTrue(log.contains("deadline=15.000s"), log)
     XCTAssertNotNil(RuntimeFileStore(fileURL: contractURL).readFailure())
     XCTAssertTrue(stateLog().contains("SIGTERM"))
   }
@@ -145,7 +159,7 @@ final class AgentLifecycleListenDeadlineTests: AgentLifecycleTests {
 
 private final class TCPListenerFixture {
   let port: Int
-  private var descriptor: Int32
+  private let source: DispatchSourceRead
 
   init() throws {
     let socketDescriptor = socket(AF_INET, SOCK_STREAM, 0)
@@ -179,13 +193,25 @@ private final class TCPListenerFixture {
       throw POSIXError(.EINVAL)
     }
 
-    descriptor = socketDescriptor
+    guard fcntl(socketDescriptor, F_SETFL, O_NONBLOCK) == 0 else {
+      close(socketDescriptor)
+      throw POSIXError(.EINVAL)
+    }
     port = Int(CFSwapInt16BigToHost(boundAddress.sin_port))
+    source = DispatchSource.makeReadSource(fileDescriptor: socketDescriptor, queue: .global())
+    source.setEventHandler {
+      while true {
+        let connection = accept(socketDescriptor, nil, nil)
+        guard connection >= 0 else { return }
+        close(connection)
+      }
+    }
+    source.setCancelHandler { close(socketDescriptor) }
+    source.resume()
   }
 
   func closeListener() {
-    if descriptor >= 0 { close(descriptor) }
-    descriptor = -1
+    source.cancel()
   }
 
   deinit {
