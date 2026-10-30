@@ -78,7 +78,9 @@ class RealSslocalSmokeTests: XCTestCase {
   }
 
   /// 写入给定契约并拉起 wrapper（契约内容由调用方构造：无插件与插件场景各异）。
-  func launchWrapper(_ document: SslocalRuntimeDocument, publish: Bool = true) throws -> Process {
+  func launchWrapper(
+    _ document: SslocalRuntimeDocument, publish: Bool = true, startupDelay: TimeInterval = 0
+  ) throws -> Process {
     if publish { try RuntimeFileStore(fileURL: contractURL).write(document) }
 
     let wrapperURL = AppArtifact.bundleURL.appendingPathComponent(
@@ -87,11 +89,13 @@ class RealSslocalSmokeTests: XCTestCase {
     process.executableURL = wrapperURL
     var environment = ProcessInfo.processInfo.environment
     environment["SSXNG_CONTRACT_PATH"] = contractURL.path
-    if usesLocalDNS {
-      // exec preserves the PID supervised by the real wrapper. Only DNS is test-owned.
+    if usesLocalDNS || startupDelay > 0 {
+      // exec preserves the PID supervised by the real wrapper, including delayed startup.
       let launcher = workDir.appendingPathComponent("sslocal-with-local-dns")
       let executable = try sslocalURL.path.replacingOccurrences(of: "'", with: "'\"'\"'")
-      let script = "#!/bin/sh\nexec '\(executable)' --dns udp://127.0.0.1:\(dns.port) \"$@\"\n"
+      let dnsArguments = usesLocalDNS ? " --dns udp://127.0.0.1:\(dns.port)" : ""
+      let delay = startupDelay > 0 ? "sleep \(startupDelay)\n" : ""
+      let script = "#!/bin/sh\n\(delay)exec '\(executable)'\(dnsArguments) \"$@\"\n"
       try script.write(to: launcher, atomically: true, encoding: .utf8)
       try FileManager.default.setAttributes([.posixPermissions: 0o700], ofItemAtPath: launcher.path)
       environment["SSXNG_SSLOCAL_PATH"] = launcher.path
@@ -189,6 +193,28 @@ class RealSslocalSmokeTests: XCTestCase {
       Thread.sleep(forTimeInterval: 0.1)
     }
     return try condition()
+  }
+}
+
+final class RealSslocalDelayedStartupTests: RealSslocalSmokeTests {
+  func testListenersBecomingReadyAfterFiveSecondsRemainRunning() throws {
+    let ports = try grabThreeListenPorts(excluding: [])
+    let document = SslocalRuntimeDocument(
+      servers: [], listen: ProxyListeningConfiguration(socksPort: ports[0], httpPort: ports[1]),
+      acl: .direct(at: aclFileURL))
+    let store = RuntimeFileStore(fileURL: contractURL)
+    let started = Date()
+    let wrapper = try launchWrapper(document, startupDelay: 6)
+    XCTAssertTrue(
+      try waitForCondition(timeout: 12) {
+        store.readRuntimeReceipt() != nil || store.readFailure() != nil
+      })
+    XCTAssertNil(store.readFailure(), "延迟启动不能被旧的 5 秒期限终止")
+    _ = try XCTUnwrap(store.readRuntimeReceipt())
+    XCTAssertGreaterThanOrEqual(Date().timeIntervalSince(started), 6)
+    try assertReceiptOwnsListeners(document: document)
+    XCTAssertTrue(wrapper.isRunning)
+    stopWrapperAndAssertCleanExit(wrapper, description: "delayed startup wrapper exits")
   }
 }
 

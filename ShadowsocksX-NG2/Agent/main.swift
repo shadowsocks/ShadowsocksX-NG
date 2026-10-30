@@ -134,7 +134,8 @@ private func establishChildReadiness(
   _ child: Process, state: inout SupervisionState
 ) -> SupervisionOutcome? {
   guard !state.healthy else { return nil }
-  if listenersAreEstablished(document: state.current, child: child) {
+  let readinessFailure = listenerReadinessFailure(document: state.current, child: child)
+  guard let readinessFailure else {
     guard sendReloadSignals(&state.reloadPending, to: child.processIdentifier) else {
       recordDeploymentFailure(state.current, reason: "Deferred reload failed")
       _ = stopChild(child)
@@ -144,11 +145,11 @@ private func establishChildReadiness(
     return nil
   }
   guard Date() >= state.readinessDeadline else { return nil }
+  let elapsed = listenEstablishmentDeadline - state.readinessDeadline.timeIntervalSinceNow
+  let timing = String(format: "elapsed=%.3fs deadline=%.3fs", elapsed, listenEstablishmentDeadline)
   RuntimeLog.emit(
     .listenNotEstablished(
-      detail: state.current.locals.map {
-        "\($0.inboundProtocol) \($0.localAddress):\($0.localPort)"
-      }.joined(separator: ", ")))
+      detail: "pid=\(child.processIdentifier) \(timing) \(readinessFailure)"))
   recordDeploymentFailure(state.current, reason: "Listener establishment failed")
   _ = stopChild(child)
   return .stopped

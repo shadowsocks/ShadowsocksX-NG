@@ -147,7 +147,7 @@ final class ProxyRuntimeController {
     firewallChecker: FirewallStatusChecking = SocketFilterFirewallChecker(),
     firewallExecutableURLs: [URL]? = nil,
     firewallPollIntervalNanoseconds: UInt64 = 2_000_000_000,
-    launchHealthTimeoutSeconds: TimeInterval = 15,
+    launchHealthTimeoutSeconds: TimeInterval = 30,
     launchHealthRetryDelay: @escaping () async throws -> Void = {
       try await Task.sleep(for: .milliseconds(200))
     },

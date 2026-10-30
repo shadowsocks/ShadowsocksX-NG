@@ -121,7 +121,7 @@ class ProxyRuntimeControllerTests: XCTestCase {
     firewallChecker: FirewallStatusChecking = ProxyRuntimeFixture.FakeFirewallChecker(),
     firewallExecutableURLs: [URL] = [URL(fileURLWithPath: "/bundle/Helpers/sslocal")],
     firewallPollIntervalNanoseconds: UInt64 = 1_000_000,
-    // 生产默认 15 秒健康窗；FakeProbe 结果确定，短窗口走同一超时呈现路径。
+    // 生产默认 30 秒健康窗；FakeProbe 结果确定，短窗口走同一超时呈现路径。
     launchHealthTimeoutSeconds: TimeInterval = 0.05,
     launchHealthRetryDelay: @escaping () async throws -> Void = {
       try await Task.sleep(for: .milliseconds(200))
