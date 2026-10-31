@@ -52,23 +52,6 @@
         }
       }
     },
-    "已过期": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Expired"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "已过期"
-          }
-        }
-      }
-    },
     "无成功结果": {
       "extractionState": "manual",
       "localizations": {

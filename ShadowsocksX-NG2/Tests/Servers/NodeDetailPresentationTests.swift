@@ -118,7 +118,7 @@ struct NodeDetailPresentationTests {
     let date = Date(timeIntervalSince1970: 37_421)
     let records = [
       ServerConnectivity.Record(
-        finishedAt: date, outcome: .success(milliseconds: 42), networkExpired: true),
+        finishedAt: date, outcome: .success(milliseconds: 42)),
       ServerConnectivity.Record(finishedAt: date, outcome: .requestTimeout),
       ServerConnectivity.Record(finishedAt: date.addingTimeInterval(-60), outcome: .http(302)),
     ]
@@ -158,7 +158,7 @@ struct NodeDetailPresentationTests {
   }
 
   @Test
-  func connectivityGroupPropertiesFollowFreshnessNetworkChangesAndNames() async {
+  func connectivityGroupPropertiesFollowLatestResultsNetworkChangesAndNames() async {
     let ids = [NodeID.fresh(), NodeID.fresh()]
     var now = Date(timeIntervalSince1970: 37_421)
     var latency = 10
@@ -170,28 +170,31 @@ struct NodeDetailPresentationTests {
           method: "aes-256-gcm", plugin: nil, pluginOpts: nil)
       }, now: { now },
       measure: { _, _, _ in .success(milliseconds: latency) })
-    func properties(at date: Date) -> NodeDetailPresentation.Properties {
+    func properties() -> NodeDetailPresentation.Properties {
       NodeDetailPresentation.connectivitySummary(
-        module.summary(for: ids, at: date), serverName: { $0 == ids[0] ? name : "Second" },
+        module.summary(for: ids), serverName: { $0 == ids[0] ? name : "Second" },
         locale: Locale(identifier: "en_GB"), timeZone: TimeZone(secondsFromGMT: 0)!)
     }
     await module.wait(for: module.test([ids[0]]))
-    #expect(properties(at: now).items.map(\.value) == ["10 ms", "First", "10:23:41"])
+    #expect(properties().items.map(\.value) == ["10 ms", "First", "10:23:41"])
     name = "Renamed"
-    #expect(properties(at: now).items[1].value == "Renamed")
+    #expect(properties().items[1].value == "Renamed")
     now.addTimeInterval(60)
     latency = 20
     await module.wait(for: module.test([ids[1]]))
-    #expect(properties(at: now).items[1].value == "Renamed")
-    // First expires while Second is still fresh, without another measurement.
+    #expect(properties().items[1].value == "Renamed")
+    // The older result remains the fastest without another measurement.
     #expect(
-      properties(at: now.addingTimeInterval(240)).items.map(\.value) == [
-        "20 ms", "Second", "10:24:41",
+      properties().items.map(\.value) == [
+        "10 ms", "Renamed", "10:23:41",
       ])
     module.networkChanged()
-    #expect(properties(at: now.addingTimeInterval(240)).items[1].value == "Renamed")
+    #expect(
+      properties().items.map(\.value) == [
+        "10 ms", "Renamed", "10:23:41",
+      ])
     module.setURL(URL(string: "http://example.com/check")!)
-    #expect(properties(at: now).items.map(\.value) == [ConnectivityCopy.text("尚未测试")])
+    #expect(properties().items.map(\.value) == [ConnectivityCopy.text("尚未测试")])
   }
 
   private func containsFooter(in view: NSView) -> Bool {

@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Observes only the network observations, with a periodic expiry projection.
+/// Observes the latest connectivity measurements and testing progress.
 struct ConnectivityCell: View {
   @ObservedObject var module: ServerConnectivity
   let node: CatalogTreeNode
@@ -8,43 +8,38 @@ struct ConnectivityCell: View {
   var selected = false
 
   var body: some View {
-    TimelineView(.periodic(from: .now, by: 1)) { context in
-      let value = presentation(at: context.date)
-      HStack(spacing: 5) {
-        Text(value.text)
-          .foregroundStyle(
-            selected
-              ? AnyShapeStyle(
-                Color(nsColor: .alternateSelectedControlTextColor)
-                  .opacity(value.expired ? 0.85 : 1))
-              : AnyShapeStyle(value.expired ? .secondary : .primary))
-        if value.testing {
-          ProgressView().controlSize(.mini)
-            .tint(selected ? Color(nsColor: .alternateSelectedControlTextColor) : nil)
-        }
+    let value = presentation()
+    HStack(spacing: 5) {
+      Text(value.text)
+        .foregroundStyle(
+          selected
+            ? AnyShapeStyle(Color(nsColor: .alternateSelectedControlTextColor))
+            : AnyShapeStyle(.primary))
+      if value.testing {
+        ProgressView().controlSize(.mini)
+          .tint(selected ? Color(nsColor: .alternateSelectedControlTextColor) : nil)
       }
-      .help(value.help)
-      .accessibilityElement(children: .ignore)
-      .accessibilityLabel(Text(ConnectivityCopy.text("响应延迟")))
-      .accessibilityValue(
-        Text(
-          value.text + " " + value.help + (value.testing ? " " + ConnectivityCopy.text("测试中") : ""))
-      )
     }
+    .help(value.help)
+    .accessibilityElement(children: .ignore)
+    .accessibilityLabel(Text(ConnectivityCopy.text("响应延迟")))
+    .accessibilityValue(
+      Text(
+        value.text + " " + value.help + (value.testing ? " " + ConnectivityCopy.text("测试中") : ""))
+    )
   }
 
   private struct Presentation {
     let text: String
     let help: String
-    let expired: Bool
     let testing: Bool
   }
 
-  private func presentation(at date: Date) -> Presentation {
+  private func presentation() -> Presentation {
     let record: ServerConnectivity.Record?
     let text: String
     var prefix = ""
-    let summary = module.summary(for: node.connectivityServerIDs, at: date)
+    let summary = module.summary(for: node.connectivityServerIDs)
     if node.isGroup {
       record = summary.record
       text = record.map { ConnectivityCopy.outcome($0.outcome) } ?? (summary.hasResults ? "—" : "")
@@ -53,15 +48,13 @@ struct ConnectivityCell: View {
       record = module.history(for: node.id).first
       text = record.map { ConnectivityCopy.outcome($0.outcome) } ?? ""
     }
-    let expired = record?.isExpired(at: date) ?? false
     let help =
       record.map {
         prefix + $0.finishedAt.formatted(date: .numeric, time: .standard)
-          + (expired ? " · " + ConnectivityCopy.text("已过期") : "")
       }
       ?? (summary.hasResults && node.isGroup
         ? ConnectivityCopy.text("无成功结果") : ConnectivityCopy.text("尚未测试"))
-    return Presentation(text: text, help: help, expired: expired, testing: summary.isTesting)
+    return Presentation(text: text, help: help, testing: summary.isTesting)
   }
 }
 

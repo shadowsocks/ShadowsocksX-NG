@@ -14,10 +14,6 @@ final class ServerConnectivity: ObservableObject {
     let id = UUID()
     let finishedAt: Date
     let outcome: Outcome
-    var networkExpired = false
-    func isExpired(at date: Date) -> Bool {
-      networkExpired || date.timeIntervalSince(finishedAt) >= 300
-    }
   }
   struct Batch {
     let targets: [NodeID]
@@ -116,15 +112,13 @@ final class ServerConnectivity: ObservableObject {
     }
   }
 
-  func summary(for ids: [NodeID], at date: Date) -> Summary {
+  func summary(for ids: [NodeID]) -> Summary {
     let values = ids.compactMap { id in records[id]?.first.map { (id, $0) } }
     let successes = values.filter {
       if case .success = $0.1.outcome { return true }
       return false
     }
-    let fresh = successes.filter { !$0.1.isExpired(at: date) }
-    let candidates = fresh.isEmpty ? successes : fresh
-    let fastest = candidates.min { lhs, rhs in
+    let fastest = successes.min { lhs, rhs in
       guard case .success(let leftMilliseconds) = lhs.1.outcome,
         case .success(let rightMilliseconds) = rhs.1.outcome
       else {
@@ -152,13 +146,6 @@ final class ServerConnectivity: ObservableObject {
 
   func networkChanged() {
     generation += 1
-    for id in records.keys {
-      records[id] = records[id]?.map { record in
-        var copy = record
-        copy.networkExpired = true
-        return copy
-      }
-    }
     for id in testing { jobs[id]?.cancel() }
   }
 

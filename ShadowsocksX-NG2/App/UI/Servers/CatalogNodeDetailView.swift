@@ -159,12 +159,10 @@ private struct ObservedConnectivityProperties<Content: View>: View {
 
   var body: some View {
     if node.isGroup {
-      TimelineView(.periodic(from: .now, by: 1)) { context in
-        content(
-          NodeDetailPresentation.connectivitySummary(
-            module.summary(for: node.connectivityServerIDs, at: context.date),
-            serverName: serverName, locale: locale, timeZone: timeZone))
-      }
+      content(
+        NodeDetailPresentation.connectivitySummary(
+          module.summary(for: node.connectivityServerIDs),
+          serverName: serverName, locale: locale, timeZone: timeZone))
     } else {
       content(
         NodeDetailPresentation.connectivityHistory(

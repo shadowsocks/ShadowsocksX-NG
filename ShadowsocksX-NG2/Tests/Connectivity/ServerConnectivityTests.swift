@@ -97,13 +97,13 @@ struct ServerConnectivityTests {
     }
     #expect(module.history(for: id).count == 10)
     #expect(module.history(for: id).first?.outcome == .http(302))
-    let summary = module.summary(for: [id], at: now)
+    let summary = module.summary(for: [id])
     #expect(summary.hasResults)
     #expect(summary.record == nil)
     #expect(!summary.isTesting)
   }
 
-  @Test func freshResultsBeatStaleAndTiesUseCatalogOrder() async {
+  @Test func fastestLatestSuccessIgnoresAgeAndTiesUseCatalogOrder() async {
     let ids = (0..<3).map { _ in NodeID.fresh() }
     var now = Date(timeIntervalSince1970: 100)
     var latency = 1
@@ -114,12 +114,14 @@ struct ServerConnectivityTests {
     now.addTimeInterval(300)
     latency = 20
     await module.wait(for: module.test(Array(ids.suffix(2))))
-    #expect(module.summary(for: ids, at: now).serverID == ids[1])
+    let firstRecord = module.history(for: ids[0]).first
+    #expect(module.summary(for: ids).serverID == ids[0])
+    #expect(module.summary(for: Array(ids.suffix(2))).serverID == ids[1])
     module.networkChanged()
-    #expect(module.summary(for: ids, at: now).serverID == ids[0])
-    #expect(module.summary(for: ids, at: now).record?.isExpired(at: now) == true)
+    #expect(module.summary(for: ids).serverID == ids[0])
+    #expect(module.history(for: ids[0]).first == firstRecord)
     module.setURL(URL(string: "https://example.com/new")!)
-    #expect(!module.summary(for: ids, at: now).hasResults)
+    #expect(!module.summary(for: ids).hasResults)
   }
 
   @Test func urlAndNetworkChangesSuppressInFlightAndShutdownDrainsQueuedWork() async {
