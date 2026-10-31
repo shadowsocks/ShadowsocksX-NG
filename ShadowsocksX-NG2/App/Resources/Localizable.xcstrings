@@ -1,6 +1,23 @@
 {
   "sourceLanguage": "zh-Hans",
   "strings": {
+    "显示状态栏运行状态圆点": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show runtime status dots in the menu bar"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "显示状态栏运行状态圆点"
+          }
+        }
+      }
+    },
     "服务器库无法读取": {
       "extractionState": "manual",
       "localizations": {

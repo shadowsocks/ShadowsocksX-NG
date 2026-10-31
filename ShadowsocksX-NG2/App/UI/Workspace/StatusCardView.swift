@@ -67,6 +67,7 @@ struct StatusMenuLabel: View {
   let statusDisplay: StatusDisplayModel
   @Environment(\.colorScheme) private var colorScheme
   @Environment(\.displayScale) private var displayScale
+  @AppStorage("showStatusBarRuntimeDots") private var showStatusBarRuntimeDots = true
 
   var body: some View {
     Image(nsImage: statusImage)
@@ -85,9 +86,11 @@ struct StatusMenuLabel: View {
           .font(.system(size: 16))
           .foregroundStyle(.primary)
           .frame(width: 18, height: 18)
-        VStack(spacing: 5) {
-          RuntimeStatusDot(tone: statusDisplay.agent.row.tone, diameter: 4)
-          RuntimeStatusDot(tone: statusDisplay.systemProxy.row.tone, diameter: 4)
+        if showStatusBarRuntimeDots {
+          VStack(spacing: 5) {
+            RuntimeStatusDot(tone: statusDisplay.agent.row.tone, diameter: 4)
+            RuntimeStatusDot(tone: statusDisplay.systemProxy.row.tone, diameter: 4)
+          }
         }
       }
       .environment(\.colorScheme, colorScheme))

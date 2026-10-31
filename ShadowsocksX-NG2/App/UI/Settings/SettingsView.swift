@@ -9,6 +9,7 @@ struct SettingsView: View {
   @ObservedObject var loginController: LaunchAtLoginController
   @ObservedObject var silentLaunch: SilentLaunchController
   @State private var presentedEditor: SettingsEditorSheet?
+  @AppStorage("showStatusBarRuntimeDots") private var showStatusBarRuntimeDots = true
 
   var body: some View {
     Form {
@@ -69,6 +70,9 @@ struct SettingsView: View {
         .toggleStyle(.switch)
       }
       .padding(.vertical, 4)
+      Toggle("显示状态栏运行状态圆点", isOn: $showStatusBarRuntimeDots)
+        .toggleStyle(.switch)
+        .padding(.vertical, 4)
       LanguageSettingsRow()
     } header: {
       sectionHeader(String(localized: "常规"))
