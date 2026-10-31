@@ -6,9 +6,9 @@
 
 规则模式使用的内置快照是显式维护产物：
 
-- **geolocation-cn**（issue #63）：人工复验上游后运行 `Scripts/update-geolocation-cn.sh`，从固定版 [Loyalsoldier/domain-list-custom](https://github.com/Loyalsoldier/domain-list-custom) `geosite.dat` 解析 typed 条目并生成 `Vendor/rules/geolocation-cn/snapshot.json`。
-- **china-ipv4**（issue #64）：运行 `Scripts/update-china-ipv4.sh`，从固定版 [gaoyifan/china-operator-ip](https://github.com/gaoyifan/china-operator-ip) `china.txt` 规范化并去重 IPv4 CIDR，生成 `Vendor/rules/china-ipv4/snapshot.json`。
-- **gfwlist**（issue #65）：运行 `Scripts/update-gfwlist.sh`，从固定版 [gfwlist/gfwlist](https://github.com/gfwlist/gfwlist) `gfwlist.txt` 解码官方 Base64 AutoProxy 列表并生成 `Vendor/rules/gfwlist/snapshot.json`。`||host` / `||host^` 转换为域名后缀匹配；`|scheme://host`（可含合法端口）在路径为空或仅为 `/`，无查询、fragment 或用户信息，且 host 为无通配符的合法域名时，提取 host 转换为精确域名匹配，忽略协议和端口。仅含根路径 `/` 可转换，包含具体路径的规则继续跳过。`@@` 保留直连动作。其他 URL 前缀、路径、通配符、正则、单标签前缀与 IP 字面量规则逐类计入损失报告。被代理规则完全覆盖的 `@@` 例外不写入无效 ACL 项（sslocal 域名匹配 proxy_list 优先于 bypass_list），保留代理规则，遮蔽数只计入 `absorbedCount`；逐条取证输出到维护脚本 stdout。
+- **geolocation-cn**：人工复验上游后运行 `Scripts/update-geolocation-cn.sh`，从固定版 [Loyalsoldier/domain-list-custom](https://github.com/Loyalsoldier/domain-list-custom) `geosite.dat` 解析 typed 条目并生成 `Vendor/rules/geolocation-cn/snapshot.json`。
+- **china-ipv4**：运行 `Scripts/update-china-ipv4.sh`，从固定版 [gaoyifan/china-operator-ip](https://github.com/gaoyifan/china-operator-ip) `china.txt` 规范化并去重 IPv4 CIDR，生成 `Vendor/rules/china-ipv4/snapshot.json`。
+- **gfwlist**：运行 `Scripts/update-gfwlist.sh`，从固定版 [gfwlist/gfwlist](https://github.com/gfwlist/gfwlist) `gfwlist.txt` 解码官方 Base64 AutoProxy 列表并生成 `Vendor/rules/gfwlist/snapshot.json`。`||host` / `||host^` 转换为域名后缀匹配；`|scheme://host`（可含合法端口）在路径为空或仅为 `/`，无查询、fragment 或用户信息，且 host 为无通配符的合法域名时，提取 host 转换为精确域名匹配，忽略协议和端口。仅含根路径 `/` 可转换，包含具体路径的规则继续跳过。`@@` 保留直连动作。其他 URL 前缀、路径、通配符、正则、单标签前缀与 IP 字面量规则逐类计入损失报告。被代理规则完全覆盖的 `@@` 例外不写入无效 ACL 项（sslocal 域名匹配 proxy_list 优先于 bypass_list），保留代理规则，遮蔽数只计入 `absorbedCount`；逐条取证输出到维护脚本 stdout。
 
 快照使用 schema 2 / converter 2.0.0 的紧凑 JSON：每条规则只有 `action` 和 `match`，来源只在 `metadata.source`，转换报告只保留计数。被吸收的 `.cn` 条目与被遮蔽的 GFWList 例外不随快照分发，禁用宽规则后不再恢复；详见 [ADR-0024](adr/0024-snapshot-drops-absorbed-and-forensics.md)。旧版本快照拒载。
 
