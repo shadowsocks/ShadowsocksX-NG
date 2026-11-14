@@ -1,0 +1,45 @@
+name: CodeQL
+
+on:
+  push:
+    branches: [develop, master]
+  pull_request:
+    branches: [develop, master]
+  schedule:
+    - cron: '30 2 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  analyze:
+    name: Analyze Swift
+    runs-on: xcode-27
+    timeout-minutes: 60
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up dependencies
+        uses: ./.github/actions/setup-ng2
+        with:
+          packages: age go-task xcodegen
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@5895b2c9be147bc7f1c75ce72c5cb577febb1907 # v4
+        with:
+          languages: swift
+          build-mode: manual
+
+      - name: Build
+        working-directory: ShadowsocksX-NG2
+        run: task build DERIVED_DATA_DIR="$(mktemp -d "${RUNNER_TEMP}/codeql-derived-data.XXXXXX")"
+
+      - name: Analyze
+        uses: github/codeql-action/analyze@5895b2c9be147bc7f1c75ce72c5cb577febb1907 # v4
+        with:
+          category: /language:swift
