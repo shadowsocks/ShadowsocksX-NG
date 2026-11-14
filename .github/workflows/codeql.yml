@@ -16,7 +16,10 @@ permissions:
 jobs:
   analyze:
     name: Analyze Swift
-    runs-on: xcode-27
+    # CodeQL build tracing does not support macOS 27 or Xcode 27.
+    runs-on: macos-26
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.4.1.app/Contents/Developer
     timeout-minutes: 60
     steps:
       - name: Check out source
