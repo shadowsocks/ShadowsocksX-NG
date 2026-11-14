@@ -121,6 +121,8 @@ tasks:
 
   build:
     desc: Build the ShadowsocksX-NG2 macOS application with Debug Config
+    vars:
+      BUILD_DESTINATION: '{{default "platform=macOS,arch=arm64" .BUILD_DESTINATION}}'
     deps:
       - gen:prj
     cmds:
@@ -129,7 +131,7 @@ tasks:
         -project ShadowsocksX-NG2.xcodeproj
         -scheme ShadowsocksX-NG2
         -configuration Debug
-        -destination 'platform=macOS,arch=arm64'
+        -destination {{.BUILD_DESTINATION | shellQuote}}
         -derivedDataPath {{.DERIVED_DATA_DIR | shellQuote}}
         {{if .RESULT_BUNDLE_PATH}}-resultBundlePath {{.RESULT_BUNDLE_PATH | shellQuote}}{{end}}
         SWIFT_SUPPRESS_WARNINGS=NO SWIFT_TREAT_WARNINGS_AS_ERRORS=YES GCC_TREAT_WARNINGS_AS_ERRORS=YES

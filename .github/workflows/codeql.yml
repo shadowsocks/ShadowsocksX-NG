@@ -40,7 +40,10 @@ jobs:
 
       - name: Build
         working-directory: ShadowsocksX-NG2
-        run: task build DERIVED_DATA_DIR="$(mktemp -d "${RUNNER_TEMP}/codeql-derived-data.XXXXXX")"
+        run: >-
+          task build
+          BUILD_DESTINATION=generic/platform=macOS
+          DERIVED_DATA_DIR="$(mktemp -d "${RUNNER_TEMP}/codeql-derived-data.XXXXXX")"
 
       - name: Analyze
         uses: github/codeql-action/analyze@5895b2c9be147bc7f1c75ce72c5cb577febb1907 # v4
