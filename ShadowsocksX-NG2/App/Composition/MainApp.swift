@@ -59,8 +59,7 @@ struct ShadowsocksXNG2App: App {
 
   var body: some Scene {
     MenuBarExtra {
-      ProxyStatusMenu(
-        control: proxyControl, statusDisplay: statusDisplay)
+      ProxyStatusMenu()
     } label: {
       StatusMenuLabel(control: proxyControl, statusDisplay: statusDisplay)
     }
