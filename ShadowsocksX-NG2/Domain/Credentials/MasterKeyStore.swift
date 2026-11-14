@@ -51,10 +51,12 @@ struct KeychainCredentialKeyStore: CredentialKeyStoring {
     }
   }
 
-  @diagnose(
-    DeprecatedDeclaration, as: ignored,
-    reason: "经典登录钥匙串使用 SecAccess ACL 限制获准应用访问"
-  )
+  #if compiler(>=6.4)
+    @diagnose(
+      DeprecatedDeclaration, as: ignored,
+      reason: "经典登录钥匙串使用 SecAccess ACL 限制获准应用访问"
+    )
+  #endif
   func create(_ data: Data, id: UUID, allowingInteraction: Bool) throws {
     try withClassicKeychainInteraction(allowingInteraction) {
       var application: SecTrustedApplication?
@@ -94,10 +96,12 @@ struct KeychainCredentialKeyStore: CredentialKeyStoring {
 }
 
 /// 经典钥匙串使用进程级交互开关。同步调用结束后恢复原值，不把交互许可留给后台操作。
-@diagnose(
-  DeprecatedDeclaration, as: ignored,
-  reason: "经典登录钥匙串需要显式控制交互许可，并在同步操作结束后恢复原值"
-)
+#if compiler(>=6.4)
+  @diagnose(
+    DeprecatedDeclaration, as: ignored,
+    reason: "经典登录钥匙串需要显式控制交互许可，并在同步操作结束后恢复原值"
+  )
+#endif
 private func withClassicKeychainInteraction<T>(_ allowed: Bool, _ operation: () throws -> T) throws
   -> T
 {
