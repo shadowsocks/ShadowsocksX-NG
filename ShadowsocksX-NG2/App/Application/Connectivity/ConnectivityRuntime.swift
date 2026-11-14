@@ -218,11 +218,15 @@ struct ConnectivityRuntime {
     for descriptor in [STDIN_FILENO, STDOUT_FILENO, STDERR_FILENO] {
       posix_spawn_file_actions_addopen(&actions, descriptor, "/dev/null", O_RDWR, 0)
     }
-    let strings = [executable.path, "-c", config.path].map { strdup($0) }
+    var strings: [UnsafeMutablePointer<CChar>?] = []
     defer {
       for string in strings {
         free(string)
       }
+    }
+    for argument in [executable.path, "-c", config.path] {
+      guard let string = strdup(argument) else { throw RuntimeError.failed }
+      strings.append(string)
     }
     var argv = strings + [nil]
     var pid: pid_t = 0
