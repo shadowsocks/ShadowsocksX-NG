@@ -1,13 +1,19 @@
-name: CodeQL
+name: ShadowsocksX-NG2 CodeQL
 
 on:
   push:
     branches: [develop, master]
+    paths:
+      - "ShadowsocksX-NG2/**"
   pull_request:
     branches: [develop, master]
+    paths:
+      - "ShadowsocksX-NG2/**"
   schedule:
     - cron: '30 2 * * 1'
   workflow_dispatch:
+    paths:
+      - "ShadowsocksX-NG2/**"
 
 permissions:
   contents: read

@@ -3,9 +3,15 @@ name: ShadowsocksX-NG2 CI
 on:
   pull_request:
     branches: [develop, master]
+    paths:
+      - "ShadowsocksX-NG2/**"
   push:
     branches: [develop, master]
+    paths:
+      - "ShadowsocksX-NG2/**"
   workflow_dispatch:
+    paths:
+      - "ShadowsocksX-NG2/**"
 
 permissions:
   contents: read
