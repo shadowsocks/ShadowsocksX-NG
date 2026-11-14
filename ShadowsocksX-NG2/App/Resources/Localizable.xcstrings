@@ -2024,6 +2024,23 @@
         }
       }
     },
+    "反馈…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Feedback…"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "反馈…"
+          }
+        }
+      }
+    },
     "诊断…": {
       "extractionState": "manual",
       "localizations": {

@@ -1,9 +1,10 @@
 import AppKit
 import SwiftUI
 
-/// 菜单栏面板：窗口入口与退出。
+/// 菜单栏面板：窗口入口、反馈与退出。
 struct ProxyStatusMenu: View {
   @Environment(\.openWindow) private var openWindow
+  @Environment(\.openURL) private var openURL
   /// 只捕获本面板的宿主窗口，打开主窗口时不会误关其他窗口。
   @State private var windowAnchor = NSView(frame: .zero)
 
@@ -20,6 +21,16 @@ struct ProxyStatusMenu: View {
         windowAnchor.window?.orderOut(nil)
         NSApp.activate(ignoringOtherApps: true)
         openWindow(id: DiagnosticsWindowState.sceneID)
+      }
+      .padding(12)
+
+      Divider()
+
+      Button("反馈…") {
+        windowAnchor.window?.orderOut(nil)
+        if let url = URL(string: "https://github.com/shadowsocks/ShadowsocksX-NG/discussions") {
+          openURL(url)
+        }
       }
       .padding(12)
 
