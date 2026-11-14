@@ -134,7 +134,8 @@ tasks:
         -destination {{.BUILD_DESTINATION | shellQuote}}
         -derivedDataPath {{.DERIVED_DATA_DIR | shellQuote}}
         {{if .RESULT_BUNDLE_PATH}}-resultBundlePath {{.RESULT_BUNDLE_PATH | shellQuote}}{{end}}
-        SWIFT_SUPPRESS_WARNINGS=NO SWIFT_TREAT_WARNINGS_AS_ERRORS=YES GCC_TREAT_WARNINGS_AS_ERRORS=YES
+        SWIFT_SUPPRESS_WARNINGS=NO SWIFT_TREAT_WARNINGS_AS_ERRORS={{if .BUILD_ALLOW_DEPRECATED}}NO{{else}}YES{{end}} GCC_TREAT_WARNINGS_AS_ERRORS=YES
+        {{if .BUILD_ALLOW_DEPRECATED}}OTHER_SWIFT_FLAGS='-warnings-as-errors -Wwarning DeprecatedDeclaration'{{end}}
         build
 
   build:release:
