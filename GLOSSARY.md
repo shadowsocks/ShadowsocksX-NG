@@ -15,6 +15,9 @@
 **服务器配置（Server configuration）**：
 一个 Shadowsocks 服务器的连接资料，包含用户可见名称、来源归属和持久身份，是配置目录中的叶节点。
 
+**已弃用的加密方式（Deprecated cipher）**：
+Shadowsocks 已弃用、客户端为连接旧服务器而继续支持的流密码。
+
 **配置组（Configuration group）**：
 具有名称和子节点顺序的容器，可包含服务器配置和嵌套配置组；每个节点最多属于一个父节点，组之间不形成环。
 

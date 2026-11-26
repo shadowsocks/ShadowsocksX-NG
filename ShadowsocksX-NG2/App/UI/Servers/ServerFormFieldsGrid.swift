@@ -2,12 +2,14 @@ import SwiftUI
 
 struct ServerFormFieldsGrid: View {
   @ObservedObject var fields: ServerFormFields
+  @AppStorage("allowDeprecatedCiphers") private var allowDeprecatedCiphers = false
   let plugin: PluginSectionState?
   let isEditable: Bool
   let fieldFocus: FocusState<ServerFormField?>.Binding
   var location: CreationLocationField?
 
   var body: some View {
+    let methods = fields.methodChoices(allowDeprecated: allowDeprecatedCiphers)
     VStack(alignment: .leading, spacing: 18) {
       row("名称") {
         TextField("名称", text: $fields.remark, prompt: Text("例如：香港服务器"))
@@ -34,8 +36,14 @@ struct ServerFormFieldsGrid: View {
         }
       }
       Picker("加密方式", selection: $fields.encryptionMethod) {
-        ForEach(fields.methodChoices, id: \.self) { Text($0).tag($0) }
+        ForEach(methods.ungrouped, id: \.self) { Text($0).tag($0) }
+        if !methods.deprecated.isEmpty {
+          Section("已弃用") {
+            ForEach(methods.deprecated, id: \.self) { Text($0).tag($0) }
+          }
+        }
       }
+      .pickerStyle(.menu)
       .disabled(!isEditable)
       row("密码") {
         HStack(spacing: 8) {

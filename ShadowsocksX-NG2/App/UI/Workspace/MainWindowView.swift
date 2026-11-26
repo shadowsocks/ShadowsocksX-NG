@@ -45,19 +45,32 @@ struct MainWindowView: View {
   @State private var presentedWorkspaceSheet: WorkspaceSheet?
 
   var body: some View {
+    // 工作区页面固定：macOS 26.7.2 的动态 ForEach<Tab> 在重复刷新时会
+    // 累积标签投影与观察记录；静态声明避免这条增长路径。
     TabView(selection: $tabSelection) {
-      ForEach(WorkspaceDestination.allCases) { destination in
-        Tab(destination.label, systemImage: destination.systemImage, value: destination) {
-          if route.destination == destination {
-            if let failure = workflow.libraryFailure,
-              destination == .home || destination == .servers
-            {
-              ServerLibraryRecoveryView(workflow: workflow, failure: failure)
-            } else {
-              destinationView(destination)
-            }
-          }
-        }
+      Tab(
+        WorkspaceDestination.home.label, systemImage: WorkspaceDestination.home.systemImage,
+        value: WorkspaceDestination.home
+      ) {
+        activeDestinationView(.home)
+      }
+      Tab(
+        WorkspaceDestination.servers.label, systemImage: WorkspaceDestination.servers.systemImage,
+        value: WorkspaceDestination.servers
+      ) {
+        activeDestinationView(.servers)
+      }
+      Tab(
+        WorkspaceDestination.rules.label, systemImage: WorkspaceDestination.rules.systemImage,
+        value: WorkspaceDestination.rules
+      ) {
+        activeDestinationView(.rules)
+      }
+      Tab(
+        WorkspaceDestination.settings.label, systemImage: WorkspaceDestination.settings.systemImage,
+        value: WorkspaceDestination.settings
+      ) {
+        activeDestinationView(.settings)
       }
     }
     .tabViewStyle(.automatic)
@@ -122,6 +135,19 @@ struct MainWindowView: View {
   }
 
   // MARK: - 分区承载
+
+  @ViewBuilder
+  private func activeDestinationView(_ destination: WorkspaceDestination) -> some View {
+    if route.destination == destination {
+      if let failure = workflow.libraryFailure,
+        destination == .home || destination == .servers
+      {
+        ServerLibraryRecoveryView(workflow: workflow, failure: failure)
+      } else {
+        destinationView(destination)
+      }
+    }
+  }
 
   @ViewBuilder
   private func destinationView(_ destination: WorkspaceDestination) -> some View {

@@ -170,7 +170,7 @@ protocol ProxyTargetFactsReading: AnyObject {
 /// 诊断与导出仍由 DiagnosticsWorkflow 负责。
 @MainActor
 final class ProxyControlWorkflow: ObservableObject {
-  /// 最新整体 snapshot（唯一读取面；每次观察整体替换）。
+  /// 最新整体 snapshot（唯一读取面；事实变化时整体替换）。
   @Published private(set) var snapshot: ProxyControlSnapshot
 
   private let runtime: any ProxyRuntimeAdapting
@@ -305,7 +305,10 @@ final class ProxyControlWorkflow: ObservableObject {
       runtime: runtime, targetFacts: targetFacts, interfaceFacts: interfaceFacts,
       selection: commandAddressSelection)
     commandAddressSelection = observation.selection
-    snapshot = observation.snapshot
+    // 健康轮询可能重复通知同一组事实；不让无变化的观察触发整个 UI 刷新。
+    if observation.snapshot != snapshot {
+      snapshot = observation.snapshot
+    }
     return snapshot
   }
 

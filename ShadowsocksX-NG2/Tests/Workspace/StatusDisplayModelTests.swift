@@ -5,8 +5,8 @@ import Testing
 @testable import ShadowsocksX_NG2
 
 /// 状态显示 debounce 呈现模型：代理服务与系统代理两个意图的呈现 payload
-/// 从整体 snapshot 派生后经瞬态门控发布。断言用语义色调与结构（detail 空
-/// 非空、hint 变化），不断言具体本地化文案。
+/// 从整体 snapshot 派生后经瞬态门控发布。断言用语义色调与结构（detail/hint
+/// 空非空），不断言具体本地化文案。
 @MainActor
 struct StatusDisplayModelTests {
   private let runningFacts = ProxyRuntimeFacts(status: .running, isOn: true)
@@ -106,6 +106,7 @@ struct StatusDisplayModelTests {
     #expect(!model.systemProxy.isPaused)
     snapshots.send(makeSnapshot(systemProxyApplication: .paused))
     #expect(model.systemProxy.detail != nil, "暂停说明保留在 detail（面板渲染）")
+    #expect(model.systemProxy.hint == model.systemProxy.detail?.text, "暂停提示与 detail 同文")
     #expect(model.systemProxy.isPaused, "首页据此抑制 detail（hint 已是暂停说明）")
     #expect(model.systemProxy.row.tone == .attention)
   }
@@ -116,10 +117,23 @@ struct StatusDisplayModelTests {
       makeSnapshot(systemProxyApplication: .idle))
     let model = StatusDisplayModel(
       snapshots: snapshots, interval: 0.4, now: { 0 }, sleep: { _ in })
-    let idleHint = model.systemProxy.hint
+    #expect(model.systemProxy.hint == nil)
     snapshots.send(makeSnapshot(systemProxyApplication: .idle, approvalRequired: true))
-    #expect(model.systemProxy.hint != idleHint)
+    #expect(model.systemProxy.hint != nil)
     #expect(model.systemProxy.row.tone == .neutral)
+  }
+
+  /// 说明文案只解释卡片别处没有的异常：正常态、等待态，以及已由状态行与
+  /// 点名原因/接口名单说明的异常（失败、配置已改变、无法检查）都不带 hint。
+  @Test(arguments: [
+    SystemProxyApplicationFacts.idle, .pending, .applied, .applying, .repairing,
+    .changed, .failed(.unknown), .repairFailed(.unknown), .clearFailed(.unknown),
+    .unreadable(.unknown),
+  ])
+  func statesExplainedElsewhereCarryNoHint(application: SystemProxyApplicationFacts) {
+    let status = StatusDisplayModel.systemProxyStatus(
+      from: makeSnapshot(systemProxyApplication: application))
+    #expect(status.hint == nil)
   }
 
   /// 从运行时事实构造最小 snapshot（其余字段与本组用例无关；与

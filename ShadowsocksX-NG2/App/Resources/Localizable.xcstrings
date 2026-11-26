@@ -18,6 +18,57 @@
         }
       }
     },
+    "允许手动选择已弃用的加密方式": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allow manual selection of deprecated ciphers"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "允许手动选择已弃用的加密方式"
+          }
+        }
+      }
+    },
+    "关闭后，使用这些加密方式的现有服务器仍可连接。": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Existing servers that use these ciphers can still connect when this setting is off."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "关闭后，使用这些加密方式的现有服务器仍可连接。"
+          }
+        }
+      }
+    },
+    "已弃用": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deprecated"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已弃用"
+          }
+        }
+      }
+    },
     "服务器库无法读取": {
       "extractionState": "manual",
       "localizations": {
@@ -3918,23 +3969,6 @@
         }
       }
     },
-    "规则/全局模式需要可用的活动服务器": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "规则/全局模式需要可用的活动服务器"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Rule/Global modes require an available active server"
-          }
-        }
-      }
-    },
     "再次导入旧版本服务器": {
       "extractionState": "manual",
       "localizations": {
@@ -5066,23 +5100,6 @@
         }
       }
     },
-    "已请求应用系统代理，等待本地入口就绪；%@": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "已请求应用系统代理，等待本地入口就绪；%@"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "System proxy requested; waiting for local listeners; %@"
-          }
-        }
-      }
-    },
     "常规": {
       "extractionState": "manual",
       "localizations": {
@@ -5202,23 +5219,6 @@
         }
       }
     },
-    "开启后让 macOS 系统代理指向本地入口；%@": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "开启后让 macOS 系统代理指向本地入口；%@"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Point the macOS system proxy to local listeners when enabled; %@"
-          }
-        }
-      }
-    },
     "当前 sslocal 不支持该加密方法": {
       "extractionState": "manual",
       "localizations": {
@@ -5283,23 +5283,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "This port is occupied"
-          }
-        }
-      }
-    },
-    "当前系统代理配置与预期存在差异": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "当前系统代理配置与预期存在差异"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Current system proxy settings differ from the expected settings"
           }
         }
       }
@@ -5644,23 +5627,6 @@
         }
       }
     },
-    "操作失败，原因见下方": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "操作失败，原因见下方"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Operation failed. See the reason below."
-          }
-        }
-      }
-    },
     "操作失败，请重试或检查设置": {
       "extractionState": "manual",
       "localizations": {
@@ -5844,23 +5810,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Unable to inspect"
-          }
-        }
-      }
-    },
-    "无法检查当前系统代理配置": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "无法检查当前系统代理配置"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Unable to inspect current system proxy settings"
           }
         }
       }
@@ -6557,23 +6506,6 @@
         }
       }
     },
-    "正在修复系统代理配置…": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "正在修复系统代理配置…"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Repairing system proxy settings…"
-          }
-        }
-      }
-    },
     "正在启动代理客户端…": {
       "extractionState": "manual",
       "localizations": {
@@ -6587,23 +6519,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Starting proxy client…"
-          }
-        }
-      }
-    },
-    "正在应用系统代理配置…": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "正在应用系统代理配置…"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Applying system proxy settings…"
           }
         }
       }
@@ -6965,23 +6880,6 @@
         }
       }
     },
-    "直连模式不依赖活动服务器": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "直连模式不依赖活动服务器"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Direct mode does not require an active server"
-          }
-        }
-      }
-    },
     "直连模式无需选择活动目标": {
       "extractionState": "manual",
       "localizations": {
@@ -7233,23 +7131,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "System proxy applied"
-          }
-        }
-      }
-    },
-    "系统代理已指向本地入口": {
-      "extractionState": "manual",
-      "localizations": {
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "系统代理已指向本地入口"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "System proxy points to local listeners"
           }
         }
       }

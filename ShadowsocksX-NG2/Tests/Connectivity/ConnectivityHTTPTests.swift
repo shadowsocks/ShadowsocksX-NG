@@ -138,25 +138,28 @@ struct ConnectivityHTTPTests {
   }
 
   @Test func cancellationEndsRequestWithoutWaitingForHeaders() async throws {
-    let proxy = try HeaderProxy()
+    let requestReceived = TestAsyncGate("HTTP proxy request")
+    let proxy = try HeaderProxy(onRequest: { requestReceived.release() })
     defer { proxy.stop() }
     let port = try await proxy.start()
     let id = NodeID.fresh()
+    var observation: ConnectivityHTTPObservation?
     let module = ServerConnectivity(
       configuration: { _ in Self.server },
       measure: { _, url, _ in
-        await ConnectivityHTTPRequest().perform(url: url, proxyPort: port)
+        let result = await ConnectivityHTTPRequest().observe(
+          url: url, targetIP: nil, proxyPort: port, timeout: 5)
+        observation = result
+        return result.outcome
       })
     module.setURL(URL(string: "http://target.invalid/test")!)
     let batch = module.test([id])
-    let pendingDeadline = ContinuousClock.now.advanced(by: .seconds(2))
-    while proxy.requests.isEmpty, ContinuousClock.now < pendingDeadline {
-      try await Task.sleep(for: .milliseconds(5))
-    }
-    #expect(proxy.requests.count == 1)
-    let cancelledAt = ContinuousClock.now
+    _ = await requestReceived.wait()
     await module.shutdown()
-    #expect(ContinuousClock.now - cancelledAt < .seconds(1))
+    #expect(proxy.requests.count == 1)
+    // The silent proxy can only return by cancellation or by reaching the request deadline.
+    #expect(observation?.outcome == .network)
+    #expect(observation?.failureStage == "first_byte")
     await module.wait(for: batch)
     #expect(module.history(for: id).isEmpty)
     #expect(module.isCooling(id))
@@ -172,13 +175,15 @@ struct ConnectivityHTTPTests {
 private final class HeaderProxy: @unchecked Sendable {
   private let listener: NWListener
   private let response: String?
+  private let onRequest: @Sendable () -> Void
   private let lock = NSLock()
   private var received: [String] = []
   private var connections: [NWConnection] = []
   var requests: [String] { lock.withLock { received } }
 
-  init(response: String? = nil) throws {
+  init(response: String? = nil, onRequest: @escaping @Sendable () -> Void = {}) throws {
     self.response = response
+    self.onRequest = onRequest
     listener = try NWListener(using: .tcp, on: .any)
   }
 
@@ -187,7 +192,10 @@ private final class HeaderProxy: @unchecked Sendable {
       lock.withLock { connections.append(connection) }
       connection.start(queue: DispatchQueue(label: UUID().uuidString))
       connection.receive(minimumIncompleteLength: 1, maximumLength: 65536) { [self] data, _, _, _ in
-        if let data { lock.withLock { received.append(String(data: data, encoding: .utf8) ?? "") } }
+        if let data {
+          lock.withLock { received.append(String(data: data, encoding: .utf8) ?? "") }
+          onRequest()
+        }
         if let response {
           connection.send(content: Data(response.utf8), completion: .contentProcessed { _ in })
         }
