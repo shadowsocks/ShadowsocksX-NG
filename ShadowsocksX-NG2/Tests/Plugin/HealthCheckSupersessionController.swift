@@ -5,7 +5,7 @@ import Foundation
 @MainActor
 func makeHealthCheckSupersessionController(
   runtime: ProxyRuntimeFixture.TemporaryRuntime, catalogFile: URL, plugins: PluginCatalog,
-  agent: ProxyRuntimeFixture.FakeLaunchAgent, probe: ProxyRuntimeFixture.BlockingProbe
+  agent: ProxyRuntimeFixture.FakeLaunchAgent, probe: any EndpointProbing
 ) -> ProxyRuntimeController {
   let directory = runtime.directory
   let files = RuntimeFileStore(fileURL: runtime.contract)

@@ -1,6 +1,5 @@
 import Foundation
 import Testing
-import XCTest
 
 @testable import ShadowsocksX_NG2
 
@@ -215,25 +214,19 @@ struct PluginCatalogTests {
     try makeTestCatalogStore(fileURL: catalogFile).save(CatalogDocument(catalog: catalog))
     let agent = ProxyRuntimeFixture.FakeLaunchAgent()
     let files = RuntimeFileStore(fileURL: runtime.contract)
-    let probe = ProxyRuntimeFixture.BlockingProbe()
+    var mappingUpdate: Result<Void, any Error>?
+    let probe = MappingUpdateProbe {
+      guard mappingUpdate == nil else { return }
+      #expect(files.loadDocument()?.servers.first?.plugin == first.path)
+      mappingUpdate = Result { try plugins.updatePlugin(program: "tool", path: second.path) }
+    }
     let controller = makeHealthCheckSupersessionController(
       runtime: runtime, catalogFile: catalogFile, plugins: plugins, agent: agent, probe: probe)
-    let started = XCTestExpectation(description: "old runtime entered health check")
-    probe.arm(started: started)
     plugins.connect(
-      invalidateRuntime: { controller.pluginMappingsDidPublish() }, revalidate: {}, converge: {})
-    let oldActivation = Task { try await controller.activate(id) }
-    do {
-      try await requireTestPhase([started])
-      try plugins.updatePlugin(program: "tool", path: second.path)
-      probe.release()
-      _ = try await oldActivation.value
-    } catch {
-      probe.release()
-      oldActivation.cancel()
-      _ = await oldActivation.result
-      throw error
-    }
+      invalidateRuntime: { [weak controller] in controller?.pluginMappingsDidPublish() },
+      revalidate: {}, converge: {})
+    _ = try await controller.activate(id)
+    try #require(mappingUpdate, "The old runtime must reach the health probe").get()
     // A later successful deployment must not hide stale health-check side effects.
     #expect(controller.state == .starting)
     #expect(files.readFailure() == nil)
@@ -244,6 +237,15 @@ struct PluginCatalogTests {
     #expect(controller.state == .running)
   }
 
+}
+
+private struct MappingUpdateProbe: EndpointProbing {
+  let updateMapping: @MainActor @Sendable () -> Void
+
+  func probe(host: String, port: Int, timeout: TimeInterval) async -> EndpointHealthProbe.Outcome {
+    await updateMapping()
+    return .reachable
+  }
 }
 
 struct PluginCatalogSecurityTests {
