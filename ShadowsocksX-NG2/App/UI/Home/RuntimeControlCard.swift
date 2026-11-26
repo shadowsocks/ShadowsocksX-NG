@@ -39,10 +39,12 @@ struct RuntimeControlCard: View {
           }
           .toggleStyle(.switch)
           statusRow(statusDisplay.systemProxy.row)
-          Text(statusDisplay.systemProxy.hint)
-            .font(.caption)
-            .foregroundStyle(.secondary)
-            .fixedSize(horizontal: false, vertical: true)
+          if let hint = statusDisplay.systemProxy.hint {
+            Text(hint)
+              .font(.caption)
+              .foregroundStyle(.secondary)
+              .fixedSize(horizontal: false, vertical: true)
+          }
           if systemProxyApprovalNeeded {
             Button("在登录项中批准…") {
               Task { await control.openSystemProxyHelperApproval() }

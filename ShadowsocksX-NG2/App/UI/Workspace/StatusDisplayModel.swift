@@ -18,13 +18,16 @@ final class StatusDisplayModel {
     let detail: StatusCardModel.DetailLine?
   }
 
-  /// 系统代理意图的状态呈现：状态行、点名原因与运行控制卡说明文案。
+  /// 系统代理意图的状态呈现：状态行、点名原因与运行控制卡说明文案（仅
+  /// 异常态有）。
   struct SystemProxyStatus: Equatable {
     let row: StatusCardModel.Row
     /// 点名原因不在此抑制：面板把它作为暂停说明行渲染，首页按 isPaused
     /// 抑制（沿两侧原有口径）。
     let detail: StatusCardModel.DetailLine?
-    let hint: String
+    /// 运行控制卡的说明文案，只解释卡片别处没有的异常（助手待批准、
+    /// 已暂停）；其余状态为 nil，由状态行与其下的点名原因/接口名单说明。
+    let hint: String?
     /// 已暂停时详情与提示文案重复（hint 已是暂停说明），首页据此不渲染
     /// detail；面板无 hint，仍渲染 detail 作为暂停说明。
     let isPaused: Bool
@@ -66,7 +69,7 @@ final class StatusDisplayModel {
   ) where Snapshots.Output == ProxyControlSnapshot, Snapshots.Failure == Never {
     agent = AgentStatus(row: .init(label: "", text: "", tone: .neutral), detail: nil)
     systemProxy = SystemProxyStatus(
-      row: .init(label: "", text: "", tone: .neutral), detail: nil, hint: "", isPaused: false)
+      row: .init(label: "", text: "", tone: .neutral), detail: nil, hint: nil, isPaused: false)
     agentGate = TransientDelayGate(interval: interval, now: now, sleep: sleep)
     systemProxyGate = TransientDelayGate(interval: interval, now: now, sleep: sleep)
     // 存储属性至此完整初始化，显示回调才可捕获 self。
@@ -109,34 +112,16 @@ final class StatusDisplayModel {
     application == .applying || application == .repairing
   }
 
-  /// 运行控制卡的说明文案（原视图内派生移入，随系统代理流一起门控/去重）。
-  private static func systemProxyHint(from snapshot: ProxyControlSnapshot) -> String {
-    let exitRequirement =
-      snapshot.proxyMode == .direct
-      ? String(localized: "直连模式不依赖活动服务器")
-      : String(localized: "规则/全局模式需要可用的活动服务器")
+  /// 运行控制卡的说明文案只解释卡片别处没有的异常：助手待批准优先——
+  /// 失败点名因「仅未批准」被抑制时它是唯一说明；其次已暂停。其余状态
+  /// （含等待态）由状态行与其下的点名原因/接口名单说明，不重复。
+  private static func systemProxyHint(from snapshot: ProxyControlSnapshot) -> String? {
     if snapshot.systemProxyApprovalRequired {
       return String(localized: "系统代理助手等待批准。请在系统设置 → 登录项与扩展中允许。")
     }
-    return switch snapshot.systemProxyApplication {
-    case .idle:
-      String(localized: "开启后让 macOS 系统代理指向本地入口；\(exitRequirement)")
-    case .pending:
-      String(localized: "已请求应用系统代理，等待本地入口就绪；\(exitRequirement)")
-    case .applied:
-      String(localized: "系统代理已指向本地入口")
-    case .failed, .repairFailed, .clearFailed:
-      String(localized: "操作失败，原因见下方")
-    case .paused:
-      AppPresentation.systemProxyPausedNotice
-    case .changed:
-      String(localized: "当前系统代理配置与预期存在差异")
-    case .unreadable:
-      String(localized: "无法检查当前系统代理配置")
-    case .applying:
-      String(localized: "正在应用系统代理配置…")
-    case .repairing:
-      String(localized: "正在修复系统代理配置…")
+    if snapshot.systemProxyApplication == .paused {
+      return AppPresentation.systemProxyPausedNotice
     }
+    return nil
   }
 }
