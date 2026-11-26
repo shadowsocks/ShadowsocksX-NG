@@ -62,6 +62,7 @@ final class ServerFormFields: ObservableObject {
   @Published var showPassword = false
   @Published private(set) var fieldErrors: [ServerFormField: ServerFormFieldError] = [:]
   @Published private var savedDraft: ServerEditDraft?
+  private var savedEncryptionMethod: String?
 
   @Published private(set) var serverID: NodeID?
   @Published private(set) var presentation: ServerFormPresentation?
@@ -140,14 +141,21 @@ final class ServerFormFields: ObservableObject {
     return fields
   }
 
-  /// 当前 sslocal 能力目录；目录中既有的未知方法原样追加显示，便于用户修复。
-  /// 新建面初值恒在集内，追加分支不会触发，与仅列集内值行为一致。
-  var methodChoices: [String] {
-    var choices = EncryptionMethodCatalog.supported.sorted()
-    if !encryptionMethod.isEmpty && !choices.contains(encryptionMethod) {
-      choices.append(encryptionMethod)
+  /// 已保存的弃用方式可以保留。未知方式仍显示原值，便于修复。
+  func methodChoices(allowDeprecated: Bool) -> (ungrouped: [String], deprecated: [String]) {
+    var ungrouped = EncryptionMethodCatalog.regular.sorted()
+    if !encryptionMethod.isEmpty && !EncryptionMethodCatalog.isSupported(encryptionMethod) {
+      ungrouped.append(encryptionMethod)
     }
-    return choices
+    if allowDeprecated {
+      return (ungrouped, EncryptionMethodCatalog.deprecated.sorted())
+    }
+    if let savedEncryptionMethod,
+      EncryptionMethodCatalog.deprecated.contains(savedEncryptionMethod)
+    {
+      ungrouped.append(savedEncryptionMethod)
+    }
+    return (ungrouped, [])
   }
 
   /// 从编辑面状态装载（凭据明文只在编辑命令中出现）；重置密码
@@ -155,6 +163,7 @@ final class ServerFormFields: ObservableObject {
   func load(from state: ServerEditForm) {
     address = state.address
     portText = String(state.port)
+    savedEncryptionMethod = state.encryptionMethod
     encryptionMethod = state.encryptionMethod
     password = state.password
     remark = state.remark
@@ -281,6 +290,7 @@ final class ServerFormFields: ObservableObject {
   private func clearLoadedServer() {
     address = ""
     portText = ""
+    savedEncryptionMethod = nil
     encryptionMethod = ""
     password = ""
     remark = ""

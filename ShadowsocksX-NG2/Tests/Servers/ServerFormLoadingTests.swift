@@ -181,9 +181,12 @@ struct ServerFormLoadingTests {
     try await body(workflow)
   }
 
-  private static func form(isEditable: Bool = true, password: String = "pw") -> ServerEditForm {
+  private static func form(
+    isEditable: Bool = true, password: String = "pw", method: String = "aes-256-gcm",
+    port: Int = 8388
+  ) -> ServerEditForm {
     ServerEditForm(
-      address: "203.0.113.1", port: 8388, encryptionMethod: "aes-256-gcm",
+      address: "203.0.113.1", port: port, encryptionMethod: method,
       password: password, remark: "服务器",
       plugin: PluginSectionState(
         selection: .none, programs: [], mappingsUnreadable: false,
@@ -192,6 +195,26 @@ struct ServerFormLoadingTests {
 }
 
 extension ServerFormLoadingTests {
+  @Test(arguments: [8388, 0])
+  func deprecatedMethodChoicesRequireOptInExceptForTheSavedMethod(savedPort: Int) {
+    let fields = ServerFormFields.newForm()
+    let initial = fields.methodChoices(allowDeprecated: false)
+    #expect(initial.ungrouped.contains("none"))
+    #expect(!initial.ungrouped.contains("aes-256-cfb"))
+    #expect(initial.deprecated.isEmpty)
+
+    fields.load(from: Self.form(method: "aes-256-cfb", port: savedPort))
+    let disabled = fields.methodChoices(allowDeprecated: false)
+    #expect(disabled.ungrouped == initial.ungrouped + ["aes-256-cfb"])
+    #expect(disabled.deprecated.isEmpty)
+
+    let enabled = fields.methodChoices(allowDeprecated: true)
+    #expect(enabled.ungrouped == initial.ungrouped)
+    #expect(enabled.deprecated.count == 40)
+    #expect(enabled.deprecated.contains("aes-256-cfb"))
+    #expect(enabled.deprecated.contains("rc4-md5"))
+  }
+
   @Test
   func newFormStartsUnchangedAndReturningToDefaultsClearsChanges() {
     let fields = ServerFormFields.newForm()

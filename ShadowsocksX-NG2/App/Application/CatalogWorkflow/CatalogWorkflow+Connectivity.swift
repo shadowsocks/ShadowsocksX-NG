@@ -29,13 +29,14 @@ extension CatalogWorkflow {
   /// This local state machine derives a single leaf without publishing activation.
   func connectivityConfiguration(for id: NodeID) throws -> SslocalServerDocument {
     let catalog = dependencies.coordinator.committedCatalog
-    guard case .server? = catalog.entry(for: id)?.kind else { throw ServerFormLoadError.notFound }
-    var derivation = ActivationStateMachine()
-    if case .server(let fields)? = catalog.entry(for: id)?.kind,
-      !EncryptionMethodCatalog.isSupported(fields.encryptionMethod)
-    {
+    guard case .server(let fields)? = catalog.entry(for: id)?.kind else {
+      throw ServerFormLoadError.notFound
+    }
+    let method = fields.encryptionMethod.trimmingCharacters(in: .whitespacesAndNewlines)
+    guard EncryptionMethodCatalog.isSupported(method) else {
       throw ServerConnectivity.ConfigurationFailure.unsupported
     }
+    var derivation = ActivationStateMachine()
     let config = try derivation.activate(
       id, in: catalog,
       plugins: dependencies.plugins,

@@ -9,6 +9,29 @@ import Testing
 /// projection 与结构化结果，不触碰内部存储。
 @MainActor
 struct CatalogWorkflowImportTests {
+  @Test func importedDeprecatedMethodCanConnectAndBePreservedWhenEditing() async throws {
+    try await withImportWorkflow { workflow in
+      let uri = SsUri(
+        method: "aes-256-cfb", password: "password", host: "203.0.113.7", port: 8388
+      ).encode()
+      _ = await workflow.importServers(from: [.clipboardText(uri)], into: nil)
+
+      let node = try #require(workflow.tree.roots.first)
+      #expect(node.invalidReasons.isEmpty)
+      #expect(try workflow.connectivityConfiguration(for: node.id).method == "aes-256-cfb")
+
+      let form = try #require(try workflow.serverEditForm(for: node.id))
+      let fields = ServerFormFields()
+      fields.load(from: form)
+      fields.remark = "重命名的服务器"
+      try await workflow.updateServer(node.id, draft: #require(fields.draft))
+
+      let saved = try #require(try workflow.serverEditForm(for: node.id))
+      #expect(saved.remark == "重命名的服务器")
+      #expect(saved.encryptionMethod == "aes-256-cfb")
+    }
+  }
+
   // MARK: - SIP-008 整树导入
 
   @Test func sip008FileImportsTreeWithFreshIdentities() async throws {
@@ -38,6 +61,20 @@ struct CatalogWorkflowImportTests {
       #expect(try workflow.serverEditForm(for: first.id)?.remark == "香港 01")
       let second = try #require(root.childNodes.last)
       #expect(try workflow.serverEditForm(for: second.id)?.password == "pw2")
+    }
+  }
+
+  @Test func sip008DeprecatedMethodWithWhitespaceCanBeTested() async throws {
+    try await withImportWorkflow { workflow in
+      let document = SIP008DocumentFixture.flat.replacingOccurrences(
+        of: "aes-256-gcm", with: " aes-256-cfb ")
+      let outcome = await workflow.importServers(
+        from: [.file(name: "legacy.json", data: Data(document.utf8))], into: nil)
+
+      let groupID = try #require(outcome.sources.first?.result.importedGroupID)
+      let node = try #require(workflow.tree.node(withID: groupID)?.childNodes.first)
+      #expect(node.invalidReasons.isEmpty)
+      #expect(try workflow.connectivityConfiguration(for: node.id).method == "aes-256-cfb")
     }
   }
 

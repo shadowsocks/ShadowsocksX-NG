@@ -10,6 +10,7 @@ struct SettingsView: View {
   @ObservedObject var silentLaunch: SilentLaunchController
   @State private var presentedEditor: SettingsEditorSheet?
   @AppStorage("showStatusBarRuntimeDots") private var showStatusBarRuntimeDots = true
+  @AppStorage("allowDeprecatedCiphers") private var allowDeprecatedCiphers = false
 
   var body: some View {
     Form {
@@ -73,6 +74,13 @@ struct SettingsView: View {
       Toggle("显示状态栏运行状态圆点", isOn: $showStatusBarRuntimeDots)
         .toggleStyle(.switch)
         .padding(.vertical, 4)
+      Toggle(isOn: $allowDeprecatedCiphers) {
+        settingCopy(
+          String(localized: "允许手动选择已弃用的加密方式"),
+          note: String(localized: "关闭后，使用这些加密方式的现有服务器仍可连接。"))
+      }
+      .toggleStyle(.switch)
+      .padding(.vertical, 4)
       LanguageSettingsRow()
     } header: {
       sectionHeader(String(localized: "常规"))

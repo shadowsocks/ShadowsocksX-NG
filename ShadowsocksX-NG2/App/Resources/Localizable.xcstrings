@@ -18,6 +18,57 @@
         }
       }
     },
+    "允许手动选择已弃用的加密方式": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allow manual selection of deprecated ciphers"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "允许手动选择已弃用的加密方式"
+          }
+        }
+      }
+    },
+    "关闭后，使用这些加密方式的现有服务器仍可连接。": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Existing servers that use these ciphers can still connect when this setting is off."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "关闭后，使用这些加密方式的现有服务器仍可连接。"
+          }
+        }
+      }
+    },
+    "已弃用": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deprecated"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已弃用"
+          }
+        }
+      }
+    },
     "服务器库无法读取": {
       "extractionState": "manual",
       "localizations": {
