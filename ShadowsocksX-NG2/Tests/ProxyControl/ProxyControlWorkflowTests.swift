@@ -1,7 +1,50 @@
 import Combine
+import Testing
 import XCTest
 
 @testable import ShadowsocksX_NG2
+
+@MainActor
+struct ProxyControlPublicationTests {
+  @Test func repeatedObservationsPublishOnlyChangedSnapshots() {
+    let runtime = FakeProxyRuntime()
+    let interfaces = FakeLocalInterfaceFacts()
+    let workflow = ProxyControlWorkflow(
+      runtime: runtime, targetFacts: FakeTargetFacts(), interfaceFacts: interfaces)
+    var snapshots: [ProxyControlSnapshot] = []
+    var invalidations = 0
+    let subscription = workflow.$snapshot.dropFirst().sink { snapshots.append($0) }
+    let invalidation = workflow.objectWillChange.sink { invalidations += 1 }
+    defer {
+      subscription.cancel()
+      invalidation.cancel()
+    }
+
+    for _ in 0..<10 {
+      runtime.emitChange()
+      interfaces.emitChange()
+      #expect(
+        workflow.refreshTerminalCommands() == workflow.snapshot.terminalProxyEnvironmentCommands)
+    }
+    #expect(snapshots.isEmpty)
+    #expect(invalidations == 0)
+
+    runtime.runtimeFacts = ProxyRuntimeFacts(status: .starting, isOn: true)
+    runtime.emitChange()
+    runtime.emitChange()
+    runtime.runtimeFacts = ProxyRuntimeFacts(status: .running, isOn: true)
+    runtime.emitChange()
+    // A change outside the runtime status must still reach the UI.
+    runtime.systemProxyApprovalRequired = true
+    runtime.emitChange()
+    interfaces.emitChange()
+
+    #expect(snapshots.map(\.runtime.status) == [.starting, .running, .running])
+    #expect(snapshots.map(\.systemProxyApprovalRequired) == [false, false, true])
+    #expect(invalidations == 3)
+    #expect(snapshots.last == workflow.snapshot)
+  }
+}
 
 // MARK: - 确定性替身（snapshot 与命令 contract；不触真实运行时）
 // 供本文件与 ProxyCommandAddressWorkflowTests 共用（测试 target 内部）。
