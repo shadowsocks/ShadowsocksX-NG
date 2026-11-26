@@ -34,7 +34,7 @@ jobs:
           persist-credentials: false
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@5895b2c9be147bc7f1c75ce72c5cb577febb1907 # v4
+        uses: github/codeql-action/init@776237d428f23fefc3d9e0fe1962921cbcd53e17 # v4
         with:
           languages: ${{ matrix.language }}
           build-mode: none
@@ -63,7 +63,7 @@ jobs:
           packages: age go-task xcodegen
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@5895b2c9be147bc7f1c75ce72c5cb577febb1907 # v4
+        uses: github/codeql-action/init@776237d428f23fefc3d9e0fe1962921cbcd53e17 # v4
         with:
           languages: swift
           build-mode: manual
